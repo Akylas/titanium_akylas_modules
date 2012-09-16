@@ -1,0 +1,17 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.2
+description: Provides access to the UDP protocol for sending packets across a network.
+author: Martin Guillon
+license: Akylas Commercial License
+copyright: Copyright (c) 2011-2012 by Akylas
+
+
+# these should not be edited
+name: udp
+moduleid: akylas.udp
+guid: 0b1bfeae-0991-49c7-aa3b-8d34cfcbfcbf
+platform: iphone
+minsdk: 1.7.5
