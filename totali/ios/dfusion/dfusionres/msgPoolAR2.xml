@@ -1,0 +1,100 @@
+<?xml version="1.0" standalone="yes" ?>
+<messagepool>
+	<language value="english" default="true" current="true" >
+		<label id="ERR_RENDERWINDOWCREATE" value="Failed to create render window" />
+		<label id="ERR_RENDERSYSTEMNOTEXIST" value="Unable to find the following renderer" />
+		<label id="ERR_CONTEXTNEEDWINDOW" value="Render context needs a valid handle to be initialized" />
+		<label id="ERR_VALIDATEFULLSCREEN" value="Unable to validate fullscreen mode" />
+		<label id="WARN_FULLSCREENMODEINCOMPATIBLE" value="Specified video mode is not compatible with fullscreen. Trying to switch to closest compatible mode" />
+		<label id="ERR_FULLSCREENNOMATCH" value="Cannot find a valid fullscreen mode" />
+		<label id="WARN_FULLSCREENCLOSEST" value="Loading closest mode compatible with fullscreen" />
+		<label id="ERR_CONTEXTCREATIONFAILED" value="Could not create D'Fusion2 Context, please contact nearest astrology center to check for recent UFO activities" />
+		<label id="ERR_CONTEXTINITFAILED" value="Could not Start D'Fusion2 Engine. Please check for minimum requirements" />
+		<label id="ERR_LOADINVALIDXML" value="Failed to load XML File" />
+		<label id="ERR_LOADINGNOSCENETAG" value="File is not a valid scene file" />
+		<label id="ERR_PLAYERFAILCREATEVENT" value="Failed: CreateEvent" />
+		<label id="ERR_PLAYERFAILPOSTEVENTQUEUE" value="Failed: PostEventToQueue" />
+		<label id="ERR_PLAYERFAILEDRELEASEEVENT" value="Failed: ReleaseEvent" />
+		<label id="ERR_PLAYERPOPUPMENUFAILED" value="Failed to display Pop-up menu : %d" />
+		<label id="ERR_MESHSETRESOURCEFAILED" value="Mesh creation error (could not create entity)" />
+		<label id="TRACE_MESHSETRESOURCE" value="Creating mesh " />
+		<label id="TRACE_LOADNODE" value="Loading node %s" />
+		<label id="ERR_LOADMESHFAILED" value="Error while loading mesh (object not created)" />
+		<label id="ERRA_SAVEOBJECTFAILED" value="Save Error : invalid serializer" />
+		<label id="ERR_LOADINVALIDPARENT" value="Loading Error : object loading failed, invalid parent" />
+		<label id="ERR_LOADINVALIDPARENTEXT" value="Loading Error : object %s loading failed, invalid parent" />
+		<label id="WARN_LOADINVALIDORIENTATION" value="Load warning : invalid Orientation parameter for object %s. Parameter will be ignored" />
+		<label id="ERR_LOADOBJECTSETRESOURCEFAILED" value="Loading Error : cannot assign resource to object" />
+		<label id="ERR_LOADOVERLAYNONAME" value="Loading Error: cannot load the overlay: the %s parameter is missing" />
+		<label id="ERR_LOADOVERLAYNOFILE" value="Loading Error: cannot load the overlay %s: the % parameter is missing" />
+		<label id="ERR_LOADPARTICLENONAME" value="cannot load the particles : the '%s' parameter is missing" />
+		<label id="ERR_LOADRTINVALIDCAMERA" value="Specified camera for renderTarget %s cannot be found, no Viewport will be created." />
+		<label id="WARN_LOADRTNOVIEWPORT" value="There is no viewport on renderTarget %s, is it intentionnal ?" />
+		<label id="ERR_LOADSCRIPTINVALIDCHILD" value="Loading Error : Invalid child node on script, only parameters or comments are allowed" />
+		<label id="ERR_LOADSCRIPTPARAMNOTYPE" value="Loading Error : undefined type for script parameter (script '%s')" />
+		<label id="ERR_LOADSCRIPTPARAMNOVALUE" value="Loading Error : no value for script parameter of type %s (script '%s')" />
+		<label id="ERR_LOADSCRIPTPARAMNOOBJECT" value="Loading Error : unknown object for script parameter (script '%s')" />
+		<label id="ERR_LOADTEXTINVALIDPARENT" value="Loading Error for text2D: invalid parent" />
+		<label id="WARN_LOADTEXTNOFONT" value="Loading warning : no font defined, text will not be displayed" />
+		<label id="ERR_LOADTIMELINENOTIME" value="Loading Error : invalid Timeline entry, no time specified" />
+		<label id="ERR_LOADTIMELINENOSCRIPT" value="Loading Error : invalid Timeline entry, no script specified" />
+		<label id="ERR_LOADTIMELINEINVALIDSCRIPT" value="Loading Error : invalid Timeline entry, script %s cannot be found in scene" />
+		<label id="PLAYER_TITLE" value="D'Fusion AR2 Player" />
+		<label id="ERR_LOADTIMELINEINVALIDPARENT" value="Loading Error : timeline must be child of a scene Node" />
+		<label id="ERR_LOADVIDTEXLOADFAILED" value="Loading Error : cannot load videotexture '%s' " />
+		<label id="ERR_LOADVIDTEXNOCAP" value="Loading Error : Videotexture initialisation failed, cannot find videocapture '%s' " />
+		<label id="ERR_LOADVIEWPORTNOCAMERA" value="Loading Error : viewport creation failed, camera parameter is missing." />
+		<label id="ERR_LOADVIEWPORTINVALIDCAMERA" value="Loading Error : viewport creation failed, specified camera '%s' cannot be found." />
+		<label id="WARN_LOADVIEWPORTINVALIDBG" value="Loading warning : Background texture %s not found in scene." />
+		<label id="ERR_EVENTBADOWNER" value="The main event Manager attached to E'Fusion Context cannot be used to trigger script. Please refer to documentation" />
+		<label id="ERR_SAVEXMLFAILED" value="Save error : the following error occured while trying to save XML file : %s" />
+		<label id="ERR_PROTECTIONFAILED" value="Loading Error. Invalid protection on file" />
+		<label id="ERR_LOADUNKNOWNODE" value="Loading Error : unknown node : %s" />
+		<label id="ERR_ENTITYGETCUSTOMPARAMFAILED" value="Error : could not retrieve Shader Custom Parameter for entity %s" />
+		<label id="ERR_ADDSCENEASCHILD" value="You cannot add a Scene as child of an Object3D" />
+		<label id="ERR_MATERIALNOTINITIALIZED" value="Error in behavior Material:%s : Material not initialized" />
+		<label id="ERR_MATERIALINVALIDTECHNIQUEINDEX" value="Error in behavior Material:%s : invalid technique index" />
+		<label id="ERR_MATERIALNOTECHNIQUE" value="Error in behavior Material:%s : could not retrieve a valid technique" />
+		<label id="ERR_MATERIALINVALIDPASSINDEX" value="Error in behavior Material:%s : invalid pass index" />
+		<label id="ERR_MATERIALNOPASS" value="Error in behavior Material:%s : could not retrieve a valid pass" />
+		<label id="ERR_MATERIALINVALIDTEXTUREINDEX" value="Error in behavior Material:%s : invalid texture unit index" />
+		<label id="ERR_ABOUTDLGCREATIONFAILED" value="Error on creating the About dialog box." />
+		<label id="ERR_MATERIALNOTFOUND" value="Error in behavior Material:%s : Material %s not found" />
+		<label id="ERR_MATERIALNOTUS" value="Error in behavior Material:%s : no Texture Unit State" />
+		<label id="ERR_MATERIALGETPARAM" value="Error in behavior Material:%s : Cannot get %s parameter" />
+		<label id="ERR_MATERIALPROGNOVALIDPARAM" value="Error in behavior Material:%s : No valid program parameters" />
+		<label id="ERR_MATERIALPROGNOVALIDCAMERA" value="Error in behavior Material:%s : No valid camera" />
+		<label id="ERR_MATERIALPROGNOVALIDOBJECT" value="Error in behavior Material:%s : No valid object" />
+		<label id="ERR_TEXT2DUNKNOWNFONT" value="Error in behavior Text2D:%s : unknown font : %s" />
+		<label id="ERR_RTVIDEORECORDNOTINITIALIZED" value="Could not manage video recording : no config is initialized." />
+		<label id="ERR_RTVIDEORECORDRESOLUTION" value="Could not manage video recording : invalid resolution." />
+		<label id="ERR_RTVIDEORECORDWMVPROFILE" value="Could not manage video recording : no wmv profile found." />
+		<label id="ERR_RTVIDEORECORDWMVODDRESOLUTION" value="Could not manage video recording : at least one dimension of the source image is odd." />
+		<label id="ERR_RTVIDEORECORD" value="Could not manage video recording : no config is initialized." />
+		<label id="ERR_SCRIPTCRASH" value="An error occured in script %s execution. Script is disabled" />
+		<label id="ERR_VIDEOTEXTUREUNKWNOWPF" value="Error : Unknown Pixel Format" />
+		<label id="ERR_VIEWPORTCOMPOSITORNORT" value="Error in behavior Viewport:deactivateCompositor : Cannot access to render target %s" />
+		<label id="ERR_VIEWPORTSETBGTEXTINVALID" value="Error in behavior Viewport:setBackground : texture %s not initialized" />
+		<label id="ERR_PLUGINGUIDALREADYEXISTS" value="Plugin Error : a plugin with same name %s is already registered with a different GUID" />
+		<label id="ERR_LUAERROR" value="Lua Error : %s" />
+		<label id="ERR_LUANOTFOUND" value="Error while initializing %s Plugin : Mandatory Lua Plugin is missing." />
+		<label id="ERR_PULOADFAILED" value="Loading Error : Could not load PU particle system %s (file %s) : %s ..." />
+		<label id="TRACE_LOADINGOBJECT" value="Loading" />
+		<label id="ERR_SETRESOURCEFAILED" value="Error while trying to set resource to file" />
+		<label id="ERR_VIDCAPLOADFAILED" value="Loading Error : could not load VideoCapture from File %s : check path and format" />
+		<label id="ERR_VIDCAPOPENSENDERFAILED" value="Could not open Video Sender" />
+		<label id="ERR_VIDCAPYUVSHADERMISSING" value="Could not find shader TI/EFusion/YUV2RGB" />
+		<label id="ERR_DLOBJECTALREADYDOWNLOADING" value="Error downloading : a download is already active for this object, release it first !" />		
+		<label id="ERR_CANNOTLOADOGREPLUGIN" value="Error : cannot load Ogre Plugin" />
+		<label id="ERR_LUACRASH" value="Error : Lua script catched a crash. Script will be disabled" />		
+		<label id="ERR_LOADOBJECTFAILED" value="Loading Error : Loading Failed." />		
+		<label id="WARN_OBJECTPARAMETERREMOVED" value="Warning : one parameter of %s has been removed" />		
+		<label id="ERR_VIDEORECORDFAILED" value="Error : Video Recording Failed, it is now disabled." />		
+		<label id="ERR_PARTICLESFXINVALIDEMITTERINDEX" value="Error in behavior ParticlesFX:%s : invalid emitter index" />
+		<label id="ERR_PARTICLESFXINVALIDAFFECTORINDEX" value="Error in behavior ParticlesFX:%s : invalid affector index" />
+		<label id="INF_COMMLUATOHIGHLEVELAPP" value="Lua --> High-level application : function %s called with parameters: %s"/>
+		<label id="INF_COMMHIGHLEVELAPPTOLUA" value="High-level application --> Lua : command %s called with parameters: %s"/>
+		<label id="INF_COMMLUATOWEBPAGE" value="Lua --> Web page : function %s called with parameters: %s"/>
+		<label id="INF_COMMWEBPAGETOLUA" value="Web page --> Lua : command %s called with parameters: %s"/>
+	</language>
+</messagepool>

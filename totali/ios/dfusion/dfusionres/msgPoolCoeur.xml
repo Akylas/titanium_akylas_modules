@@ -1,0 +1,345 @@
+<?xml version="1.0" standalone="yes" ?>
+<messagepool>
+	<language value="english" default="true" current="true" >
+    <label id="INF_THREADSTILLRUNNING" value="ticThread -- A thread is still running" />
+    <label id="INF_THREADSSTILLRUNNING" value="ticThread -- %d threads are still running" />
+    <label id="WARN_ENVARUNDEFINED" value="Undefined environment variable" />
+    <label id="WARN_JOYEVENTLOST" value="[TI_INPUT] Joystick event buffer overflow, some events might have been lost" />
+    <label id="WARN_KEYEVENTLOST" value="[TI_INPUT] Keyboard event buffer overflow, some events might have been lost" />
+    <label id="WARN_MOUEVENTLOST" value="[TI_INPUT] Mouse event buffer overflow, some events might have been lost" />
+    <label id="WARN_DEVICEFAILEDTOACQUIRE" value="[TI_INPUT] device failed to acquire" />
+    <label id="WARN_DEVICEFAILEDTOUNACQUIRE" value="[TI_INPUT] device failed to unacquire" />
+    <label id="WARN_LISTENERINTFAILED" value="Failed to initialize file listener" />
+    <label id="WARN_SHAREDMEMINITFAILED" value="Failed to initialize shared memory listener (could not load shared library)" />
+    <label id="WARN_SHAREDMEMFCTNOTFOUND" value="Failed to initialize shared memory listener (could not find function)" />
+    <label id="WARN_MATRIXALLOCREFUSED" value="Matrix Allocation Refused. Lack of Memory ?" />
+    <label id="WARN_MATRIXIRREVERSIBLE" value="Irreversible matrix: pivot %d not found" />
+    <label id="WARN_VECTALLOCREFUSED" value="Vector Allocation Refused. Lack of Memory ?" />
+    <label id="WARN_FILTERNULL" value="ticFilter error - Constructor : basic operation is null pointer !" />
+    <label id="WARN_SHAREDLIBRARYLOADFAILED" value="Sharedlibray not loaded. Cannot find function" />
+    <label id="WARN_SHAREDLIBRARYFCTNOTFOUND" value="Sharedlibray cannot find function" />
+    <label id="WARN_OPCOPYNULLPOINTER" value="ticOperation error - Copy() : null pointer !" />
+    <label id="WARN_OPGETPARTDATANULLPOINTER" value="ticOperation error - GetPartData() : null pointer !" />
+    <label id="WARN_OPFORMATSTRINGNULLPOINTER" value="ticOperation error - FormatString() : null pointer !" />
+    <label id="WARN_OPCOMPARENULLPOINTER" value="ticOperation error - Compare() : null pointer !" />
+    <label id="WARN_OPZERONULLPOINTER" value="ticOperation error - Zero() : null pointer !" />
+    <label id="WARN_OPIDENTITYNULLPOINTER" value="ticOperation error - Identity() : null pointer !" />
+    <label id="WARN_OPADDSCALENULLPOINTER" value="ticOperation error - AddScale() : null pointer !" />
+    <label id="WARN_OPSUBSCALENULLPOINTER" value="ticOperation error - SubScale() : null pointer !" />
+    <label id="WARN_OPSCALENULLPOINTER" value="ticOperation error - Scale() : null pointer !" />
+    <label id="WARN_OPNORMALIZENULLPOINTER" value="ticOperation error - Normalize() : null pointer !" />
+    <label id="WARN_OPDOTNULLPOINTER" value="ticOperation error - Dot() : null pointer !" />
+    <label id="WARN_OPDISTANCENULLPOINTER" value="ticOperation error - Distance() : null pointer !" />
+    <label id="WARN_OPNORMNULLPOINTER" value="ticOperation error - Norm() : null pointer !" />
+    <label id="WARN_OPLERPNULLPOINTER" value="ticOperation error - Lerp() : null pointer !" />
+    <label id="WARN_OPDISPLACEMENTNEUTRALELEMENTNULLPOINTER" value="ticOperation error - DisplacementNeutralElement() : null pointer !" />
+    <label id="WARN_OPCORRECTINSPACENULLPOINTER" value="ticOperation error - CorrectInSpace() : null pointer !" />
+    <label id="WARN_OPACTIONFORSRC1TOSRC2NULLPOINTER" value="ticOperation error - ActionForSrc1ToSrc2() : null pointer !" />
+    <label id="WARN_OPPROJECTACTIONINTANGENTSPACENULLPOINTER" value="ticOperation error - ProjectActionInTangentSpace() : null pointer !" />
+    <label id="WARN_OPAPPLYACTIONNULLPOINTER" value="ticOperation error - ApplyAction() : null pointer !" />
+    <label id="WARN_OPUNPROJECTACTIONFROMTANGENTSPACENULLPOINTER" value="ticOperation error - UnProjectActionFromTangentSpace() : null pointer !" />
+    <label id="WARN_OPPARTDATAHIGHERNUMBERPART" value="ticOperation error - GetPartData() : part number is higher than number of parts !" />
+    <label id="WARN_OPPARTOPERATIONSETHIGHERNUMBERPART" value="ticOperation error - GetPartOperationSet() : part number is higher than number of parts !" />
+    <label id="WARN_OPVEC2FCOMPARENOMEANING" value="ticOperation error - Compare() : has no meaning for a Vec2f !" />
+    <label id="WARN_OPVEC2DCOMPARENOMEANING" value="ticOperation error - Compare() : has no meaning for a Vec2d !" />
+    <label id="WARN_OPVEC3FCOMPARENOMEANING" value="ticOperation error - Compare() : has no meaning for a Vec3f !" />
+    <label id="WARN_OPVEC3DCOMPARENOMEANING" value="ticOperation error - Compare() : has no meaning for a Vec3d !" />
+    <label id="WARN_OPQUATFCOMPARENOMEANING" value="ticOperation error - Compare() : has no meaning for a Quatf !" />
+    <label id="WARN_OPQUATDCOMPARENOMEANING" value="ticOperation error - Compare() : has no meaning for a Quatd !" />
+    <label id="WARN_OPPOSEDCOMPARENOMEANING" value="ticOperation error - Compare() : has no meaning for a Posed !" />
+    <label id="WARN_OPPOSETSDCOMPARENOMEANING" value="ticOperation error - Compare() : has no meaning for a PoseTSd !" />
+    <label id="WARN_OPACTIONOPERATIONSETNOMEANING" value="ticOperation error - GetActionOperationSet() : has no meaning for a PoseTSd !" />
+    <label id="WARN_OPPOSETSDTANGETSPACEOPERATIONSETNOMEANING" value="ticOperation error - GetTangetSpaceOperationSet() : has no meaning for a PoseTSd !" />
+    <label id="WARN_OPPOSETSDCORRECTINSPACENOMEANING" value="ticOperation error - CorrectInSpace() : has no meaning for a PoseTSd !" />
+    <label id="WARN_OPPOSETSDPROJECTACTIONINTANGENTSPACENOMEANING" value="ticOperation error - ProjectActionInTangentSpace() : has no meaning for a PoseTSd !" />
+    <label id="WARN_OPPOSETSDUNPROJECTACTIONFROMTANGENTSPACENOMEANING" value="ticOperation error - UnProjectActionFromTangentSpace() : has no meaning for a PoseTSd !" />
+    <label id="WARN_DIALOGDISABLED" value="MessageBox disabled" />
+    <label id="WARN_NOCAMFOUND" value="No Camera recognized.(Do you have your camera plugged?)\nPlug your camera and restart the application." />
+    <label id="ERR_CONFIGENUMVALUENOTVALID" value="Error while loading config enum data (or one of its alias). The value is not valid" />
+    <label id="ERR_INPUTMANAGERINITFAILED" value="[TI_INPUT] Input Manager Initialization failed" />
+    <label id="ERR_INPUTDEVICEINITFAILED" value="[TI_INPUT] Device failed to initialize, removing device from device list" />
+    <label id="ERR_INPUTDEVICEFAILEDTORELEASE" value="[TI_INPUT] Device failed to be released" />
+    <label id="ERR_THREADSTILLRUNNING" value="A thread is still running while ~ticThread is called [handle:%p] [id:%d]" />
+    <label id="ERR_PARSEREXTNOTSUPPORTEDFORLOADING" value="Registered parser do not support this extension for loading" />
+    <label id="ERR_PARSEREXTNOTSUPPORTEDFORSAVING" value="Registered parser do not support this extension for saving" />
+    <label id="ERR_OPGETACTIONOPERATIONSETNOTIMPLEMENTED" value="ticOperationBase error : GetActionOperationSet() not implemented !" />
+    <label id="ERR_OPGETTANGETSPACEOPERATIONSETNOTIMPLEMENTED" value="ticOperationBase error : GetTangetSpaceOperationSet() not implemented !" />
+    <label id="ERR_OPGETACTEDOPERATIONSETNOTIMPLEMENTED" value="ticOperationBase error : GetActedOperationSet() not implemented !" />
+    <label id="ERR_OPFORMATSTRINGNOTIMPLEMENTED" value="ticOperationBase error : FormatString() not implemented !" />
+    <label id="ERR_OPCOMPARENOTIMPLEMENTED" value="ticOperationBase error : Compare() not implemented !" />
+    <label id="ERR_OPZERONOTIMPLEMENTED" value="ticOperationBase error : Zero() not implemented !" />
+    <label id="ERR_OPIDENTITYNOTIMPLEMENTED" value="ticOperationBase error : Identity() not implemented !" />
+    <label id="ERR_OPADDSCALENOTIMPLEMENTED" value="ticOperationBase error : AddScale() not implemented !" />
+    <label id="ERR_OPSUBSCALENOTIMPLEMENTED" value="ticOperationBase error : SubScale() not implemented !" />
+    <label id="ERR_OPSCALENOTIMPLEMENTED" value="ticOperationBase error : Scale() not implemented !" />
+    <label id="ERR_OPNORMALIZENOTIMPLEMENTED" value="ticOperationBase error : Normalize() not implemented !" />
+    <label id="ERR_OPDOTNOTIMPLEMENTED" value="ticOperationBase error : Dot() not implemented !" />
+    <label id="ERR_OPDISTANCENOTIMPLEMENTED" value="ticOperationBase error : Distance() not implemented !" />
+    <label id="ERR_OPNORMNOTIMPLEMENTED" value="ticOperationBase error : Norm() not implemented !" />
+    <label id="ERR_OPLERPNOTIMPLEMENTED" value="ticOperationBase error : Lerp() not implemented !" />
+    <label id="ERR_OPDISPLACEMENTNEUTRALELEMENTNOTIMPLEMENTED" value="ticOperationBase error : DisplacementNeutralElement() not implemented !" />
+    <label id="ERR_OPCORRECTINSPACENOTIMPLEMENTED" value="ticOperationBase error : CorrectInSpace() not implemented !" />
+    <label id="ERR_OPACTIONFORSRC1TOSRC2NOTIMPLEMENTED" value="ticOperationBase error : ActionForSrc1ToSrc2() not implemented !" />
+    <label id="ERR_OPPROJECTACTIONINTANGENTSPACENOTIMPLEMENTED" value="ticOperationBase error : ProjectActionInTangentSpace() not implemented !" />
+    <label id="ERR_OPAPPLYACTIONNOTIMPLEMENTED" value="ticOperationBase error : ApplyAction() not implemented !" />
+    <label id="ERR_OPUNPROJECTACTIONFROMTANGENTSPACENOTIMPLEMENTED" value="ticOperationBase error : UnProjectActionFromTangentSpace() not implemented !" />
+    <label id="ERR_DIRECTORYDOESNOTEXIST" value="Directory does not exist" />
+	<label id="ERR_INPUTFOLDERDOESNOTEXIST" value="Input folder does not exist" />
+	<label id="ERR_CANNORREADINFOFROMFILE" value="Cannot read infos from file" />
+	<label id="ERR_CANNORREADVERSIONFROMSTRING" value="Cannot read version infos from string" />
+	<label id="ERR_FAILEDCONVERTUTF8" value="Failed to convert string to UTF8" />
+	<label id="ERR_FAILEDCONVERTWIDEFROMUTF8" value="Failed to convert UTF8 string to wide string" />
+    <label id="ASS_PATHALREADYREGISTERED" value="Path already registered" />
+    <label id="ASS_PATHNOPARENTDEFINED" value="No parent path defined for path" />
+    <label id="ASS_PATHPARENTNEVERBEREGISTERED" value="Parent path never be registered" />
+    <label id="ASS_MESHNOVERTEX" value="Mesh doesn't contain any vertex!" />
+    <label id="ASS_OBBUNABLETOFINDPOINTER" value="Unable to find the pointer obj_index of the OBB!" />
+    <label id="ASS_OBBALREADYATTACHED" value="OBB tree is already attached to a mesh!" />
+    <label id="ASS_OBBUNABLETOSPLIT" value="Unable to recursivly split the current OBB hierarchy!" />
+    <label id="ASS_OBBTOOMUCHINTERSECTIONPOINTS" value="We have too much intersection points! You need to increase array size!" />
+    <label id="ASS_VOXIMPROPERSTATE" value="Improper state of the triangle list of a voxel element!" />
+    <label id="ASS_VOXALREADYATTACHED" value="Voxelized Bounding tree is already attached to a mesh!" />
+    <label id="ASS_VOXALGOERROR" value="Error in the algorithm! This case should be already treated!" />
+    <label id="ASS_VOXCASENOTIMPLEMENTED" value="This case isn't currently implemented!" />
+    <label id="ASS_QUATINVALIDACCESS" value="Invalid access to quaternion : out of bound" />
+    <label id="ASS_ROTNOTCOHERENT" value="DBL_EXPMAP_HALF_CUTOFF_ANGLE and DBL_QUAT2EXP_TAYLOR_LEVEL aren't coherent!" />
+    <label id="ASS_ROTUNABLETOCONVERTMATRIX" value="Unable to convert matrix to quaternion because the matrix is not a rotation matrix!" />
+    <label id="ASS_VECTINVALIDACCESS" value="Invalid access to vector 3D : out of bound" />
+    <label id="ASS_CLOCKNOTINITIALIZED" value="ticClockManager has not been initialized with ticClockManager::open" />
+    <label id="ASS_THREADSTILLRUNNING" value="A thread is still running while ~ticThread is called [handle:%p] [id:%d]" />
+    <label id="ASS_PRIORITYUNSUPPORTED" value="Unsupported priority [%d]" />
+    <label id="ASS_FILEPOINTERNULL" value="File pointer shouldn't be NULL!" />
+    <label id="ASS_MESHUNDEFINEDDRAWINFCT" value="No drawing function defined!" />
+    <label id="ASS_BOUNDINGNOTINITIALIZED" value="The bounding is not initialized!" />
+    <label id="ASS_BOUNDINGWRONGAXIS" value="The axisId should be TI_X or TI_Y or TI_Z" />
+    <label id="ASS_MESHVERTEXINDEXTOOBIG" value="Vertex index is too big!" />
+    <label id="ASS_MESHTGLINDEXTOOBIG" value="Triangle index is too big!" />
+    <label id="ASS_MESHP1NULL" value="Pointer p1 shouldn't be NULL!" />
+    <label id="ASS_MESHP2NULL" value="Pointer p2 shouldn't be NULL!" />
+    <label id="ASS_MESHP3NULL" value="Pointer p3 shouldn't be NULL!" />
+    <label id="ASS_MESHSETNOFACENORMALARRAY" value="Unable to set the face normal because there's no face normal array!" />
+    <label id="ASS_MESHGETNOFACENORMALARRAY" value="Unable to get the face normal because there's no face normal array!" />
+    <label id="ASS_MESHFACENORMALINDEXTOOBIG" value="Face normal index is too big!" />
+    <label id="ASS_MESHFACEDOMINANTAXIS" value="Unable to get the face dominant axis because there's no face normal array!" />
+    <label id="ASS_MESHSETVERTEXNORMAL" value="Unable to set the vertex normal because there's no vertex normal array!" />
+    <label id="ASS_MESHVERTEXNORMALINDEXTOOBIG" value="Vertex normal index is too big!" />
+    <label id="ASS_MESHCOMPUTEFACENORMALS" value="Unable to compute face normals because we haven't face normals!" />
+    <label id="ASS_MESHCOMPUTEVERTEXNORMALS" value="Unable to compute vertex normals because we haven't vertex normals!" />
+    <label id="ASS_MESHNORMALMODE" value="normalMode should be 0 or 1 or 2!" />
+    <label id="ASS_MESHNONORMALSFORMODE" value="mesh doesn't contain normals for the specified normalMode!" />
+    <label id="ASS_OBBOBJSPOINTERNULL" value="objs pointer shouldn't be NULL!" />
+    <label id="ASS_OBBNBOBJSZERO" value="nb of objs shouldn't be ZERO!" />
+    <label id="ASS_MESHPOINTERNULL" value="Mesh pointer shouldn't be null!" />
+    <label id="ASS_OBBTGLPOINTERNULL" value="TriangleList pointer shouldn't be null!" />
+    <label id="ASS_OBBLISTNULL" value="obbList pointer should not be NULL while nbOBB is > 0!" />
+    <label id="ASS_OBBTRISPOINTERNULL" value="tris pointer should not be NULL!" />
+    <label id="ASS_OBBVERTICESPOINTERNULL" value="vertices pointer should not be NULL!" />
+    <label id="ASS_VOXELSUBDIVISIONSXZERO" value="Number of subdivisions of voxel array along X axis shouldn't be zero!" />
+    <label id="ASS_VOXELSUBDIVISIONSYZERO" value="Number of subdivisions of voxel array along Y axis shouldn't be zero!" />
+    <label id="ASS_VOXELSUBDIVISIONSZZERO" value="Number of subdivisions of voxel array along Z axis shouldn't be zero!" />
+    <label id="ASS_VOXELARRAYZEROVOL" value="Voxel array m_workspace shouldn't have a zero volume!" />
+    <label id="ASS_VOXELAXISNOTVALID" value="Axis is not a valid axis!" />
+    <label id="ASS_VOXELCOORDWRONG" value="Voxel coordinates are wrong (at least one coordinate is wrong)!" />
+    <label id="ASS_VECTFASTVERSSAMEDSTSRC" value="This function is the fast version so destination and source vectors should not be the same!" />
+    <label id="ASS_ROTAXISWRONG" value="Axis must be either X, Y or Z!" />
+    <label id="ASS_VECTDSTISSRC" value="This function is used to copy a vector but destination vector is the source vector! It's useless!" />
+    <label id="ASS_VECTMAXLENGTHPOSITIVE" value="maxLength must be strictly positive!" />
+    <label id="ASS_VECTSAMEDSTSRCVECT" value="This function is a fast version but destination vector is one of the source vectors!" />
+    <label id="ASS_MATSAMEDSTSRC" value="This function is the fast version so destination and source matrices should not be the same!" />
+    <label id="ASS_MATDSTSRCSAMEPOINTER" value="This function can't have destination and source vectors being the same pointer!" />
+    <label id="ASS_MATSAMESRCDSTPOINT" value="This function is the fast version so destination and source points should not be the same!" />
+    <label id="ASS_MESHUNABLETOLOADNBVERT" value="Unable to load the number of vertices of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADNBTGL" value="Unable to load the number of triangles of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADNORMALMODE" value="Unable to load the normal mode of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADVERT" value="Unable to load the vertices of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADTGL" value="Unable to load the triangles of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADFACENORMAL" value="Unable to load the face normals of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADFACENORMALDOMINANT" value="Unable to load the face normal dominant axis of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADVERTEXNORMAL" value="Unable to load the vertex normals of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADFACENORMALSTATE" value="Unable to load the state of face normal update of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADVERTEXNORMALSTATE" value="Unable to load the state of vertex normal update of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADBOUNDINGBOXSTATEUPDATE" value="Unable to load the state of bounding box update of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADBOUNDINGBOXSTATEDEFINED" value="Unable to load the state of bounding box defined of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADMINPOINT" value="Unable to load the min point of bounding box of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADMAXPOINT" value="Unable to load the max point of bounding box of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVENUMBERVERT" value="Unable to save the number of vertices of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVENUMBERTGL" value="Unable to save the number of triangles of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVENORMALMODE" value="Unable to save the normal mode of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEVERT" value="Unable to save the vertices of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVETGL" value="Unable to save the triangles of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEFACENORMAL" value="Unable to save the face normals of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEFACENORMALDOMINANT" value="Unable to save the face normal dominant axis of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEVERTNORMAL" value="Unable to save the vertex normals of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEFACENORMALSTATE" value="Unable to save the state of face normal update of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEVERTNORMALSTATE" value="Unable to save the state of vertex normal update of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEBOUNDINGBOXSTATEUPDATE" value="Unable to save the state of bounding box update of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEBOUNDINGBOXSTATEDEFINED" value="Unable to save the state of bounding box defined of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEMINPOINT" value="Unable to save the min point of bounding box of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVEMAXPOINT" value="Unable to save the max point of bounding box of the mesh!" />
+    <label id="ASS_MESHUNABLETOLOADTEXTCOORD" value="Unable to load the texture coordinates of the mesh!" />
+    <label id="ASS_MESHUNABLETOSAVETEXTCOORD" value="Unable to save the texture coordinates of the mesh!" />
+    <label id="ASS_OBBUNABLETOLOADBOXTOPARENT" value="Unable to load the box to parent space of the OBB!" />
+    <label id="ASS_OBBUNABLETOLOADPARENTTOBOX" value="Unable to load the parent to box space of the OBB!" />
+    <label id="ASS_OBBUNABLETOLOADBOXHALFDIM" value="Unable to load the box half-dimensions of the OBB!" />
+    <label id="ASS_OBBUNABLETOLOADNBOBJS" value="Unable to load the number of objs associated with the OBB!" />
+    <label id="ASS_OBBUNABLETOLOADINDEXOBJS" value="Unable to load the objs index associated with the OBB!" />
+    <label id="ASS_OBBUNABLETOLOADPCHILDSTATE" value="Unable to load the state of the P child of the OBB!" />
+    <label id="ASS_OBBUNABLETOLOADNCHILDSTATE" value="Unable to load the state of the N child of the OBB!" />
+    <label id="ASS_OBBUNABLETOSAVEBOXTOPARENT" value="Unable to save the box to parent space of the OBB!" />
+    <label id="ASS_OBBUNABLETOSAVEPARENTTOBOX" value="Unable to save the parent to box space of the OBB!" />
+    <label id="ASS_OBBUNABLETOSAVEBOXHALFDIM" value="Unable to save the box half-dimensions of the OBB!" />
+    <label id="ASS_OBBUNABLETOSAVEOBJSINDEX" value="Unable to save the objs index associated with the OBB!" />
+    <label id="ASS_OBBUNABLETOSAVEPCHILDSTATE" value="Unable to save the state of the P child of the OBB!" />
+    <label id="ASS_OBBUNABLETOSAVENCHILDSTATE" value="Unable to save the state of the N child of the OBB!" />
+    <label id="ASS_OBBUNABLETOLOADMESH" value="Unable to load the state of the associated mesh of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADNEEDLOADMESHSTATE" value="Unable to load the state of needLoadMesh of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADBUILDSTATE" value="Unable to load the build state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADBUILDOPTMAXLEVELSDEEPSTATE" value="Unable to load the m_build_opt_max_levels_deep state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADBUILDOPTNUMTRISPERLEAFSTATE" value="Unable to load the m_build_opt_num_tris_per_leaf state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADRAPIDBOXESINITEDSTATE" value="Unable to load the m_RAPID_boxes_inited state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADNBTRISSTATE" value="Unable to load the m_nbTris state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADSELECTEDTRISSTATE" value="Unable to load the state of the m_selectedTris of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADLISTOFSELECTEDTRIS" value="Unable to load the list of selected m_tris of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADTRIINDEXSTATE" value="Unable to load the state of the m_triIndex of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADTRIINDEXLIST" value="Unable to load the list of tri index of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADLASTERRORSTATE" value="Unable to load the m_lastError state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOLOADROOTSTATEPOINTER" value="Unable to load the state of the ticOBB root pointer of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVEMESHSTATE" value="Unable to save the state of the associated mesh of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVENEEDSAVEMASHSTATE" value="Unable to save the state of needSaveMesh of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVEBUILDSTATE" value="Unable to save the build state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVEBUILDOPTMAXLEVELSDEEPSTATE" value="Unable to save the m_build_opt_max_levels_deep state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVEBUILDOPTNUMTRISPERLEAFSTATE" value="Unable to save the m_build_opt_num_tris_per_leaf state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVERAPIDBOXESINITEDSTATE" value="Unable to save the m_RAPID_boxes_inited state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVENBTRISSTATE" value="Unable to save the m_nbTris state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVESELECTEDTRISSTATE" value="Unable to save the state of the m_selectedTris of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVELISTOFSELECTEDTRIS" value="Unable to save the list of selected m_tris of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVELASTERRORSTATE" value="Unable to save the m_lastError state of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVETRIINDEXSTATE" value="Unable to save the state of the m_triIndex of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVELISTOFTRIINDEX" value="Unable to save the list of tri index of the OBB Tree!" />
+    <label id="ASS_OBBUNABLETOSAVEROOTSTATEPOINTER" value="Unable to save the state of the ticOBB root pointer of the OBB Tree!" />
+    <label id="ASS_VOXELUNABLETOLOADWORKSPACESTATE" value="Unable to load the state of the workspace defined of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOLOADNBSUBDX" value="Unable to load the nbSubdX of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOLOADNBSUBDY" value="Unable to load the nbSubdY of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOLOADNBSUBDZ" value="Unable to load the nbSubdZ of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOLOADNBTGL" value="Unable to load m_voxelsTriangles[x][y][z].nbTriangles of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELOBBUNABLETOLOADARRAYTGL" value="Unable to load m_voxelsTriangles[x][y][z].arrayTriangles of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOLOADVOXELSBOUNDINGTREE" value="Unable to load the state of m_voxelsBoundingTree[x][y][z] of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVEWORKSPACESTATE" value="Unable to save the state of the m_workspace defined of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVEMINPOINT" value="Unable to save the min point of the m_workspace of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVEMAXPOINT" value="Unable to save the max point of the m_workspace of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVENBSUBDX" value="Unable to save the m_nbSubdX of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVENBSUBDY" value="Unable to save the m_nbSubdY of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVENBSUBDZ" value="Unable to save the m_nbSubdZ of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVENBTGL" value="Unable to save m_voxelsTriangles[x][y][z].nbTriangles of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVEARRAYTGL" value="Unable to save m_voxelsTriangles[x][y][z].arrayTriangles of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELUNABLETOSAVEVOXELSBOUNDINGTREE" value="Unable to save the state of m_voxelsBoundingTree[x][y][z] of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VERTICESARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of vertices!" />
+    <label id="ASS_TGLARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of triangles!" />
+    <label id="ASS_FACENORMALARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of face normals!" />
+    <label id="ASS_DOMINANTAXISARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of dominant axis!" />
+    <label id="ASS_VERTEXNORMALSARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of vertex normals!" />
+    <label id="ASS_TEXTURECOORDINATESARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of texture coordinates!" />
+    <label id="ASS_OBBALLOCATEMEMORY" value="Unable to allocate memory for new ticOBB!" />
+    <label id="ASS_OBBTRISALLOCATEMEMORY" value="Unable to allocate memory for m_tris index of the OBB Tree!" />
+    <label id="ASS_OBBMESHALLOCATEMEMORY" value="Unable to allocate memory for the associated mesh of the OBB Tree!" />
+    <label id="ASS_OBBSELECTEDTRISALLOCATEMEMORY" value="Unable to allocate memory for m_selectedTris index of the OBB Tree!" />
+    <label id="ASS_OBBTRIINDEXALLOCATEMEMORY" value="Unable to allocate memory for m_triIndex of the OBB Tree!" />
+    <label id="ASS_OBBHEADALLOCATEMEMORY" value="Unable to allocate memory for the head of ticOBB of the OBB Tree!" />
+    <label id="ASS_ORIENTEDBOUNDINGBOXESARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of Oriented Bounding Boxes!" />
+    <label id="ASS_MOMENTUMARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of momentum" />
+    <label id="ASS_TGLINDEXESARRAYALLOCATEMEMORY" value="Unable to allocate memory for array of triangles indexes!" />
+    <label id="ASS_VOXELTGLARRAYALLOCATEMEMORY" value="Unable to allocate memory for m_voxelsTriangles[x][y][z].arrayTriangles of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELSBOUNDINGTREEALLOCATEMEMORY" value="Unable to allocate memory for m_voxelsBoundingTree[x][y][z] of the ticVoxelBoundingTreeMesh!" />
+    <label id="ASS_VOXELXCOORDALLOCATEMEMORY" value="Unable to allocate memory for X coordinates of the voxel array!" />
+    <label id="ASS_VOXELYCOORDALLOCATEMEMORY" value="Unable to allocate memory for Y coordinates of the voxel array!" />
+    <label id="ASS_VOXELZCOORDALLOCATEMEMORY" value="Unable to allocate memory for Z coordinates of the voxel array!" />
+    <label id="ASS_VOXELMESHTGLALLOCATEMEMORY" value="Unable to allocate memory for associating a mesh triangle with a voxel element!" />
+    <label id="ASS_OBBTREEALLOCATEMEMORY" value="Unable to allocate memory for an OBB tree!" />
+    <label id="ASS_VOXELOBBTREEALLOCATEMEMORY" value="Unable to allocate memory for voxelized OBB Tree creation!" />
+    <label id="LABEL_OK" value="Ok" />
+    <label id="LABEL_CANCEL" value="Cancel" />
+    <label id="LABEL_YES" value="Yes" />
+    <label id="LABEL_NO" value="No" />
+    <label id="LABEL_ABORT" value="Abort" />
+    <label id="LABEL_RETRY" value="Retry" />
+    <label id="LABEL_IGNORE" value="Ignore" />
+    <label id="LABEL_WARNING" value="Warning" />
+    <label id="LABEL_ERR_DFUSION" value="ERROR D'FUSION" />
+    <label id="INF_VIDCAPOPENED" value="Videocapture open successful" />
+    <label id="INF_VIDDLLLOADED" value="[VIDEO DLL] Loaded video dll" />
+    <label id="INF_VIDEOSERVICEDSHOWMODULLOADED" value="Load tiVideoServiceDShowModul staticly" />
+    <label id="INF_VIDEOSERVICEQTMODULLOADED" value="Load tiVideoServiceQTModul staticly" />
+    <label id="WARN_VIDEOCAPTUREINTERLACEDWRONGVALUE" value="\n** WARNING: [VIDEOCAP] VIDEO_CAPTURE_INTERLACED should be 0, 1 or 2 only : value set to %d. **\n" />
+    <label id="WARN_VIDEOCAPTURECHANNELRESERVED" value="\n** WARNING: [VIDEOCAP] VIDEO_CAPTURE_CHANNEL 0 is reserved for the viewport grabber. Capture to channel is Disabled for driver %d. Use another channel to send your videocapture. **\n" />
+    <label id="WARN_VIDEOCAPTURECHANNELUSED" value="\n** WARNING: [VIDEOCAP] VIDEO_CAPTURE_CHANNEL %d is already used by another VIDEOCAP section. Capture to channel is Disabled for driver %d. Use another channel to send your videocapture. **\n" />
+    <label id="WARN_VIDCOINITIALIZEERROR" value="Error in CoInitialize(0) in getting cameras" />
+    <label id="WARN_VIDCOCREATEINSTANCEERROR" value="Error in CoCreateInstance in getting cameras" />
+    <label id="WARN_VIDREGISTEREDITEMSNOTCOHERENT" value="[VIDEO STATIC] INTERNAL (on register service) : registered items not coherent&#10;" />
+    <label id="WARN_VIDDLLHANDLENULL" value="[VIDEO DLL] INTERNAL (on register service) : registering dll handle that is null&#10;" />
+    <label id="WARN_VIDREGISTEREDITEMSNOTCOHERENTUN" value="[VIDEO STATIC] INTERNAL (on unregister service) : registered items not coherent&#10;" />
+    <label id="WARN_VIDSERVICEALREADYUNREGISTERED" value="[VIDEO STATIC] INTERNAL (on unregister service) : unregistering the service more than once (%d times)\n" />
+    <label id="WARN_VIDDLLHANDLENOTNULL" value="[VIDEO STATIC] INTERNAL (on unregister service) : dll handle is not null, but should be : could be unregistered incorrectly&#10;" />
+    <label id="WARN_VIDREGISTEREDITEMSNOTCOHERENTUNIN" value="[VIDEO STATIC] INTERNAL (on unregister service) : registerd items not coherent: could be unregistered incorreclty&#10;" />
+    <label id="WARN_VIDINSTNULL" value="[VIDEO STATIC] INTERNAL (on module load) : not successful: instance is null&#10;" />
+    <label id="WARN_VIDDLLFAILEDTOLOAD" value="[VIDEO DLL] Video dll load failed" />
+    <label id="WARN_VIDDLLNOTFOUND" value="[VIDEO DLL] No video dll found within the specified video dll path" />
+    <label id="WARN_VIDDLLONRELEASE" value="[VIDEO DLL] INTERNAL (on release dlls) : registered items not coherent&#10;" />
+    <label id="WARN_VIDDLLONRELEASEIN" value="[VIDEO DLL] INTERNAL (on release dlls) : items not coherent: could be unregistered incorreclty&#10;" />
+    <label id="WARN_VIDNOCAMERA" value="No Camera recognized. (Do you have your camera plugged?)&#10;Can not continue, the application will now exit.&#10;Plug your camera and restart the application." />
+    <label id="WARN_VIDCAMINITFAILED" value="Failed to initialize the camera.&#10;Please, either :&#10; - select another camera in the next dialog box&#10; - or, plug another camera and restart the application" />
+    <label id="WARN_VIDCAMNOMOREFOUND" value="No more functional camera found.&#10;Can not continue.&#10;Plug a functional camera and restart the application." />
+    <label id="ERR_VIDCAPCONFIGFAILEDTOOPEN" value="Video Capture Config file cannot be opened" />
+    <label id="ERR_VIDSENDERCONFIGFAILEDTOOPEN" value="Video Sender Config file cannot be opened" />
+    <label id="ERR_VIDBMPFILEFAILEDTOOPEN" value="Bmp file cannot be opened" />
+    <label id="ERR_VIDCAPOPENING" value="Error while opening VideoCapture" />
+    <label id="ERR_VIDEOSERVICEDSHOWMODULFAILEDTOLOAD" value="Failed to load tiVideoServiceDShowModul staticly" />
+    <label id="ERR_VIDEOSERVICEQTMODULFAILEDTOLOAD" value="Failed to load tiVideoServiceQTModul staticly" />
+    <label id="ASS_VIDTEXTUREKINDINVALIDVALUE" value="ticTextureGL: Invalid textureKind value" />
+    <label id="ASS_VIDTEXTUREMODEINVALIDVALUE" value="ticTextureGL: Invalid textureMode value" />
+    <label id="DLG_VIDCAMSELECTTITLE" value="Select camera" />
+    <label id="DLG_VIDCAMSELECCB" value="Camera" />
+    <label id="DLG_VIDPIXELFORMAT" value="Pixel format" />
+    <label id="DLG_VIDRESOLUTION" value="Resolution" />
+    <label id="WARN_VIDDSCREATEBINDCTXFAILED" value="[VIDEO DEVICES] CreateBindCtx failed !" />
+    <label id="WARN_VIDDSPROPNOTAVAILABLE" value="%d. WARNING : Properties not available !" />
+    <label id="WARN_VIDDSDEVICEENUM" value="WARNING : Could not enumerate capture devices !" />
+    <label id="WARN_VIDDSDEVICEENUMCREATE" value="[VIDEO DEVICES] Error creating device enumerator !" />
+    <label id="WARN_VIDDSNOHARD" value="[VIDEO DEVICES] No video capture hardware connected !" />
+    <label id="WARN_VIDDSCAPSUBINDEX" value="Incorrect capture sub-index: %d. Last valid sub-index kept: %d." />
+    <label id="WARN_VIDDSCAPDEVICENOMATCHING" value="No matching capture device was found !" />
+    <label id="WARN_VIDDSDEVICESELECTED" value="Device #%d selected.\n" />
+    <label id="WARN_VIDDSFORCEDTORGB32" value="WARNING : Logitech or Labtec camera. Pixel format forced to RGB32 !\n" />
+	<label id="WARN_VIDDSPAUSEDISABLED" value="WARNING : Decklink capture. Pause disabled !\n" />
+    <label id="ERR_VIDDSDEVICEENUMCREATE" value="Error creating device enumerator." />
+    <label id="ERR_VIDDSNOHARD" value="No video capture hardware connected." />
+    <label id="INF_VIDFILEALLOCATEFRAME" value="TiVideoFileReader: Could not allocate frame" />
+    <label id="INF_VIDFILEFILENOTFOUND" value="TiVideoFileReader: file not found" />
+    <label id="INF_VIDFILESTREAMINFONOTFOUND" value="TiVideoFileReader: could not find stream info" />
+    <label id="INF_VIDFILEAUDIOVIDEOSTREAMNOTFOUND" value="TiVideoFileReader: Didn't find any audio/video stream" />
+    <label id="INF_VIDFILEVIDEOCODECNOTFOUND" value="TiVideoFileReader: Video Codec not found" />
+    <label id="INF_VIDFILEVIDEOCODEC" value="TiVideoFileReader: Could not open video codec" />
+    <label id="INF_VIDFILEAUDIOCODEC" value="TiVideoFileReader: Audio Codec not found" />
+    <label id="INF_VIDFILEOPENAUDIOCODECFAILED" value="TiVideoFileReaderCould not open audio codec" />
+    <label id="INF_VIDFILECODECNOTFOUND" value="TiVideoFileRecorder: codec not found&#10;" />
+    <label id="INF_VIDFILEOPENCODECFAILED" value="TiVideoFileRecorder: could not open codec&#10;" />
+    <label id="INF_VIDFILEALLOCATEPIC" value="TiVideoFileRecorder: Could not allocate picture&#10;" />
+    <label id="WARN_VIDFILECAPTURE" value="File Capture&#10;" />
+    <label id="ERR_VIDFILEINITENCODERFAILED" value="VideoCaptureFile: Failed to init encoder" />
+    <label id="ERR_VIDFILEENDOFFILEREACHED" value="VideoCaptureFile: End of file reached" />
+    <label id="ERR_VIDFILESENDERINITENCODERFAILED" value="VideoSenderFile: Failed to init encoder" />
+    <label id="ERR_VIDFILEAUDIOVIDEOFAILEDTOADD" value="VideoSenderFile: Failed to add audio/video stream" />
+    <label id="WARN_VIDRTPCAPTURE" value="RTP Capture&#10;" />
+    <label id="ERR_VIDRTPPACKETBROKEN" value="VideoCaptureRTP: Brocken packet at Timestamp %d" />
+    <label id="ERR_VIDRTPIPADD" value="VideoCapture: Failed to retrieve local IP address" />
+    <label id="ERR_VIDRTPSOCKETFAILEDTOOPEN" value="VideoCapture: Failed to Open RTP/UDP socket" />
+    <label id="ERR_VIDRTPIPADDINVALID" value="VideoCapture: Invalid remote IP adress" />
+    <label id="ERR_VIDRTPFRAMEFORMATUNSUPPORTED" value="VideoSender RTP : unsupported frame format" />
+    <label id="ERR_VIDRTPENCODINGFRAME" value="VideoSender RTP : Error while encoding frame" />
+    <label id="ERR_VIDRTPDATAFRAMEFAILEDTOSEND" value="VideoSender RTP : Failed to send RTP Dataframe" />
+    <label id="ERR_VIDRTPINITENCODERFAILED" value="VideoSenderRTP: Failed to init encoder" />
+    <label id="ERR_VIDRTPAUDIOVIDEOSTREAMFAILED" value="VideoSenderRTP: Failed to add audio/video stream" />
+    <label id="ERR_VIDRTPIPADDSENDER" value="Failed to retrieve local IP address" />
+    <label id="ERR_VIDRTPSOCKETFAILEDTOOPENSENDER" value="VideoSender: Failed to Open RTP/UDP socket" />
+    <label id="ERR_VIDRTPIPADDINVALIDSENDER" value="VideoSender: Invalid remote IP adress" />    
+  </language>
+</messagepool>

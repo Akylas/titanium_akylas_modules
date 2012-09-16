@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: My module
+author: Martin Guillon
+license: Specify your license
+copyright: Akylas
+
+
+# these should not be edited
+name: akylas_totali_ios
+moduleid: akylas.totali
+guid: 60b7d519-e2d6-48ec-8e23-04b2efcd1422
+platform: iphone
+minsdk: 3.0.0

@@ -1,0 +1,10 @@
+<project name="akylas_scancode_android" default="dist">
+	<description>
+		Ant build script for Titanium Android module akylas_scancode_android
+	</description>
+
+	<property name="ti.module.root" location="${basedir}"/>
+	<property file="build.properties" />
+
+	<import file="${titanium.platform}/../module/android/build.xml"/>
+</project>

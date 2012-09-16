@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: Total Immersion Module
+author: Martin Guillon
+license: Specify your license
+copyright: Akylas
+
+
+# these should not be edited
+name: akylas_totali_android
+moduleid: akylas.totali
+guid: 9ef3520a-3adb-4904-aeb0-ecfdb5048387
+platform: android
+minsdk: 2.1.0

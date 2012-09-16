@@ -1,0 +1,39 @@
+<?xml version="1.0" standalone="yes" ?>
+<messagepool>
+	<language value="english" default="true" current="true" >
+		<label id="ERR_AUTHENTIFICATION_EXIT" value="Authentification Error : %s. Application will exit" />
+		<label id="ERR_INIT_EXIT" value="Initialization Error. Application will exit" />
+		<label id="ERR_RENDERING_EXIT" value="Rendering Error. Application will exit" />
+		<label id="ERR_PROCESS_EXIT" value="Processing Error. Application will exit" />
+		<label id="ERR_VIDEO_INIT_EXIT" value="Video Capture Error while Opening. Application will exit" />
+		<label id="ERR_CONFIG_FILE" value="Unable to read Configuration File : %s" />
+		<label id="ERR_PARAM_CONFIG_FILE" value="The parameter %s in section [%s] is not filled correctly" />
+		<label id="TRACE_DISTO_ENABLED" value="Distortion Enabled" />
+		<label id="TRACE_DISTO_DISABLED" value="Distortion Disabled" />
+		<label id="TRACE_MAKING_ONLINE_KEYFRAME" value="Making an online keyframe ..." />
+		<label id="INFO_AUTOINIT_SYMERTY" value="Warning : Symetry proceeded according to the horizontal camera plane to ensure that object normal is up" />
+		<label id="ERR_IMAGE_NOT_LOADED" value="Unable to load the model image : %s" />
+		<label id="WARN_AUTO_INIT_ASPECT_RATIO" value="Auto Initialization : The given geometry aspect ratio does not correspond with the image aspect ratio. The given image will be rescaled" />
+		<label id="INFO_AUTO_INIT_OBJECT" value="Auto Initialization Object # %d : Database Creation" />
+		<label id="INFO_AUTO_INIT_VIEWS" value="Auto Initialization : Generating Views ..." />
+		<label id="WARN_NO_GEOMETRY" value="No geometry loaded" />
+		<label id="WARN_DIFF_GEOMETRY" value="Current Object Geometry does not correspond to the keyframe geometry" />
+		<label id="ERR_OBJECT_TYPE_NOT_VALID" value="Unknown target type" />
+		<label id="INFO_OBJECT_POSE" value="Object Position : %f %f %f and Orientation : %f %f %f" />
+		<label id="WARN_UDP_LOCAL_PORT" value="UDP error while opening %d local port" />
+		<label id="INFO_UDP_LOCAL_PORT" value="UDP local port %d opened" />
+		<label id="ERR_UDP_CONFLICT" value="Warning ! ThreadMS and SendUDP are in confict, SendUDP mode is disabled" />
+		<label id="TRACE_OUTPUT_THREAD_STOP" value="Output Thread Stopped" />
+		<label id="TRACE_OUTPUT_THREAD_START" value="Asynchrone Output Thread Started" />
+		<label id="WARN_COMMAND_RECEIVER_OVERFLOW" value="Too many commands was received, last ones will be ignored" />
+		<label id="TRACE_COMMAND_RECEIVER_THREAD_START" value="Thread Command Receiver #%d Started" />
+		<label id="TRACE_COMMAND_RECEIVER_THREAD_STOP" value="Thread Command Receiver #%d Stopped" />
+		<label id="INFO_KEYFRAME_LOADED" value="Keyframe '%d - %s' loaded. '%d' Feature Points computed" />
+		<label id="INFO_ONLINE_KEYFRAME_LOADED" value="Online Keyframe '%d' created. %d Feature Points computed" />
+		<label id="WARN_SAVE_CONF" value="Error when saving the configuration file %s" />
+		<label id="INFO_FERNS_LOADED_1" value="[dcvGroupFernsRecognizer::LoadFerns] Loading Distributions" />
+		<label id="INFO_FERNS_LOADED_2" value="[dcvGroupFernsRecognizer::LoadFerns] Done" />
+		
+		
+	</language>
+</messagepool>
