@@ -11,3 +11,5 @@ project.xcworkspace
 xcuserdata
 .svn
 libs
+
+.pydevproject
