@@ -28,17 +28,14 @@
 		24DE9E1211C5FE74003F90F6 /* AkylasScancodeModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* AkylasScancodeModuleAssets.m */; };
 		AA747D9F0F9514B9006C5449 /* AkylasScancode_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* AkylasScancode_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
-		D5817EE915CA82AB00610AEC /* AkylasScancodeView.h in Headers */ = {isa = PBXBuildFile; fileRef = D5817EE715CA82AB00610AEC /* AkylasScancodeView.h */; };
-		D5817EEA15CA82AB00610AEC /* AkylasScancodeView.m in Sources */ = {isa = PBXBuildFile; fileRef = D5817EE815CA82AB00610AEC /* AkylasScancodeView.m */; };
-		D5817FA515CAC0D900610AEC /* libZXingWidget.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5817F4C15CAB4C400610AEC /* libZXingWidget.a */; };
-		D5817FB115CACAD900610AEC /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5817FB015CACAD900610AEC /* AudioToolbox.framework */; };
-		D5817FB315CACADD00610AEC /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5817FB215CACADD00610AEC /* UIKit.framework */; };
-		D5817FB515CACAE700610AEC /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5817FB415CACAE700610AEC /* CoreGraphics.framework */; };
-		D5817FB815CACB9800610AEC /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5817FAE15CACA6C00610AEC /* libiconv.dylib */; };
-		D5817FDA15CAD46E00610AEC /* AkylasScancodeViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5817FD815CAD46E00610AEC /* AkylasScancodeViewProxy.h */; };
-		D5817FDB15CAD46E00610AEC /* AkylasScancodeViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5817FD915CAD46E00610AEC /* AkylasScancodeViewProxy.m */; };
-		D5DD812315CBB4FA00071463 /* AkylasScancodeViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D5DD812115CBB4FA00071463 /* AkylasScancodeViewController.h */; };
-		D5DD812415CBB4FA00071463 /* AkylasScancodeViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D5DD812215CBB4FA00071463 /* AkylasScancodeViewController.mm */; };
+		D5EA40A9160DAA7E003F1EF6 /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EA40A8160DAA7E003F1EF6 /* libiconv.dylib */; };
+		D5EA40DC160DAF64003F1EF6 /* AkylasScancodeView.h in Headers */ = {isa = PBXBuildFile; fileRef = D5EA40D6160DAF64003F1EF6 /* AkylasScancodeView.h */; };
+		D5EA40DD160DAF64003F1EF6 /* AkylasScancodeView.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EA40D7160DAF64003F1EF6 /* AkylasScancodeView.m */; };
+		D5EA40DE160DAF64003F1EF6 /* AkylasScancodeViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D5EA40D8160DAF64003F1EF6 /* AkylasScancodeViewController.h */; };
+		D5EA40DF160DAF64003F1EF6 /* AkylasScancodeViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D5EA40D9160DAF64003F1EF6 /* AkylasScancodeViewController.mm */; };
+		D5EA40E0160DAF64003F1EF6 /* AkylasScancodeViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5EA40DA160DAF64003F1EF6 /* AkylasScancodeViewProxy.h */; };
+		D5EA40E1160DAF64003F1EF6 /* AkylasScancodeViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EA40DB160DAF64003F1EF6 /* AkylasScancodeViewProxy.m */; };
+		D5EA4100160DB145003F1EF6 /* libZXingWidget.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EA40FC160DB01E003F1EF6 /* libZXingWidget.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,25 +44,25 @@
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D2AAC07D0554694100DB518D;
-			remoteInfo = tizxing;
+			remoteInfo = akylas_scancode_ios;
 		};
-		D5817F4B15CAB4C400610AEC /* PBXContainerItemProxy */ = {
+		D5EA40FB160DB01E003F1EF6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = D5817F4315CAB4C400610AEC /* ZXingWidget.xcodeproj */;
+			containerPortal = D5EA40E5160DAF78003F1EF6 /* ZXingWidget.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = D2AAC07E0554694100DB518D;
 			remoteInfo = ZXingWidget;
 		};
-		D5817F4D15CAB4C400610AEC /* PBXContainerItemProxy */ = {
+		D5EA40FD160DB01E003F1EF6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = D5817F4315CAB4C400610AEC /* ZXingWidget.xcodeproj */;
+			containerPortal = D5EA40E5160DAF78003F1EF6 /* ZXingWidget.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 1D60398D13DF7CAD006F4B51;
 			remoteInfo = ZXingTests;
 		};
-		D5817FA315CAC07000610AEC /* PBXContainerItemProxy */ = {
+		D5EA4101160DB14C003F1EF6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = D5817F4315CAB4C400610AEC /* ZXingWidget.xcodeproj */;
+			containerPortal = D5EA40E5160DAF78003F1EF6 /* ZXingWidget.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = D2AAC07D0554694100DB518D;
 			remoteInfo = ZXingWidget;
@@ -81,18 +78,14 @@
 		AA747D9E0F9514B9006C5449 /* AkylasScancode_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasScancode_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libAkylasScancode.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAkylasScancode.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D5762CF415CAEDA000056FF8 /* module.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
-		D5817EE715CA82AB00610AEC /* AkylasScancodeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasScancodeView.h; path = Classes/AkylasScancodeView.h; sourceTree = "<group>"; };
-		D5817EE815CA82AB00610AEC /* AkylasScancodeView.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = AkylasScancodeView.m; path = Classes/AkylasScancodeView.m; sourceTree = "<group>"; };
-		D5817F4315CAB4C400610AEC /* ZXingWidget.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ZXingWidget.xcodeproj; path = zxing/iphone/ZXingWidget/ZXingWidget.xcodeproj; sourceTree = "<group>"; };
-		D5817FAE15CACA6C00610AEC /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
-		D5817FB015CACAD900610AEC /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		D5817FB215CACADD00610AEC /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		D5817FB415CACAE700610AEC /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		D5817FD815CAD46E00610AEC /* AkylasScancodeViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasScancodeViewProxy.h; path = Classes/AkylasScancodeViewProxy.h; sourceTree = "<group>"; };
-		D5817FD915CAD46E00610AEC /* AkylasScancodeViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasScancodeViewProxy.m; path = Classes/AkylasScancodeViewProxy.m; sourceTree = "<group>"; };
-		D5DD812115CBB4FA00071463 /* AkylasScancodeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasScancodeViewController.h; path = Classes/AkylasScancodeViewController.h; sourceTree = "<group>"; };
-		D5DD812215CBB4FA00071463 /* AkylasScancodeViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AkylasScancodeViewController.mm; path = Classes/AkylasScancodeViewController.mm; sourceTree = "<group>"; };
+		D5EA40A8160DAA7E003F1EF6 /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
+		D5EA40D6160DAF64003F1EF6 /* AkylasScancodeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasScancodeView.h; path = Classes/AkylasScancodeView.h; sourceTree = "<group>"; };
+		D5EA40D7160DAF64003F1EF6 /* AkylasScancodeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasScancodeView.m; path = Classes/AkylasScancodeView.m; sourceTree = "<group>"; };
+		D5EA40D8160DAF64003F1EF6 /* AkylasScancodeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasScancodeViewController.h; path = Classes/AkylasScancodeViewController.h; sourceTree = "<group>"; };
+		D5EA40D9160DAF64003F1EF6 /* AkylasScancodeViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AkylasScancodeViewController.mm; path = Classes/AkylasScancodeViewController.mm; sourceTree = "<group>"; };
+		D5EA40DA160DAF64003F1EF6 /* AkylasScancodeViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasScancodeViewProxy.h; path = Classes/AkylasScancodeViewProxy.h; sourceTree = "<group>"; };
+		D5EA40DB160DAF64003F1EF6 /* AkylasScancodeViewProxy.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = AkylasScancodeViewProxy.m; path = Classes/AkylasScancodeViewProxy.m; sourceTree = "<group>"; };
+		D5EA40E5160DAF78003F1EF6 /* ZXingWidget.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ZXingWidget.xcodeproj; path = zxing/iphone/ZXingWidget/ZXingWidget.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,12 +93,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D5817FB515CACAE700610AEC /* CoreGraphics.framework in Frameworks */,
-				D5817FB315CACADD00610AEC /* UIKit.framework in Frameworks */,
-				D5817FB115CACAD900610AEC /* AudioToolbox.framework in Frameworks */,
-				D5817FA515CAC0D900610AEC /* libZXingWidget.a in Frameworks */,
+				D5EA4100160DB145003F1EF6 /* libZXingWidget.a in Frameworks */,
+				D5EA40A9160DAA7E003F1EF6 /* libiconv.dylib in Frameworks */,
 				AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */,
-				D5817FB815CACB9800610AEC /* libiconv.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -120,25 +110,22 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0867D691FE84028FC02AAC07 /* tizxing */ = {
+		0867D691FE84028FC02AAC07 /* akylas_scancode_ios */ = {
 			isa = PBXGroup;
 			children = (
+				D5EA40E5160DAF78003F1EF6 /* ZXingWidget.xcodeproj */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
 			);
-			name = tizxing;
+			name = akylas_scancode_ios;
 			sourceTree = "<group>";
 		};
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D5817FB415CACAE700610AEC /* CoreGraphics.framework */,
-				D5817FB215CACADD00610AEC /* UIKit.framework */,
-				D5817FB015CACAD900610AEC /* AudioToolbox.framework */,
-				D5817FAE15CACA6C00610AEC /* libiconv.dylib */,
-				D5817F4315CAB4C400610AEC /* ZXingWidget.xcodeproj */,
+				D5EA40A8160DAA7E003F1EF6 /* libiconv.dylib */,
 				AACBBE490F95108600F1A2B1 /* Foundation.framework */,
 			);
 			name = Frameworks;
@@ -147,16 +134,16 @@
 		08FB77AEFE84172EC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				D5DD812115CBB4FA00071463 /* AkylasScancodeViewController.h */,
-				D5DD812215CBB4FA00071463 /* AkylasScancodeViewController.mm */,
-				D5817EE715CA82AB00610AEC /* AkylasScancodeView.h */,
-				D5817EE815CA82AB00610AEC /* AkylasScancodeView.m */,
-				D5817FD815CAD46E00610AEC /* AkylasScancodeViewProxy.h */,
-				D5817FD915CAD46E00610AEC /* AkylasScancodeViewProxy.m */,
 				24DE9E0F11C5FE74003F90F6 /* AkylasScancodeModuleAssets.h */,
 				24DE9E1011C5FE74003F90F6 /* AkylasScancodeModuleAssets.m */,
 				24DD6CF71134B3F500162E58 /* AkylasScancodeModule.h */,
 				24DD6CF81134B3F500162E58 /* AkylasScancodeModule.m */,
+				D5EA40D6160DAF64003F1EF6 /* AkylasScancodeView.h */,
+				D5EA40D7160DAF64003F1EF6 /* AkylasScancodeView.m */,
+				D5EA40D8160DAF64003F1EF6 /* AkylasScancodeViewController.h */,
+				D5EA40D9160DAF64003F1EF6 /* AkylasScancodeViewController.mm */,
+				D5EA40DA160DAF64003F1EF6 /* AkylasScancodeViewProxy.h */,
+				D5EA40DB160DAF64003F1EF6 /* AkylasScancodeViewProxy.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -166,16 +153,15 @@
 			children = (
 				AA747D9E0F9514B9006C5449 /* AkylasScancode_Prefix.pch */,
 				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
-				D5762CF415CAEDA000056FF8 /* module.xcconfig */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
-		D5817F4415CAB4C400610AEC /* Products */ = {
+		D5EA40E6160DAF78003F1EF6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D5817F4C15CAB4C400610AEC /* libZXingWidget.a */,
-				D5817F4E15CAB4C400610AEC /* ZXingTests.octest */,
+				D5EA40FC160DB01E003F1EF6 /* libZXingWidget.a */,
+				D5EA40FE160DB01E003F1EF6 /* ZXingTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -190,9 +176,9 @@
 				AA747D9F0F9514B9006C5449 /* AkylasScancode_Prefix.pch in Headers */,
 				24DD6CF91134B3F500162E58 /* AkylasScancodeModule.h in Headers */,
 				24DE9E1111C5FE74003F90F6 /* AkylasScancodeModuleAssets.h in Headers */,
-				D5817EE915CA82AB00610AEC /* AkylasScancodeView.h in Headers */,
-				D5817FDA15CAD46E00610AEC /* AkylasScancodeViewProxy.h in Headers */,
-				D5DD812315CBB4FA00071463 /* AkylasScancodeViewController.h in Headers */,
+				D5EA40DC160DAF64003F1EF6 /* AkylasScancodeView.h in Headers */,
+				D5EA40DE160DAF64003F1EF6 /* AkylasScancodeViewController.h in Headers */,
+				D5EA40E0160DAF64003F1EF6 /* AkylasScancodeViewProxy.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -210,10 +196,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				D5817FA415CAC07000610AEC /* PBXTargetDependency */,
+				D5EA4102160DB14C003F1EF6 /* PBXTargetDependency */,
 			);
 			name = akylas_scancode_ios;
-			productName = tizxing;
+			productName = akylas_scancode_ios;
 			productReference = D2AAC07E0554694100DB518D /* libAkylasScancode.a */;
 			productType = "com.apple.product-type.library.static";
 		};
@@ -232,13 +218,13 @@
 				French,
 				German,
 			);
-			mainGroup = 0867D691FE84028FC02AAC07 /* tizxing */;
+			mainGroup = 0867D691FE84028FC02AAC07 /* akylas_scancode_ios */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = D5817F4415CAB4C400610AEC /* Products */;
-					ProjectRef = D5817F4315CAB4C400610AEC /* ZXingWidget.xcodeproj */;
+					ProductGroup = D5EA40E6160DAF78003F1EF6 /* Products */;
+					ProjectRef = D5EA40E5160DAF78003F1EF6 /* ZXingWidget.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -250,18 +236,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		D5817F4C15CAB4C400610AEC /* libZXingWidget.a */ = {
+		D5EA40FC160DB01E003F1EF6 /* libZXingWidget.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libZXingWidget.a;
-			remoteRef = D5817F4B15CAB4C400610AEC /* PBXContainerItemProxy */;
+			remoteRef = D5EA40FB160DB01E003F1EF6 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		D5817F4E15CAB4C400610AEC /* ZXingTests.octest */ = {
+		D5EA40FE160DB01E003F1EF6 /* ZXingTests.octest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = ZXingTests.octest;
-			remoteRef = D5817F4D15CAB4C400610AEC /* PBXContainerItemProxy */;
+			remoteRef = D5EA40FD160DB01E003F1EF6 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -289,9 +275,9 @@
 			files = (
 				24DD6CFA1134B3F500162E58 /* AkylasScancodeModule.m in Sources */,
 				24DE9E1211C5FE74003F90F6 /* AkylasScancodeModuleAssets.m in Sources */,
-				D5817EEA15CA82AB00610AEC /* AkylasScancodeView.m in Sources */,
-				D5817FDB15CAD46E00610AEC /* AkylasScancodeViewProxy.m in Sources */,
-				D5DD812415CBB4FA00071463 /* AkylasScancodeViewController.mm in Sources */,
+				D5EA40DD160DAF64003F1EF6 /* AkylasScancodeView.m in Sources */,
+				D5EA40DF160DAF64003F1EF6 /* AkylasScancodeViewController.mm in Sources */,
+				D5EA40E1160DAF64003F1EF6 /* AkylasScancodeViewProxy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -303,94 +289,15 @@
 			target = D2AAC07D0554694100DB518D /* akylas_scancode_ios */;
 			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
 		};
-		D5817FA415CAC07000610AEC /* PBXTargetDependency */ = {
+		D5EA4102160DB14C003F1EF6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = ZXingWidget;
-			targetProxy = D5817FA315CAC07000610AEC /* PBXContainerItemProxy */;
+			targetProxy = D5EA4101160DB14C003F1EF6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB921F08733DC00010E9CD /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				DSTROOT = /tmp/AkylasScancode.dst;
-				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = AkylasScancode_Prefix.pch;
-				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
-				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
-				GCC_WARN_ABOUT_RETURN_TYPE = NO;
-				GCC_WARN_MISSING_PARENTHESES = NO;
-				GCC_WARN_SHADOW = NO;
-				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_PARAMETER = NO;
-				GCC_WARN_UNUSED_VALUE = NO;
-				GCC_WARN_UNUSED_VARIABLE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(TITANIUM_BASE_SDK)",
-					"$(TITANIUM_BASE_SDK2)",
-					"$(SRCROOT)/zxing/iphone/ZXingWidget/Classes",
-					"$(SRCROOT)/zxing/cpp/core/src/",
-				);
-				INSTALL_PATH = /usr/local/lib;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CFLAGS = (
-					"-DDEBUG",
-					"-DTI_POST_1_2",
-				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasScancode;
-				TITANIUM_SDK = "${HOME}/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
-				USER_HEADER_SEARCH_PATHS = "";
-				WARNING_CFLAGS = "";
-			};
-			name = Debug;
-		};
-		1DEB922008733DC00010E9CD /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				DSTROOT = /tmp/AkylasScancode.dst;
-				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_MODEL_TUNING = G5;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = AkylasScancode_Prefix.pch;
-				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
-				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
-				GCC_WARN_ABOUT_RETURN_TYPE = NO;
-				GCC_WARN_MISSING_PARENTHESES = NO;
-				GCC_WARN_SHADOW = NO;
-				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_PARAMETER = NO;
-				GCC_WARN_UNUSED_VALUE = NO;
-				GCC_WARN_UNUSED_VARIABLE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(TITANIUM_BASE_SDK)",
-					"$(TITANIUM_BASE_SDK2)",
-					"$(SRCROOT)/zxing/iphone/ZXingWidget/Classes",
-					"$(SRCROOT)/zxing/cpp/core/src/",
-				);
-				INSTALL_PATH = /usr/local/lib;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CFLAGS = "-DTI_POST_1_2";
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasScancode;
-				TITANIUM_SDK = "${HOME}/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
-				USER_HEADER_SEARCH_PATHS = "";
-				WARNING_CFLAGS = "";
-			};
-			name = Release;
-		};
-		1DEB922308733DC00010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
@@ -424,9 +331,11 @@
 				HEADER_SEARCH_PATHS = (
 					"$(TITANIUM_BASE_SDK)",
 					"$(TITANIUM_BASE_SDK2)",
+					"$(SRCROOT)/zxing/cpp/core/src",
 					"$(SRCROOT)/zxing/iphone/ZXingWidget/Classes",
 				);
 				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CFLAGS = (
 					"-DDEBUG",
 					"-DTI_POST_1_2",
@@ -437,13 +346,11 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				TITANIUM_SDK = "${HOME}/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
 				USER_HEADER_SEARCH_PATHS = "";
-				VALID_ARCHS = "armv6 armv7 i386";
 			};
 			name = Debug;
 		};
-		1DEB922408733DC00010E9CD /* Release */ = {
+		1DEB922008733DC00010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
@@ -476,7 +383,112 @@
 				HEADER_SEARCH_PATHS = (
 					"$(TITANIUM_BASE_SDK)",
 					"$(TITANIUM_BASE_SDK2)",
+					"$(SRCROOT)/zxing/cpp/core/src",
 					"$(SRCROOT)/zxing/iphone/ZXingWidget/Classes",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "-DTI_POST_1_2";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasScancode;
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		1DEB922308733DC00010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				ARCHS = (
+					armv7,
+					armv6,
+					armv7s,
+				);
+				"ARCHS[sdk=*]" = (
+					armv7,
+					armv6,
+					armv7s,
+				);
+				"ARCHS[sdk=iphonesimulator*]" = i386;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DSTROOT = /tmp/AkylasScancode.dst;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasScancode_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)",
+					"$(TITANIUM_BASE_SDK2)",
+					"$(SRCROOT)/zxing/iphone/ZXingWidget/Classes",
+					"$(SRCROOT)/zxing/cpp/core/src",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = (
+					"-DDEBUG",
+					"-DTI_POST_1_2",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasScancode;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		1DEB922408733DC00010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					armv7s,
+					armv7,
+					armv6,
+				);
+				"ARCHS[sdk=*]" = (
+					armv7s,
+					armv7,
+					armv6,
+				);
+				"ARCHS[sdk=iphonesimulator*]" = i386;
+				DSTROOT = /tmp/AkylasScancode.dst;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasScancode_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)",
+					"$(TITANIUM_BASE_SDK2)",
+					"$(SRCROOT)/zxing/iphone/ZXingWidget/Classes",
+					"$(SRCROOT)/zxing/cpp/core/src",
 				);
 				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
@@ -485,9 +497,7 @@
 				PRODUCT_NAME = AkylasScancode;
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				TITANIUM_SDK = "${HOME}/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
 				USER_HEADER_SEARCH_PATHS = "";
-				VALID_ARCHS = "armv6 armv7 i386";
 			};
 			name = Release;
 		};
@@ -499,7 +509,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = "Build & test";
-				TITANIUM_SDK = "${HOME}/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
 			};
 			name = Debug;
 		};
@@ -508,9 +517,9 @@
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				PRODUCT_NAME = "Build & test";
-				TITANIUM_SDK = "${HOME}/Library/Application Support/Titanium/mobilesdk/osx/$(TITANIUM_SDK_VERSION)";
 				ZERO_LINK = NO;
 			};
 			name = Release;

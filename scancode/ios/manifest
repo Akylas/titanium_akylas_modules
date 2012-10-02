@@ -13,6 +13,6 @@ copyright: Akylas
 # these should not be edited
 name: akylas_scancode_ios
 moduleid: akylas.scancode
-guid: 71c8fcae-bd95-4209-81ee-8e80e6832c09
+guid: 68e896d5-a0c6-4998-a6b6-aca17636dc38
 platform: iphone
 minsdk: 2.2.0

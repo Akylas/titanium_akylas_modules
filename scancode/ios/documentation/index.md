@@ -1,16 +1,16 @@
-# tizxing Module
+# akylas_scancode_ios Module
 
 ## Description
 
 TODO: Enter your module description here
 
-## Accessing the tizxing Module
+## Accessing the akylas_scancode_ios Module
 
 To access this module from JavaScript, you would do the following:
 
-	var tizxing = require("akylas.scancode");
+	var akylas_scancode_ios = require("akylas.scancode");
 
-The tizxing variable is a reference to the Module object.	
+The akylas_scancode_ios variable is a reference to the Module object.	
 
 ## Reference
 

@@ -39,6 +39,7 @@
 - (id)initWithDelegate:(id<AkylasScancodeViewControllerDelegate>)scanDelegate  {
     self = [super init];
     if (self) {
+        NSLog(@"init");
         [self setDelegate:scanDelegate];
         decoding = NO;
         _cropRect = CGRectZero;
@@ -56,15 +57,38 @@
     return self;
 }
 
-- (void)dealloc {
-    
-    [self stopCapture];
+- (void)cleanup {
+    NSLog(@"cleanup");
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    //    [result release];
+    [self stopCapture];
     [preview release];
-    [readers release];
+    preview = nil;
+}
+
+- (void)dealloc {
+        
+    [self cleanup];
     [super dealloc];
+}
+
+- (void)loadView
+{
+    //    NSLog(@"loadview");
+    ZxingPreview* theCaptureView = [[ZxingPreview alloc] initWithFrame:CGRectZero];
+    self.preview = theCaptureView;
+    self.view = theCaptureView;
+    [theCaptureView release];
+}
+
+-(void)viewDidLoad
+{
+    [super viewDidLoad];
+}
+
+-(void)viewDidUnload
+{
+    [self cleanup];
+    [super viewDidUnload];
 }
 
 - (NSString *)getPlatform {
@@ -82,37 +106,24 @@
     return NO;
 }
 
-- (void)loadView
-{
-//    NSLog(@"loadview");
-    ZxingPreview* theCaptureView = [[ZxingPreview alloc] initWithFrame:CGRectZero];
-    self.preview = theCaptureView;
-    self.view = theCaptureView;
-    [theCaptureView release];
-}
 
--(void)viewDidLoad
-{
-    [super viewDidLoad];
-//    self.view.autoresizingMask = self.preview.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-//    preview.frame = self.view.bounds;
-//    [self.view addSubview:preview];
-}
 
 - (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+}
+
+
 - (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
     decoding = YES;
     
     [self initCapture];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
     [self stopCapture];
+    [super viewDidDisappear:animated];
 }
 
 -(UIView *) hitTest:(CGPoint)point withEvent:(UIEvent *)event {
@@ -149,12 +160,14 @@
 
 -(void)captureSessionDidStart
 {
-    [delegate captureDidStart:self];
+    if (delegate!= nil)
+        [delegate captureDidStart:self];
 }
 
 -(void)captureSessionDidStop
 {
-    [delegate captureDidStop:self];
+    if (delegate!= nil)
+        [delegate captureDidStop:self];
 }
 
 - (void) didRotateFromInterfaceOrientation: (UIInterfaceOrientation) orient
@@ -762,6 +775,8 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 #endif
 
 - (void)stopCapture {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    if (captureSession == nil) return;
     decoding = NO;
 #if HAS_AVFF
     [captureSession stopRunning];
