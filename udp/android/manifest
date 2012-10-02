@@ -3,15 +3,15 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.2
-description: Provides access to the UDP protocol for sending packets across a network.
+apiversion: 2
+description: Ti UDP module modified by Akylas
 author: Martin Guillon
-license: Akylas Commercial License
-copyright: Copyright (c) 2011-2012 by Akylas
-
+license: Specify your license
+copyright: Akylas
 
 # these should not be edited
-name: udp
+name: akylas_udp_android
 moduleid: akylas.udp
-guid: 0b1bfeae-0991-49c7-aa3b-8d34cfcbfcbf
-platform: iphone
-minsdk: 1.7.5
+guid: b87e44ab-f55e-4ecf-809d-0ebc69760b45
+platform: android
+minsdk: 1.8.2
