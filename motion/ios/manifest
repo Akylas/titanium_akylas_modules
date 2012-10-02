@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: My module
+author: Martin Guillon
+license: Specify your license
+copyright: Akylas
+
+
+# these should not be edited
+name: akylas_motion_ios
+moduleid: akylas.motion
+guid: d01001a4-bf0a-4c9c-96ae-e2c2b3835830
+platform: iphone
+minsdk: 3.0.0
