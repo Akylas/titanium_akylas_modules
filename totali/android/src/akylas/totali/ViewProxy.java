@@ -10,6 +10,7 @@ package akylas.totali;
 
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
@@ -47,6 +48,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, Configur
 			_name = name;
 		}
 	    void execute(String params[]){
+//	    	Log.d(LCAT, "got lua event for " + _name + ": " + Arrays.toString(params));
 		KrollDict data = new KrollDict();
 		data.put("data", params);
     	fireEvent(_name, data);
