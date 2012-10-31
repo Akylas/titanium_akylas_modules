@@ -261,8 +261,8 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	public void onStop(Activity activity) 
 	{
 		// This method is called when the root context is stopped 
-
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] stop proxy with id " + getProxyId());
+		stopCapture();
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] stop proxy with id " + getProxyId());
 	}
 	
 	private void stopCapture(){
@@ -297,19 +297,19 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	public void onPause(Activity activity) 
 	{
 		stopCapture();
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] pause proxy with id " + getProxyId());
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] pause proxy with id " + getProxyId());
 	}
 	
 	@Override
 	public void onStart(Activity arg0) {
-//	    Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] activity start");
+	    Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] activity start");
 		
 	}
 
 	@Override
 	public void onResume(Activity activity) 
 	{		
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] resume proxy with id " + getProxyId());
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] resume proxy with id " + getProxyId());
 		// This method is called when the root context is being resumed
 		startCapture();
 	}
@@ -318,8 +318,9 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	public void onDestroy(Activity activity) 
 	{
 		// This method is called when the root context is being destroyed
+		stopCapture();
 
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] destroy proxy with id " + getProxyId());
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] destroy proxy with id " + getProxyId());
 	}
 	
 	private int cameraPositionValue(Object value)

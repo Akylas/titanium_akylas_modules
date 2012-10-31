@@ -8,7 +8,6 @@
  */
 package akylas.totali;
 
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,608 +29,307 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-
-
 // This proxy can be created by calling AkylasScancodeAndroid.createExample({message: "hello world"})
-@Kroll.proxy(creatableInModule=AkylasTotaliModule.class)
-public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, ConfigurationChangedListener
-{
+@Kroll.proxy(
+		creatableInModule = AkylasTotaliModule.class)
+public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
+		ConfigurationChangedListener {
 	private static final String LCAT = "AkylasTotaliProxy";
 
 	class CommandHandler {
 		private String _name;
-		public CommandHandler(String name){
+
+		public CommandHandler(String name) {
 			_name = name;
 		}
-	    void execute(String params[]){
-//	    	Log.d(LCAT, "got lua event for " + _name + ": " + Arrays.toString(params));
-		KrollDict data = new KrollDict();
-		data.put("data", params);
-    	fireEvent(_name, data);
-	    }
+
+		void execute(String params[]) {
+			// Log.d(LCAT, "got lua event for " + _name + ": " +
+			// Arrays.toString(params));
+			KrollDict data = new KrollDict();
+			data.put("data", params);
+			fireSyncEvent(_name, data);
+		}
 	}
 
-		
-	private static final String    	THIS_CLASS_SHORT_NAME = ViewProxy.class.getName().replace("akylas.totali.", "");
-    private static final String 	THIS_LOGTAG           = THIS_CLASS_SHORT_NAME;
-    private static final String     SCENARIO_NAME         = "/assets/Scenario/" + THIS_CLASS_SHORT_NAME + "/" + "project.dpd";
-    
-    
-    protected String   getSampleScenarioName() { return SCENARIO_NAME; }
-    protected String   getSampleLogTag() 	   { return THIS_LOGTAG;   }
+	private static final String THIS_CLASS_SHORT_NAME = ViewProxy.class
+			.getName().replace("akylas.totali.", "");
+	private static final String THIS_LOGTAG = LCAT;
+	private static final String SCENARIO_NAME = "/assets/Scenario/"
+			+ THIS_CLASS_SHORT_NAME + "/" + "project.dpd";
 
-    
-	protected String getUsedTIRenderer() { return tiComponent.TI_RENDERER_GLES2; }
-	
+	protected String getSampleScenarioName() {
+		return SCENARIO_NAME;
+	}
+
+	protected String getSampleLogTag() {
+		return THIS_LOGTAG;
+	}
+
+	protected String getUsedTIRenderer() {
+		return tiComponent.TI_RENDERER_GLES2;
+	}
+
 	protected String _scenarioPath = null;
-    protected boolean _isInitializedCorrectly = false;
-    protected boolean _isPlaying = false;
-    protected boolean _needsStarting = false;
-    protected boolean _readyToStart = false;
-    protected tiComponent _tiComponent;
+	protected boolean _isPlaying = false;
+	protected boolean _needsStarting = false;
+	protected boolean _readyToStart = false;
+	protected tiComponent _tiComponent;
 	protected FrameLayout _totaliFrameLayout = null;
-	
+
 	private HashMap<String, CommandHandler> _registeredCallbacks = new HashMap<String, CommandHandler>();
-    
-    private void resetMembers()
-    {
-    	_isInitializedCorrectly = false;
-//    	_frameLayout = null;
-    	_tiComponent = null;
-    }
 
-
-//	private enum Source {
-//		NATIVE_APP_INTENT, NONE
-//	}
-//	
-	/**
-	 * @return current viewfinderView
-	 */
-
-//	public ViewfinderView getViewfinderView() {
-//		return viewfinderView;
-//	}
-
-	/**
-	 * @return current handler
-	 */
-//	public Handler getHandler() {
-//		return mHandler;
-//	}
-//
-//	private CaptureActivityHandler mHandler;
-
-//	private ViewfinderView viewfinderView;
-//	private Result lastResult;
-
-	// Standard Debugging variables
-//	private static final boolean DBG = TiConfig.LOGD;
-
-	private class TotaliView extends TiUIView
-	{
+	private class TotaliView extends TiUIView {
 		private static final String TAG = "AkylasTotaliView";
-//		private SurfaceView preview;
-//		private SurfaceHolder previewHolder;
-//		private TiCompositeLayout overlayLayout;				
-		
+
 		private TiCompositeLayout previewLayout;
 
-		public TotaliView(TiViewProxy proxy)
-		{
+		public TotaliView(TiViewProxy proxy) {
 			super(proxy);
 
-//			preview = new SurfaceView(proxy.getActivity());
-			Log.d(TAG, "creating view2");
-
-//			previewHolder = preview.getHolder();
-
-			// this call is deprecated but we still need it for SDK level 7 otherwise kaboom
-//			previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-			
-//			FrameLayout previewLayout = new FrameLayout(proxy.getActivity());
-//			previewLayout.addView(preview, layoutParams);
-
-			//TextView tv = new TextView(proxy.getTiContext().getActivity());
-			//tv.setTextColor(Color.RED);
-			//tv.setText("My overlay");
-			//previewLayout.addView(tv, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-
-//			overlayLayout = new TiCompositeLayout(proxy.getActivity(), proxy);
-//			_totaliFrameLayout.addView(overlayLayout);
-			
-			
-			
-//			previewLayout = new TiCompositeLayout(proxy.getActivity(), proxy);
-
-			
-//			TextView tv = new TextView(proxy.getActivity());
-//			tv.setTextColor(Color.RED);
-//			tv.setText("My overlay");
-//			
-//			TiCompositeLayout.LayoutParams params = getLayoutParams();
-//			params.autoFillsHeight = true;
-//			params.autoFillsWidth = true;
-//
-////			previewLayout.addView(_totaliFrameLayout, params);
-//			_totaliFrameLayout.addView(tv, params);
-			
 			previewLayout = new TiCompositeLayout(proxy.getActivity(), proxy);
-			
-//			previewLayout.addView(_totaliFrameLayout);
 
-//			overlayLayout = new TiCompositeLayout(proxy.getActivity(), proxy);
-//			_totaliFrameLayout.addView(overlayLayout);
-
-//			_totaliFrameLayout = new FrameLayout(proxy.getActivity());
-//			_totaliFrameLayout.addView(tv, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-//			FrameLayout previewLayout = new FrameLayout(proxy.getActivity());
-//			_totaliFrameLayout.addView(tv, layoutParams);
 			setNativeView(previewLayout);
-			
-//			proxy.getActivity().setContentView(_totaliFrameLayout);
-//			if (_needsStarting && !_isInitializedCorrectly)
-//			{
-//				start();
-//			}
-			
-//			resetMembers();
 		}
-//		
-//		@Override
-//		public void add(TiUIView overlayItem)
-//		{
-//			if (overlayItem != null) {
-//				View overlayItemView = overlayItem.getOuterView();
-//				if (overlayLayout instanceof ViewGroup) {
-//					if (overlayItemView.getParent() == null) {
-//						((ViewGroup) overlayLayout).addView(overlayLayout, overlayItem.getLayoutParams());
-//					}
-//					children.add(overlayItem);
-//					overlayItem.setParent(proxy);
-//				}
-//			}
-//		}
-//		
-//		@Override
-//		public void remove(TiUIView overlayItem)
-//		{
-//			if (overlayItem != null) {
-//				View cv = overlayItem.getOuterView();
-//				if (cv != null) {
-//					if (overlayLayout instanceof ViewGroup) {
-//						((ViewGroup) overlayLayout).removeView(cv);
-//						children.remove(overlayItem);
-//						overlayItem.setParent(null);
-//					}
-//				}
-//			}
-//		}
-		
-//		public SurfaceView getPreviewView()
-//		{
-//			return preview;
-//		}
-//		
-//		public SurfaceHolder getPreviewSurfaceHolder()
-//		{
-//			return previewHolder;
-//		}
 
-//		@Override
-//		public void add(TiUIView overlayItem)
-//		{
-//			if (overlayItem != null) {
-//				View overlayItemView = overlayItem.getNativeView();
-//				if (overlayItemView != null) {
-//					previewLayout.addView(overlayItemView, overlayItem.getLayoutParams());
-//				}
-//			}
-//		}
-//		
-//		@Override
-//		public void remove(TiUIView overlayItem)
-//		{
-//			if (overlayItem != null) {
-//				View overlayItemView = overlayItem.getNativeView();
-//				if (overlayItemView != null) {
-//					overlayLayout.removeView(overlayItemView);
-//				}
-//			}
-//		}
 
 		@Override
-		public void processProperties(KrollDict d)
-		{
+		public void processProperties(KrollDict d) {
 			super.processProperties(d);
 		}
 	}
-	
-	public ViewProxy()
-	{
+
+	public ViewProxy() {
 		super();
 		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] creating proxy ");
 	}
 
-	public ViewProxy(TiContext tiContext)
-	{
+	public ViewProxy(TiContext tiContext) {
 		this();
-//		CameraManager.init(tiContext.getActivity().getApplication());
-		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] creating proxy from context");
-	}
-	
-	@Override
-	public void setActivity(Activity activity)
-	{
-		super.setActivity(activity);
-		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] set activity");
-		_readyToStart = true;
-		if (_needsStarting && !_isInitializedCorrectly)
-		{
-			start();
-		}
-//		CameraManager.get().setActivity(activity);
-		
-//		TiBaseActivity.registerOrientationListener (new TiBaseActivity.OrientationChangedListener()
-//		{
-//			@Override
-//			public void onOrientationChanged (int configOrientationMode)
-//			{
-//				CameraManager.get().stopPreview();
-//				CameraManager.get().setCameraDisplayOrientation();
-//				CameraManager.get().startPreview();
-//				if (mHandler != null) {
-//					mHandler.sendEmptyMessage(Id.RESTART_PREVIEW);
-//				}
-//			}
-//		});
+		// CameraManager.init(tiContext.getActivity().getApplication());
+		Log.d(LCAT,
+				"[PROXY CONTEXT LIFECYCLE EVENT] creating proxy from context");
 	}
 
 	@Override
-	public TiUIView createView(Activity activity)
-	{
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT]creating view" );
-		TiUIView view = new TotaliView(this);
+	public void setActivity(Activity activity) {
+		super.setActivity(activity);
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] set activity");
 		((TiBaseActivity) activity).addOnLifecycleEventListener(this);
 		((TiBaseActivity) activity).addConfigurationChangedListener(this);
-//		view.getLayoutParams().autoFillsHeight = true;
-//		view.getLayoutParams().autoFillsWidth = true;
+	}
+
+	@Override
+	public TiUIView createView(Activity activity) {
+		 Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT]creating view" );
+		TiUIView view = new TotaliView(this);
+		
 		return view;
 	}
 
 	// Handle creation options
 	@Override
-	public void handleCreationDict(KrollDict options)
-	{
+	public void handleCreationDict(KrollDict options) {
 		super.handleCreationDict(options);
-		
+
 		if (options.containsKey("scenario")) {
-			Log.d(LCAT, "totaliproxy created with scenario: " + options.get("scenario"));
+			Log.d(LCAT,
+					"totaliproxy created with scenario: "
+							+ options.get("scenario"));
 			_scenarioPath = (String) options.get("scenario");
 		}
 	}
-	
-	@Override
-	public void onStop(Activity activity) 
-	{
-		stop();	
-	}
-	
-//	private void stopCapture(){
-////		releaseContentView();
-//    	
-//    	if (_isInitializedCorrectly)
-//    	{
-//    		_tiComponent.terminate(); 
-//    		_tiComponent = null;
-////    		_frameLayout = null;
-//    	}
-//	}
-//	
-//	private void startCapture(){
-////		Log.d(LCAT, "startCapture with camera " + cameraPosition);
-////		SurfaceView surfaceView = ;
-//		SurfaceHolder surfaceHolder = ((CameraView)this.view).getPreviewSurfaceHolder();
-//		if (hasSurface) {
-//			// The activity was paused but not stopped, so the surface still
-//			// exists. Therefore
-//			// surfaceCreated() won't be called, so init the camera here.
-//			initCamera(surfaceHolder, cameraPosition);
-//		} else {
-//			// Install the callback and wait for surfaceCreated() to init the
-//			// camera.
-//			surfaceHolder.addCallback(this);
-//		}
-//		
-////		resetStatusView();
-//	}
 
 	@Override
-	public void onPause(Activity activity) 
-	{
-//		stopCapture();
-		if (_isInitializedCorrectly) {
-	    	if (_isPlaying)
-	    		_tiComponent.pauseScenario();
-	    	
-    		_tiComponent.onPause();
-    	}
+	public void onStop(Activity activity) {
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] onStop");
+		stop();
 	}
-	
+
+	@Override
+	public void onPause(Activity activity) {
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] onPause");
+		if (_tiComponent != null) {
+			if (_isPlaying)
+				_tiComponent.pauseScenario();
+
+			_tiComponent.onPause();
+		}
+	}
+
 	@Override
 	public void onStart(Activity arg0) {
-//	    Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] activity start");
-//		if (_needsStarting && !_isInitializedCorrectly)
-//			start();
-	}
-
-	@Override
-	public void onResume(Activity activity) 
-	{		
-		if (_isInitializedCorrectly) {
-	    	_tiComponent.onResume();
-
-    	if (_isPlaying)
-	    		_tiComponent.playScenario();
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] onStart");
+		if (_tiComponent == null) {
+			start();
 		}
 	}
 
 	@Override
-	public void onDestroy(Activity activity) 
-	{
-    	resetMembers(); // forced clean 
-//		super.onDestroy(activity);
-		// This method is called when the root context is being destroyed
+	public void onResume(Activity activity) {
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] onResume");
+		if (_tiComponent != null) {
+			_tiComponent.onResume();
 
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] destroy proxy with id " + getProxyId());
+			if (_isPlaying)
+				_tiComponent.playScenario();
+		}
 	}
-	
-	// initComponent needs to be always specialized in a derived class according to your actual application needs
-	// essentially, this function should do the following:
-	//   _tiComponent = new tiComponent(this);  // create the D'Fusion Mobile Component instance 
-	//   _frameLayout = new FrameLayout(this);  // create FrameLayout  that will handle the Component's views (has to be FrameLayout)
-	//   _tiComponent.initialize(_frameLayout); // initialize the component with the FrameLayout instance
-	//   _isInitializedCorrectly = true;        // set this flag to true 
-    public void initComponent()
-	{
-    	Log.d( getSampleLogTag(), "initComponent (" + THIS_CLASS_SHORT_NAME + ")" );
-    	Log.d( THIS_LOGTAG,       "initComponent" );	
-    	
-    	_isInitializedCorrectly = false;
-    			
-    	_tiComponent = new tiComponent(getActivity());
-    	Log.d( getSampleLogTag(), _tiComponent.getVersion() );  
-    	
-		_tiComponent.setRendererType( getUsedTIRenderer() );
-				
+
+	@Override
+	public void onDestroy(Activity activity) {
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] onDestroy");
+		stop();
+	}
+
+	public void initComponent() {
+		Log.d(getSampleLogTag(), "initComponent (" + THIS_CLASS_SHORT_NAME
+				+ ")");
+		Log.d(THIS_LOGTAG, "initComponent");
+
+		if (_tiComponent != null) {
+			stop();
+		}
+
+		_tiComponent = new tiComponent(getActivity());
+		Log.d(getSampleLogTag(), _tiComponent.getVersion());
+
+		_tiComponent.setRendererType(getUsedTIRenderer());
+
 		_totaliFrameLayout = new FrameLayout(getActivity());
 		int orient = getActivity().getResources().getConfiguration().orientation;
-		if (orient != Configuration.ORIENTATION_PORTRAIT)
-		{
-	    	Log.e( getSampleLogTag(), "initComponent: tiComponent only supports portrait orientation. Screen will be black!!!");
+		if (orient != Configuration.ORIENTATION_PORTRAIT) {
+			Log.e(getSampleLogTag(),
+					"initComponent: tiComponent only supports portrait orientation. Screen will be black!!!");
 		}
-    	_tiComponent.initialize(_totaliFrameLayout);
-    	TiCompositeLayout.LayoutParams params = view.getLayoutParams();
+		_tiComponent.initialize(_totaliFrameLayout);
+		TiCompositeLayout.LayoutParams params = view.getLayoutParams();
 		params.autoFillsHeight = true;
 		params.autoFillsWidth = true;
-    	((ViewGroup) peekView().getNativeView()).addView(_totaliFrameLayout, params);
-    	_isInitializedCorrectly = true;
+		((ViewGroup) peekView().getNativeView()).addView(_totaliFrameLayout,
+				params);
+		KrollDict data = new KrollDict();
+		fireSyncEvent("started", data);
 	}
-	
-    public void postInitComponent()
-    {
-    	// override this if you need to do some special handling on the component after standard initialization
-    	
-    	Log.d( getSampleLogTag(), "postInitComponent (" + THIS_CLASS_SHORT_NAME + ")" );
-    	Log.d( THIS_LOGTAG,       "postInitComponent" );	    	
-    	if (_isInitializedCorrectly) {
-    		_tiComponent.activateAutoFocusOnDownEvent(true);
-    	}
-    }
 
-    public void loadScenario(String sourcefile)
-	{
-    	Log.d( getSampleLogTag(), "loadScenario (" + sourcefile + ")" );
-    	
-//    	int plen = "file://".length();
-    	
-//		sourcefile = sourcefile.substring(plen);
-		
-    	if (!new File(sourcefile).isAbsolute())
-    	{        	
-//        	sourcefile = resolveUrl(null, sourcefile);
-//        	Log.d( THIS_LOGTAG,       "loadScenario: resolveUrl:" + sourcefile);
-	    	ApplicationInfo appInfo = null;
-	    	PackageManager packMgmr = getActivity().getPackageManager();
-	    	try {
-	    		appInfo = packMgmr.getApplicationInfo(getActivity().getPackageName(), 0);
-	    	} catch (NameNotFoundException e) {
-	    		e.printStackTrace();
-	    		throw new RuntimeException("Unable to locate assets, aborting...");
-	    	}
-	    	sourcefile = appInfo.sourceDir + "/assets/Resources/" + sourcefile;
-        	Log.d( THIS_LOGTAG,       "loadScenario: sourcefile:" + sourcefile);
-    	}
-    	
-    	
-//		if(!new File(sourcefile).exists()){
-//	    	Log.d(LCAT, "File not exist : " + sourcefile + "!");
-//	    }
-//	    else {
-	    	_tiComponent.loadScenario(sourcefile);
-	    	_isPlaying = true;
-//	    }
-    }   
-	
-//	private KrollDict KrollDictFromRect(Rect rect)
-//	{
-//		KrollDict d = new KrollDict();
-//	    d.put(TiC.PROPERTY_WIDTH, rect.width());
-//		d.put(TiC.PROPERTY_HEIGHT, rect.height());
-//		d.put(TiC.PROPERTY_X, rect.left);
-//		d.put(TiC.PROPERTY_Y, rect.top);
-//		return d;
-//	}
-	
-//	private KrollDict KrollDictFromResultPoint(ResultPoint point)
-//	{
-//		KrollDict d = new KrollDict();
-//		d.put(TiC.PROPERTY_X, point.getX());
-//		d.put(TiC.PROPERTY_Y, point.getY());
-//		return d;
-//	}
-	
-//	private KrollDict KrollDictFromPoint(Point point)
-//	{
-//		KrollDict d = new KrollDict();
-//		d.put(TiC.PROPERTY_X, point.x);
-//		d.put(TiC.PROPERTY_Y, point.y);
-//		return d;
-//	}
-	
-//	public Point rotatePointWithinRect(Point point, Rect rect, int angle) {
-//		Point center = new Point(rect.centerX(), rect.centerY());
-//		int x = point.x - center.x;
-//		int y = point.y - center.y;
-//		Point newPoint = new Point();
-//	    int modAngle = ((int)angle % 360);
-//		switch (modAngle) {
-//		case 0:
-//			newPoint.x = x + center.x;
-//			newPoint.y = y + center.y;
-//			break;
-//		case 90:
-//			newPoint.x = -y + center.y;
-//			newPoint.y = x + center.x;
-//			break;
-//		case 180:
-//			newPoint.x = -x + center.x;
-//			newPoint.y = -y + center.y;
-//			break;
-//		case 270:
-//			newPoint.x = y + center.y;
-//			newPoint.y = -x + center.x;
-//			break;
-//		}
-//		return newPoint;
-//	}
-	
-//	public static Bitmap rotate(Bitmap b, int degrees) {
-//	    if (degrees != 0 && b != null) {
-//	        Matrix m = new Matrix();
-//
-//	        m.setRotate(degrees, (float) b.getWidth() / 2, (float) b.getHeight() / 2);
-//	        try {
-//	            Bitmap b2 = Bitmap.createBitmap(
-//	                    b, 0, 0, b.getWidth(), b.getHeight(), m, true);
-//	            if (b != b2) {
-//	                b.recycle();
-//	                b = b2;
-//	            }
-//	        } catch (OutOfMemoryError ex) {
-//	           throw ex;
-//	        }
-//	    }
-//	    return b;
-//	}
-	// Public APIs (available in javascript)
-	// The methods are exposed to javascript because of the @Kroll.method annotation	
-	
+	public void postInitComponent() {
+		// override this if you need to do some special handling on the
+		// component after standard initialization
+
+		Log.d(getSampleLogTag(), "postInitComponent (" + THIS_CLASS_SHORT_NAME
+				+ ")");
+		Log.d(THIS_LOGTAG, "postInitComponent");
+		if (_tiComponent != null) {
+			_tiComponent.activateAutoFocusOnDownEvent(true);
+		}
+	}
+
+	public void loadScenario(String sourcefile) {
+		Log.d(getSampleLogTag(), "loadScenario (" + sourcefile + ")");
+
+		if (!new File(sourcefile).isAbsolute()) {
+			ApplicationInfo appInfo = null;
+			PackageManager packMgmr = getActivity().getPackageManager();
+			try {
+				appInfo = packMgmr.getApplicationInfo(getActivity()
+						.getPackageName(), 0);
+			} catch (NameNotFoundException e) {
+				e.printStackTrace();
+				throw new RuntimeException(
+						"Unable to locate assets, aborting...");
+			}
+			sourcefile = appInfo.sourceDir + "/assets/Resources/" + sourcefile;
+			Log.d(THIS_LOGTAG, "loadScenario: sourcefile:" + sourcefile);
+		}
+
+		_tiComponent.loadScenario(sourcefile);
+		_isPlaying = true;
+	}
+
 	// Methods
 	@Kroll.method
-	public void stop()
-	{
+	public void stop() {
 		Log.d(LCAT, "stop");
-//		releaseContentView();
-    	
-    	if (_isInitializedCorrectly)
-    	{
-    		_tiComponent.terminate(); 
-    		_tiComponent = null;
-//    		_frameLayout = null;
-    	}
+		if (_tiComponent != null) {
+			((ViewGroup) peekView().getNativeView())
+					.removeView(_totaliFrameLayout);
+			_tiComponent.terminate();
+			_tiComponent = null;
+			_totaliFrameLayout = null;
+			_registeredCallbacks.clear();
+			KrollDict data = new KrollDict();
+			fireSyncEvent("stopped", data);
+		}
 	}
 
 	@Kroll.method
-	public void start()
-	{
+	public void start() {
 		Log.d(LCAT, "start2");
-		
-		if (!_readyToStart)
-		{
-			Log.d(LCAT, "will start when the activity is created");
+
+		if (peekView() == null) {
+			Log.d(LCAT, "no view yet, cant start");
 			_needsStarting = true;
 			return;
 		}
 		initComponent();
-        
-       	postInitComponent();
-        
-//        initContentView();
-        
-        if (_isInitializedCorrectly && _scenarioPath != "") {
-        	loadScenario(_scenarioPath);
-        }
-        _needsStarting = false;
+
+		postInitComponent();
+
+		// initContentView();
+
+		if (_tiComponent != null && _scenarioPath != "") {
+			loadScenario(_scenarioPath);
+		}
+		_needsStarting = false;
 	}
 
 	@Kroll.method
-	public void registerCallback(String callback)
-	{
+	public void registerCallback(String callback) {
 		Log.d(LCAT, "registerCallback: " + callback);
-		if (_isInitializedCorrectly && !_registeredCallbacks.containsKey(callback)) 
-		{
+		if (_tiComponent != null && !_registeredCallbacks.containsKey(callback)) {
 			Log.d(LCAT, "registering " + callback);
 			CommandHandler handler = new CommandHandler(callback);
 			_registeredCallbacks.put(callback, handler);
-    		_tiComponent.registerCommunicationCallback(callback, handler, "execute");
-    	}
+			_tiComponent.registerCommunicationCallback(callback, handler,
+					"execute");
+		}
 	}
-	
+
 	@Kroll.method
-	public void unregisterCallback(String callback)
-	{
-		if (_isInitializedCorrectly && _registeredCallbacks.containsKey(callback)) 
-		{
+	public void unregisterCallback(String callback) {
+		if (_tiComponent != null && _registeredCallbacks.containsKey(callback)) {
 			_registeredCallbacks.remove(callback);
-    	}
-	}
-	
-	@Kroll.method
-	public void enqueueCommand(String command, String[] args)
-	{
-		if (_isInitializedCorrectly) 
-		{
-    		_tiComponent.enqueueCommand(command, args);
-    	}
-	}
-	
-	@Kroll.method
-	public void focus()
-	{
-//		if (mHandler != null) {
-//			mHandler.requestFocus();
-//		}
-		if (_isInitializedCorrectly) 
-		{
-    		_tiComponent.doCameraFocusNow();
-    	}
+		}
 	}
 
+	@Kroll.method
+	public void enqueueCommand(String command, String[] args) {
+		if (_tiComponent != null) {
+			_tiComponent.enqueueCommand(command, args);
+		}
+	}
 
+	@Kroll.method
+	public void focus() {
+		// if (mHandler != null) {
+		// mHandler.requestFocus();
+		// }
+		if (_tiComponent != null) {
+			_tiComponent.doCameraFocusNow();
+		}
+	}
 
 	@Override
 	public void onConfigurationChanged(TiBaseActivity arg0, Configuration arg1) {
-//		Boolean waspreviewing = CameraManager.get().previewing;
-//		if (waspreviewing) CameraManager.get().stopPreview();
-//		CameraManager.get().setCameraDisplayOrientation();
-//		if (waspreviewing) CameraManager.get().startPreview();
-//		if (mHandler != null) {
-//			mHandler.sendEmptyMessage(Id.CAMERA_ORIENTATION);
-//		}
+		// Boolean waspreviewing = CameraManager.get().previewing;
+		// if (waspreviewing) CameraManager.get().stopPreview();
+		// CameraManager.get().setCameraDisplayOrientation();
+		// if (waspreviewing) CameraManager.get().startPreview();
+		// if (mHandler != null) {
+		// mHandler.sendEmptyMessage(Id.CAMERA_ORIENTATION);
+		// }
 	}
 }

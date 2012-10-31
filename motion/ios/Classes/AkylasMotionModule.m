@@ -174,6 +174,19 @@
 	}
 }
 
+-(CMAcceleration)userAccelerationInReferenceFrame:(CMAcceleration)acc withRot:(CMRotationMatrix)rot
+{
+//    CMAcceleration acc = [self userAcceleration];
+//    CMRotationMatrix rot = [self attitude].rotationMatrix;
+    
+    CMAcceleration accRef;
+    accRef.x = acc.x*rot.m11 + acc.y*rot.m12 + acc.z*rot.m13;
+    accRef.y = acc.x*rot.m21 + acc.y*rot.m22 + acc.z*rot.m23;
+    accRef.z = acc.x*rot.m31 + acc.y*rot.m32 + acc.z*rot.m33;
+    
+    return accRef;
+}
+
 -(void) processMotionData: (CMDeviceMotion *) motion withError:(NSError *) error
 {
     CMAttitude* currentAttitude = motion.attitude;
@@ -192,6 +205,7 @@
     //    }
     if (motionRegistered)
 	{
+//        CMAcceleration accRef = [self userAccelerationInReferenceFrame:motion.userAcceleration withRot:currentAttitude.rotationMatrix];
         //        NSLog(@"yaw: %f, %f",currentAttitude.yaw,currentAttitude.yaw*currentAttitude.rotationMatrix.m11);
         //        NSLog(@"obtaining: %f, %f, %f",currentAttitude.yaw,currentAttitude.pitch,currentAttitude.roll);
         NSMutableDictionary *event = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -204,6 +218,10 @@
                                         NUMFLOAT(motion.userAcceleration.x), @"x",
                                         NUMFLOAT(motion.userAcceleration.y), @"y",
                                         NUMFLOAT(motion.userAcceleration.z), @"z", nil], @"user",
+//                                       [NSDictionary dictionaryWithObjectsAndKeys:
+//                                        NUMFLOAT(accRef.x), @"x",
+//                                        NUMFLOAT(accRef.y), @"y",
+//                                        NUMFLOAT(accRef.z), @"z", nil], @"userref",
                                        NUMFLOAT(motion.gravity.x + motion.userAcceleration.x), @"x",
                                        NUMFLOAT(motion.gravity.y + motion.userAcceleration.y), @"y",
                                        NUMFLOAT(motion.gravity.z + motion.userAcceleration.z), @"z", nil], @"accelerometer",
@@ -226,17 +244,30 @@
         {
             CMRotationMatrix rotation = currentAttitude.rotationMatrix;
             Ti3DMatrix *timatrix = [[Ti3DMatrix alloc] init];
-            timatrix.m11 = [NSNumber numberWithFloat:rotation.m11];
-            timatrix.m12 = [NSNumber numberWithFloat:rotation.m21];
-            timatrix.m13 = [NSNumber numberWithFloat:rotation.m31];
+            [timatrix setM11:[NSNumber numberWithFloat:rotation.m11]];
+            [timatrix setM12:[NSNumber numberWithFloat:rotation.m21]];
+            [timatrix setM13:[NSNumber numberWithFloat:rotation.m31]];
             
-            timatrix.m21 = [NSNumber numberWithFloat:rotation.m12];
-            timatrix.m22 = [NSNumber numberWithFloat:rotation.m22];
-            timatrix.m23 = [NSNumber numberWithFloat:rotation.m32];
+            [timatrix setM21:[NSNumber numberWithFloat:rotation.m12]];
+            [timatrix setM22:[NSNumber numberWithFloat:rotation.m22]];
+            [timatrix setM23:[NSNumber numberWithFloat:rotation.m32]];
             
-            timatrix.m31 = [NSNumber numberWithFloat:rotation.m13];
-            timatrix.m32 = [NSNumber numberWithFloat:rotation.m23];
-            timatrix.m33 = [NSNumber numberWithFloat:rotation.m33];
+            [timatrix setM31:[NSNumber numberWithFloat:rotation.m13]];
+            [timatrix setM32:[NSNumber numberWithFloat:rotation.m23]];
+            [timatrix setM33:[NSNumber numberWithFloat:rotation.m33]];
+            [event setObject:[timatrix autorelease] forKey:@"invertedRotationMatrix"];
+            timatrix = [[Ti3DMatrix alloc] init];
+            [timatrix setM11:[NSNumber numberWithFloat:rotation.m11]];
+            [timatrix setM12:[NSNumber numberWithFloat:rotation.m12]];
+            [timatrix setM13:[NSNumber numberWithFloat:rotation.m13]];
+            
+            [timatrix setM21:[NSNumber numberWithFloat:rotation.m21]];
+            [timatrix setM22:[NSNumber numberWithFloat:rotation.m22]];
+            [timatrix setM23:[NSNumber numberWithFloat:rotation.m23]];
+            
+            [timatrix setM31:[NSNumber numberWithFloat:rotation.m31]];
+            [timatrix setM32:[NSNumber numberWithFloat:rotation.m32]];
+            [timatrix setM33:[NSNumber numberWithFloat:rotation.m33]];
             [event setObject:[timatrix autorelease] forKey:@"rotationMatrix"];
         }
  		[self fireEvent:@"motion" withObject:event];
