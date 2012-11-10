@@ -16,6 +16,7 @@
     NSUInteger _port;
     CFHostRef _cfHost;
 	CFSocketRef _cfSocket;
+    int maxPacketSize;
 }
 
 -(void)start:(id)args;

@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
@@ -20,12 +21,16 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.util.TiConvert;
 
+import ti.modules.titanium.BufferProxy;
+
 import android.app.Activity;
 import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 
 import android.os.AsyncTask;
+import android.os.Build;
+
 import java.net.InetSocketAddress;
 
 // This proxy can be created by calling Udp.createExample({message: "hello world"})
@@ -37,16 +42,28 @@ public class SocketProxy extends KrollProxy {
 
 	// Private Instance Variables
 	private boolean _continueListening;
-	private Thread _listeningThread;
+//	private Thread _listeningThread;
 	private DatagramSocket _socket;
 	private Integer _port;
 	int ref = 0;
+	private int maxPacketSize = 256;
 	
-	private Integer counter = 0;
+//	private Integer counter = 0;
 
 	// Constructor
 	public SocketProxy(TiContext tiContext) {
 		super(tiContext);
+	}
+	
+	// Handle creation options
+	@Override
+	public void handleCreationDict(KrollDict options)
+	{
+		super.handleCreationDict(options);
+		
+		if (options.containsKey("maxPacketSize")) {
+			maxPacketSize = TiConvert.toInt(options.get("maxPacketSize"));
+		}
 	}
 
 	// Start Utility Methods
@@ -97,6 +114,10 @@ public class SocketProxy extends KrollProxy {
 	private void fireStarted() {
 		fireEvent("started", new HashMap<String, Object>());
 	}
+	
+	private void fireStopped() {
+		fireEvent("stopped", new HashMap<String, Object>());
+	}
 
 	private void fireError(Object obj) {
 		HashMap<String, Object> evt = new HashMap<String, Object>();
@@ -104,43 +125,43 @@ public class SocketProxy extends KrollProxy {
 		fireEvent("error", evt);
 	}
 
-	private void startListening() {
-		if (_listeningThread != null) {
-			return;
-		}
-		_continueListening = true;
-		_listeningThread = new Thread() {
-			public void run() {
-				while (_continueListening) {
-					try {
-						byte[] buf = new byte[2048];
-						DatagramPacket packet = new DatagramPacket(buf, buf.length);
-						_socket.receive(packet);
-						String receivedMsg = new String(packet.getData(), 0, packet.getLength());
-//						byte[] rawResponse = packet.getData();
-//						byte[] byteResponse = new byte[packet.getLength()];
-//						Integer[] arrayResponse = new Integer[byteResponse.length];
-//						for (int i = 0; i < byteResponse.length; i++) {
-//							byteResponse[i] = rawResponse[i];
-////							arrayResponse[i] = new Integer(rawResponse[i] & 0xff);
+//	private void startListening() {
+//		if (_listeningThread != null) {
+//			return;
+//		}
+//		_continueListening = true;
+//		_listeningThread = new Thread() {
+//			public void run() {
+//				while (_continueListening) {
+//					try {
+//						byte[] buf = new byte[2048];
+//						DatagramPacket packet = new DatagramPacket(buf, buf.length);
+//						_socket.receive(packet);
+//						String receivedMsg = new String(packet.getData(), 0, packet.getLength());
+////						byte[] rawResponse = packet.getData();
+////						byte[] byteResponse = new byte[packet.getLength()];
+////						Integer[] arrayResponse = new Integer[byteResponse.length];
+////						for (int i = 0; i < byteResponse.length; i++) {
+////							byteResponse[i] = rawResponse[i];
+//////							arrayResponse[i] = new Integer(rawResponse[i] & 0xff);
+////						}
+//						HashMap<String, Object> evt = new HashMap<String, Object>();
+////						evt.put("bytesData", arrayResponse);
+//						evt.put("stringData", receivedMsg);
+//						evt.put("address", packet.getAddress() + ":" + packet.getPort());
+//						fireEvent("data", evt);
+//					} catch (IOException e) {
+//						if (e.getLocalizedMessage().contains("Interrupted system call")) {
+//							_continueListening = false;
+//						} else {
+//							fireError(e);
 //						}
-						HashMap<String, Object> evt = new HashMap<String, Object>();
-//						evt.put("bytesData", arrayResponse);
-						evt.put("stringData", receivedMsg);
-						evt.put("address", packet.getAddress() + ":" + packet.getPort());
-						fireEvent("data", evt);
-					} catch (IOException e) {
-						if (e.getLocalizedMessage().contains("Interrupted system call")) {
-							_continueListening = false;
-						} else {
-							fireError(e);
-						}
-					}
-				}
-			}
-		};
-		_listeningThread.start();
-	}
+//					}
+//				}
+//			}
+//		};
+//		_listeningThread.start();
+//	}
 
 	private void stopListening() {
 		_continueListening = false;
@@ -149,35 +170,52 @@ public class SocketProxy extends KrollProxy {
 	}
 	
 	
-	protected void fireDataReceived(String data, String address, int port)
+	protected void fireDataReceived(byte[] data, String sdata, String address, int port)
 	{
 		HashMap<String, Object> evt = new HashMap<String, Object>();
-		evt.put("stringData", data);
+		evt.put("bytesData", data);
+		evt.put("stringData", sdata);
 		evt.put("address", address);
 		evt.put("port", port);
 		fireEvent("data", evt);
 	}
 	
 	// Thread------------------------------------------------------------------------------
-
+//	private class ReceivedData
+//	{
+//	    public byte[] bytes;
+//	    public int length;
+//	    public String sender;
+//	    public int port;
+//	}
+	
 	private class UDPListeningThread implements Runnable
 	{
+		
+		
 		public void createSocket() throws SocketException
 		{
+			if (_socket != null)
+			{
+				_socket.close();
+				_socket = null;
+			}
 			_socket = new DatagramSocket(null);
 			_socket.setReuseAddress(true);
 			_socket.bind(new InetSocketAddress("0.0.0.0", _port));
 		}
+		@SuppressWarnings("unchecked")
 		@Override
 		public void run()
 		{
 			boolean lostConnection = false;
 			_continueListening = true;
-			DatagramPacket wPacket = null;
-		    byte[] wBuffer = null;
+//			DatagramPacket wPacket = null;
+//		    byte[] wBuffer = null;
 		    
-		    wBuffer = new byte[ 2048 ];
-            wPacket = new DatagramPacket( wBuffer, wBuffer.length );
+			Log.i(LCAT, "starting socket with maxPacketSize:" + maxPacketSize);
+//		    wBuffer = new byte[ maxPacketSize ];
+//            wPacket = new DatagramPacket( wBuffer, wBuffer.length );
 			while (_continueListening)
 			{
 				try
@@ -190,15 +228,33 @@ public class SocketProxy extends KrollProxy {
 					}
 					if(_socket != null)
 					{
-						_socket.receive( wPacket );
-	    				String receivedMsg = new String(wPacket.getData(), 0, wPacket.getLength());
-						new SendTiEvent().execute(receivedMsg,wPacket.getAddress().toString());
+						byte[] buf = new byte[maxPacketSize];
+						DatagramPacket packet = new DatagramPacket(buf, buf.length);
+						_socket.receive( packet );
+						
+						BufferProxy buffer = new BufferProxy(packet.getData());
+						String receivedMsg = new String(packet.getData(), 0, packet.getLength());
+	    				HashMap<String, Object> evt = new HashMap<String, Object>();
+	    				evt.put("bytesData", buffer);
+	    				evt.put("stringData", receivedMsg);
+	    				evt.put("address", packet.getAddress().toString());
+	    				evt.put("port", packet.getPort());
+//						new SendTiEvent().execute(evt);
+	    				
+						if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+							new SendTiEvent().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, evt);
+						}
+						else {
+							new SendTiEvent().execute(evt);
+						}
 					}
 //					Thread.sleep(5);
 				}
+				catch(RejectedExecutionException e){}
 				catch (IOException e)
 				{
-					fireError(e);
+					e.printStackTrace();
+					fireError(e.toString());
 					lostConnection = true;
 				} 
 //				catch (SocketException e) {
@@ -211,22 +267,19 @@ public class SocketProxy extends KrollProxy {
 //					fireError(e);
 //					lostConnection = true;
 //				}
-
 			}
+			fireStopped();
 		}
 	}
 	
 	// Connect to Server------------------------------------------------------------------------------------
-	private class SendTiEvent extends AsyncTask<String, Void, Void>
+	private class SendTiEvent extends AsyncTask<HashMap<String, Object>, Void, Void>
 	{
 
 		@Override
-		protected Void doInBackground(String... args)
+		protected Void doInBackground(HashMap<String, Object>... args)
 		{
-			
-			HashMap<String, Object> evt = new HashMap<String, Object>();
-			evt.put("stringData", args[0]);
-			evt.put("address", args[1]);
+			HashMap<String, Object> evt = args[0];
 			fireEvent("data", evt);
 
 			return null;
@@ -235,9 +288,7 @@ public class SocketProxy extends KrollProxy {
 		protected void onPostExecute(Void result)
 		{
 		}
-
 	}
-
 	// Connect to Server------------------------------------------------------------------------------------
 	private class ConnectToServer extends AsyncTask<String, Void, Void>
 	{
@@ -245,22 +296,6 @@ public class SocketProxy extends KrollProxy {
 		@Override
 		protected Void doInBackground(String... arg0)
 		{
-//			try
-//			{
-//				createSocket();
-//
-//				fireOnConnected();
-//
-//			}
-//			catch (SocketException e)
-//			{
-//				e.printStackTrace();
-//			}
-//			catch (IOException e)
-//			{
-//				e.printStackTrace();
-//			}
-
 			return null;
 		}
 
@@ -308,9 +343,9 @@ public class SocketProxy extends KrollProxy {
 			int port = args.optInt("port", _port);
 			InetAddress _address = host != null ? InetAddress.getByName(host) : getBroadcastAddress();
 			_socket.send(new DatagramPacket(bytes, bytes.length, _address, port));
-			Log.i(LCAT, "Data Sent!");
+//			Log.i(LCAT, "Data Sent!");
 		} catch (IOException e) {
-			fireError(e);
+			fireError(e.toString());
 		}
 	}
 
@@ -323,19 +358,27 @@ public class SocketProxy extends KrollProxy {
 				fireError("Cannot send data before the socket is started as a client or server!");
 				return;
 			}
-			Object[] data = (Object[]) args.get("data");
-			byte[] bytes = new byte[data.length];
-			for (int i = 0; i < bytes.length; i++) {
-				bytes[i] = (byte) TiConvert.toInt(data[i]);
+			byte[] bytes;
+			Object data = args.get("data");
+			if (data instanceof BufferProxy) {
+				bytes = ((BufferProxy)data).getBuffer();
+			}
+			else
+			{
+				Object[] array =  (Object[])data;
+				bytes = new byte[array.length];
+				for (int i = 0; i < bytes.length; i++) {
+					bytes[i] = (byte) TiConvert.toInt(array[i]);
+				}
 			}
 
 			String host = args.getString("host");
 			int port = args.optInt("port", _port);
 			InetAddress _address = host != null ? InetAddress.getByName(host) : getBroadcastAddress();
 			_socket.send(new DatagramPacket(bytes, bytes.length, _address, port));
-			Log.i(LCAT, "Data Sent!");
+//			Log.i(LCAT, "Data Sent!");
 		} catch (IOException e) {
-			fireError(e);
+			fireError(e.toString());
 		}
 	}
 

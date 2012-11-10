@@ -3,6 +3,23 @@
 // to test out the module and to provide instructions 
 // to users on how to use it by example.
 
+// TODO: write your module tests here
+var module = require('akylas.udp');
+var udpSocket = module.createSocket();
+udpSocket.addEventListener('data', function (evt) {
+        var string = evt['stringData'];
+        var json = JSON.parse(string);
+        // if (json.hasOwnProperty('tp') && json.hasOwnProperty('data')) 
+        // {
+            // var type = json['tp'];
+            // var data = json['data'];
+//  
+            // Ti.App.fireEvent('servermsg:' + type, {data:data});
+        // }
+	});
+udpSocket.start({
+	port: 10001
+});
 
 // open a single window
 var win = Ti.UI.createWindow({
@@ -11,29 +28,4 @@ var win = Ti.UI.createWindow({
 var label = Ti.UI.createLabel();
 win.add(label);
 win.open();
-
-// TODO: write your module tests here
-var android = require('akylas.udp');
-Ti.API.info("module is => " + android);
-
-label.text = android.example();
-
-Ti.API.info("module exampleProp is => " + android.exampleProp);
-android.exampleProp = "This is a test value";
-
-if (Ti.Platform.name == "android") {
-	var proxy = android.createExample({
-		message: "Creating an example Proxy",
-		backgroundColor: "red",
-		width: 100,
-		height: 100,
-		top: 100,
-		left: 150
-	});
-
-	proxy.printMessage("Hello world!");
-	proxy.message = "Hi world!.  It's me again.";
-	proxy.printMessage("Hello world!");
-	win.add(proxy);
-}
 

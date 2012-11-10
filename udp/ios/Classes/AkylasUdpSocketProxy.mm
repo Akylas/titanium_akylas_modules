@@ -34,8 +34,20 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
 {
     if ((self = [super init]))
     {
+        maxPacketSize = 256;
     }
     return self;
+}
+
+-(void)_initWithProperties:(NSDictionary *)properties
+{
+    //    [self replaceValue:[NSArray arrayWithObject:NUMINT(UIDataDetectorTypePhoneNumber)] forKey:@"autoDetect" notification:NO];
+    //    [self initializeProperty:@"willHandleTouches" defaultValue:NUMBOOL(YES)];
+    if ([properties objectForKey:@"maxPacketSize"])
+    {
+        maxPacketSize = [[properties objectForKey:@"maxPacketSize"] intValue];
+    }
+    [super _initWithProperties:properties];
 }
 
 -(void)dealloc
@@ -63,6 +75,7 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
         isServer = listening;
         _port = newPort;
         NSLog(@"[INFO] Socket Started!");
+        NSLog(@"[INFO] maxPacketSize %d", maxPacketSize);
         [self fireEvent:@"started" withObject:nil];
     }
     else
@@ -81,13 +94,20 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
 -(void)sendBytes:(id)args
 {
     ENSURE_SINGLE_ARG(args, NSDictionary);
-    
-    NSArray* rawData = (NSArray*)[args objectForKey:@"data"];
-    NSMutableData* data = [[NSMutableData alloc] initWithCapacity:[rawData count]];
-    for (NSNumber* number in rawData)
+    id obj = [args objectForKey:@"data"];
+    NSMutableData* data;
+    if ([obj isKindOfClass:[TiBuffer class]])
     {
-        char byte = [number charValue];
-        [data appendBytes:&byte length:1];
+        data = ((TiBuffer*)obj).data;
+    }
+    else{
+        NSArray* rawData = (NSArray*)[args objectForKey:@"data"];
+        data = [[NSMutableData alloc] initWithCapacity:[rawData count]];
+        for (NSNumber* number in rawData)
+        {
+            char byte = [number charValue];
+            [data appendBytes:&byte length:1];
+        }
     }
     
     [self _send:data withDict:args];
@@ -194,27 +214,29 @@ static NSString* GetStringFromData(NSData* data)
     return result;
 }
 
-static NSArray* GetBytesFromData(NSData* data)
+- (TiBuffer*) GetBytesFromData:(NSData*)data
 {
-    NSMutableArray* result;
-    NSUInteger dataLength;
-    NSUInteger dataIndex;
-    const uint8_t* dataBytes;
+    TiBuffer* buffer = [[[TiBuffer alloc] _initWithPageContext:[self executionContext]] autorelease];
+//    NSMutableArray* result;
+//    NSUInteger dataLength;
+//    NSUInteger dataIndex;
+//    const uint8_t* dataBytes;
+//    
+//    assert(data != nil);
+//    
+//    dataLength = [data length];
+//    dataBytes = (uint8_t*)[data bytes];
+//    
+//    result = [NSMutableArray arrayWithCapacity:dataLength];
+//    assert(result != nil);
+//    
+//    for (dataIndex = 0; dataIndex < dataLength; dataIndex++)
+//    {
+//        [result addObject:[NSNumber numberWithUnsignedInt:dataBytes[dataIndex]]];
+//    }
     
-    assert(data != nil);
-    
-    dataLength = [data length];
-    dataBytes = (uint8_t*)[data bytes];
-    
-    result = [NSMutableArray arrayWithCapacity:dataLength];
-    assert(result != nil);
-    
-    for (dataIndex = 0; dataIndex < dataLength; dataIndex++)
-    {
-        [result addObject:[NSNumber numberWithUnsignedInt:dataBytes[dataIndex]]];
-    }
-    
-    return result;
+    [buffer setData:[NSMutableData dataWithData:data]];
+    return buffer;
 }
 
 
@@ -356,7 +378,7 @@ static NSArray* GetBytesFromData(NSData* data)
         assert(addrObj != nil);
         
         NSString* stringData = GetStringFromData(dataObj);
-        NSArray* bytesData = GetBytesFromData(dataObj);
+        TiBuffer* bytesData = [self GetBytesFromData:dataObj];
         NSString* addr = GetAddressForAddress(addrObj);
         
         [self fireEvent:@"data" withObject:[NSDictionary dictionaryWithObjectsAndKeys:

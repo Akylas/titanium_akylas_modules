@@ -53,6 +53,7 @@
 		D2AAC07E0554694100DB518D /* libTiUdp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTiUdp.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D54AACE21542FB610072B7E1 /* AkylasUdpModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasUdpModule.h; path = Classes/AkylasUdpModule.h; sourceTree = "<group>"; };
 		D54AACE31542FB610072B7E1 /* AkylasUdpSocketProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasUdpSocketProxy.h; path = Classes/AkylasUdpSocketProxy.h; sourceTree = "<group>"; };
+		D5A0628D164E4825007DAEEC /* module.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				AA747D9E0F9514B9006C5449 /* AkylasUdp_Prefix.pch */,
+				D5A0628D164E4825007DAEEC /* module.xcconfig */,
 				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
 			);
 			name = "Other Sources";
