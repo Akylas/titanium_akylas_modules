@@ -22,6 +22,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
+import android.hardware.Camera.Size;
 import android.os.Build;
 import android.util.Log;
 import android.view.Display;
@@ -204,22 +205,25 @@ final class CameraConfigurationManager {
 						.append('x').append(supportedPreviewSize.height)
 						.append(' ');
 			}
-//			Log.i(TAG, "Supported preview sizes: " + previewSizesString);
+			Log.i(TAG, "Supported preview sizes: " + previewSizesString);
 //		}
 
 		Point bestSize = null;
 		float screenAspectRatio = (float) screenResolution.x
 				/ (float) screenResolution.y;
 
-		float diff = Float.POSITIVE_INFINITY;
+		float diff = (float) 0.2;
 		for (Camera.Size supportedPreviewSize : supportedPreviewSizes) {
 			int realWidth = supportedPreviewSize.width;
 			int realHeight = supportedPreviewSize.height;
+			Log.i(TAG, "testing sizes: " + realWidth + ", " + realHeight);
 			int pixels = realWidth * realHeight;
+			Log.i(TAG, "pixels: " + pixels);
 			if (pixels < MIN_PREVIEW_PIXELS || pixels > MAX_PREVIEW_PIXELS) {
 				continue;
 			}
-			boolean isCandidatePortrait = realWidth < realHeight;
+			boolean isCandidatePortrait = realHeight < realWidth;
+			Log.i(TAG, "isCandidatePortrait: " + isCandidatePortrait);
 			int maybeFlippedWidth = isCandidatePortrait ? realHeight
 					: realWidth;
 			int maybeFlippedHeight = isCandidatePortrait ? realWidth
@@ -227,13 +231,16 @@ final class CameraConfigurationManager {
 			if (maybeFlippedWidth == screenResolution.x
 					&& maybeFlippedHeight == screenResolution.y) {
 				Point exactPoint = new Point(realWidth, realHeight);
-//				Log.i(TAG, "Found preview size exactly matching screen size: "
-//						+ exactPoint);
+				Log.i(TAG, "Found preview size exactly matching screen size: "
+						+ exactPoint);
 				return exactPoint;
 			}
 			float aspectRatio = (float) maybeFlippedWidth
 					/ (float) maybeFlippedHeight;
+			Log.i(TAG, "aspectRatio: " + aspectRatio);
+			Log.i(TAG, "screenAspectRatio: " + screenAspectRatio);
 			float newDiff = Math.abs(aspectRatio - screenAspectRatio);
+			Log.i(TAG, "newDiff: " + newDiff);
 			if (newDiff < diff) {
 				bestSize = new Point(realWidth, realHeight);
 				diff = newDiff;
@@ -243,7 +250,7 @@ final class CameraConfigurationManager {
 		if (bestSize == null) {
 			Camera.Size defaultSize = parameters.getPreviewSize();
 			bestSize = new Point(defaultSize.width, defaultSize.height);
-//			Log.i(TAG, "No suitable preview sizes, using default: " + bestSize);
+			Log.i(TAG, "No suitable preview sizes, using default: " + bestSize);
 		}
 
 //		Log.i(TAG, "Found best approximate preview size: " + bestSize);

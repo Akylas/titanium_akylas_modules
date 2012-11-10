@@ -133,5 +133,28 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 		
 		CameraManager.get().updateCameraDisplayOrientation();
 	}
+	
+	@Kroll.method
+	public void stop()
+	{
+		Log.d(LCAT, "stop");
+		if (view != null)
+			((CameraView)view).stopPreview();
+	}
 
+	@Kroll.method
+	public void start()
+	{
+		Log.d(LCAT, "start");
+		if (view != null)
+			((CameraView)view).startPreview();
+	}
+	
+	@Kroll.method
+	public Boolean isStarted()
+	{
+		if (view != null)
+			return ((CameraView)view).isPreviewStarted();
+		else return false;
+	}
 }

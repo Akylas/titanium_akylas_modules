@@ -140,6 +140,10 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 		CameraManager.get().stopPreview();
 	}
 	
+	public Boolean isPreviewStarted() {
+		return CameraManager.get().IsPreviewing();
+	}
+	
 	/**
 	 * Computes the optimal preview size given the target display size and aspect ratio.
 	 *

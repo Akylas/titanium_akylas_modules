@@ -193,6 +193,10 @@ public final class CameraManager {
 			autoFocusManager = new AutoFocusManager(context, camera);
 		}
 	}
+	
+	public Boolean IsPreviewing() {
+		return (camera != null && previewing);
+	}
 
 	/**
 	 * Tells the camera to stop drawing preview frames.
