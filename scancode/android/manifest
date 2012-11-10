@@ -4,10 +4,10 @@
 #
 version: 1.0
 apiversion: 2
-description: My module
+description: An enhanced scancode module based on Zxing open source project
 author: Martin Guillon
-license: Specify your license
-copyright: Akylas
+license: Proprietary
+copyright: Copyright (c) 2012 by Akylas
 
 
 # these should not be edited

@@ -3,11 +3,10 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.2
-description: Provides access to the UDP protocol for sending packets across a network.
+description: an enhanced UDP module
 author: Martin Guillon
-license: Akylas Commercial License
-copyright: Copyright (c) 2011-2012 by Akylas
-
+license: Proprietary
+copyright: Copyright (c) 2012 by Akylas
 
 # these should not be edited
 name: udp

@@ -6,9 +6,8 @@ version: 1.0
 apiversion: 2
 description: Total Immersion Module
 author: Martin Guillon
-license: Specify your license
-copyright: Akylas
-
+license: Proprietary
+copyright: Copyright (c) 2012 by Akylas
 
 # these should not be edited
 name: akylas_totali_android
