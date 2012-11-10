@@ -41,6 +41,6 @@ EXCEPT FOR DAMAGE RESULTING FROM AKYLAS’S WILLFUL MISCONDUCT, THE LIABILITY OF
 
 8.3 If any provision of this Agreement is found to be unenforceable, such term will be considered severable from the remaining terms, which will continue to be valid and enforceable. Under no circumstances will the preprinted terms of any purchase order or any other terms produced by Customer apply to this Agreement.
 
-8.4 AKYLAS and Akylas Titanium Scancode module are trademarks or registered trademarks of AKYLAS in France and/or other countries.  Third party trademarks, trade names, product names and logos may be the trademarks or registered trademarks of their respective owners.
+8.4 AKYLAS and Akylas Titanium HockeyApp module are trademarks or registered trademarks of AKYLAS in France and/or other countries.  Third party trademarks, trade names, product names and logos may be the trademarks or registered trademarks of their respective owners.
 
 8.5 No agency, partnership, or joint venture is created by this Agreement. The parties are and remain at all times independent contractors and not agents or employees of the other party.

@@ -1,1 +1,46 @@
-Place your license text here.  This file will be incorporated with your app at package time.
+LICENSE AGREEMENT 
+
+IMPORTANT:  THIS LIBRARY LICENSE AGREEMENT IS A LEGAL AGREEMENT BETWEEN YOU – HEREINAFTER REFERRED TO AS "CUSTOMER" - AND AKYLAS. READ IT CAREFULLY BEFORE USING THE LIBRARY.  IT PROVIDES A LICENSE TO USE THE LIBRARY AND CONTAINS WARRANTY INFORMATION AND LIABILITY DISCLAIMERS.  BY USING THE LIBRARY IN COMBINATION WITH CLICKING "I AGREE" AT THE END OF THIS AGREEMENT, YOU ARE CONFIRMING YOUR ACCEPTANCE OF THE LIBRARY AND AGREEING TO BECOME BOUND BY THE TERMS OF THIS AGREEMENT.
+
+1. Scope
+AKYLAS provided Library (the Library) to be used only incorporated in software developed and provided to its clients by the Customer. 
+
+2. License Grant
+2.1 Subject to the terms and conditions hereof, AKYLAS grants to Customer a perpetual, non-exclusive, non-transferable limited license to reproduce exact copies, distribute and sublicense use of the Library, solely as incorporated in software developed by Customer’s and sell to end users. Customer shall not distribute or sublicense the Library except as incorporated in his own software.
+
+2.2 AKYLAS reserves all rights not expressly granted to Customer in this Agreement.
+
+2.3 Each time the Library is incorporated in a software, it stay independent of the other incorporated Library and software. Customer must acquaint himself with the distribution rights and policies include in these other software licenses, and  may distribute his software solely on his responsibility. 
+
+3. Distribution
+Customer must purchase a Library license, and pay the corresponding Fees, for each incorporation of the Library in a software, but can freely distribute any copies of such software on any form of computing platforms such as physical computers, virtual machines or cloud computing platforms, deployed, leased or sold by Customer and any of its licensees, employees, distributors, resellers, affiliates or other channel partners.
+
+4. Proprietary Rights.
+Customer recognizes and agrees that the full ownership rights in the Library is reserved to and remains with AKYLAS. Customer agrees not to remove from view any copyright legend, trademark or confidentiality notice appearing on the Library. Customer further agrees not to adapt, translate, reverse engineer, decompile or otherwise derive the source code for the Library nor to communicate the Library to the public except to the extent applicable laws specifically prohibit such restrictions.
+Any information supplied by AKYLAS or obtained by Customer as permitted hereunder, may only be used by Customer for the purpose described herein and may not be disclosed to any third party or used to create any Library or software which is substantially similar to the expression of the Library.
+
+5. License Fee
+In consideration of the rights to the Library provided under this Agreement, Customer will pay AKYLAS the fees ("Fees") agreed between AKYLAS and the Customer and determined according to the number of Library licenses acquired by the Customer.
+
+6. Termination
+6.1 AKYLAS has the right to terminate this Agreement and the license granted hereunder upon written notice to the Customer if the Customer is in default of any obligation hereunder which default is incapable of being cured, or which, being capable of being cured, has not been cured within 30 days after receipt of written notice of such default.
+
+6.2 Immediately upon termination, the licenses granted hereunder shall terminate, and Customer shall cease all use of the Library and distribution of software which embedded the Library and thereafter, destroy the Library and all copies whether or not include in any software.
+
+6.3 Sections 6 through 8 shall survive termination of this Agreement.
+
+7. Limited warranty and liability
+To the maximum extent permitted by applicable law, AKYLAS provide the Library AS IS, and hereby disclaim all other warranties, duties, and conditions, either express, implied, or statutory, including, but not limited to, any (if any) implied warranties or conditions of merchantability, of fitness for a particular purpose, of accuracy or completeness of responses, of results, of workmanlike effort, of lack of viruses, and of lack of negligence, all with regard to the Library. Also, there is no warranty or condition of title, quiet enjoyment, quiet possession, correspondence to description, or non-infringement with regard to the Library.
+
+EXCEPT FOR DAMAGE RESULTING FROM AKYLAS’S WILLFUL MISCONDUCT, THE LIABILITY OF AKYLAS TO CUSTOMER OR ANY THIRD PARTY ARISING FROM THE LICENSE OR USE OF THE LIBRARY, OR THE PROVISION OF TECHNICAL SUPPORT INSTALLATION, TRAINING OR OTHER SERVICES IN CONNECTION THEREWITH, HOWEVER CAUSED, AND ON ANY THEORY OF LIABILITY, INCLUDING CONTRACT, STRICT LIABILITY, NEGLIGENCE OR OTHER TORT, SHALL BE LIMITED TO DIRECT DAMAGES NOT TO EXCEED THE AMOUNT OF THE RELATED LICENSE, AND SPECIFICALLY, IN NO EVENT WILL AKYLAS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES, INCLUDING DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA OR DATA USE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. THESE LIMITATIONS WILL APPLY NOTWITHSTANDING THE FAILURE OF THE ESSENTIAL PURPOSE OF ANY REMEDY.
+
+8. General
+8.1 This Agreement and any matter relating thereto shall be governed, construed and interpreted in accordance with French law. The parties agree that any dispute in relation to the validity, interpretation or execution of the Agreement shall be brought before the competent courts in Grenoble (France).
+
+8.2 This Agreement constitutes the entire agreement between the parties with respect to the license and use of the Library and supersedes any prior or contemporaneous understandings between the parties.
+
+8.3 If any provision of this Agreement is found to be unenforceable, such term will be considered severable from the remaining terms, which will continue to be valid and enforceable. Under no circumstances will the preprinted terms of any purchase order or any other terms produced by Customer apply to this Agreement.
+
+8.4 AKYLAS and Akylas Titanium Camera module are trademarks or registered trademarks of AKYLAS in France and/or other countries.  Third party trademarks, trade names, product names and logos may be the trademarks or registered trademarks of their respective owners.
+
+8.5 No agency, partnership, or joint venture is created by this Agreement. The parties are and remain at all times independent contractors and not agents or employees of the other party.
