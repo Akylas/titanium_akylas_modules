@@ -354,7 +354,7 @@ public class AkylasMotionAndroidModule extends KrollModule implements
 					String type = eventProperty(event.sensor.getType());
 					sensordata.put(TiC.EVENT_PROPERTY_TYPE, type);
 					sensordata.put(TiC.PROPERTY_TIMESTAMP, newSensorEventTimestamp);
-					fireSyncEvent(type, sensordata);
+					fireEvent(type, sensordata);
 				}
 				return;
 			}
@@ -452,7 +452,7 @@ public class AkylasMotionAndroidModule extends KrollModule implements
 	
 			lastTimeStamp = newSensorEventTimestamp;
 			mCurrentValues.clear();
-			fireSyncEvent(EVENT_MOTION, data);
+			fireEvent(EVENT_MOTION, data);
 		}
 	}
 
