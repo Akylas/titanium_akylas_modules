@@ -56,14 +56,15 @@ public final class CaptureActivityHandler extends Handler {
 			Vector<BarcodeFormat> decodeFormats, String characterSet) {
 		this.proxy = proxy;
 		state = State.SUCCESS;
+//		Log.d(LOG_TAG, "creation set state " + state);
 
 		decodeThread = new DecodeThread(proxy, decodeFormats, characterSet);
 		decodeThread.start();
 
 		// Start ourselves capturing previews and decoding.
-		CameraManager.get().startPreview();
+//		CameraManager.get().startPreview();
 //		if (beginScanning) {
-			restartPreviewAndDecode();
+//			restartPreviewAndDecode();
 //		}
 	}
 
@@ -88,8 +89,13 @@ public final class CaptureActivityHandler extends Handler {
 		case Id.RESTART_PREVIEW:
 			restartPreviewAndDecode();
 			break;
+		case Id.STOP_PREVIEW:
+			state = State.DONE;
+//			Log.d(LOG_TAG, message.what + " set state " + state);
+			break;
 		case Id.DECODE_SUCCEEDED:
 			state = State.SUCCESS;
+//			Log.d(LOG_TAG, message.what + " set state " + state);
 			Bundle bundle = message.getData();
 			Bitmap barcode = bundle == null ? null : (Bitmap) bundle
 					.getParcelable(MessageId.BARCODE_BITMAP);
@@ -99,12 +105,15 @@ public final class CaptureActivityHandler extends Handler {
 		case Id.PREVIEW_FAILED:
 		case Id.DECODE_FAILED:
 		case Id.DECODER_STARTED:
-//			Log.d(LOG_TAG, "received " + message.what);
-			// We're decoding as fast as possible, so when one decode fails,
-			// start another.
-			state = State.PREVIEW;
-			CameraManager.get().requestPreviewFrame(decodeThread.getHandler(),
-					Id.DECODE);
+			if (state != State.SUCCESS)
+			{
+				// We're decoding as fast as possible, so when one decode fails,
+				// start another.
+				state = State.PREVIEW;
+//				Log.d(LOG_TAG, message.what + " set state " + state);
+				CameraManager.get().requestPreviewFrame(decodeThread.getHandler(),
+						Id.DECODE);
+			}
 			break;
 		case Id.RETURN_SCAN_RESULT:
 //			proxy.setResult(Activity.RESULT_OK, (Intent) message.obj);
@@ -115,7 +124,7 @@ public final class CaptureActivityHandler extends Handler {
 
 	public void quitSynchronously() {
 		state = State.DONE;
-		CameraManager.get().stopPreview();
+//		Log.d(LOG_TAG, "quitSynchronously set state " + state);
 		Message quit = Message.obtain(decodeThread.getHandler(), Id.QUIT);
 		quit.sendToTarget();
 		try {
@@ -130,8 +139,8 @@ public final class CaptureActivityHandler extends Handler {
 	}
 
 	private void restartPreviewAndDecode() {
-		Log.d(LOG_TAG, "restartPreviewAndDecode");
-		if (state == State.SUCCESS) {
+//		Log.d(LOG_TAG, "restartPreviewAndDecode " + state);
+		if (state == State.SUCCESS ) {
 			state = State.PREVIEW;
 			CameraManager.get().requestPreviewFrame(decodeThread.getHandler(),
 					Id.DECODE);
@@ -140,14 +149,12 @@ public final class CaptureActivityHandler extends Handler {
 		}
 	}
 	
-	public void setTorch(Boolean on) {
-		CameraManager.get().setTorch(on);
+	
+	public void pause(){
+		state = State.SUCCESS;
+//		Log.d(LOG_TAG, "pause set state " + state);
 	}
-	  
-	public Boolean getTorch()
-	{
-	  return CameraManager.get().getTorch();
-	}
+
 	
 	public void requestFocus() {
 		autofocus = false;

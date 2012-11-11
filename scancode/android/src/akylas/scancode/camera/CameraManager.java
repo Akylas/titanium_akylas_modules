@@ -17,6 +17,7 @@
 package akylas.scancode.camera;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 //import akylas.scancode.constants.Id;
 import android.app.Activity;
@@ -27,6 +28,7 @@ import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
 //import android.hardware.SensorManager;
 //import android.hardware.Camera.CameraInfo;
 //import android.hardware.Camera.Parameters;
@@ -108,6 +110,10 @@ public final class CameraManager {
 	 */
 	private final PreviewCallback previewCallback;
 
+	private int currentPreviewWidth;
+
+	private int currentPreviewHeight;
+
 	/**
 	 * Initializes this static object with the Context of the calling Activity.
 	 * 
@@ -178,20 +184,26 @@ public final class CameraManager {
 	public void openDriver(SurfaceHolder holder, int cameraPosition)
 	{
 		if (camera == null) {
+			Log.d(TAG, "opening camera");
 			camera = openCamera(cameraPosition);
 			if (camera == null) {
 				Log.d(TAG, "cant open camera");
 				return;
 			}
-			// previewDisplay = holder;
+			Log.d(TAG, "camera opened");
 			try {
+				Log.d(TAG, "camera setting rpeview display");
 				camera.setPreviewDisplay(holder);
 			} catch (IOException e) {
 				Log.d(TAG, "cannot set preview display");
 			}
-			setCameraDisplayOrientation();
+			Log.d(TAG, "preview display done");
+			Log.d(TAG, "setting cameraDisplay orientation");
+			updateCameraDisplayOrientation();
+			Log.d(TAG, "cameraDisplay orientation done");
 			if (!initialized) {
 				initialized = true;
+				Log.d(TAG, "cameraDisplay orientation done");
 				configManager.initFromCameraParameters(camera);
 			}
 			configManager.setDesiredCameraParameters(camera);
@@ -199,14 +211,78 @@ public final class CameraManager {
 	}
 
 	public void updatePreviewSize(int width, int height) {
-//		Log.d(TAG, "updatePreviewSize " + width + "," + height);
+		Log.d(TAG, "updatePreviewSize " + width + "," + height);
+		currentPreviewWidth = width;
+		currentPreviewHeight = height;
+		updatePreviewSize();
+	}
+	
+	public void updatePreviewSize() {
 		if (camera != null) {
-			configManager.updatePreviewSize(camera, width, height);
+			configManager.updatePreviewSize(camera, currentPreviewWidth, currentPreviewHeight);
 			framingRect = null;
 			framingRectInPreview = null;
 			
 			
 		}
+	}
+	
+	protected void setDisplayOrientation(Camera camera, int angle){
+	    Method downPolymorphic;
+	    try
+	    {
+	        downPolymorphic = camera.getClass().getMethod("setDisplayOrientation", new Class[] { int.class });
+	        if (downPolymorphic != null)
+	            downPolymorphic.invoke(camera, new Object[] { angle });
+	    }
+	    catch (Exception e1)
+	    {
+	    }
+	}
+	
+	public void setCameraDisplayOrientation(Activity activity,
+	         int cameraId, Camera camera) {
+	     CameraInfo info = new CameraInfo();
+	     Camera.getCameraInfo(cameraId, info);
+	     currentOrientation = activity.getWindowManager().getDefaultDisplay()
+	             .getRotation();
+	     int degrees = 0;
+	     switch (currentOrientation) {
+	         case Surface.ROTATION_0: degrees = 0; break;
+	         case Surface.ROTATION_90: degrees = 90; break;
+	         case Surface.ROTATION_180: degrees = 180; break;
+	         case Surface.ROTATION_270: degrees = 270; break;
+	     }
+
+	    int resultInterface;
+		int resultCamera;
+		if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+			resultInterface = (info.orientation + degrees) % 360;
+			resultCamera = resultInterface = (360 - resultInterface) % 360; // compensate the mirror
+			mirrored = true;
+		} else { // back-facing
+			resultInterface = resultCamera = (info.orientation - degrees + 360) % 360;
+			mirrored = false;
+		}
+		ninetydegreesFromCamera = ((resultCamera % 180) != 0);
+
+		Log.d(TAG, "setCameraDisplayOrientation: " + info.orientation + "," + degrees + "," + resultInterface + "," + resultCamera);
+		currentImageRotation = resultCamera + 180;
+		Log.d(TAG, "setDisplayOrientation:" + resultInterface);
+	     setDisplayOrientation(camera, resultInterface);
+	 }
+	
+	public void updateCameraDisplayOrientation() {
+		if (camera == null || this.activity == null) {
+			return;
+		}
+		Log.d(TAG, "updateCameraDisplayOrientation:");
+		Boolean waspreviewing = previewing;
+		if (waspreviewing) 
+			stopPreview();
+		setCameraDisplayOrientation(this.activity, cameraId, camera);
+		if (waspreviewing) 
+			startPreview();
 	}
 
 	/**
@@ -251,6 +327,10 @@ public final class CameraManager {
 //			previewCallback.setHandler(null, 0);
 			previewing = false;
 		}
+	}
+	
+	public Boolean IsPreviewing() {
+		return (camera != null && previewing);
 	}
 
 	public synchronized void setTorch(boolean newSetting) {
@@ -505,49 +585,6 @@ public final class CameraManager {
 		int orientation = this.activity.getWindowManager().getDefaultDisplay()
 				.getRotation();
 		return orientation != currentOrientation;
-	}
-
-	public void setCameraDisplayOrientation() {
-		if (camera == null || this.activity == null) {
-			return;
-		}
-		Camera.CameraInfo info = new Camera.CameraInfo();
-		Camera.getCameraInfo(cameraId, info);
-		currentOrientation = this.activity.getWindowManager().getDefaultDisplay()
-				.getRotation();
-		int degrees = 0;
-		switch (currentOrientation) {
-		case Surface.ROTATION_0:
-			degrees = 0;
-			break;
-		case Surface.ROTATION_90:
-			degrees = 90;
-			break;
-		case Surface.ROTATION_180:
-			degrees = 180;
-			break;
-		case Surface.ROTATION_270:
-			degrees = 270;
-			break;
-		}
-
-		int resultInterface;
-		int resultCamera;
-		resultCamera = (info.orientation + degrees) % 360;
-		if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-			resultInterface = (info.orientation + degrees) % 360;
-			resultInterface = (360 - resultInterface) % 360; // compensate the mirror
-			mirrored = true;
-		} else { // back-facing
-			resultInterface = (info.orientation - degrees + 360) % 360;
-			mirrored = false;
-		}
-		ninetydegreesFromCamera = ((resultCamera % 180) != 0);
-
-//		Log.d(TAG, "setCameraDisplayOrientation: " + info.orientation + "," + degrees + "," + resultInterface + "," + resultCamera);
-		currentImageRotation = resultCamera;
-		camera.setDisplayOrientation(resultInterface);
-//	    configManager.setCameraImageRotation(camera, (360 - resultCamera));
 	}
 
 	private Rect rotateRect(Rect rect,  Point size, float angle)

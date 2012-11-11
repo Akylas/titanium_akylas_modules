@@ -33,4 +33,5 @@ public class Id {
 	public static final int DECODER_STARTED = 1011;
 	public static final int CAMERA_ORIENTATION = 1012;
 	public static final int PREVIEW_FAILED = 1013;
+	public static final int STOP_PREVIEW = 1014;
 }

@@ -17,6 +17,7 @@
 package akylas.scancode.camera;
 
 import akylas.scancode.constants.Id;
+import akylas.scancode.camera.CameraConfigurationManager;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.Handler;

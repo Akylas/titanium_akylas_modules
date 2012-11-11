@@ -20,10 +20,9 @@ import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
 //import org.appcelerator.titanium.TiPoint;
-import org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent;
+import org.appcelerator.titanium.TiLifecycle;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUIView;
 
 import akylas.scancode.camera.CameraManager;
@@ -53,25 +52,10 @@ import com.google.zxing.ResultPoint;
 
 // This proxy can be created by calling AkylasScancodeAndroid.createExample({message: "hello world"})
 @Kroll.proxy(creatableInModule=AkylasScancodeModule.class)
-public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceHolder.Callback, ConfigurationChangedListener
+public class ViewProxy extends TiViewProxy implements TiLifecycle.OnLifecycleEvent, ConfigurationChangedListener
 {
 	@SuppressWarnings("unused")
 	private static final String TAG = "CaptureActivity";
-
-
-
-//	private enum Source {
-//		NATIVE_APP_INTENT, NONE
-//	}
-//	
-	/**
-	 * @return current viewfinderView
-	 */
-
-//	public ViewfinderView getViewfinderView() {
-//		return viewfinderView;
-//	}
-
 	/**
 	 * @return current handler
 	 */
@@ -81,92 +65,16 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 
 	private CaptureActivityHandler mHandler;
 
-//	private ViewfinderView viewfinderView;
-	private int cameraPosition = Camera.CameraInfo.CAMERA_FACING_BACK;
-//	private Result lastResult;
-	private boolean hasSurface;
-//	private Source source;
 	private Vector<BarcodeFormat> decodeFormats;
 	private Object[] stringReaders;
-	private String characterSet;
-//	private CaptureView captureView;
-	// Standard Debugging variables
+	private String characterSet;	// Standard Debugging variables
 	private static final String LCAT = "AkylasScancodeProxy";
-//	private static final boolean DBG = TiConfig.LOGD;
-
-	private class CameraView extends TiUIView
-	{
-		@SuppressWarnings("unused")
-		private static final String TAG = "AkylasScanCodeView";
-		private SurfaceView preview;
-		private SurfaceHolder previewHolder;
-//		private TiCompositeLayout overlayLayout;
-		private TiCompositeLayout previewLayout;
-		
-//		private TiCompositeLayout overlayLayout;
-
-		@SuppressWarnings("deprecation")
-		public CameraView(TiViewProxy proxy)
-		{
-			super(proxy);
-
-			preview = new SurfaceView(proxy.getActivity());
-
-			previewHolder = preview.getHolder();
-
-			// this call is deprecated but we still need it for SDK level 7 otherwise kaboom
-			previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
-			previewLayout = new TiCompositeLayout(proxy.getActivity(), proxy);
-//			TiCompositeLayout.LayoutParams params = getLayoutParams();
-//			params.autoFillsHeight = true;
-//			params.autoFillsWidth = true;
-			previewLayout.addView(preview);
-
-//			overlayLayout = new TiCompositeLayout(proxy.getActivity(), proxy);
-//			previewLayout.addView(overlayLayout);
-
-			setNativeView(previewLayout);
-		}
-		
-//		public SurfaceView getPreviewView()
-//		{
-//			return preview;
-//		}
-		
-		public SurfaceHolder getPreviewSurfaceHolder()
-		{
-			return previewHolder;
-		}
-
-//		@Override
-//		public void add(TiUIView overlayItem)
-//		{
-//			if (overlayItem != null) {
-//				View overlayItemView = overlayItem.getNativeView();
-//				if (overlayItemView != null) {
-//					previewLayout.addView(overlayItemView, overlayItem.getLayoutParams());
-//				}
-//			}
-//		}
-//		
-//		@Override
-//		public void remove(TiUIView overlayItem)
-//		{
-//			if (overlayItem != null) {
-//				View overlayItemView = overlayItem.getNativeView();
-//				if (overlayItemView != null) {
-//					overlayLayout.removeView(overlayItemView);
-//				}
-//			}
-//		}
-
-		@Override
-		public void processProperties(KrollDict d)
-		{
-			super.processProperties(d);
-		}
-	}
+	
+	@Kroll.constant
+	public static final int BACK_CAMERA = CameraInfo.CAMERA_FACING_BACK;
+	@Kroll.constant
+	public static final int FRONT_CAMERA = CameraInfo.CAMERA_FACING_FRONT;
+	private int cameraPosition = BACK_CAMERA;
 	
 	public ViewProxy()
 	{
@@ -181,6 +89,26 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 //		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] creating proxy from context");
 	}
 	
+	private int cameraPositionValue(Object value)
+	{
+		int result = BACK_CAMERA;
+		String sValue = TiConvert.toString(value);
+		if (sValue != null)
+		{
+			if (value == "front")
+				result = FRONT_CAMERA;
+			else if (value == "rear")
+				result = BACK_CAMERA;
+		}
+		else
+		{
+			int iValue = TiConvert.toInt(value);
+			if (iValue ==FRONT_CAMERA || iValue == BACK_CAMERA)
+				result = iValue;
+		}
+		return result;
+	}
+	
 	@Override
 	public void setActivity(Activity activity)
 	{
@@ -189,19 +117,28 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 		
 		CameraManager.get().setActivity(activity);
 		
-//		TiBaseActivity.registerOrientationListener (new TiBaseActivity.OrientationChangedListener()
-//		{
-//			@Override
-//			public void onOrientationChanged (int configOrientationMode)
-//			{
-//				CameraManager.get().stopPreview();
-//				CameraManager.get().setCameraDisplayOrientation();
-//				CameraManager.get().startPreview();
-//				if (mHandler != null) {
-//					mHandler.sendEmptyMessage(Id.RESTART_PREVIEW);
-//				}
-//			}
-//		});
+		if (activity instanceof TiBaseActivity) {
+			((TiBaseActivity) activity).addOnLifecycleEventListener(this);
+		}
+		
+		TiBaseActivity.registerOrientationListener (new TiBaseActivity.OrientationChangedListener()
+		{
+			@Override
+			public void onOrientationChanged (int configOrientationMode)
+			{
+				Log.d(LCAT, "onOrientationChanged");
+				
+				CameraManager.get().updateCameraDisplayOrientation();
+			}
+		});
+		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] set activity");
+		
+		CameraManager.get().setActivity(activity);
+		
+		if (mHandler == null) {
+			mHandler = new CaptureActivityHandler(this, decodeFormats,
+					characterSet);
+		}
 	}
 
 	@Override
@@ -209,10 +146,8 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	{
 //		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT]creating view" );
 		TiUIView view = new CameraView(this);
-		((TiBaseActivity) activity).addOnLifecycleEventListener(this);
-		((TiBaseActivity) activity).addConfigurationChangedListener(this);
-//		view.getLayoutParams().autoFillsHeight = true;
-//		view.getLayoutParams().autoFillsWidth = true;
+		view.getLayoutParams().autoFillsHeight = true;
+		view.getLayoutParams().autoFillsWidth = true;
 		return view;
 	}
 
@@ -256,48 +191,17 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 //			Log.d(LCAT, "scancodeproxy created with torch: " + options.get("torch"));
 		}
 	}
-	
-	@Override
-	public void onStop(Activity activity) 
-	{
-		// This method is called when the root context is stopped 
-		stopCapture();
-		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] stop proxy with id " + getProxyId());
-	}
-	
-	private void stopCapture(){
-//		Log.d(LCAT, "stopCapture with camera " + cameraPosition);
-		if (mHandler != null) {
-			mHandler.quitSynchronously();
-			mHandler = null;
-		}
-		CameraManager.get().closeDriver();
-        fireEvent("stop", new KrollDict());
-	}
-	
-	private void startCapture(){
-//		Log.d(LCAT, "startCapture with camera " + cameraPosition);
-//		SurfaceView surfaceView = ;
-		SurfaceHolder surfaceHolder = ((CameraView)this.view).getPreviewSurfaceHolder();
-		if (hasSurface) {
-			// The activity was paused but not stopped, so the surface still
-			// exists. Therefore
-			// surfaceCreated() won't be called, so init the camera here.
-			initCamera(surfaceHolder, cameraPosition);
-		} else {
-			// Install the callback and wait for surfaceCreated() to init the
-			// camera.
-			surfaceHolder.addCallback(this);
-		}
-		
-//		resetStatusView();
-	}
 
 	@Override
 	public void onPause(Activity activity) 
 	{
-		stopCapture();
 		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] pause proxy with id " + getProxyId());
+		if (mHandler != null) {
+			mHandler.pause();
+		}
+		if (view != null)
+			((CameraView)view).stopPreview();
+		
 	}
 	
 	@Override
@@ -310,37 +214,16 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	public void onResume(Activity activity) 
 	{		
 		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] resume proxy with id " + getProxyId());
-		// This method is called when the root context is being resumed
-		startCapture();
+		if (view != null)
+			((CameraView)view).startPreview();
 	}
-
+	
 	@Override
 	public void onDestroy(Activity activity) 
 	{
 		// This method is called when the root context is being destroyed
-		stopCapture();
 
 		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] destroy proxy with id " + getProxyId());
-	}
-	
-	private int cameraPositionValue(Object value)
-	{
-		int result = CameraInfo.CAMERA_FACING_BACK;
-		String sValue = TiConvert.toString(value);
-		if (sValue != null)
-		{
-			if (value == "front")
-				result = CameraInfo.CAMERA_FACING_FRONT;
-			else if (value == "rear")
-				result = CameraInfo.CAMERA_FACING_BACK;
-		}
-		else
-		{
-			int iValue = TiConvert.toInt(value);
-			if (iValue ==CameraInfo.CAMERA_FACING_FRONT || iValue == CameraInfo.CAMERA_FACING_BACK)
-				result = iValue;
-		}
-		return result;
 	}
 	
 	private KrollDict KrollDictFromRect(Rect rect)
@@ -352,15 +235,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 		d.put(TiC.PROPERTY_Y, rect.top);
 		return d;
 	}
-	
-//	private KrollDict KrollDictFromResultPoint(ResultPoint point)
-//	{
-//		KrollDict d = new KrollDict();
-//		d.put(TiC.PROPERTY_X, point.getX());
-//		d.put(TiC.PROPERTY_Y, point.getY());
-//		return d;
-//	}
-	
+
 	private KrollDict KrollDictFromPoint(Point point)
 	{
 		KrollDict d = new KrollDict();
@@ -422,36 +297,41 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	public void stop()
 	{
 		Log.d(LCAT, "stop");
-		stopCapture();
+		if (view != null)
+			((CameraView)view).stopPreview();
 	}
 
 	@Kroll.method
 	public void start()
 	{
 		Log.d(LCAT, "start");
-		startCapture();
+		if (view != null)
+			((CameraView)view).startPreview();
+	}
+	
+	@Kroll.method
+	public Boolean isStarted()
+	{
+		if (view != null)
+			return ((CameraView)view).isPreviewStarted();
+		else return false;
 	}
 	
 	@Kroll.method
 	public void swapCamera()
 	{
-//		Log.d(LCAT, "swapCamera with camera " + cameraPosition);
-		stopCapture();
-//		String sPos;
-		if (cameraPosition == CameraInfo.CAMERA_FACING_BACK)
+		if (cameraPosition == BACK_CAMERA)
 		{
-			cameraPosition = CameraInfo.CAMERA_FACING_FRONT;
-//			sPos = "front";
+			cameraPosition = FRONT_CAMERA;
 		}
 		else
 		{
-			cameraPosition = CameraInfo.CAMERA_FACING_BACK;
-//			sPos = "rear";
+			cameraPosition = BACK_CAMERA;
 		}
-		startCapture();
-//		KrollDict data = new KrollDict();
-//        data.put("position", sPos);
-//        fireEvent("camera", data);
+		if (view != null) {
+			((CameraView)view).setCamera(cameraPosition);
+		}
+
 	}
 	
 	@Kroll.method
@@ -479,15 +359,17 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	}
 	
 	// Properties
+	
 	@Kroll.setProperty @Kroll.method
 	public void setCameraPosition(Object value)
 	{
 		int pos = cameraPositionValue(value);
-		if (cameraPosition == pos) return;
-		stopCapture();
-		cameraPosition = pos;
-		startCapture();
+		if (view != null) {
+			((CameraView)view).setCamera(pos);
+		}
 	}
+	
+
 	
 	@Kroll.setProperty @Kroll.method
 	public void setCropRect(KrollDict d)
@@ -602,45 +484,6 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	{
 	    return stringReaders;
 	}
-	
-	
-	private void initCamera(final SurfaceHolder surfaceHolder, int cameraPosition) {
-//	    Log.d(LCAT, "initCamera");
-		CameraManager.get().openDriver(surfaceHolder, cameraPosition);
-
-		if (mHandler == null) {
-//			boolean beginScanning = lastResult == null;
-			mHandler = new CaptureActivityHandler(this, decodeFormats,
-					characterSet);
-		}
-        fireEvent("start", new KrollDict());
-	}
-
-	/**
-	 * A valid barcode has been found, so give an indication of success and show
-	 * the results.
-	 * 
-	 * @param rawResult
-	 *            The contents of the barcode.
-	 * @param barcode
-	 *            A greyscale bitmap of the camera data which was decoded.
-	 * @throws IOException 
-	 */
-	
-//	private void saveImage(Bitmap image, String name) throws IOException
-//	{
-//		
-//		String path = Environment.getExternalStorageDirectory().toString();
-//		OutputStream fOut = null;
-//		File file = new File(path, name+".jpg");
-//		fOut = new FileOutputStream(file);
-//
-//		image.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
-//		fOut.flush();
-//		fOut.close();
-//
-//		MediaStore.Images.Media.insertImage(getActivity().getContentResolver(),file.getAbsolutePath(),file.getName(),file.getName());
-//	}
 	
 	private Bitmap rotateAndScaleBitmap(Bitmap src, float scaleWidth, float scaleHeight, int rotation)
 	{
@@ -768,37 +611,28 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent, SurfaceH
 	}
 
 	@Override
-	public void surfaceChanged(SurfaceHolder arg0, int format, int width, int height) {
-//	    Log.d(LCAT, "surfaceChanged: ");
-		//surface has changed we need to update camera preview size
-		CameraManager.get().updatePreviewSize(width, height);
-		
-		
-		
-	}
-
-	@Override
-	public void surfaceCreated(SurfaceHolder holder) {
-		if (!hasSurface) {
-			hasSurface = true;
-			initCamera(holder, cameraPosition);
-		}
-		
-	}
-
-	@Override
-	public void surfaceDestroyed(SurfaceHolder arg0) {
-		hasSurface = false;
-	}
-
-	@Override
 	public void onConfigurationChanged(TiBaseActivity arg0, Configuration arg1) {
-		Boolean waspreviewing = CameraManager.get().previewing;
-		if (waspreviewing) CameraManager.get().stopPreview();
-		CameraManager.get().setCameraDisplayOrientation();
-		if (waspreviewing) CameraManager.get().startPreview();
+		Log.d(LCAT, "onConfigurationChanged");
+		
+		CameraManager.get().updateCameraDisplayOrientation();
+//		if (mHandler != null) {
+//			mHandler.sendEmptyMessage(Id.RESTART_PREVIEW);
+//		}
+	}
+
+	@Override
+	public void onStop(Activity arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public void cameraPreviewStarted(){
 		if (mHandler != null) {
-			mHandler.sendEmptyMessage(Id.CAMERA_ORIENTATION);
+			mHandler.sendEmptyMessage(Id.RESTART_PREVIEW);
 		}
+	}
+	
+	public void cameraPreviewStopped(){
+		
 	}
 }
