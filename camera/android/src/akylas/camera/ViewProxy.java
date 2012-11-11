@@ -91,6 +91,9 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 	{
 		super.setActivity(activity);
 //		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] set activity");
+		if (activity instanceof TiBaseActivity) {
+			((TiBaseActivity) activity).addOnLifecycleEventListener(this);
+		}
 		
 		TiBaseActivity.registerOrientationListener (new TiBaseActivity.OrientationChangedListener()
 		{
