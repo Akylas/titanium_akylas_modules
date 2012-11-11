@@ -75,6 +75,10 @@ public final class CameraManager {
 
 	private AutoFocusManager autoFocusManager;
 
+	private int currentPreviewWidth;
+
+	private int currentPreviewHeight;
+
 	/**
 	 * Initializes this static object with the Context of the calling Activity.
 	 * 
@@ -161,10 +165,17 @@ public final class CameraManager {
 
 	public void updatePreviewSize(int width, int height) {
 		Log.d(TAG, "updatePreviewSize " + width + "," + height);
+		currentPreviewWidth = width;
+		currentPreviewHeight = height;
+		updatePreviewSize();
+	}
+	
+	public void updatePreviewSize() {
 		if (camera != null) {
-			configManager.updatePreviewSize(camera, width, height);
+			configManager.updatePreviewSize(camera, currentPreviewWidth, currentPreviewHeight);
 		}
 	}
+
 
 	/**
 	 * Closes the camera driver if still in use.
@@ -358,42 +369,5 @@ public final class CameraManager {
 		setCameraDisplayOrientation(this.activity, cameraId, camera);
 		if (waspreviewing) 
 			startPreview();
-//		Camera.CameraInfo info = new Camera.CameraInfo();
-//		Camera.getCameraInfo(cameraId, info);
-//		currentOrientation = this.activity.getWindowManager().getDefaultDisplay()
-//				.getRotation();
-//		int degrees = 0;
-//		switch (currentOrientation) {
-//		case Surface.ROTATION_0:
-//			degrees = 0;
-//			break;
-//		case Surface.ROTATION_90:
-//			degrees = 90;
-//			break;
-//		case Surface.ROTATION_180:
-//			degrees = 180;
-//			break;
-//		case Surface.ROTATION_270:
-//			degrees = 270;
-//			break;
-//		}
-//
-//		int resultInterface;
-//		int resultCamera;
-//		resultCamera = (info.orientation + degrees) % 360;
-//		if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-//			resultInterface = (info.orientation + degrees) % 360;
-//			resultInterface = (360 - resultInterface) % 360; // compensate the mirror
-//			mirrored = true;
-//		} else { // back-facing
-//			resultInterface = (info.orientation - degrees + 360) % 360;
-//			mirrored = false;
-//		}
-//		ninetydegreesFromCamera = ((resultCamera % 180) != 0);
-//
-////		Log.d(TAG, "setCameraDisplayOrientation: " + info.orientation + "," + degrees + "," + resultInterface + "," + resultCamera);
-//		currentImageRotation = resultCamera;
-//		setDisplayOrientation(camera, resultInterface);
-////	    configManager.setCameraImageRotation(camera, (360 - resultCamera));
 	}
 }
