@@ -13,14 +13,21 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBaseActivity.ConfigurationChangedListener;
+import org.appcelerator.titanium.TiBlob;
+import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
+//import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUIView;
 
 import akylas.camera.cameramanager.CameraManager;
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.hardware.Camera.CameraInfo;
+import android.os.Handler;
 
 
 // This proxy can be created by calling AkylasCameraAndroid.createExample({message: "hello world"})
@@ -29,13 +36,29 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 {
 	// Standard Debugging variables
 	private static final String LCAT = "AkylasCameraViewProxy";
+	
 
 	// Constructor
+	private CaptureActivityHandler mHandler;
+	/**
+	 * @return current handler
+	 */
+	public Handler getHandler() {
+		return mHandler;
+	}
+	
+	@Kroll.constant
+	public static final int BACK_CAMERA = CameraInfo.CAMERA_FACING_BACK;
+	@Kroll.constant
+	public static final int FRONT_CAMERA = CameraInfo.CAMERA_FACING_FRONT;
+	private int cameraPosition = BACK_CAMERA;
+	
 	public ViewProxy()
 	{
 		super();
+//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] creating proxy ");
 	}
-	
+
 	public ViewProxy(TiContext tiContext)
 	{
 		this();
@@ -43,10 +66,31 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 //		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] creating proxy from context");
 	}
 	
+	private int cameraPositionValue(Object value)
+	{
+		int result = BACK_CAMERA;
+		String sValue = TiConvert.toString(value);
+		if (sValue != null)
+		{
+			if (value == "front")
+				result = FRONT_CAMERA;
+			else if (value == "rear")
+				result = BACK_CAMERA;
+		}
+		else
+		{
+			int iValue = TiConvert.toInt(value);
+			if (iValue ==FRONT_CAMERA || iValue == BACK_CAMERA)
+				result = iValue;
+		}
+		return result;
+	}
+	
 	@Override
 	public void setActivity(Activity activity)
 	{
 		super.setActivity(activity);
+//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] set activity");
 		
 		TiBaseActivity.registerOrientationListener (new TiBaseActivity.OrientationChangedListener()
 		{
@@ -62,19 +106,9 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 		
 		CameraManager.get().setActivity(activity);
 		
-//		TiBaseActivity.registerOrientationListener (new TiBaseActivity.OrientationChangedListener()
-//		{
-//			@Override
-//			public void onOrientationChanged (int configOrientationMode)
-//			{
-//				CameraManager.get().stopPreview();
-//				CameraManager.get().setCameraDisplayOrientation();
-//				CameraManager.get().startPreview();
-//				if (mHandler != null) {
-//					mHandler.sendEmptyMessage(Id.RESTART_PREVIEW);
-//				}
-//			}
-//		});
+		if (mHandler == null) {
+			mHandler = new CaptureActivityHandler(this);
+		}
 	}
 
 	@Override
@@ -126,14 +160,7 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 		// TODO Auto-generated method stub
 		
 	}
-	
-	@Override
-	public void onConfigurationChanged(TiBaseActivity arg0, Configuration arg1) {
-		Log.d(LCAT, "onConfigurationChanged");
-		
-		CameraManager.get().updateCameraDisplayOrientation();
-	}
-	
+
 	@Kroll.method
 	public void stop()
 	{
@@ -157,4 +184,72 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 			return ((CameraView)view).isPreviewStarted();
 		else return false;
 	}
+	
+	@Kroll.method
+	public void swapCamera()
+	{
+		if (cameraPosition == BACK_CAMERA)
+		{
+			cameraPosition = FRONT_CAMERA;
+		}
+		else
+		{
+			cameraPosition = BACK_CAMERA;
+		}
+		if (view != null) {
+			((CameraView)view).setCamera(cameraPosition);
+		}
+
+	}
+
+	@Kroll.method
+	public void focus()
+	{
+		if (mHandler != null) {
+			mHandler.requestFocus();
+		}
+	}
+	
+	@Kroll.method
+	public void autoFocus()
+	{
+		if (mHandler != null) {
+			mHandler.requestAutoFocus();
+		}
+	}
+	
+	// Properties
+	
+	@Kroll.setProperty @Kroll.method
+	public void setCameraPosition(Object value)
+	{
+		int pos = cameraPositionValue(value);
+		if (view != null) {
+			((CameraView)view).setCamera(pos);
+		}
+	}
+
+	@Kroll.setProperty @Kroll.method
+	public void setTorch(Boolean value)
+	{
+//	    Log.d(LCAT, "setTorch3 to: " + value);
+	    CameraManager.get().setTorch(value);
+	    KrollDict data = new KrollDict();
+        data.put("on", CameraManager.get().getTorch());
+        fireEvent("torch", data);
+	}
+	
+	@Kroll.getProperty @Kroll.method
+	public Boolean getTorch()
+	{
+	    return CameraManager.get().getTorch();
+	}
+
+	@Override
+	public void onConfigurationChanged(TiBaseActivity arg0, Configuration arg1) {
+		Log.d(LCAT, "onConfigurationChanged");
+		
+		CameraManager.get().updateCameraDisplayOrientation();
+	}
+	
 }
