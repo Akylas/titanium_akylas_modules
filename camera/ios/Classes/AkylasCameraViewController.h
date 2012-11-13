@@ -9,11 +9,6 @@
 #define HAS_AVFF 1
 #endif
 
-typedef enum {
-    CAMERA_FRONT,
-    CAMERA_REAR
-} CameraPosition;
-
 @interface AkylasCameraViewController : UIViewController
 #if HAS_AVFF
     <AVCaptureVideoDataOutputSampleBufferDelegate>
@@ -31,7 +26,9 @@ typedef enum {
         float _currentRotation;
         float _currentScale;
         UIInterfaceOrientation _currentOrientation;
-        CameraPosition _cameraPosition;
+        int _cameraPosition;
+        BOOL needsToTakePicture;
+        BOOL torch;
 }
 
 //#if HAS_AVFF
@@ -46,19 +43,21 @@ typedef enum {
 - (void)setTorch:(BOOL)status;
 - (BOOL)torchIsOn;
 -(void)swapCamera;
-+(CameraPosition)cameraPositionValue:(id)pos;
--(void)setCameraPosition:(CameraPosition)cameraPosition;
-- ( void ) updateCameraPosition:(CameraPosition) cameraPosition;
--(CameraPosition) cameraPosition;
++(int)cameraPositionValue:(id)pos;
+-(void)setCameraPosition:(int)cameraPosition;
+- ( void ) updateCameraPosition:(int) cameraPosition;
+-(int) cameraPosition;
 -(void)autoFocusAtPoint:(CGPoint)point;
 -(void)focusAtPoint:(CGPoint)point;
+-(void)takePicture;
 @end
 
 @protocol AkylasCameraViewControllerDelegate
 - (void)captureDidStart:(AkylasCameraViewController*)controller ;
 - (void)captureDidStop:(AkylasCameraViewController*)controller;
+- (void)controller:(AkylasCameraViewController*)controller didTakePicture:(UIImage*)image withRotation:(CGFloat)rotation;
 - (void)controller:(AkylasCameraViewController*)controller didSetAutoFocusAtPoint:(CGPoint)location;
 - (void)controller:(AkylasCameraViewController*)controller didSetFocusAtPoint:(CGPoint)location;
 - (void)controller:(AkylasCameraViewController*)controller didSetTorch:(BOOL)value;
-- (void)controller:(AkylasCameraViewController*)controller didChangeCamera:(CameraPosition)cameraPosition;
+- (void)controller:(AkylasCameraViewController*)controller didChangeCamera:(int)cameraPosition;
 @end

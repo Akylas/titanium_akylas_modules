@@ -100,6 +100,7 @@ public final class CameraManager {
 	private int currentOrientation = 0;
 	private int currentImageRotation = 0;
 //	private OrientationEventListener myOrientationEventListener;
+	private Boolean torch = false;
 
 	private AutoFocusManager autoFocusManager;
 
@@ -184,29 +185,22 @@ public final class CameraManager {
 	public void openDriver(SurfaceHolder holder, int cameraPosition)
 	{
 		if (camera == null) {
-			Log.d(TAG, "opening camera");
 			camera = openCamera(cameraPosition);
 			if (camera == null) {
-				Log.d(TAG, "cant open camera");
 				return;
 			}
-			Log.d(TAG, "camera opened");
 			try {
-				Log.d(TAG, "camera setting rpeview display");
 				camera.setPreviewDisplay(holder);
 			} catch (IOException e) {
 				Log.d(TAG, "cannot set preview display");
 			}
-			Log.d(TAG, "preview display done");
-			Log.d(TAG, "setting cameraDisplay orientation");
 			updateCameraDisplayOrientation();
-			Log.d(TAG, "cameraDisplay orientation done");
 			if (!initialized) {
 				initialized = true;
-				Log.d(TAG, "cameraDisplay orientation done");
 				configManager.initFromCameraParameters(camera);
 			}
 			configManager.setDesiredCameraParameters(camera);
+			
 		}
 	}
 
@@ -303,14 +297,21 @@ public final class CameraManager {
 	/**
 	 * Asks the camera hardware to begin drawing preview frames to the screen.
 	 */
-	public void startPreview() {
+	public Boolean startPreview() {
 
 		if (camera != null && !previewing) {
-//			Log.d(TAG, "startPreview");
+			Log.d(TAG, "startPreview");
 			camera.startPreview();
 			previewing = true;
+			if (torch)
+			{
+				Log.d(TAG, "we need to activate torch " );
+				setTorch(torch);
+			}
 			autoFocusManager = new AutoFocusManager(context, camera);
+			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -327,6 +328,7 @@ public final class CameraManager {
 //			previewCallback.setHandler(null, 0);
 			previewing = false;
 		}
+		
 	}
 	
 	public Boolean IsPreviewing() {
@@ -334,13 +336,15 @@ public final class CameraManager {
 	}
 
 	public synchronized void setTorch(boolean newSetting) {
+		Log.d(TAG, "set torch " + newSetting);
+		torch = newSetting;
 		if (camera != null) {
-			boolean isActive = autoFocusManager.isActive();
-			if (autoFocusManager != null && isActive) {
+			boolean isActive =(autoFocusManager != null && autoFocusManager.isActive());
+			if ( isActive) {
 				autoFocusManager.stop();
 			}
 			configManager.setTorch(camera, newSetting);
-			if (autoFocusManager != null && isActive) {
+			if (isActive) {
 				autoFocusManager.start();
 			}
 		}
@@ -350,7 +354,7 @@ public final class CameraManager {
 		if (camera != null) {
 			return configManager.isTorchOn(camera.getParameters());
 		}
-		return false;
+		return torch;
 	}
 
 	/**
@@ -735,49 +739,18 @@ public final class CameraManager {
 	    return new RGBLuminanceSource(width, height, pixels);
 	}
 
-	/**
-	 * A factory method to build the appropriate LuminanceSource object based on
-	 * the format of the preview buffers, as described by Camera.Parameters.
-	 * 
-	 * @param data
-	 *            A preview frame.
-	 * @param width
-	 *            The width of the image.
-	 * @param height
-	 *            The height of the image.
-	 * @return A PlanarYUVLuminanceSource instance.
-	 */
-	// public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data,
-	// int width, int height) {
-	// Rect rect = computeFramingRectInPreview();
-	// // Log.d(TAG, "buildLuminanceSource: " + width + "x" + height + " " +
-	// // rect );
-	//
-	// int previewFormat = configManager.getPreviewFormat();
-	// String previewFormatString = configManager.getPreviewFormatString();
-	// switch (previewFormat) {
-	// // This is the standard Android format which all devices are REQUIRED to
-	// // support.
-	// // In theory, it's the only one we should ever care about.
-	// case PixelFormat.YCbCr_420_SP:
-	// // This format has never been seen in the wild, but is compatible as
-	// // we only care
-	// // about the Y channel, so allow it.
-	// case PixelFormat.YCbCr_422_SP:
-	// return new PlanarYUVLuminanceSource(data, width, height, rect.left,
-	// rect.top, rect.width(), rect.height());
-	// default:
-	// // The Samsung Moment incorrectly uses this variant instead of the
-	// // 'sp' version.
-	// // Fortunately, it too has all the Y data up front, so we can read
-	// // it.
-	// if ("yuv420p".equals(previewFormatString)) {
-	// return new PlanarYUVLuminanceSource(data, width, height,
-	// rect.left, rect.top, rect.width(), rect.height());
-	// }
-	// }
-	// throw new IllegalArgumentException("Unsupported picture format: "
-	// + previewFormat + '/' + previewFormatString);
-	// }
+	public void setQuality(int value)
+	{
+//	    Log.d(LCAT, "setTorch3 to: " + value);
+		configManager.setQuality(value);
+		updatePreviewSize();
+	}
+	
+	public int getQuality()
+	{
+//		if (camera != null) {
+			return configManager.getQuality();
+//		}
+	}
 
 }

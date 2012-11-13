@@ -70,11 +70,7 @@ public class ViewProxy extends TiViewProxy implements TiLifecycle.OnLifecycleEve
 	private String characterSet;	// Standard Debugging variables
 	private static final String LCAT = "AkylasScancodeProxy";
 	
-	@Kroll.constant
-	public static final int BACK_CAMERA = CameraInfo.CAMERA_FACING_BACK;
-	@Kroll.constant
-	public static final int FRONT_CAMERA = CameraInfo.CAMERA_FACING_FRONT;
-	private int cameraPosition = BACK_CAMERA;
+	private int cameraPosition = AkylasScancodeModule.CAMERA_BACK;
 	
 	public ViewProxy()
 	{
@@ -91,19 +87,19 @@ public class ViewProxy extends TiViewProxy implements TiLifecycle.OnLifecycleEve
 	
 	private int cameraPositionValue(Object value)
 	{
-		int result = BACK_CAMERA;
+		int result = AkylasScancodeModule.CAMERA_BACK;
 		String sValue = TiConvert.toString(value);
 		if (sValue != null)
 		{
 			if (value == "front")
-				result = FRONT_CAMERA;
-			else if (value == "rear")
-				result = BACK_CAMERA;
+				result = AkylasScancodeModule.CAMERA_FRONT;
+			else if (value == "back")
+				result = AkylasScancodeModule.CAMERA_BACK;
 		}
 		else
 		{
 			int iValue = TiConvert.toInt(value);
-			if (iValue ==FRONT_CAMERA || iValue == BACK_CAMERA)
+			if (iValue ==AkylasScancodeModule.CAMERA_FRONT || iValue == AkylasScancodeModule.CAMERA_BACK)
 				result = iValue;
 		}
 		return result;
@@ -157,38 +153,35 @@ public class ViewProxy extends TiViewProxy implements TiLifecycle.OnLifecycleEve
 	{
 		super.handleCreationDict(options);
 		
-		if (options.containsKey("message")) {
-//			Log.d(LCAT, "scancodeproxy created with message: " + options.get("message"));
-		}
 		
 		if (options.containsKey("readers")) {
 			setReaders((Object[]) options.get("readers"));
-//			Log.d(LCAT, "scancodeproxy created with readers: " + options.get("readers"));
 		}
 		
 		if (options.containsKey("cropRect")) {
 			setCropRect((KrollDict) options.get("cropRect"));
-//			Log.d(LCAT, "scancodeproxy created with cropRect: " + options.get("cropRect"));
 		}
 		
 		if (options.containsKey("centeredCropRect")) {
 			setCenteredCropRect( (Boolean) options.get("centeredCropRect"));
-//			Log.d(LCAT, "scancodeproxy created with centeredCropRect: " + options.get("centeredCropRect"));
 		}
 		
 		if (options.containsKey("cameraPosition")) {
 			setCameraPosition( options.get("cameraPosition"));
-//			Log.d(LCAT, "scancodeproxy created with setCameraPosition: " + options.get("cameraPosition"));
 		}
 		
 		if (options.containsKey("onlyOneDimension")) {
 			setOnlyOneDimension( (Boolean) options.get("onlyOneDimension"));
-//			Log.d(LCAT, "scancodeproxy created with torch: " + options.get("onlyOneDimension"));
 		}
 
 		if (options.containsKey("torch")) {
-			setTorch( (Boolean) options.get("torch"));
-//			Log.d(LCAT, "scancodeproxy created with torch: " + options.get("torch"));
+			CameraManager.get().setTorch((Boolean) options.get("torch"));
+			Log.d(LCAT, "example created with torch: " + options.get("torch"));
+		}
+		
+		if (options.containsKey("quality")) {
+			 CameraManager.get().setQuality((Integer) options.get("quality"));
+			Log.d(LCAT, "example created with quality: " + options.get("quality"));
 		}
 	}
 
@@ -212,7 +205,10 @@ public class ViewProxy extends TiViewProxy implements TiLifecycle.OnLifecycleEve
 
 	@Override
 	public void onResume(Activity activity) 
-	{		
+	{	
+		if (mHandler != null) {
+			mHandler.resume();
+		}
 		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] resume proxy with id " + getProxyId());
 		if (view != null)
 			((CameraView)view).startPreview();
@@ -320,13 +316,13 @@ public class ViewProxy extends TiViewProxy implements TiLifecycle.OnLifecycleEve
 	@Kroll.method
 	public void swapCamera()
 	{
-		if (cameraPosition == BACK_CAMERA)
+		if (cameraPosition == AkylasScancodeModule.CAMERA_BACK)
 		{
-			cameraPosition = FRONT_CAMERA;
+			cameraPosition = AkylasScancodeModule.CAMERA_FRONT;
 		}
 		else
 		{
-			cameraPosition = BACK_CAMERA;
+			cameraPosition = AkylasScancodeModule.CAMERA_BACK;
 		}
 		if (view != null) {
 			((CameraView)view).setCamera(cameraPosition);
@@ -440,6 +436,20 @@ public class ViewProxy extends TiViewProxy implements TiLifecycle.OnLifecycleEve
 	public Boolean getTorch()
 	{
 	    return CameraManager.get().getTorch();
+	}
+	
+
+	@Kroll.setProperty @Kroll.method
+	public void setQuality(int value)
+	{
+//	    Log.d(LCAT, "setTorch3 to: " + value);
+	    CameraManager.get().setQuality(value);
+	}
+	
+	@Kroll.getProperty @Kroll.method
+	public int getQuality()
+	{
+	    return CameraManager.get().getQuality();
 	}
 	
 	@Kroll.setProperty @Kroll.method

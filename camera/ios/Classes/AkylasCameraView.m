@@ -61,13 +61,13 @@
 {
     ENSURE_SINGLE_ARG(value, NSNumber);
     BOOL bval = [value boolValue];
-    [(AkylasCameraViewProxy*)self.proxy setTorch:bval];
+    [(AkylasCameraViewProxy*)self.proxy setTorch_:bval];
 }
 
 
 - (void) setCameraPosition_:(id)value
 {
-    [(AkylasCameraViewProxy*)self.proxy setCameraPosition:value];
+    [(AkylasCameraViewProxy*)self.proxy setCameraPosition_:value];
 }
 
 @end

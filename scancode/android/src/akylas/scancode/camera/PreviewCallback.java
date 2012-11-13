@@ -53,6 +53,7 @@ final class PreviewCallback implements Camera.PreviewCallback {
     } else {
         Log.d(TAG, "preview callback failed");
         if (thePreviewHandler != null)
+            Log.d(TAG, "sending preview callback failed");
     	 thePreviewHandler.sendEmptyMessage(Id.PREVIEW_FAILED); //similar to decode failed
     }
   }

@@ -26,6 +26,7 @@
 -(void)cleanup{
     _controller.delegate = nil;
 	RELEASE_TO_NIL(_controller);
+	RELEASE_TO_NIL(takePictureCallback);
 }
 
 -(BOOL)shouldDetachViewForSpace
@@ -43,6 +44,7 @@
 	if ((self = [super init]))
 	{
         _controller = [[AkylasCameraViewController alloc] initWithDelegate:self];
+        takePictureCallback = nil;
 	}
 	return self;
 }
@@ -129,12 +131,12 @@
     [_controller viewDidDisappear:animated];
 }
 
-- (void) setTorch:(BOOL)value
+- (void) setTorch_:(BOOL)value
 {
     [_controller setTorch:value];
 }
 
-- (void) setCameraPosition:(id)value
+- (void) setCameraPosition_:(id)value
 {
     [_controller setCameraPosition:[AkylasCameraViewController cameraPositionValue:value]];
 }
@@ -188,7 +190,27 @@
     },NO);
 }
 
+-(void)takePicture:(id)callback
+{
+	ENSURE_SINGLE_ARG(callback,KrollCallback);
+	ENSURE_UI_THREAD(takePicture,callback);
+    takePictureCallback = [(KrollCallback*)callback retain];
+    [_controller takePicture];
+}
+
 #define pragma mark - AkylasCameraViewControllerDelegate
+
+- (void)controller:(AkylasCameraViewController*)controller didTakePicture:(UIImage*)image withRotation:(CGFloat)rotation
+{
+    TiBlob* media = [[[TiBlob alloc] initWithImage:image] autorelease];
+    NSDictionary* event = [NSDictionary dictionaryWithObjectsAndKeys:media,@"image"
+                           ,[NSNumber numberWithFloat:rotation], @"rotation",nil];
+    if (takePictureCallback != nil)
+    {
+        [self _fireEventToListener:@"image" withObject:event listener:takePictureCallback thisObject:nil];
+        RELEASE_TO_NIL(takePictureCallback);
+    }
+}
 
 - (void)controller:(AkylasCameraViewController*)controller didSetAutoFocusAtPoint:(CGPoint)location
 {
@@ -208,10 +230,10 @@
                                                NUMBOOL(value), @"on", nil]];
 }
 
-- (void)controller:(AkylasCameraViewController*)controller didChangeCamera:(CameraPosition)cameraPosition
+- (void)controller:(AkylasCameraViewController*)controller didChangeCamera:(int)cameraPosition
 {
     [self fireEvent:@"camera" withObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                (cameraPosition == CAMERA_REAR)?@"rear":@"front", @"position", nil]];
+                                                [NSNumber numberWithInt:cameraPosition], @"position", nil]];
 }
 
 - (void)captureDidStart:(AkylasCameraViewController *)controller

@@ -29,9 +29,11 @@
     if (self) {
         NSLog(@"init");
         [self setDelegate:scanDelegate];
-        _cameraPosition = CAMERA_REAR;
+        _cameraPosition = AVCaptureDevicePositionBack;
         rotating = NO;
         mirrored = false;
+        needsToTakePicture = false;
+        torch = false;
     }
     
     return self;
@@ -186,13 +188,18 @@ static bool isIPad() {
 
 - (void)initCapture {
 #if HAS_AVFF
-    AVCaptureDevice* inputDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    AVCaptureDevicePosition position = inputDevice.position ;
-    if (position == AVCaptureDevicePositionFront)
-        _cameraPosition = CAMERA_FRONT;
-    else _cameraPosition = CAMERA_REAR;
-    
+    AVCaptureDevice* inputDevice = [ self cameraWithPosition : _cameraPosition ];
+    mirrored = ( _cameraPosition == AVCaptureDevicePositionFront );
+
     AVCaptureDeviceInput *captureInput = [AVCaptureDeviceInput deviceInputWithDevice:inputDevice error:nil];
+    
+    if ( torch)
+    {
+        [inputDevice lockForConfiguration:nil];
+        [inputDevice setTorchMode:AVCaptureTorchModeOn];
+        [inputDevice unlockForConfiguration];
+    }
+    
     AVCaptureVideoDataOutput *captureOutput = [[AVCaptureVideoDataOutput alloc] init];
     captureOutput.alwaysDiscardsLateVideoFrames = YES;
     [captureOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
@@ -261,9 +268,13 @@ static bool isIPad() {
     return nil ;
 }
 
-- ( void ) updateCameraPosition:(CameraPosition) cameraPosition
+- ( void ) updateCameraPosition:(int) cameraPosition
 {
+    int oldPosition = _cameraPosition;
+    _cameraPosition = cameraPosition;
+
 #if HAS_AVFF
+    torch = false; //switching turns the torch off
     //Assume the session is already running
     NSArray * inputs = self.captureSession.inputs;
     for ( AVCaptureDeviceInput * INPUT in inputs ) {
@@ -273,22 +284,25 @@ static bool isIPad() {
             AVCaptureDevice * newCamera = nil ;
             AVCaptureDeviceInput * newInput = nil ;
             
-            if ( cameraPosition == CAMERA_FRONT )
+            if ( cameraPosition == AVCaptureDevicePositionFront )
             {
                 if (position == AVCaptureDevicePositionFront) return; //nothing to do
-                newCamera = [ self cameraWithPosition : AVCaptureDevicePositionFront ] ;
+                newCamera = [ self cameraWithPosition : cameraPosition ] ;
                 mirrored = true;
             }
-            else if ( cameraPosition == CAMERA_REAR )
+            else if ( cameraPosition == AVCaptureDevicePositionBack )
             {
                 if (position == AVCaptureDevicePositionBack) return; //nothing to do
-                newCamera = [ self cameraWithPosition : AVCaptureDevicePositionBack ] ;
+                newCamera = [ self cameraWithPosition : cameraPosition ] ;
                 mirrored = false;
             }
             
-            if (newCamera == nil) return; //failure
+            if (newCamera == nil)
+            {
+                _cameraPosition = oldPosition;
+                return; //failure
+            }
             
-            _cameraPosition = cameraPosition;
             
             newInput = [AVCaptureDeviceInput deviceInputWithDevice:newCamera error:nil ] ;
             
@@ -310,6 +324,29 @@ static bool isIPad() {
         }
     }
 #endif
+}
+
+-(void)updateCameraSessionPreset:(NSString*)preset
+{
+#if HAS_AVFF
+    //Assume the session is already running
+    NSArray * inputs = self.captureSession.inputs;
+    for ( AVCaptureDeviceInput * INPUT in inputs ) {
+        AVCaptureDevice * Device = INPUT.device ;
+        if ( [ Device hasMediaType : AVMediaTypeVideo ] ) {
+            //beginConfiguration ensures that pending changes are not applied immediately
+            [self.captureSession beginConfiguration] ;
+            
+            self.captureSession.sessionPreset = preset;
+            
+            //Changes take effect once the outermost commitConfiguration is invoked.
+            [self.captureSession commitConfiguration] ;
+
+            break ;
+        }
+    }
+#endif
+
 }
 
 - (CGPoint)rotatePoint:(CGPoint)point withinRect:(CGRect)rect withAngle: (CGFloat)angle
@@ -350,7 +387,7 @@ static bool isIPad() {
     return point;
 }
 
-- (CGFloat)capturedImageRotation:(UIInterfaceOrientation)orient forCamera:(CameraPosition)cameraPosition
+- (CGFloat)capturedImageRotation:(UIInterfaceOrientation)orient forCamera:(int)cameraPosition
 {
     CGFloat angle;
     switch(orient) {
@@ -367,7 +404,7 @@ static bool isIPad() {
             angle = 0;
             break;
     }
-    if (cameraPosition == CAMERA_FRONT) angle = 180.0f - angle;
+    if (cameraPosition == AVCaptureDevicePositionFront) angle = 180.0f - angle;
     return angle;
 }
 
@@ -470,16 +507,25 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 
     
     _currentImageSize = CGSizeMake(CGImageGetWidth(capture), CGImageGetHeight(capture));
-    CGImageRelease(capture);    
     
     _currentPreviewRectInImage = [self getPreviewRectInImage];
     
     nightydegreesrotationadded = flipped;
     
-    if (nightydegreesrotationadded)
+//    if (nightydegreesrotationadded)
+//    {
+//        _currentRotation += 90;
+//    }
+    if (needsToTakePicture)
     {
-        _currentRotation += 90;
+        needsToTakePicture = false;
+        id localDel = [self delegate];
+        if ([localDel respondsToSelector:@selector(controller:didTakePicture:withRotation:)])
+        {
+            [localDel controller:self didTakePicture:[UIImage imageWithCGImage:capture] withRotation:_currentRotation];
+        }
     }
+    CGImageRelease(capture);
 }
 #endif
 
@@ -502,6 +548,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 #pragma mark - Torch
 
 - (void)setTorch:(BOOL)status {
+    torch = status;
 #if HAS_AVFF
     NSArray * inputs = self.captureSession.inputs;
     for ( AVCaptureDeviceInput * INPUT in inputs ) {
@@ -611,58 +658,55 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 }
 
 - (BOOL)torchIsOn {
-#if HAS_AVFF
-    NSArray * inputs = self.captureSession.inputs;
-    for ( AVCaptureDeviceInput * INPUT in inputs ) {
-        AVCaptureDevice * device = INPUT.device ;
-        if ( [device hasTorch] ) {
-            return [device torchMode] == AVCaptureTorchModeOn;
-        }
-    }
-#endif
-    return NO;
+    return torch;
 }
 
 -(void)swapCamera
 {
-    if (_cameraPosition == CAMERA_FRONT)
-        [self setCameraPosition:CAMERA_REAR];
+    if (_cameraPosition == AVCaptureDevicePositionFront)
+        [self setCameraPosition:AVCaptureDevicePositionBack];
     else
-        [self setCameraPosition:CAMERA_FRONT];
+        [self setCameraPosition:AVCaptureDevicePositionFront];
 }
 
-+(CameraPosition)cameraPositionValue:(id)pos
++(int)cameraPositionValue:(id)pos
 {
-	CameraPosition newPos = CAMERA_FRONT;
+	int newPos = AVCaptureDevicePositionFront;
     
 	if ([pos isKindOfClass:[NSString class]])
 	{
-		if ([pos isEqualToString:@"rear"])
+		if ([pos isEqualToString:@"back"])
 		{
-			newPos = CAMERA_REAR;
+			newPos = AVCaptureDevicePositionBack;
 		}
 		else if ([pos isEqualToString:@"front"])
 		{
-			newPos = CAMERA_FRONT;
+			newPos = AVCaptureDevicePositionFront;
 		}
 	}
 	else if ([pos isKindOfClass:[NSNumber class]])
 	{
-		newPos = (CameraPosition)[pos intValue];
+		newPos = [pos intValue];
+        if (newPos != AVCaptureDevicePositionFront && newPos != AVCaptureDevicePositionBack)
+            newPos = AVCaptureDevicePositionBack;
 	}
 	return newPos;
 }
 
--(void)setCameraPosition:(CameraPosition)cameraPosition
+-(void)setCameraPosition:(int)cameraPosition
 {
     if (_cameraPosition == cameraPosition)
-        return;    
+        return;
     [self updateCameraPosition:cameraPosition];
 }
 
--(CameraPosition) cameraPosition
+-(int) cameraPosition
 {
     return _cameraPosition;
 }
 
+-(void)takePicture
+{
+    needsToTakePicture  = true;
+}
 @end

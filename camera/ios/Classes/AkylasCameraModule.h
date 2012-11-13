@@ -9,5 +9,10 @@
 @interface AkylasCameraModule : TiModule 
 {
 }
+@property(nonatomic,readonly) NSString *QUALITY_HIGH;
+@property(nonatomic,readonly) NSString *QUALITY_MEDIUM;
+@property(nonatomic,readonly) NSString *QUALITY_LOW;
+@property(nonatomic,readonly) NSNumber *CAMERA_FRONT;
+@property(nonatomic,readonly) NSNumber *CAMERA_BACK;
 
 @end

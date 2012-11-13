@@ -131,8 +131,8 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 	}
 	
 	public void startPreview() {
-		CameraManager.get().startPreview();
-		((ViewProxy)this.proxy).cameraPreviewStarted();
+		if (CameraManager.get().startPreview())
+			((ViewProxy)this.proxy).cameraPreviewStarted();
 	}
 	
 	public void stopPreview() {
@@ -142,52 +142,6 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 	
 	public Boolean isPreviewStarted() {
 		return CameraManager.get().IsPreviewing();
-	}
-	
-	/**
-	 * Computes the optimal preview size given the target display size and aspect ratio.
-	 *
-	 * @param supportPreviewSizes a list of preview sizes the camera supports
-	 * @param targetSize the target display size that will render the preview
-	 * @param aspectRatio the aspect ratio to use for previewing the image
-	 * @return the optimal size of the preview
-	 */
-	private static Size getOptimalPreviewSize(List<Size> supportedPreviewSizes, int width, int height, double aspectRatio) {
-		final double ASPECT_TOLERANCE = 0.001;
-		Size optimalSize = null;
-		double minDiff = Double.MAX_VALUE;
-
-        int targetHeight = Math.min(height, width);
-        if (targetHeight <= 0) {
-            // We don't know the size of SurfaceView, use screen height
-            targetHeight = height;
-        }
-
-		for (Size size : supportedPreviewSizes) {
-			double ratio = (double) size.width / size.height;
-			if (Math.abs(ratio - aspectRatio) > ASPECT_TOLERANCE) continue;
-
-            if (Math.abs(size.height - targetHeight) < minDiff) {
-                optimalSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
-            }
-		}
-
-		// If a size cannot be found that matches the aspect ratio, try
-		// again and just ignore the aspect ratio. We will just try to find
-		// the best size that fits best.
-		if (optimalSize == null) {
-			Log.w(TAG, "No preview size found that matches the aspect ratio.");
-			minDiff = Double.MAX_VALUE;
-			for (Size size : supportedPreviewSizes) {
-				if (Math.abs(size.height - targetHeight) < minDiff) {
-					optimalSize = size;
-					minDiff = Math.abs(size.height - targetHeight);
-				}
-			}
-		}
-
-		return optimalSize;
 	}
 	
 	static public void takePicture() {

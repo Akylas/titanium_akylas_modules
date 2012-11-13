@@ -49,6 +49,7 @@ Ti.API.info("module is => " + scancodeModule);
 var originalScanViewHeight = 400;
 var scanView = scancodeModule.createView({
     readers:['qrcode', 'ean8', 'ean13'],
+	quality:scancodeModule.QUALITY_HIGH,
     backgroundColor:'black',
     // centeredCropRect:true,
     // height:originalScanViewHeight,

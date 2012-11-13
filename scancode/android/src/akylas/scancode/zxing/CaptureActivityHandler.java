@@ -49,7 +49,7 @@ public final class CaptureActivityHandler extends Handler {
 	private static final String LOG_TAG = "CaptureActivityHandler";
 
 	private enum State {
-		PREVIEW, SUCCESS, DONE
+		PREVIEW, SUCCESS, DONE, PAUSED
 	}
 
 	public CaptureActivityHandler(ViewProxy proxy,
@@ -139,7 +139,7 @@ public final class CaptureActivityHandler extends Handler {
 	}
 
 	private void restartPreviewAndDecode() {
-//		Log.d(LOG_TAG, "restartPreviewAndDecode " + state);
+		Log.d(LOG_TAG, "restartPreviewAndDecode " + state);
 		if (state == State.SUCCESS ) {
 			state = State.PREVIEW;
 			CameraManager.get().requestPreviewFrame(decodeThread.getHandler(),
@@ -151,8 +151,13 @@ public final class CaptureActivityHandler extends Handler {
 	
 	
 	public void pause(){
+		state = State.PAUSED;
+		Log.d(LOG_TAG, "pause set state " + state);
+	}
+	
+	public void resume(){
 		state = State.SUCCESS;
-//		Log.d(LOG_TAG, "pause set state " + state);
+		Log.d(LOG_TAG, "pause set state " + state);
 	}
 
 	

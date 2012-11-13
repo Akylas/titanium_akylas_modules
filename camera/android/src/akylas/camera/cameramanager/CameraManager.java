@@ -19,6 +19,8 @@ package akylas.camera.cameramanager;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+import org.appcelerator.kroll.annotations.Kroll;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
@@ -78,6 +80,7 @@ public final class CameraManager {
 	private int currentPreviewWidth;
 
 	private int currentPreviewHeight;
+	private Boolean torch = false;
 
 	/**
 	 * Initializes this static object with the Context of the calling Activity.
@@ -137,29 +140,22 @@ public final class CameraManager {
 	public void openDriver(SurfaceHolder holder, int cameraPosition)
 	{
 		if (camera == null) {
-			Log.d(TAG, "opening camera");
 			camera = openCamera(cameraPosition);
 			if (camera == null) {
-				Log.d(TAG, "cant open camera");
 				return;
 			}
-			Log.d(TAG, "camera opened");
 			try {
-				Log.d(TAG, "camera setting rpeview display");
 				camera.setPreviewDisplay(holder);
 			} catch (IOException e) {
 				Log.d(TAG, "cannot set preview display");
 			}
-			Log.d(TAG, "preview display done");
-			Log.d(TAG, "setting cameraDisplay orientation");
 			updateCameraDisplayOrientation();
-			Log.d(TAG, "cameraDisplay orientation done");
 			if (!initialized) {
 				initialized = true;
-				Log.d(TAG, "cameraDisplay orientation done");
 				configManager.initFromCameraParameters(camera);
 			}
 			configManager.setDesiredCameraParameters(camera);
+			
 		}
 	}
 
@@ -201,6 +197,11 @@ public final class CameraManager {
 			Log.d(TAG, "startPreview");
 			camera.startPreview();
 			previewing = true;
+			if (torch)
+			{
+				Log.d(TAG, "we need to activate torch " );
+				setTorch(torch);
+			}
 			autoFocusManager = new AutoFocusManager(context, camera);
 		}
 	}
@@ -225,13 +226,15 @@ public final class CameraManager {
 	}
 
 	public synchronized void setTorch(boolean newSetting) {
+		Log.d(TAG, "set torch " + newSetting);
+		torch = newSetting;
 		if (camera != null) {
-			boolean isActive = autoFocusManager.isActive();
-			if (autoFocusManager != null && isActive) {
+			boolean isActive =(autoFocusManager != null && autoFocusManager.isActive());
+			if ( isActive) {
 				autoFocusManager.stop();
 			}
 			configManager.setTorch(camera, newSetting);
-			if (autoFocusManager != null && isActive) {
+			if (isActive) {
 				autoFocusManager.start();
 			}
 		}
@@ -241,7 +244,7 @@ public final class CameraManager {
 		if (camera != null) {
 			return configManager.isTorchOn(camera.getParameters());
 		}
-		return false;
+		return torch;
 	}
 
 
@@ -369,5 +372,19 @@ public final class CameraManager {
 		setCameraDisplayOrientation(this.activity, cameraId, camera);
 		if (waspreviewing) 
 			startPreview();
+	}
+	
+	public void setQuality(int value)
+	{
+//	    Log.d(LCAT, "setTorch3 to: " + value);
+		configManager.setQuality(value);
+		updatePreviewSize();
+	}
+	
+	public int getQuality()
+	{
+//		if (camera != null) {
+			return configManager.getQuality();
+//		}
 	}
 }

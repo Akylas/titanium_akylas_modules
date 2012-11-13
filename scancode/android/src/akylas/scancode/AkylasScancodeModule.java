@@ -19,6 +19,8 @@ import org.appcelerator.titanium.TiApplication;
 //import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
 
+import android.hardware.Camera.CameraInfo;
+
 import com.google.zxing.BarcodeFormat;
 
 
@@ -34,6 +36,18 @@ public class AkylasScancodeModule extends KrollModule
 	
 	static final Pattern COMMA_PATTERN = Pattern.compile(",");
 	static final HashMap<String, Vector<BarcodeFormat>> STRING_TO_FORMAT;
+	
+	@Kroll.constant
+	public static final int CAMERA_FRONT = CameraInfo.CAMERA_FACING_BACK;
+	@Kroll.constant
+	public static final int CAMERA_BACK = CameraInfo.CAMERA_FACING_FRONT;
+	
+	@Kroll.constant
+	public static final int QUALITY_HIGH = 2;
+	@Kroll.constant
+	public static final int QUALITY_MEDIUM = 1;
+	@Kroll.constant
+	public static final int QUALITY_LOW = 0;
 
 	static {
 		

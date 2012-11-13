@@ -9,7 +9,8 @@
 	// This means their views are recreated.  For movie players, this means the movie is reloaded and plays.
 	// We need some internal way whether or not to check if it's OK to create a view - this is it.
 	BOOL reallyAttached;
+    KrollCallback* takePictureCallback;
 }
-- (void)setTorch:(BOOL)status;
-- (void) setCameraPosition:(id)value;
+- (void)setTorch_:(BOOL)status;
+- (void) setCameraPosition_:(id)value;
 @end

@@ -28,10 +28,10 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.hardware.Camera.CameraInfo;
 import android.os.Handler;
-
+import akylas.camera.AkylasCameraModule;
 
 // This proxy can be created by calling AkylasCameraAndroid.createExample({message: "hello world"})
-@Kroll.proxy(creatableInModule=AkylasCameraAndroidModule.class)
+@Kroll.proxy(creatableInModule=AkylasCameraModule.class)
 public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, ConfigurationChangedListener 
 {
 	// Standard Debugging variables
@@ -47,11 +47,8 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 		return mHandler;
 	}
 	
-	@Kroll.constant
-	public static final int BACK_CAMERA = CameraInfo.CAMERA_FACING_BACK;
-	@Kroll.constant
-	public static final int FRONT_CAMERA = CameraInfo.CAMERA_FACING_FRONT;
-	private int cameraPosition = BACK_CAMERA;
+	
+	private int cameraPosition = AkylasCameraModule.CAMERA_BACK;
 	
 	public ViewProxy()
 	{
@@ -68,19 +65,19 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 	
 	private int cameraPositionValue(Object value)
 	{
-		int result = BACK_CAMERA;
+		int result = AkylasCameraModule.CAMERA_BACK;
 		String sValue = TiConvert.toString(value);
 		if (sValue != null)
 		{
 			if (value == "front")
-				result = FRONT_CAMERA;
-			else if (value == "rear")
-				result = BACK_CAMERA;
+				result = AkylasCameraModule.CAMERA_FRONT;
+			else if (value == "back")
+				result = AkylasCameraModule.CAMERA_BACK;
 		}
 		else
 		{
 			int iValue = TiConvert.toInt(value);
-			if (iValue ==FRONT_CAMERA || iValue == BACK_CAMERA)
+			if (iValue ==AkylasCameraModule.CAMERA_FRONT || iValue == AkylasCameraModule.CAMERA_BACK)
 				result = iValue;
 		}
 		return result;
@@ -117,10 +114,15 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 	@Override
 	public TiUIView createView(Activity activity)
 	{
-		TiUIView view = new CameraView(this);
+		CameraView view = new CameraView(this);
 		view.getLayoutParams().autoFillsHeight = true;
 		view.getLayoutParams().autoFillsWidth = true;
-		return view;
+		if (hasProperty("cameraPosition")) {
+			int pos = cameraPositionValue(getProperty("cameraPosition"));
+			((CameraView)view).setCamera(pos);
+		}
+		Log.d(LCAT, "createView");
+		return (TiUIView)view;
 	}
 
 	// Handle creation options
@@ -129,8 +131,13 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 	{
 		super.handleCreationDict(options);
 		
-		if (options.containsKey("message")) {
-			Log.d(LCAT, "example created with message: " + options.get("message"));
+		if (options.containsKey("torch")) {
+			 CameraManager.get().setTorch((Boolean) options.get("torch"));
+			Log.d(LCAT, "example created with torch: " + options.get("torch"));
+		}
+		if (options.containsKey("quality")) {
+			 CameraManager.get().setQuality((Integer) options.get("quality"));
+			Log.d(LCAT, "example created with quality: " + options.get("quality"));
 		}
 	}
 
@@ -191,13 +198,13 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 	@Kroll.method
 	public void swapCamera()
 	{
-		if (cameraPosition == BACK_CAMERA)
+		if (cameraPosition == AkylasCameraModule.CAMERA_BACK)
 		{
-			cameraPosition = FRONT_CAMERA;
+			cameraPosition = AkylasCameraModule.CAMERA_FRONT;
 		}
 		else
 		{
-			cameraPosition = BACK_CAMERA;
+			cameraPosition = AkylasCameraModule.CAMERA_BACK;
 		}
 		if (view != null) {
 			((CameraView)view).setCamera(cameraPosition);
@@ -253,6 +260,19 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 		Log.d(LCAT, "onConfigurationChanged");
 		
 		CameraManager.get().updateCameraDisplayOrientation();
+	}
+	
+	@Kroll.setProperty @Kroll.method
+	public void setQuality(int value)
+	{
+//	    Log.d(LCAT, "setTorch3 to: " + value);
+	    CameraManager.get().setQuality(value);
+	}
+	
+	@Kroll.getProperty @Kroll.method
+	public int getQuality()
+	{
+	    return CameraManager.get().getQuality();
 	}
 	
 }

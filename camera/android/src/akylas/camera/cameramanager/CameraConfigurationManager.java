@@ -16,6 +16,7 @@
 
 package akylas.camera.cameramanager;
 
+import akylas.camera.AkylasCameraModule;
 import akylas.camera.exposure.ExposureInterface;
 import akylas.camera.exposure.ExposureManager;
 import android.content.Context;
@@ -46,8 +47,6 @@ final class CameraConfigurationManager {
 	// below will still select the default (presumably 320x240) size for these.
 	// This prevents
 	// accidental selection of very low resolution on some devices.
-	private static final int MIN_PREVIEW_PIXELS = 470 * 320; // normal screen
-	private static final int MAX_PREVIEW_PIXELS = 1280 * 720;
 
 	private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
@@ -57,6 +56,7 @@ final class CameraConfigurationManager {
 	private int previewFormat;
 	private String previewFormatString;
 	private final ExposureInterface exposure;
+	private int quality = AkylasCameraModule.QUALITY_MEDIUM;
 
 	CameraConfigurationManager(Context context) {
 		this.context = context;
@@ -74,6 +74,37 @@ final class CameraConfigurationManager {
 		}
 		return point;
 	}
+	
+	public void setQuality(int newQual){
+		quality = newQual;
+	}
+	
+	public int getQuality()
+	{
+			return quality;
+	}
+	
+	private int maxPixels(){
+		switch (quality) {
+		case AkylasCameraModule.QUALITY_HIGH:
+			return 1280 * 720;
+		case AkylasCameraModule.QUALITY_LOW:
+			return 320 * 240;
+		case AkylasCameraModule.QUALITY_MEDIUM:
+		default:
+			return 640 * 480;
+		}
+	}
+	
+	private int minPixels(){
+		switch (quality) {
+		case AkylasCameraModule.QUALITY_HIGH:
+		case AkylasCameraModule.QUALITY_LOW:
+		case AkylasCameraModule.QUALITY_MEDIUM:
+		default:
+			return 320 * 240;
+		}
+	}
 
 	/**
 	 * Reads, one time, values from the camera that are needed by the app.
@@ -82,15 +113,15 @@ final class CameraConfigurationManager {
 		Camera.Parameters parameters = camera.getParameters();
 		previewFormat = parameters.getPreviewFormat();
 		previewFormatString = parameters.get("preview-format");
-		Log.d(TAG, "Default preview format: " + previewFormat + '/'
-				+ previewFormatString);
+//		Log.d(TAG, "Default preview format: " + previewFormat + '/'
+//				+ previewFormatString);
 		WindowManager manager = (WindowManager) context
 				.getSystemService(Context.WINDOW_SERVICE);
 //		Display display = manager.getDefaultDisplay();
 		screenResolution = getDisplaySize(manager.getDefaultDisplay());
-		Log.d(TAG, "Screen resolution: " + screenResolution);
+//		Log.d(TAG, "Screen resolution: " + screenResolution);
 		cameraResolution = getCameraResolution(parameters, screenResolution);
-		Log.d(TAG, "Camera resolution: " + screenResolution);
+//		Log.d(TAG, "Camera resolution: " + screenResolution);
 	}
 
 	/**
@@ -213,17 +244,19 @@ final class CameraConfigurationManager {
 				/ (float) screenResolution.y;
 
 		float diff = (float) 0.2;
+		int MIN_PREVIEW_PIXELS = minPixels();
+		int MAX_PREVIEW_PIXELS = maxPixels();
 		for (Camera.Size supportedPreviewSize : supportedPreviewSizes) {
 			int realWidth = supportedPreviewSize.width;
 			int realHeight = supportedPreviewSize.height;
-			Log.i(TAG, "testing sizes: " + realWidth + ", " + realHeight);
+//			Log.i(TAG, "testing sizes: " + realWidth + ", " + realHeight);
 			int pixels = realWidth * realHeight;
-			Log.i(TAG, "pixels: " + pixels);
+//			Log.i(TAG, "pixels: " + pixels);
 			if (pixels < MIN_PREVIEW_PIXELS || pixels > MAX_PREVIEW_PIXELS) {
 				continue;
 			}
 			boolean isCandidatePortrait = realHeight < realWidth;
-			Log.i(TAG, "isCandidatePortrait: " + isCandidatePortrait);
+//			Log.i(TAG, "isCandidatePortrait: " + isCandidatePortrait);
 			int maybeFlippedWidth = isCandidatePortrait ? realHeight
 					: realWidth;
 			int maybeFlippedHeight = isCandidatePortrait ? realWidth
@@ -237,13 +270,14 @@ final class CameraConfigurationManager {
 			}
 			float aspectRatio = (float) maybeFlippedWidth
 					/ (float) maybeFlippedHeight;
-			Log.i(TAG, "aspectRatio: " + aspectRatio);
-			Log.i(TAG, "screenAspectRatio: " + screenAspectRatio);
+//			Log.i(TAG, "aspectRatio: " + aspectRatio);
+//			Log.i(TAG, "screenAspectRatio: " + screenAspectRatio);
 			float newDiff = Math.abs(aspectRatio - screenAspectRatio);
-			Log.i(TAG, "newDiff: " + newDiff);
+//			Log.i(TAG, "newDiff: " + newDiff);
 			if (newDiff < diff) {
 				bestSize = new Point(realWidth, realHeight);
 				diff = newDiff;
+				break;
 			}
 		}
 
@@ -252,8 +286,8 @@ final class CameraConfigurationManager {
 			bestSize = new Point(defaultSize.width, defaultSize.height);
 			Log.i(TAG, "No suitable preview sizes, using default: " + bestSize);
 		}
-
-//		Log.i(TAG, "Found best approximate preview size: " + bestSize);
+		else
+			Log.i(TAG, "Found best approximate preview size: " + bestSize);
 		return bestSize;
 	}
 //

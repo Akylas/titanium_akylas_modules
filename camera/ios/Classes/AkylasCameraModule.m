@@ -8,10 +8,17 @@
 #import "TiBase.h"
 #import "TiHost.h"
 #import "TiUtils.h"
+#import <AVFoundation/AVFoundation.h>
 
 @implementation AkylasCameraModule
 
 #pragma mark Internal
+MAKE_SYSTEM_STR(QUALITY_HIGH,AVCaptureSessionPresetHigh);
+MAKE_SYSTEM_STR(QUALITY_MEDIUM,AVCaptureSessionPresetMedium);
+MAKE_SYSTEM_STR(QUALITY_LOW,AVCaptureSessionPresetLow);
+
+MAKE_SYSTEM_PROP(CAMERA_FRONT,AVCaptureDevicePositionFront);
+MAKE_SYSTEM_PROP(CAMERA_BACK,AVCaptureDevicePositionBack);
 
 // this is generated for your module, please do not change it
 -(id)moduleGUID

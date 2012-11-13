@@ -15,19 +15,33 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
 
+import android.hardware.Camera.CameraInfo;
 
-@Kroll.module(name="AkylasCameraAndroid", id="akylas.camera")
-public class AkylasCameraAndroidModule extends KrollModule
+
+@Kroll.module(name="AkylasCamera", id="akylas.camera")
+public class AkylasCameraModule extends KrollModule
 {
 
 	// Standard Debugging variables
-	private static final String LCAT = "AkylasCameraAndroidModule";
+	private static final String LCAT = "AkylasCameraModule";
 	private static final boolean DBG = TiConfig.LOGD;
+	
+	@Kroll.constant
+	public static final int CAMERA_FRONT = CameraInfo.CAMERA_FACING_BACK;
+	@Kroll.constant
+	public static final int CAMERA_BACK = CameraInfo.CAMERA_FACING_FRONT;
+	
+	@Kroll.constant
+	public static final int QUALITY_HIGH = 2;
+	@Kroll.constant
+	public static final int QUALITY_MEDIUM = 1;
+	@Kroll.constant
+	public static final int QUALITY_LOW = 0;
 
 	// You can define constants with @Kroll.constant, for example:
 	// @Kroll.constant public static final String EXTERNAL_NAME = value;
 	
-	public AkylasCameraAndroidModule()
+	public AkylasCameraModule()
 	{
 		super();
 	}

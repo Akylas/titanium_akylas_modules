@@ -10,7 +10,11 @@ var win = Ti.UI.createWindow({
 		orientationModes : [Titanium.UI.LANDSCAPE_LEFT, Titanium.UI.LANDSCAPE_RIGHT, Titanium.UI.PORTRAIT, Titanium.UI.UPSIDE_PORTRAIT]
 });
 var akylas_camera_android = require('akylas.camera');
-var cameraview = akylas_camera_android.createView();
+var cameraview = akylas_camera_android.createView({
+	cameraPosition:akylas_camera_android.CAMERA_FRONT,
+	quality:akylas_camera_android.QUALITY_HIGH,
+	torch:true
+});
 
 cameraview.addEventListener('singletap', function(e)
 {
