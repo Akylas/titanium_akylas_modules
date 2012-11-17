@@ -15,6 +15,7 @@ import java.util.HashMap;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBaseActivity.ConfigurationChangedListener;
 import org.appcelerator.titanium.TiContext;
@@ -79,13 +80,13 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 	protected boolean _readyToStart = false;
 	protected tiComponent _tiComponent;
 	protected FrameLayout _totaliFrameLayout = null;
+	private TiCompositeLayout previewLayout;
 
 	private HashMap<String, CommandHandler> _registeredCallbacks = new HashMap<String, CommandHandler>();
 
 	private class TotaliView extends TiUIView {
 		private static final String TAG = "AkylasTotaliView";
 
-		private TiCompositeLayout previewLayout;
 
 		public TotaliView(TiViewProxy proxy) {
 			super(proxy);
@@ -146,7 +147,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 	@Override
 	public void onStop(Activity activity) {
 		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] onStop");
-		stop();
+		realStop();
 	}
 
 	@Override
@@ -164,7 +165,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 	public void onStart(Activity arg0) {
 		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] onStart");
 		if (_tiComponent == null) {
-			start();
+			realStart();
 		}
 	}
 
@@ -182,7 +183,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 	@Override
 	public void onDestroy(Activity activity) {
 		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] onDestroy");
-		stop();
+		realStop();
 	}
 
 	public void initComponent() {
@@ -191,7 +192,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 		Log.d(THIS_LOGTAG, "initComponent");
 
 		if (_tiComponent != null) {
-			stop();
+			realStop();
 		}
 
 		_tiComponent = new tiComponent(getActivity());
@@ -209,8 +210,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 		TiCompositeLayout.LayoutParams params = view.getLayoutParams();
 		params.autoFillsHeight = true;
 		params.autoFillsWidth = true;
-		((ViewGroup) peekView().getNativeView()).addView(_totaliFrameLayout,
-				params);
+		previewLayout.addView(_totaliFrameLayout, params);
 		KrollDict data = new KrollDict();
 		fireSyncEvent("started", data);
 	}
@@ -248,27 +248,59 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 		_tiComponent.loadScenario(sourcefile);
 		_isPlaying = true;
 	}
-
-	// Methods
-	@Kroll.method
-	public void stop() {
-		Log.d(LCAT, "stop");
+	
+	private void realStop(Boolean fromKroll){
 		if (_tiComponent != null) {
-			((ViewGroup) peekView().getNativeView())
-					.removeView(_totaliFrameLayout);
+			if (fromKroll == true){
+				if (_isPlaying)
+					_tiComponent.pauseScenario();
+				_tiComponent.onPause();
+			}
 			_tiComponent.terminate();
 			_tiComponent = null;
-			_totaliFrameLayout = null;
+			Log.d(LCAT, "realtop");
+			if (_totaliFrameLayout != null){
+				Log.d(LCAT, "reomving _totaliFrameLayout");
+				previewLayout.removeView(_totaliFrameLayout);
+				_totaliFrameLayout = null;
+			}
 			_registeredCallbacks.clear();
 			KrollDict data = new KrollDict();
 			fireSyncEvent("stopped", data);
 		}
 	}
+	private void realStop(){
+		realStop(false);
+	}
+	
+	private void realPause(){
+		
+	}
+	
+	
 
+	// Methods
 	@Kroll.method
-	public void start() {
-		Log.d(LCAT, "start2");
+	public void pause() {
+		Log.d(LCAT, "pause");
+		if (_tiComponent != null) {
+			if (_isPlaying)
+				_tiComponent.pauseScenario();
+			_isPlaying = false;
+		}
+	}
+	
+	@Kroll.method
+	public void resume() {
+		Log.d(LCAT, "resume");
+		if (_tiComponent != null) {
+			if (!_isPlaying)
+				_tiComponent.playScenario();
+			_isPlaying = true;
+		}
+	}
 
+	private void realStart(){
 		if (peekView() == null) {
 			Log.d(LCAT, "no view yet, cant start");
 			_needsStarting = true;
@@ -284,6 +316,23 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 			loadScenario(_scenarioPath);
 		}
 		_needsStarting = false;
+	}
+	
+	@Kroll.method
+	public void start() {
+		Log.d(LCAT, "start");
+		if (TiApplication.isUIThread()) {
+			realStart();
+		} else {
+			getActivity().runOnUiThread(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					realStart();
+				}
+			});
+		}
 	}
 
 	@Kroll.method
