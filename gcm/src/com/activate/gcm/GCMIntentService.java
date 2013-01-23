@@ -38,14 +38,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 	public void onRegistered(Context context, String registrationId){
 		Log.d(LCAT, "Registered: " + registrationId);
 
-		C2dmModule.getInstance().sendSuccess(registrationId);
+		if (C2dmModule.getInstance() != null){
+			C2dmModule.getInstance().sendSuccess(registrationId);
+		}
 	}
 
 	@Override
 	public void onUnregistered(Context context, String registrationId) {
 		Log.d(LCAT, "Unregistered");
 
-		C2dmModule.getInstance().fireEvent(UNREGISTER_EVENT, new HashMap());
+		if (C2dmModule.getInstance() != null){
+			C2dmModule.getInstance().fireEvent(UNREGISTER_EVENT, new HashMap());
+		}
 	}
 
 	@Override
@@ -142,15 +146,18 @@ public class GCMIntentService extends GCMBaseIntentService {
 	@Override
 	public void onError(Context context, String errorId) {
 		Log.e(LCAT, "Error: " + errorId);
-
-		C2dmModule.getInstance().sendError(errorId);
+		if (C2dmModule.getInstance() != null){
+			C2dmModule.getInstance().sendError(errorId);
+		}
 	}
 
 	@Override
 	public boolean onRecoverableError(Context context, String errorId) {
 		Log.e(LCAT, "RecoverableError: " + errorId);
 
-		C2dmModule.getInstance().sendError(errorId);
+		if (C2dmModule.getInstance() != null){
+			C2dmModule.getInstance().sendError(errorId);
+		}
 
 		return true;
 	}
