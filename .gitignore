@@ -13,3 +13,4 @@ xcuserdata
 libs
 
 .pydevproject
+*.pyc
