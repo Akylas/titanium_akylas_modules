@@ -78,22 +78,12 @@ public class AkylasMotionAndroidModule extends KrollModule implements
 	float[] values = new float[3];
 	boolean isReady = false;
 
-//	private Filter mMagFilter = new Filter();
-//	private Filter mAccelFilter = new Filter();
 	float[] filteredAcc = new float[3];
 	float[] filteredMag = new float[3];
 	
-	//+1 because accelerometer = gravity + linear acceleration
 	private int motionRealNbSensors = motionSensors.size() + 1;
 
-//	private static final float[] sZVector = { 0, 0, 1, 1 };
-//	DigitalAverage[] filter = { new DigitalAverage(), new DigitalAverage(),
-//			new DigitalAverage(), new DigitalAverage(), new DigitalAverage(),
-//			new DigitalAverage() };
-
 	private HashMap<Integer, float[]> mCurrentValues = new HashMap<Integer, float[]>();
-//	private HashMap<Integer, Long> mCurrentTimestamps = new HashMap<Integer, Long>();
-//	private final int TYPE_FUSION_MOTION = 1009;
 	private long lastTimeStamp = -1;
 	private boolean accelerometerRegistered = false;
 	private boolean orientationRegistered = false;
@@ -191,21 +181,26 @@ public class AkylasMotionAndroidModule extends KrollModule implements
 			}
 		} else if (EVENT_MOTION.equals(type)) {
 			if (motionRegistered) {
-				if (!magnetometerRegistered)
+				if (!magnetometerRegistered) {
 					TiSensorHelper.unregisterListener(
 							Sensor.TYPE_MAGNETIC_FIELD, this);
+				}
+					
 				if (!accelerometerRegistered) {
 					TiSensorHelper.unregisterListener(
 							Sensor.TYPE_LINEAR_ACCELERATION, this);
 					 TiSensorHelper.unregisterListener(Sensor.TYPE_GRAVITY,
 					 this);
 				}
-				if (!orientationRegistered)
+				if (!orientationRegistered){
 					TiSensorHelper.unregisterListener(Sensor.TYPE_ORIENTATION,
 							this);
-				if (!gyroscopeRegistered)
+				}
+				if (!gyroscopeRegistered){
 					TiSensorHelper.unregisterListener(Sensor.TYPE_GYROSCOPE,
 							this);
+				}
+					
 				motionRegistered = false;
 			}
 		}
