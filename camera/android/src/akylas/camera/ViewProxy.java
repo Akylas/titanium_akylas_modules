@@ -36,7 +36,7 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 {
 	// Standard Debugging variables
 	private static final String LCAT = "AkylasCameraViewProxy";
-	
+	private Boolean needsStartOnResume = true;
 
 	// Constructor
 	private CaptureActivityHandler mHandler;
@@ -150,12 +150,15 @@ public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, Configu
 	@Override
 	public void onPause(Activity arg0) {
 		if (view != null)
+		{
+			needsStartOnResume = ((CameraView)view).isPreviewStarted();
 			((CameraView)view).stopPreview();
+		}
 	}
 
 	@Override
 	public void onResume(Activity arg0) {
-		if (view != null)
+		if (view != null && needsStartOnResume)
 			((CameraView)view).startPreview();
 		
 	}
