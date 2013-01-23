@@ -95,12 +95,12 @@
     BOOL testing = FALSE;
     
 //#ifndef RELEASE 
-//    if ([args count] > 1) {
-//        testing = [TiUtils boolValue: [args objectAtIndex:1]];
-//        if (testing == TRUE) {
-//            [TestFlight setDeviceIdentifier: [[UIDevice currentDevice] uniqueIdentifier]];
-//        }
-//    }
+    if ([args count] > 1) {
+        testing = [TiUtils boolValue: [args objectAtIndex:1]];
+        if (testing == TRUE) {
+            [TestFlight setDeviceIdentifier: [[UIDevice currentDevice] uniqueIdentifier]];
+        }
+    }
 //#endif
     
     [TestFlight takeOff:value];
