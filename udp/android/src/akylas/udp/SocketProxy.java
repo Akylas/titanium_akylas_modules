@@ -8,12 +8,15 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.KrollFunction;
+import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
@@ -47,8 +50,9 @@ public class SocketProxy extends KrollProxy {
 	private Integer _port;
 	int ref = 0;
 	private int maxPacketSize = 256;
-	
-//	private Integer counter = 0;
+	public static KrollFunction readCallback;	
+	public static KrollObject callbackContext;
+	//	private Integer counter = 0;
 
 	// Constructor
 	public SocketProxy(TiContext tiContext) {
@@ -233,20 +237,29 @@ public class SocketProxy extends KrollProxy {
 						_socket.receive( packet );
 						
 						BufferProxy buffer = new BufferProxy(packet.getData());
-						String receivedMsg = new String(packet.getData(), 0, packet.getLength());
-	    				HashMap<String, Object> evt = new HashMap<String, Object>();
-	    				evt.put("bytesData", buffer);
-	    				evt.put("stringData", receivedMsg);
-	    				evt.put("address", packet.getAddress().toString());
-	    				evt.put("port", packet.getPort());
+						
+	    				if (readCallback != null) {
+	    					readCallback.callAsync(callbackContext, new Object[] { buffer });
+	    				}
+	    				else
+	    				{
+	    					String receivedMsg = new String(packet.getData(), 0, packet.getLength());
+		    				HashMap<String, Object> evt = new HashMap<String, Object>();
+		    				evt.put("bytesData", buffer);
+		    				evt.put("stringData", receivedMsg);
+		    				evt.put("timestamp", (new Date()).getTime());
+		    				evt.put("address", packet.getAddress().toString());
+		    				evt.put("port", packet.getPort());
+	    					fireEvent("data", evt);
+	    				}
 //						new SendTiEvent().execute(evt);
 	    				
-						if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
-							new SendTiEvent().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, evt);
-						}
-						else {
-							new SendTiEvent().execute(evt);
-						}
+//						if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.HONEYCOMB) {
+//							new SendTiEvent().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, evt);
+//						}
+//						else {
+//							new SendTiEvent().execute(evt);
+//						}
 					}
 //					Thread.sleep(5);
 				}
@@ -315,16 +328,101 @@ public class SocketProxy extends KrollProxy {
 	public void start(HashMap hm) {
 		KrollDict args = new KrollDict(hm);
 		
+		if (_socket != null) {
+			fireError("Socket already started! Explicitly call stop() before attempting to start it again!");
+			return;
+		}
+		callbackContext = null;
+		readCallback = null;
+		_port = args.getInt("port");
+		if (args.containsKey("onread")) {
+			callbackContext = getKrollObject();
+			readCallback = (KrollFunction) args.get("onread");
+		}
+//			startListening();
+		new ConnectToServer().execute("");
+
+		fireStarted();
+		Log.i(LCAT, "Socket Started!");
+	}
+	
+	@Kroll.method
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void bind(HashMap hm) {
+		KrollDict args = new KrollDict(hm);
+		
 			if (_socket != null) {
 				fireError("Socket already started! Explicitly call stop() before attempting to start it again!");
 				return;
 			}
+			
 			_port = args.getInt("port");
-//			startListening();
-			new ConnectToServer().execute("");
+			try {
+				_socket = new DatagramSocket(null);
+				_socket.setReuseAddress(true);
+				_socket.bind(new InetSocketAddress("0.0.0.0", _port));
+			} catch (SocketException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
-			fireStarted();
-			Log.i(LCAT, "Socket Started!");
+			Log.i(LCAT, "Socket binded!");
+	}
+	
+	// TiStream interface methods
+	@Kroll.method
+	public int read(Object args[]) throws IOException
+	{
+		if (_socket == null) {
+			fireError("Unable to read from socket, not connected");
+		}
+
+		BufferProxy bufferProxy = null;
+		int offset = 0;
+		int length = 0;
+
+		if(args.length == 1 || args.length == 3) {
+			if(args.length > 0) {
+				if(args[0] instanceof BufferProxy) {
+					bufferProxy = (BufferProxy) args[0];
+					length = bufferProxy.getLength();
+
+				} else {
+					throw new IllegalArgumentException("Invalid buffer argument");
+				}
+			}
+
+			if(args.length == 3) {
+				if(args[1] instanceof Integer) {
+					offset = ((Integer)args[1]).intValue();
+
+				} else if(args[1] instanceof Double) {
+					offset = ((Double)args[1]).intValue();
+
+				} else {
+					throw new IllegalArgumentException("Invalid offset argument");
+				}
+
+				if(args[2] instanceof Integer) {
+					length = ((Integer)args[2]).intValue();
+
+				} else if(args[2] instanceof Double) {
+					length = ((Double)args[2]).intValue();
+
+				} else {
+					throw new IllegalArgumentException("Invalid length argument");
+				}
+			}
+
+		} else {
+			throw new IllegalArgumentException("Invalid number of arguments");
+		}
+		
+		byte[] buf = new byte[maxPacketSize];
+		DatagramPacket packet = new DatagramPacket(buf, buf.length);
+		_socket.receive( packet );
+		
+		return bufferProxy.write(offset, packet.getData(), 0, packet.getLength());
 	}
 
 	@Kroll.method
