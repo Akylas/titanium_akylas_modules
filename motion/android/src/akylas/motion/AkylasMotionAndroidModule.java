@@ -223,9 +223,9 @@ public class AkylasMotionAndroidModule extends KrollModule implements
 			case Sensor.TYPE_ACCELEROMETER: {
 				// float[] gravs = mCurrentValues.get(Sensor.TYPE_GRAVITY);
 				final float alpha = (float) 0.8;
-				x /= STANDARD_GRAVITY;
-				y /= STANDARD_GRAVITY;
-				z /= STANDARD_GRAVITY;
+				x /= -STANDARD_GRAVITY; 
+				y /= -STANDARD_GRAVITY;
+				z /= -STANDARD_GRAVITY;
 	
 				gravity[0] = alpha * gravity[0] + (1 - alpha) * x;
 				gravity[1] = alpha * gravity[1] + (1 - alpha) * y;
@@ -333,7 +333,14 @@ public class AkylasMotionAndroidModule extends KrollModule implements
 				} else if (event.sensor.getType() == Sensor.TYPE_GRAVITY
 						&& accelerometerRegistered) {
 					 if (!mCurrentValues.containsKey(Sensor.TYPE_GRAVITY));
-						mCurrentValues.put(event.sensor.getType(), event.values.clone());
+					 {
+						 //gravity values are inversed!
+						float[] gravs = event.values.clone();
+						gravs[0] *= -1;
+						gravs[1] *= -1;
+						gravs[2] *= -1;
+						mCurrentValues.put(event.sensor.getType(), gravs);
+					 }
 				} else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD
 						&& magnetometerRegistered) {
 					sensordata = eventToDict(event.sensor.getType(), event.values);
@@ -356,8 +363,16 @@ public class AkylasMotionAndroidModule extends KrollModule implements
 	
 			if (mCurrentValues.containsKey(event.sensor.getType()))
 				return;
-
-			mCurrentValues.put(event.sensor.getType(), event.values.clone());
+			
+			float[] values = event.values.clone();
+			if (event.sensor.getType() == Sensor.TYPE_GRAVITY)
+			{
+				 //gravity values are inversed!
+				values[0] *= -1;
+				values[1] *= -1;
+				values[2] *= -1;
+			}
+			mCurrentValues.put(event.sensor.getType(), values);
 			
 			if (mCurrentValues.size() != motionRealNbSensors)
 				return;

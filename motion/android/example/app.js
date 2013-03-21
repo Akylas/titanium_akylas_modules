@@ -230,9 +230,9 @@ var motionCallback = function(e) {
 
     // Ti.API.info('motion ' + JSON.stringify(e));
     ts.text = e.timestamp;
-    ax.text = 'x: ' + e.accelerometer.user.x;
-    ay.text = 'y:' + e.accelerometer.user.y;
-    az.text = 'z:' + e.accelerometer.user.z;
+    ax.text = 'x: ' + e.accelerometer.x;
+    ay.text = 'y:' + e.accelerometer.y;
+    az.text = 'z:' + e.accelerometer.z;
 };
 // var heading = Math.atan2(e.rotationMatrix.m22, e.rotationMatrix.m12);
 // heading = heading*180/Math.PI;
@@ -253,7 +253,7 @@ win.addEventListener('close', function() {
 win.addEventListener('android:back', function(e) {
     this.close();
 });
- 
+
 // Ti.Motion.addEventListener('accelerometer', accelerometerCallback);
 // Ti.Motion.addEventListener('magnetometer', magnetometerCallback);
 // Ti.Motion.addEventListener('orientation', orientationCallback);
