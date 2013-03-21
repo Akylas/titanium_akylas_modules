@@ -15,8 +15,8 @@
 	  </copy>
 	</target>
 	
-	<property name="genlocaljni" location="${build}/generated/local-jni"/>
-<!-- 	<target name="build.jni">
+	<!-- <property name="genlocaljni" location="${build}/generated/local-jni"/>
+ 	<target name="build.jni">
 	    <mkdir dir="${genlocaljni}"/>
 	    <copy todir="${genlocaljni}">
 	        <fileset dir="${ti.module.root}">
