@@ -1,0 +1,19 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: My module
+author: Martin Guillon
+license: Proprietary
+copyright: Copyright (c) 2012 by Akylas
+
+
+# these should not be edited
+name: akylas_commonjs_android
+moduleid: akylas.commonjs
+guid: 1e650f01-98e8-449b-9730-e1042b5c82c8
+platform: android
+minsdk: 3.1.0
+commonjs: true
