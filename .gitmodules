@@ -1,0 +1,3 @@
+[submodule "commonjs/ios/assets/AkInclude"]
+	path = commonjs/ios/assets/AkInclude
+	url = git@farfromrefuge.dyndns.org:ti.ak.include
