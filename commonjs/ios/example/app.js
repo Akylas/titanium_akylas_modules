@@ -1,6 +1,6 @@
 // This is a test harness for your module
-// You should do something interesting in this harness 
-// to test out the module and to provide instructions 
+// You should do something interesting in this harness
+// to test out the module and to provide instructions
 // to users on how to use it by example.
 
 
@@ -8,32 +8,18 @@
 var win = Ti.UI.createWindow({
 	backgroundColor:'white'
 });
-var label = Ti.UI.createLabel();
-win.add(label);
-win.open();
 
 // TODO: write your module tests here
-var akylas_commonjs_ios = require('akylas.commonjs');
-Ti.API.info("module is => " + akylas_commonjs_ios);
+var ak_test = require('akylas.commonjs');
 
-label.text = akylas_commonjs_ios.example();
+ak_test.load(['ti', 'moment', 'lang', 'underscore', 'backbone', 'animation'], [], this);
+ak.ti.reduxApplyDPUnitsToPixels(true);
 
-Ti.API.info("module exampleProp is => " + akylas_commonjs_ios.exampleProp);
-akylas_commonjs_ios.exampleProp = "This is a test value";
+var view = new View({
+	backgroundColor:'red',
+	width:100,
+	height:100
+});
 
-if (Ti.Platform.name == "android") {
-	var proxy = akylas_commonjs_ios.createExample({
-		message: "Creating an example Proxy",
-		backgroundColor: "red",
-		width: 100,
-		height: 100,
-		top: 100,
-		left: 150
-	});
-
-	proxy.printMessage("Hello world!");
-	proxy.message = "Hi world!.  It's me again.";
-	proxy.printMessage("Hello world!");
-	win.add(proxy);
-}
-
+win.add(view);
+win.open();

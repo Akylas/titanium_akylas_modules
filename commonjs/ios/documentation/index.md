@@ -1,16 +1,16 @@
-# akylas_commonjs_ios Module
+# ak_commonjs_ios Module
 
 ## Description
 
 TODO: Enter your module description here
 
-## Accessing the akylas_commonjs_ios Module
+## Accessing the ak_commonjs_ios Module
 
 To access this module from JavaScript, you would do the following:
 
-	var akylas_commonjs_ios = require("akylas.commonjs");
+	var ak_commonjs_ios = require("akylas.commonjs");
 
-The akylas_commonjs_ios variable is a reference to the Module object.	
+The ak_commonjs_ios variable is a reference to the Module object.	
 
 ## Reference
 
