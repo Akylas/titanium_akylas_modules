@@ -1,6 +1,6 @@
 [submodule "commonjs/ios/assets/AkInclude"]
 	path = commonjs/ios/assets/AkInclude
-	url = git@farfromrefuge.dyndns.org:ti.ak.include
+	url = git@bitbucket.org:farfromrefuge/ti.ak.include.git
 [submodule "commonjs/android/assets/AkInclude"]
 	path = commonjs/android/assets/AkInclude
-	url = git@farfromrefuge.dyndns.org:ti.ak.include
+	url = git@bitbucket.org:farfromrefuge/ti.ak.include.git
