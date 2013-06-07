@@ -7,6 +7,9 @@ exports.load = function(_modules, _additions, _context) {
 	_context.akadditions = _additions;
 	_context.akmodules = _modules;
 	_context.ak = require(__myPath  +'AkInclude/akylas.global').init(_context);
+};
+
+exports.loadExtraWidgets = function(_context) {
 	if (_context.ak.ti){
 		var isApple =  Ti.Platform.osname === 'ipad' || Ti.Platform.osname === 'iphone';
 		if (isApple) {
