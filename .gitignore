@@ -14,3 +14,4 @@ libs
 
 .pydevproject
 *.pyc
+/commonjs/ios/Classes/AkylasCommonjsModuleAssets.m
