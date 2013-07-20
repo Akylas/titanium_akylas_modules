@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: A module for image manipulations
+author: Martin Guillon
+license: Specify your license
+copyright: Copyright (c) 2013 by Akylas
+
+
+# these should not be edited
+name: AkylasImage
+moduleid: akylas.image
+guid: 5c27b566-0a7d-458f-8ee1-2299537e8d09
+platform: iphone
+minsdk: 3.2.0
