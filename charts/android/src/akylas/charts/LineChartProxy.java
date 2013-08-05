@@ -107,6 +107,10 @@ public class LineChartProxy extends ChartProxy {
 					.setColor(Color.TRANSPARENT);
 			xyPlotView.getGraphWidget().getDomainGridLinePaint()
 					.setColor(Color.TRANSPARENT);
+			
+			xyPlotView.getGraphWidget().setGridPadding(0,0,0,0);
+			xyPlotView.getGraphWidget().setMargins(0,0,0,0);
+			xyPlotView.getGraphWidget().setClippingEnabled(false);
 
 			for (int i = 0; i < mPlots.size(); i++) {
 				addSerie(mPlots.get(i), false);
@@ -378,6 +382,12 @@ public class LineChartProxy extends ChartProxy {
 								.getKrollDict("gridLines");
 						Paint paint1 = xyPlotView.getGraphWidget()
 								.getDomainSubGridLinePaint();
+						
+						Utils.styleCap(gridOptions, "cap", paint1);
+						Utils.styleJoin(gridOptions, "join", paint1);
+						Utils.styleEmboss(gridOptions, "emboss", paint1);
+						Utils.styleDash(gridOptions, "dash", paint1, context);
+						Utils.styleShadow(gridOptions, "shadow", paint1, context);
 						Utils.styleColor(gridOptions, paint1);
 						Utils.styleStrokeWidth(gridOptions, paint1, context);
 						Utils.styleOpacity(gridOptions, paint1);
@@ -480,6 +490,11 @@ public class LineChartProxy extends ChartProxy {
 								.getKrollDict("gridLines");
 						Paint paint1 = xyPlotView.getGraphWidget()
 								.getDomainGridLinePaint();
+						Utils.styleCap(gridOptions, "cap", paint1);
+						Utils.styleJoin(gridOptions, "join", paint1);
+						Utils.styleEmboss(gridOptions, "emboss", paint1);
+						Utils.styleDash(gridOptions, "dash", paint1, context);
+						Utils.styleShadow(gridOptions, "shadow", paint1, context);
 						Utils.styleColor(gridOptions, paint1);
 						Utils.styleStrokeWidth(gridOptions, paint1, context);
 						Utils.styleOpacity(gridOptions, paint1);
@@ -545,6 +560,11 @@ public class LineChartProxy extends ChartProxy {
 								.getKrollDict("gridLines");
 						Paint paint1 = xyPlotView.getGraphWidget()
 								.getRangeSubGridLinePaint();
+						Utils.styleCap(gridOptions, "cap", paint1);
+						Utils.styleJoin(gridOptions, "join", paint1);
+						Utils.styleEmboss(gridOptions, "emboss", paint1);
+						Utils.styleDash(gridOptions, "dash", paint1, context);
+						Utils.styleShadow(gridOptions, "shadow", paint1, context);
 						Utils.styleColor(gridOptions, paint1);
 						Utils.styleStrokeWidth(gridOptions, paint1, context);
 						Utils.styleOpacity(gridOptions, paint1);
@@ -643,6 +663,11 @@ public class LineChartProxy extends ChartProxy {
 								.getKrollDict("gridLines");
 						Paint paint1 = xyPlotView.getGraphWidget()
 								.getRangeGridLinePaint();
+						Utils.styleCap(gridOptions, "cap", paint1);
+						Utils.styleJoin(gridOptions, "join", paint1);
+						Utils.styleEmboss(gridOptions, "emboss", paint1);
+						Utils.styleDash(gridOptions, "dash", paint1, context);
+						Utils.styleShadow(gridOptions, "shadow", paint1, context);
 						Utils.styleColor(gridOptions, paint1);
 						Utils.styleStrokeWidth(gridOptions, paint1, context);
 						Utils.styleOpacity(gridOptions, paint1);

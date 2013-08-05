@@ -84,6 +84,7 @@ public class ChartProxy extends TiViewProxy {
 	
 			plotView.setPlotMargins(0, 0, 0, 0);
 			plotView.setPlotPadding(0, 0, 0, 0);
+			plotView.setPadding(0, 0, 0, 0);
 
 			// reposition the grid so that it rests above the bottom-left
 			// edge of the graph widget:
@@ -242,7 +243,6 @@ public class ChartProxy extends TiViewProxy {
 	// Handle creation options
 	@Override
 	public void handleCreationDict(KrollDict options) {
-		Log.d(TAG, "handleCreationDict ");
 		super.handleCreationDict(options);
 
 		if (options.containsKey("title")) {

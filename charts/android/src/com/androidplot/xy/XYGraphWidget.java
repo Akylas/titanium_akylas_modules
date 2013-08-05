@@ -591,7 +591,8 @@ public class XYGraphWidget extends Widget {
 			}
 
 			if (rangeLabelPaint != null) {
-				float xPix;
+				float xPix, yPix;
+				double yVal;
 				if (rangeAxisLeft) {
 					xPix = domainOffset
 							- (rangeLabelTickExtension + rangeLabelHorizontalOffset);
@@ -603,8 +604,7 @@ public class XYGraphWidget extends Widget {
 				// draw ticks ABOVE origin:
 				{
 					int i = 1;
-					double yVal;
-					float yPix = rangeOriginF - rangeStep.getStepPix();
+					yPix = rangeOriginF - rangeStep.getStepPix();
 					for (; yPix >= paddedGridRect.top; yPix = rangeOriginF
 							- (i * rangeStep.getStepPix())) {
 						yVal = plot.getRangeOrigin().doubleValue() + i
@@ -622,11 +622,20 @@ public class XYGraphWidget extends Widget {
 					}
 				}
 
+				// draw ticks ON origin:
+				yPix = rangeOriginF;
+				yVal = plot.getRangeOrigin().doubleValue();
+				if (yPix >= paddedGridRect.top
+						&& yPix <= paddedGridRect.bottom) {
+					drawTickText(canvas, XYAxisType.RANGE,
+							yVal, xPix, yPix
+									- rangeLabelVerticalOffset,
+							rangeLabelPaint);
+				}
 				// draw ticks BENEATH origin:
 				{
 					int i = 1;
-					double yVal;
-					float yPix = rangeOriginF + rangeStep.getStepPix();
+					yPix = rangeOriginF + rangeStep.getStepPix();
 					for (; yPix <= paddedGridRect.bottom; yPix = rangeOriginF
 							+ (i * rangeStep.getStepPix())) {
 						yVal = plot.getRangeOrigin().doubleValue() - i
@@ -653,7 +662,6 @@ public class XYGraphWidget extends Widget {
 				} else if (rangeOriginLabelPaint.getTextAlign() == Align.RIGHT) {
 					vOffset = rangeOffset - paddedGridRect.height();
 				}
-        		canvas.clipRect(getWidgetDimensions().canvasRect.left, paddedGridRect.top,getWidgetDimensions().canvasRect.right, paddedGridRect.bottom);
 				canvas.rotate(rangeOriginLabelAngle, hOffset, vOffset);
 				canvas.drawText(rangeOriginLabel, hOffset, vOffset, rangeOriginLabelPaint);
 				canvas.restore();
@@ -670,7 +678,8 @@ public class XYGraphWidget extends Widget {
 
 			if (domainLabelPaint != null) {
 				float fontHeight = FontUtils.getFontHeight(domainLabelPaint);
-                float yPix;
+                float yPix, xPix;
+                double xVal;
                 if (domainAxisBottom){
                     yPix = gridRect.bottom + domainLabelTickExtension
                             + domainLabelVerticalOffset + fontHeight;
@@ -683,8 +692,7 @@ public class XYGraphWidget extends Widget {
              // draw ticks LEFT of origin:
                 {
                     int i = 1;
-                    double xVal;
-                    float xPix = domainOriginF - domainStep.getStepPix();
+                    xPix = domainOriginF - domainStep.getStepPix();
                     for (; xPix >= paddedGridRect.left; xPix = domainOriginF
                             - (i * domainStep.getStepPix())) {
                         xVal = plot.getDomainOrigin().doubleValue() - i
@@ -699,11 +707,18 @@ public class XYGraphWidget extends Widget {
                     }
                 }
 
+                // draw ticks ON of origin:
+                xPix = domainOriginF;
+                xVal = plot.getDomainOrigin().doubleValue();
+                if (xPix >= paddedGridRect.left && xPix <= paddedGridRect.right) {
+                	drawTickText(canvas, XYAxisType.DOMAIN, xVal, xPix + domainLabelHorizontalOffset, yPix,
+                    		domainLabelPaint);
+                }
+                
                 // draw ticks RIGHT of origin:
                 {
                     int i = 1;
-                    double xVal;
-                    float xPix = domainOriginF + domainStep.getStepPix();
+                    xPix = domainOriginF + domainStep.getStepPix();
                     for (; xPix <= paddedGridRect.right; xPix = domainOriginF
                             + (i * domainStep.getStepPix())) {
                         xVal = plot.getDomainOrigin().doubleValue() + i
@@ -728,7 +743,6 @@ public class XYGraphWidget extends Widget {
 				} else if (domainOriginLabelPaint.getTextAlign() == Align.RIGHT) {
 					hOffset = domainOffset + paddedGridRect.height();
 				}
-        		canvas.clipRect(paddedGridRect.left, getWidgetDimensions().canvasRect.top, paddedGridRect.right, getWidgetDimensions().canvasRect.bottom);
 				canvas.rotate(domainOriginLabelAngle, hOffset, vOffset);
 				canvas.drawText(domainOriginLabel, hOffset, vOffset, domainOriginLabelPaint);
 				canvas.restore();
