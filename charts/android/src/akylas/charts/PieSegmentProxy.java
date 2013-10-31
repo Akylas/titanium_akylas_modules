@@ -11,12 +11,10 @@ import org.appcelerator.kroll.KrollProxyListener;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
-import org.appcelerator.titanium.proxy.NonViewAnimatableProxy;
+import org.appcelerator.titanium.proxy.AnimatableProxy;
 import org.appcelerator.titanium.util.TiAnimatorSet;
 import org.appcelerator.titanium.util.TiConvert;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
@@ -28,11 +26,13 @@ import android.os.Build;
 
 import com.androidplot.pie.Segment;
 import com.androidplot.pie.SegmentFormatter;
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.ObjectAnimator;
 
 @Kroll.proxy(creatableInModule = AkylasChartsModule.class, propertyAccessors={
 	TiC.PROPERTY_NAME
 })
-public class PieSegmentProxy extends NonViewAnimatableProxy implements KrollProxyListener {
+public class PieSegmentProxy extends AnimatableProxy implements KrollProxyListener {
 	// Standard Debugging variables
 	@SuppressWarnings("unused")
 	private static final String TAG = "PieSegmentProxy";
