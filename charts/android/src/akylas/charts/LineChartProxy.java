@@ -42,6 +42,7 @@ import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
 import com.androidplot.xy.YValueMarker;
+import com.sun.tools.example.debug.gui.SourceModel.Line;
 
 // This proxy can be created by calling Android.createExample({message: "hello world"})
 @SuppressWarnings({ "rawtypes", "serial", "unchecked" })
@@ -845,7 +846,7 @@ public class LineChartProxy extends ChartProxy {
 
 		public void addSerie(XYSerieProxy proxy, boolean updateMinMax) {
 			proxy.setContext(plotView.getContext());
-			proxy.initRenderer(xyPlotView);
+			proxy.setPlot(LineChartProxy.this);
 			xyPlotView.addSeries(proxy.getSeries(), proxy.getFormatter());
 			if (proxy instanceof PlotBarProxy && barRenderInitiated == false) {
 				initBarRenderer();
@@ -855,6 +856,7 @@ public class LineChartProxy extends ChartProxy {
 		}
 
 		public void removeSerie(XYSerieProxy proxy) {
+			proxy.setPlot(null);
 			xyPlotView.removeSeries(proxy.getSeries());
 			updateMinMax();
 		}
@@ -1061,6 +1063,16 @@ public class LineChartProxy extends ChartProxy {
 				else
 					xyPlotView.removeMarker((XValueMarker) marker);
 			}
+		}
+	}
+	
+	@Kroll.method
+	public void update() {
+		if (view != null) {
+			((LineChartView) view).updateMinMax();
+		}
+		if (plotView != null) {
+			plotView.redraw();
 		}
 	}
 }

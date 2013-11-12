@@ -25,6 +25,7 @@ public class XYSerieProxy extends KrollProxy {
 	protected SimpleXYSeries series;
 	protected String mTitle;
 	protected Context context;
+	protected LineChartProxy plot;
 
 	// Constructor
 	public XYSerieProxy(TiContext tiContext) {
@@ -39,7 +40,8 @@ public class XYSerieProxy extends KrollProxy {
 		this.context = context;
 	}
 	
-	public void initRenderer(XYPlot plot) {
+	public void setPlot(LineChartProxy plot) {
+		this.plot = plot;
 	}
 
 
@@ -95,6 +97,9 @@ public class XYSerieProxy extends KrollProxy {
 				series.setModel(Arrays.asList(TiConvert.toNumberArray(data)),
 						SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
 			}
+		}
+		if (plot != null) {
+			plot.update();
 		}
 	}
 	
