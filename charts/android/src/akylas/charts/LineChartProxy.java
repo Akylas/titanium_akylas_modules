@@ -778,6 +778,7 @@ public class LineChartProxy extends ChartProxy {
 
 		private boolean scroll(float pan) {
 			xyPlotView.calculateMinMaxVals();
+			if (minXSeriesValue == null || maxXSeriesValue == null) return false;
 			float calculatedMinX = xyPlotView.getCalculatedMinX().floatValue();
 			float calculatedMaxX = xyPlotView.getCalculatedMaxX().floatValue();
 			final float domainSpan = calculatedMaxX - calculatedMinX;
