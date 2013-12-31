@@ -49,6 +49,18 @@
 		AA747D9E0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasCommonjs_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libAkylasCommonjs.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAkylasCommonjs.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5EE1BF01860CAF500579573 /* akylas.commonjs.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.commonjs.js; path = assets/akylas.commonjs.js; sourceTree = "<group>"; };
+		D5EE1BF11860CAFE00579573 /* akylas.additions.function.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.additions.function.js; path = assets/AkInclude/akylas.additions.function.js; sourceTree = "<group>"; };
+		D5EE1BF21860CAFE00579573 /* akylas.additions.math.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.additions.math.js; path = assets/AkInclude/akylas.additions.math.js; sourceTree = "<group>"; };
+		D5EE1BF31860CAFE00579573 /* akylas.additions.number.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.additions.number.js; path = assets/AkInclude/akylas.additions.number.js; sourceTree = "<group>"; };
+		D5EE1BF41860CAFE00579573 /* akylas.additions.string.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.additions.string.js; path = assets/AkInclude/akylas.additions.string.js; sourceTree = "<group>"; };
+		D5EE1BF51860CAFE00579573 /* akylas.animation.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.animation.js; path = assets/AkInclude/akylas.animation.js; sourceTree = "<group>"; };
+		D5EE1BF61860CAFE00579573 /* akylas.global.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.global.js; path = assets/AkInclude/akylas.global.js; sourceTree = "<group>"; };
+		D5EE1BF71860CAFE00579573 /* akylas.lang.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.lang.js; path = assets/AkInclude/akylas.lang.js; sourceTree = "<group>"; };
+		D5EE1BF81860CAFE00579573 /* akylas.ti.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.ti.js; path = assets/AkInclude/akylas.ti.js; sourceTree = "<group>"; };
+		D5EE1BF91860CAFE00579573 /* akylas.util.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.util.js; path = assets/AkInclude/akylas.util.js; sourceTree = "<group>"; };
+		D5EE1BFA1860CAFE00579573 /* redux.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = redux.js; path = assets/AkInclude/redux.js; sourceTree = "<group>"; };
+		D5EE1BFB1860CB2C00579573 /* Notification.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = Notification.js; path = assets/AkWidgets/Notification.js; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +86,7 @@
 		0867D691FE84028FC02AAC07 /* ak_commonjs_ios */ = {
 			isa = PBXGroup;
 			children = (
+				D5EE1BED1860CAD400579573 /* assets */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
@@ -110,6 +123,41 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
+		D5EE1BED1860CAD400579573 /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				D5EE1BF01860CAF500579573 /* akylas.commonjs.js */,
+				D5EE1BEF1860CAE800579573 /* AkWidgets */,
+				D5EE1BEE1860CADE00579573 /* AkInclude */,
+			);
+			name = assets;
+			sourceTree = "<group>";
+		};
+		D5EE1BEE1860CADE00579573 /* AkInclude */ = {
+			isa = PBXGroup;
+			children = (
+				D5EE1BF11860CAFE00579573 /* akylas.additions.function.js */,
+				D5EE1BF21860CAFE00579573 /* akylas.additions.math.js */,
+				D5EE1BF31860CAFE00579573 /* akylas.additions.number.js */,
+				D5EE1BF41860CAFE00579573 /* akylas.additions.string.js */,
+				D5EE1BF51860CAFE00579573 /* akylas.animation.js */,
+				D5EE1BF61860CAFE00579573 /* akylas.global.js */,
+				D5EE1BF71860CAFE00579573 /* akylas.lang.js */,
+				D5EE1BF81860CAFE00579573 /* akylas.ti.js */,
+				D5EE1BF91860CAFE00579573 /* akylas.util.js */,
+				D5EE1BFA1860CAFE00579573 /* redux.js */,
+			);
+			name = AkInclude;
+			sourceTree = "<group>";
+		};
+		D5EE1BEF1860CAE800579573 /* AkWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				D5EE1BFB1860CB2C00579573 /* Notification.js */,
+			);
+			name = AkWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -130,6 +178,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "ak_commonjs_ios" */;
 			buildPhases = (
+				D58E73DE1861896C00E56FAE /* ShellScript */,
 				D2AAC07A0554694100DB518D /* Headers */,
 				D2AAC07B0554694100DB518D /* Sources */,
 				D2AAC07C0554694100DB518D /* Frameworks */,
@@ -148,6 +197,8 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "ak_commonjs_ios" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
@@ -182,6 +233,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# shell script goes here\n\npython \"${TITANIUM_SDK}/titanium.py\" run --dir=\"${PROJECT_DIR}\"\nexit $?\n";
+		};
+		D58E73DE1861896C00E56FAE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$PROJECT_DIR/build.py\" compilejs";
 		};
 /* End PBXShellScriptBuildPhase section */
 
