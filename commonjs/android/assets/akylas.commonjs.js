@@ -8,7 +8,7 @@ exports.load = function(_context, _config) {
 	(function(){
 		if (!this['_']) {
 			try {
-				_ = _context._ = require(modules_dir + 'underscore');
+				_ = _context._ = require(modules_dir + _config.underscore ||  'underscore');
 			}
 			catch(e) {
 				Ti.API.error('Could not load underscore.js from ' + modules_dir);
