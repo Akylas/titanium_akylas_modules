@@ -5,13 +5,14 @@ Ti.API.info('__myPath in commonjs ' + __myPath);
 
 exports.load = function(_context, _config) {
 	var modules_dir = _config.modules_dir || this.config.modules_dir;
+	var underscore_file = _config.underscore ||  this.config.underscore;
 	(function(){
 		if (!this['_']) {
 			try {
-				_ = _context._ = require(modules_dir + _config.underscore ||  'underscore');
+				_ = _context._ = require(modules_dir + underscore_file);
 			}
 			catch(e) {
-				Ti.API.error('Could not load underscore.js from ' + modules_dir);
+				Ti.API.error('Could not load ' + modules_dir + underscore_file);
 				return;
 			}
 		}
@@ -22,6 +23,7 @@ exports.load = function(_context, _config) {
 };
 
 exports.config = {
+	underscore: 'underscore',
 	modules_dir:'lib/'
 }
 
