@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="akylas.shapes"
+	android:versionCode="1"
+	android:versionName="1.0">
+
+	<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="14" />
+
+	<application android:label="akylas.shapes.test">
+	</application>
+</manifest>

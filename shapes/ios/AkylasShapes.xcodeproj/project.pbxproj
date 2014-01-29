@@ -1,0 +1,551 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		24416B8111C4CA220047AFDD /* Build & Test */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 24416B8A11C4CA520047AFDD /* Build configuration list for PBXAggregateTarget "Build & Test" */;
+			buildPhases = (
+				24416B8011C4CA220047AFDD /* ShellScript */,
+			);
+			dependencies = (
+				24416B8511C4CA280047AFDD /* PBXTargetDependency */,
+			);
+			name = "Build & Test";
+			productName = "Build & test";
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		24DD6CF91134B3F500162E58 /* AkylasShapesModule.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DD6CF71134B3F500162E58 /* AkylasShapesModule.h */; };
+		24DD6CFA1134B3F500162E58 /* AkylasShapesModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DD6CF81134B3F500162E58 /* AkylasShapesModule.m */; };
+		24DE9E1111C5FE74003F90F6 /* AkylasShapesModuleAssets.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DE9E0F11C5FE74003F90F6 /* AkylasShapesModuleAssets.h */; };
+		24DE9E1211C5FE74003F90F6 /* AkylasShapesModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* AkylasShapesModuleAssets.m */; };
+		AA747D9F0F9514B9006C5449 /* AkylasShapes_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* AkylasShapes_Prefix.pch */; };
+		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
+		D53560161860963600F8DEFD /* ShapeCustomProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5355FF91860963600F8DEFD /* ShapeCustomProxy.h */; };
+		D53560171860963600F8DEFD /* ShapeCustomProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5355FFA1860963600F8DEFD /* ShapeCustomProxy.m */; };
+		D535601A1860963600F8DEFD /* ShapeProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5355FFD1860963600F8DEFD /* ShapeProxy.h */; };
+		D535601B1860963600F8DEFD /* ShapeProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5355FFE1860963600F8DEFD /* ShapeProxy.m */; };
+		D535601C1860963600F8DEFD /* AkylasShapesAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = D5355FFF1860963600F8DEFD /* AkylasShapesAnimation.h */; };
+		D535601D1860963600F8DEFD /* AkylasShapesAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560001860963600F8DEFD /* AkylasShapesAnimation.m */; };
+		D535601E1860963600F8DEFD /* AkylasShapesAnimation+Friend.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560011860963600F8DEFD /* AkylasShapesAnimation+Friend.h */; };
+		D535601F1860963600F8DEFD /* AkylasShapesAnimationStep.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560021860963600F8DEFD /* AkylasShapesAnimationStep.h */; };
+		D53560201860963600F8DEFD /* AkylasShapesAnimationStep.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560031860963600F8DEFD /* AkylasShapesAnimationStep.m */; };
+		D53560211860963600F8DEFD /* AkylasShapesArcProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560041860963600F8DEFD /* AkylasShapesArcProxy.h */; };
+		D53560221860963600F8DEFD /* AkylasShapesArcProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560051860963600F8DEFD /* AkylasShapesArcProxy.m */; };
+		D53560231860963600F8DEFD /* AkylasShapesCircleProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560061860963600F8DEFD /* AkylasShapesCircleProxy.h */; };
+		D53560241860963600F8DEFD /* AkylasShapesCircleProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560071860963600F8DEFD /* AkylasShapesCircleProxy.m */; };
+		D53560251860963600F8DEFD /* AkylasShapesEllipseProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560081860963600F8DEFD /* AkylasShapesEllipseProxy.h */; };
+		D53560261860963600F8DEFD /* AkylasShapesEllipseProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560091860963600F8DEFD /* AkylasShapesEllipseProxy.m */; };
+		D53560271860963600F8DEFD /* AkylasShapesLineProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D535600A1860963600F8DEFD /* AkylasShapesLineProxy.h */; };
+		D53560281860963600F8DEFD /* AkylasShapesLineProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D535600B1860963600F8DEFD /* AkylasShapesLineProxy.m */; };
+		D53560291860963600F8DEFD /* AkylasShapesPieSliceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D535600C1860963600F8DEFD /* AkylasShapesPieSliceProxy.h */; };
+		D535602A1860963600F8DEFD /* AkylasShapesPieSliceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D535600D1860963600F8DEFD /* AkylasShapesPieSliceProxy.m */; };
+		D535602B1860963600F8DEFD /* AkylasShapesRectProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D535600E1860963600F8DEFD /* AkylasShapesRectProxy.h */; };
+		D535602C1860963600F8DEFD /* AkylasShapesRectProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D535600F1860963600F8DEFD /* AkylasShapesRectProxy.m */; };
+		D535602D1860963600F8DEFD /* AkylasShapesRoundedRectProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560101860963600F8DEFD /* AkylasShapesRoundedRectProxy.h */; };
+		D535602E1860963600F8DEFD /* AkylasShapesRoundedRectProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560111860963600F8DEFD /* AkylasShapesRoundedRectProxy.m */; };
+		D535602F1860963600F8DEFD /* AkylasShapesView.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560121860963600F8DEFD /* AkylasShapesView.h */; };
+		D53560301860963600F8DEFD /* AkylasShapesView.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560131860963600F8DEFD /* AkylasShapesView.m */; };
+		D53560311860963600F8DEFD /* AkylasShapesViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560141860963600F8DEFD /* AkylasShapesViewProxy.h */; };
+		D53560321860963600F8DEFD /* AkylasShapesViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560151860963600F8DEFD /* AkylasShapesViewProxy.m */; };
+		D5EE1BAB1860A3B600579573 /* CustomShapeLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5EE1BA91860A3B600579573 /* CustomShapeLayer.h */; };
+		D5EE1BAC1860A3B600579573 /* CustomShapeLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EE1BAA1860A3B600579573 /* CustomShapeLayer.m */; };
+		D5EE1BAF1860A3BB00579573 /* UIBezierPath+Additions.h in Headers */ = {isa = PBXBuildFile; fileRef = D5EE1BAD1860A3BB00579573 /* UIBezierPath+Additions.h */; };
+		D5EE1BB01860A3BB00579573 /* UIBezierPath+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EE1BAE1860A3BB00579573 /* UIBezierPath+Additions.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		24416B8411C4CA280047AFDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D;
+			remoteInfo = ios;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		24DD6CF71134B3F500162E58 /* AkylasShapesModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesModule.h; path = Classes/AkylasShapesModule.h; sourceTree = "<group>"; };
+		24DD6CF81134B3F500162E58 /* AkylasShapesModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesModule.m; path = Classes/AkylasShapesModule.m; sourceTree = "<group>"; };
+		24DD6D1B1134B66800162E58 /* titanium.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = titanium.xcconfig; sourceTree = "<group>"; };
+		24DE9E0F11C5FE74003F90F6 /* AkylasShapesModuleAssets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesModuleAssets.h; path = Classes/AkylasShapesModuleAssets.h; sourceTree = "<group>"; };
+		24DE9E1011C5FE74003F90F6 /* AkylasShapesModuleAssets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesModuleAssets.m; path = Classes/AkylasShapesModuleAssets.m; sourceTree = "<group>"; };
+		AA747D9E0F9514B9006C5449 /* AkylasShapes_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasShapes_Prefix.pch; sourceTree = SOURCE_ROOT; };
+		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		D2AAC07E0554694100DB518D /* libAkylasShapes.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAkylasShapes.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5355FF91860963600F8DEFD /* ShapeCustomProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShapeCustomProxy.h; path = Classes/ShapeCustomProxy.h; sourceTree = "<group>"; };
+		D5355FFA1860963600F8DEFD /* ShapeCustomProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShapeCustomProxy.m; path = Classes/ShapeCustomProxy.m; sourceTree = "<group>"; };
+		D5355FFD1860963600F8DEFD /* ShapeProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShapeProxy.h; path = Classes/ShapeProxy.h; sourceTree = "<group>"; };
+		D5355FFE1860963600F8DEFD /* ShapeProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShapeProxy.m; path = Classes/ShapeProxy.m; sourceTree = "<group>"; };
+		D5355FFF1860963600F8DEFD /* AkylasShapesAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesAnimation.h; path = Classes/AkylasShapesAnimation.h; sourceTree = "<group>"; };
+		D53560001860963600F8DEFD /* AkylasShapesAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = AkylasShapesAnimation.m; path = Classes/AkylasShapesAnimation.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		D53560011860963600F8DEFD /* AkylasShapesAnimation+Friend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "AkylasShapesAnimation+Friend.h"; path = "Classes/AkylasShapesAnimation+Friend.h"; sourceTree = "<group>"; };
+		D53560021860963600F8DEFD /* AkylasShapesAnimationStep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = AkylasShapesAnimationStep.h; path = Classes/AkylasShapesAnimationStep.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		D53560031860963600F8DEFD /* AkylasShapesAnimationStep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = AkylasShapesAnimationStep.m; path = Classes/AkylasShapesAnimationStep.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		D53560041860963600F8DEFD /* AkylasShapesArcProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = AkylasShapesArcProxy.h; path = Classes/AkylasShapesArcProxy.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		D53560051860963600F8DEFD /* AkylasShapesArcProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = AkylasShapesArcProxy.m; path = Classes/AkylasShapesArcProxy.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		D53560061860963600F8DEFD /* AkylasShapesCircleProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesCircleProxy.h; path = Classes/AkylasShapesCircleProxy.h; sourceTree = "<group>"; };
+		D53560071860963600F8DEFD /* AkylasShapesCircleProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesCircleProxy.m; path = Classes/AkylasShapesCircleProxy.m; sourceTree = "<group>"; };
+		D53560081860963600F8DEFD /* AkylasShapesEllipseProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = AkylasShapesEllipseProxy.h; path = Classes/AkylasShapesEllipseProxy.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		D53560091860963600F8DEFD /* AkylasShapesEllipseProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = AkylasShapesEllipseProxy.m; path = Classes/AkylasShapesEllipseProxy.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		D535600A1860963600F8DEFD /* AkylasShapesLineProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = AkylasShapesLineProxy.h; path = Classes/AkylasShapesLineProxy.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		D535600B1860963600F8DEFD /* AkylasShapesLineProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = AkylasShapesLineProxy.m; path = Classes/AkylasShapesLineProxy.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		D535600C1860963600F8DEFD /* AkylasShapesPieSliceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesPieSliceProxy.h; path = Classes/AkylasShapesPieSliceProxy.h; sourceTree = "<group>"; };
+		D535600D1860963600F8DEFD /* AkylasShapesPieSliceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesPieSliceProxy.m; path = Classes/AkylasShapesPieSliceProxy.m; sourceTree = "<group>"; };
+		D535600E1860963600F8DEFD /* AkylasShapesRectProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesRectProxy.h; path = Classes/AkylasShapesRectProxy.h; sourceTree = "<group>"; };
+		D535600F1860963600F8DEFD /* AkylasShapesRectProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesRectProxy.m; path = Classes/AkylasShapesRectProxy.m; sourceTree = "<group>"; };
+		D53560101860963600F8DEFD /* AkylasShapesRoundedRectProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesRoundedRectProxy.h; path = Classes/AkylasShapesRoundedRectProxy.h; sourceTree = "<group>"; };
+		D53560111860963600F8DEFD /* AkylasShapesRoundedRectProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesRoundedRectProxy.m; path = Classes/AkylasShapesRoundedRectProxy.m; sourceTree = "<group>"; };
+		D53560121860963600F8DEFD /* AkylasShapesView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesView.h; path = Classes/AkylasShapesView.h; sourceTree = "<group>"; };
+		D53560131860963600F8DEFD /* AkylasShapesView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesView.m; path = Classes/AkylasShapesView.m; sourceTree = "<group>"; };
+		D53560141860963600F8DEFD /* AkylasShapesViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesViewProxy.h; path = Classes/AkylasShapesViewProxy.h; sourceTree = "<group>"; };
+		D53560151860963600F8DEFD /* AkylasShapesViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesViewProxy.m; path = Classes/AkylasShapesViewProxy.m; sourceTree = "<group>"; };
+		D5EE1BA91860A3B600579573 /* CustomShapeLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomShapeLayer.h; path = Classes/CustomShapeLayer.h; sourceTree = "<group>"; };
+		D5EE1BAA1860A3B600579573 /* CustomShapeLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CustomShapeLayer.m; path = Classes/CustomShapeLayer.m; sourceTree = "<group>"; };
+		D5EE1BAD1860A3BB00579573 /* UIBezierPath+Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIBezierPath+Additions.h"; path = "Classes/UIBezierPath+Additions.h"; sourceTree = "<group>"; };
+		D5EE1BAE1860A3BB00579573 /* UIBezierPath+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIBezierPath+Additions.m"; path = "Classes/UIBezierPath+Additions.m"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D2AAC07C0554694100DB518D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2AAC07E0554694100DB518D /* libAkylasShapes.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				08FB77AEFE84172EC02AAC07 /* Classes */,
+				32C88DFF0371C24200C91783 /* Other Sources */,
+				0867D69AFE84028FC02AAC07 /* Frameworks */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = ios;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AACBBE490F95108600F1A2B1 /* Foundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				D5EE1BAD1860A3BB00579573 /* UIBezierPath+Additions.h */,
+				D5EE1BAE1860A3BB00579573 /* UIBezierPath+Additions.m */,
+				D5EE1BA91860A3B600579573 /* CustomShapeLayer.h */,
+				D5EE1BAA1860A3B600579573 /* CustomShapeLayer.m */,
+				24DE9E0F11C5FE74003F90F6 /* AkylasShapesModuleAssets.h */,
+				24DE9E1011C5FE74003F90F6 /* AkylasShapesModuleAssets.m */,
+				24DD6CF71134B3F500162E58 /* AkylasShapesModule.h */,
+				24DD6CF81134B3F500162E58 /* AkylasShapesModule.m */,
+				D5355FF91860963600F8DEFD /* ShapeCustomProxy.h */,
+				D5355FFA1860963600F8DEFD /* ShapeCustomProxy.m */,
+				D5355FFD1860963600F8DEFD /* ShapeProxy.h */,
+				D5355FFE1860963600F8DEFD /* ShapeProxy.m */,
+				D5355FFF1860963600F8DEFD /* AkylasShapesAnimation.h */,
+				D53560001860963600F8DEFD /* AkylasShapesAnimation.m */,
+				D53560011860963600F8DEFD /* AkylasShapesAnimation+Friend.h */,
+				D53560021860963600F8DEFD /* AkylasShapesAnimationStep.h */,
+				D53560031860963600F8DEFD /* AkylasShapesAnimationStep.m */,
+				D53560041860963600F8DEFD /* AkylasShapesArcProxy.h */,
+				D53560051860963600F8DEFD /* AkylasShapesArcProxy.m */,
+				D53560061860963600F8DEFD /* AkylasShapesCircleProxy.h */,
+				D53560071860963600F8DEFD /* AkylasShapesCircleProxy.m */,
+				D53560081860963600F8DEFD /* AkylasShapesEllipseProxy.h */,
+				D53560091860963600F8DEFD /* AkylasShapesEllipseProxy.m */,
+				D535600A1860963600F8DEFD /* AkylasShapesLineProxy.h */,
+				D535600B1860963600F8DEFD /* AkylasShapesLineProxy.m */,
+				D535600C1860963600F8DEFD /* AkylasShapesPieSliceProxy.h */,
+				D535600D1860963600F8DEFD /* AkylasShapesPieSliceProxy.m */,
+				D535600E1860963600F8DEFD /* AkylasShapesRectProxy.h */,
+				D535600F1860963600F8DEFD /* AkylasShapesRectProxy.m */,
+				D53560101860963600F8DEFD /* AkylasShapesRoundedRectProxy.h */,
+				D53560111860963600F8DEFD /* AkylasShapesRoundedRectProxy.m */,
+				D53560121860963600F8DEFD /* AkylasShapesView.h */,
+				D53560131860963600F8DEFD /* AkylasShapesView.m */,
+				D53560141860963600F8DEFD /* AkylasShapesViewProxy.h */,
+				D53560151860963600F8DEFD /* AkylasShapesViewProxy.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		32C88DFF0371C24200C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				AA747D9E0F9514B9006C5449 /* AkylasShapes_Prefix.pch */,
+				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D2AAC07A0554694100DB518D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D535602B1860963600F8DEFD /* AkylasShapesRectProxy.h in Headers */,
+				D5EE1BAF1860A3BB00579573 /* UIBezierPath+Additions.h in Headers */,
+				D535601E1860963600F8DEFD /* AkylasShapesAnimation+Friend.h in Headers */,
+				AA747D9F0F9514B9006C5449 /* AkylasShapes_Prefix.pch in Headers */,
+				D53560291860963600F8DEFD /* AkylasShapesPieSliceProxy.h in Headers */,
+				24DD6CF91134B3F500162E58 /* AkylasShapesModule.h in Headers */,
+				D535601F1860963600F8DEFD /* AkylasShapesAnimationStep.h in Headers */,
+				D53560251860963600F8DEFD /* AkylasShapesEllipseProxy.h in Headers */,
+				D53560211860963600F8DEFD /* AkylasShapesArcProxy.h in Headers */,
+				D535601A1860963600F8DEFD /* ShapeProxy.h in Headers */,
+				D5EE1BAB1860A3B600579573 /* CustomShapeLayer.h in Headers */,
+				D53560271860963600F8DEFD /* AkylasShapesLineProxy.h in Headers */,
+				D53560161860963600F8DEFD /* ShapeCustomProxy.h in Headers */,
+				24DE9E1111C5FE74003F90F6 /* AkylasShapesModuleAssets.h in Headers */,
+				D53560311860963600F8DEFD /* AkylasShapesViewProxy.h in Headers */,
+				D535601C1860963600F8DEFD /* AkylasShapesAnimation.h in Headers */,
+				D535602D1860963600F8DEFD /* AkylasShapesRoundedRectProxy.h in Headers */,
+				D53560231860963600F8DEFD /* AkylasShapesCircleProxy.h in Headers */,
+				D535602F1860963600F8DEFD /* AkylasShapesView.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D2AAC07D0554694100DB518D /* AkylasShapes */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "AkylasShapes" */;
+			buildPhases = (
+				D2AAC07A0554694100DB518D /* Headers */,
+				D2AAC07B0554694100DB518D /* Sources */,
+				D2AAC07C0554694100DB518D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AkylasShapes;
+			productName = ios;
+			productReference = D2AAC07E0554694100DB518D /* libAkylasShapes.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+			};
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "AkylasShapes" */;
+			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 0867D691FE84028FC02AAC07 /* ios */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D2AAC07D0554694100DB518D /* AkylasShapes */,
+				24416B8111C4CA220047AFDD /* Build & Test */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		24416B8011C4CA220047AFDD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\n\npython \"${TITANIUM_SDK}/titanium.py\" run --dir=\"${PROJECT_DIR}\"\nexit $?\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D2AAC07B0554694100DB518D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D53560201860963600F8DEFD /* AkylasShapesAnimationStep.m in Sources */,
+				24DD6CFA1134B3F500162E58 /* AkylasShapesModule.m in Sources */,
+				D53560261860963600F8DEFD /* AkylasShapesEllipseProxy.m in Sources */,
+				D535602C1860963600F8DEFD /* AkylasShapesRectProxy.m in Sources */,
+				D53560301860963600F8DEFD /* AkylasShapesView.m in Sources */,
+				D535602A1860963600F8DEFD /* AkylasShapesPieSliceProxy.m in Sources */,
+				D5EE1BAC1860A3B600579573 /* CustomShapeLayer.m in Sources */,
+				D5EE1BB01860A3BB00579573 /* UIBezierPath+Additions.m in Sources */,
+				D53560221860963600F8DEFD /* AkylasShapesArcProxy.m in Sources */,
+				D53560281860963600F8DEFD /* AkylasShapesLineProxy.m in Sources */,
+				D53560321860963600F8DEFD /* AkylasShapesViewProxy.m in Sources */,
+				D53560241860963600F8DEFD /* AkylasShapesCircleProxy.m in Sources */,
+				D535601D1860963600F8DEFD /* AkylasShapesAnimation.m in Sources */,
+				D535602E1860963600F8DEFD /* AkylasShapesRoundedRectProxy.m in Sources */,
+				24DE9E1211C5FE74003F90F6 /* AkylasShapesModuleAssets.m in Sources */,
+				D53560171860963600F8DEFD /* ShapeCustomProxy.m in Sources */,
+				D535601B1860963600F8DEFD /* ShapeProxy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		24416B8511C4CA280047AFDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2AAC07D0554694100DB518D /* AkylasShapes */;
+			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB921F08733DC00010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DSTROOT = /tmp/AkylasShapes.dst;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasShapes_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK2)/**",
+					"$(TITANIUM_BASE_SDK)/**",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "$(USER_LIBRARY_DIR)/Application\\ Support/Titanium/mobilesdk/osx/3.3.0.AKYLAS/iphone/libexternals";
+				OTHER_CFLAGS = (
+					"-DDEBUG",
+					"-DTI_POST_1_2",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasShapes;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				TITANIUM_BASE_SDK2 = /Volumes/data/dev/titanium/titanium_mobile/iphone/Classes;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		1DEB922008733DC00010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = /tmp/AkylasShapes.dst;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasShapes_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK2)/**",
+					"$(TITANIUM_BASE_SDK)/**",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = "$(USER_LIBRARY_DIR)/Application\\ Support/Titanium/mobilesdk/osx/3.3.0.AKYLAS/iphone/libexternals";
+				OTHER_CFLAGS = "-DTI_POST_1_2";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasShapes;
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				TITANIUM_BASE_SDK2 = /Volumes/data/dev/titanium/titanium_mobile/iphone/Classes;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		1DEB922308733DC00010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DSTROOT = /tmp/AkylasShapes.dst;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasShapes_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "$(TITANIUM_BASE_SDK_LIBS)";
+				OTHER_CFLAGS = (
+					"-DDEBUG",
+					"-DTI_POST_1_2",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasShapes;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		1DEB922408733DC00010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = /tmp/AkylasShapes.dst;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasShapes_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = "$(TITANIUM_BASE_SDK_LIBS)";
+				OTHER_CFLAGS = "-DTI_POST_1_2";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasShapes;
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		24416B8211C4CA220047AFDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build & test";
+			};
+			name = Debug;
+		};
+		24416B8311C4CA220047AFDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = "Build & test";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "AkylasShapes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB921F08733DC00010E9CD /* Debug */,
+				1DEB922008733DC00010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "AkylasShapes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB922308733DC00010E9CD /* Debug */,
+				1DEB922408733DC00010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		24416B8A11C4CA520047AFDD /* Build configuration list for PBXAggregateTarget "Build & Test" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				24416B8211C4CA220047AFDD /* Debug */,
+				24416B8311C4CA220047AFDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}
