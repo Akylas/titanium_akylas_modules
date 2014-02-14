@@ -21,7 +21,7 @@ import android.graphics.Typeface;
 import android.view.Gravity;
 
 public class Utils {
-	private static final String TAG = "ChartsUtils";
+	private static final String TAG = "ShapeUtils";
 
 
 	public static float getRawSize(KrollDict dict, String property,

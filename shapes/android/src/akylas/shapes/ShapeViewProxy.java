@@ -41,7 +41,7 @@ import android.widget.LinearLayout;
 
 // This proxy can be created by calling Android.createExample({message: "hello world"})
 @SuppressWarnings({ "unused", "unchecked", "rawtypes" })
-@Kroll.proxy(name = "View", creatableInModule = ShapesModule.class, propertyAccessors = {})
+@Kroll.proxy(name = "View", creatableInModule = AkylasShapesModule.class, propertyAccessors = {})
 public class ShapeViewProxy extends TiViewProxy {
 	// Standard Debugging variables
 	private static final String TAG = "ShapeViewProxy";
@@ -204,7 +204,7 @@ public class ShapeViewProxy extends TiViewProxy {
 		    if (dict != null) {
 			    String bindId = TiConvert.toString(dict, TiC.PROPERTY_BIND_ID);
 			    String type = TiConvert.toString(dict, TiC.PROPERTY_TYPE);
-			    Class shapeClass = ShapesModule.ShapeClassFromString(type);
+			    Class shapeClass = AkylasShapesModule.ShapeClassFromString(type);
 			    ShapeProxy proxy = (ShapeProxy) KrollProxy.createProxy(shapeClass, null, new Object[] { dict }, null);
 				addShape(proxy);
 				if (bindId != null) {
@@ -221,8 +221,8 @@ public class ShapeViewProxy extends TiViewProxy {
 	@Override
 	public void handleCreationDict(KrollDict options) {
 		Log.d(TAG, "handleCreationDict ");
-		if (options.containsKey(ShapesModule.PROPERTY_SHAPES)) {
-			processShapesAndBindings((Object[]) options.get(ShapesModule.PROPERTY_SHAPES));
+		if (options.containsKey(AkylasShapesModule.PROPERTY_SHAPES)) {
+			processShapesAndBindings((Object[]) options.get(AkylasShapesModule.PROPERTY_SHAPES));
 		}
 		super.handleCreationDict(options);
 		
@@ -269,7 +269,7 @@ public class ShapeViewProxy extends TiViewProxy {
 		} else if (arg instanceof ShapeProxy) {
 			addShape((ShapeProxy) arg);
 		} else if (arg instanceof HashMap) {
-			Class shapeClass = ShapesModule.ShapeClassFromString(TiConvert.toString(arg, TiC.PROPERTY_TYPE));
+			Class shapeClass = AkylasShapesModule.ShapeClassFromString(TiConvert.toString(arg, TiC.PROPERTY_TYPE));
 		    ShapeProxy proxy = (ShapeProxy) KrollProxy.createProxy(shapeClass, null, new Object[] { arg }, null);
 			addShape(proxy);
 		} else {

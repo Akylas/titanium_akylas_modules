@@ -11,12 +11,13 @@ import org.appcelerator.titanium.util.TiConvert;
 
 import com.nineoldandroids.animation.PropertyValuesHolder;
 
-@Kroll.proxy(creatableInModule = ShapesModule.class, propertyAccessors={
-	ShapesModule.PROPERTY_SWEEPANGLE,ShapesModule.PROPERTY_STARTANGLE
+@Kroll.proxy(creatableInModule = AkylasShapesModule.class, propertyAccessors={
+	AkylasShapesModule.PROPERTY_SWEEPANGLE,
+	AkylasShapesModule.PROPERTY_STARTANGLE
 })
 public class ArcProxy extends ShapeProxy{
 	// Standard Debugging variables
-	private static final String TAG = "ShapeProxy";
+	private static final String TAG = "ArcProxy";
 	
 	public ArcProxy() {
 		super();
@@ -30,20 +31,20 @@ public class ArcProxy extends ShapeProxy{
 	@Override
 	public void processProperties(KrollDict properties) {
 		super.processProperties(properties);
-		if (properties.containsKey(ShapesModule.PROPERTY_SWEEPANGLE)) {
-			((Arc) pathable).setSweepAngle(properties.getFloat(ShapesModule.PROPERTY_SWEEPANGLE));
+		if (properties.containsKey(AkylasShapesModule.PROPERTY_SWEEPANGLE)) {
+			((Arc) pathable).setSweepAngle(properties.getFloat(AkylasShapesModule.PROPERTY_SWEEPANGLE));
 		}
-		if (properties.containsKey(ShapesModule.PROPERTY_STARTANGLE)) {
-			((Arc) pathable).setStartAngle(properties.getFloat(ShapesModule.PROPERTY_STARTANGLE));
+		if (properties.containsKey(AkylasShapesModule.PROPERTY_STARTANGLE)) {
+			((Arc) pathable).setStartAngle(properties.getFloat(AkylasShapesModule.PROPERTY_STARTANGLE));
 		}
 	}
 	
 	@Override
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-		if (key.equals(ShapesModule.PROPERTY_SWEEPANGLE)) {
+		if (key.equals(AkylasShapesModule.PROPERTY_SWEEPANGLE)) {
 			setSweepAngle(TiConvert.toFloat(newValue));
 		}
-		else if (key.equals(ShapesModule.PROPERTY_STARTANGLE)) {
+		else if (key.equals(AkylasShapesModule.PROPERTY_STARTANGLE)) {
 			setStartAngle(TiConvert.toFloat(newValue));
 		}
 		else super.propertyChanged(key, oldValue, newValue, proxy);
@@ -57,8 +58,8 @@ public class ArcProxy extends ShapeProxy{
 			KrollDict animOptions) {
 		super.preparePropertiesSet(tiSet, propertiesList, propertiesListReverse, animOptions);
 		
-		createAnimForFloat(ShapesModule.PROPERTY_SWEEPANGLE, animOptions, properties, propertiesList, propertiesListReverse, 0.0f);
-		createAnimForFloat(ShapesModule.PROPERTY_STARTANGLE, animOptions, properties, propertiesList, propertiesListReverse, 0.0f);
+		createAnimForFloat(AkylasShapesModule.PROPERTY_SWEEPANGLE, animOptions, properties, propertiesList, propertiesListReverse, 0.0f);
+		createAnimForFloat(AkylasShapesModule.PROPERTY_STARTANGLE, animOptions, properties, propertiesList, propertiesListReverse, 0.0f);
 	}
 	
 	public void setStartAngle(float value) {

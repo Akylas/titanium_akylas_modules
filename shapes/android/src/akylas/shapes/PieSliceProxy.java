@@ -12,12 +12,12 @@ import com.nineoldandroids.animation.PropertyValuesHolder;
 
 import android.graphics.Point;
 
-@Kroll.proxy(creatableInModule = ShapesModule.class, propertyAccessors={
-	ShapesModule.PROPERTY_INNERRADIUS
+@Kroll.proxy(creatableInModule = AkylasShapesModule.class, propertyAccessors={
+	AkylasShapesModule.PROPERTY_INNERRADIUS
 })
 public class PieSliceProxy extends ArcProxy{
 	// Standard Debugging variables
-	private static final String TAG = "ShapeProxy";
+	private static final String TAG = "PieSliceProxy";
 	protected Object innerRadius;
 	
 	public PieSliceProxy() {
@@ -40,14 +40,14 @@ public class PieSliceProxy extends ArcProxy{
 	@Override
 	public void processProperties(KrollDict properties) {
 		super.processProperties(properties);
-		if (properties.containsKey(ShapesModule.PROPERTY_INNERRADIUS)) {
-			this.innerRadius = properties.get(ShapesModule.PROPERTY_INNERRADIUS);
+		if (properties.containsKey(AkylasShapesModule.PROPERTY_INNERRADIUS)) {
+			this.innerRadius = properties.get(AkylasShapesModule.PROPERTY_INNERRADIUS);
 		}
 	}
 	
 	@Override
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-		if (key.equals(ShapesModule.PROPERTY_INNERRADIUS)) {
+		if (key.equals(AkylasShapesModule.PROPERTY_INNERRADIUS)) {
 			this.innerRadius = newValue;
 		}
 		else super.propertyChanged(key, oldValue, newValue, proxy);
@@ -61,11 +61,11 @@ public class PieSliceProxy extends ArcProxy{
 			KrollDict animOptions) {
 		super.preparePropertiesSet(tiSet, propertiesList, propertiesListReverse, animOptions);
 		
-		if (animOptions.containsKey(ShapesModule.PROPERTY_INNERRADIUS)) {
+		if (animOptions.containsKey(AkylasShapesModule.PROPERTY_INNERRADIUS)) {
 			int width = parentBounds.width();
 			int height = parentBounds.height();
 			Point currentRadius = computeRadius(this.innerRadius, width, height);
-			Point animRadius = computeRadius(animOptions.get(ShapesModule.PROPERTY_INNERRADIUS), width, height);
+			Point animRadius = computeRadius(animOptions.get(AkylasShapesModule.PROPERTY_INNERRADIUS), width, height);
 			PointEvaluator evaluator = new PointEvaluator();
 			propertiesList.add(PropertyValuesHolder.ofObject("innereRadius", evaluator, animRadius));
 			if (propertiesListReverse != null) {

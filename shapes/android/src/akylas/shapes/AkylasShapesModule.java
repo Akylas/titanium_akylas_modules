@@ -8,7 +8,7 @@ import org.appcelerator.kroll.common.Log;
 
 
 @Kroll.module(name="AkylasShapes", id="akylas.shapes")
-public class ShapesModule extends KrollModule
+public class AkylasShapesModule extends KrollModule
 {
 	private static final String TAG = "ShapesModule";
 	
@@ -80,7 +80,7 @@ public class ShapesModule extends KrollModule
 	@Kroll.constant public static final int BOTTOM_MIDDLE = 7;
 	@Kroll.constant public static final int CENTER = 8;
 	
-	public ShapesModule()
+	public AkylasShapesModule()
 	{
 		super();
 	}

@@ -4,7 +4,7 @@ package akylas.shapes;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiContext;
 
-@Kroll.proxy(creatableInModule = ShapesModule.class, propertyAccessors={
+@Kroll.proxy(creatableInModule = AkylasShapesModule.class, propertyAccessors={
 })
 public class CircleProxy extends ShapeProxy{
 	// Standard Debugging variables

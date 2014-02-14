@@ -14,8 +14,8 @@ import com.nineoldandroids.animation.PropertyValuesHolder;
 import com.nineoldandroids.animation.TypeEvaluator;
 
 
-@Kroll.proxy(creatableInModule = ShapesModule.class, propertyAccessors={
-	ShapesModule.PROPERTY_POINTS
+@Kroll.proxy(creatableInModule = AkylasShapesModule.class, propertyAccessors={
+	AkylasShapesModule.PROPERTY_POINTS
 })
 public class LineProxy extends ArcProxy{
 	// Standard Debugging variables
@@ -98,14 +98,14 @@ public class LineProxy extends ArcProxy{
 	@Override
 	public void processProperties(KrollDict properties) {
 		super.processProperties(properties);
-		if (properties.containsKey(ShapesModule.PROPERTY_POINTS)) {
-			setPointsFromObject((Object[]) properties.get(ShapesModule.PROPERTY_POINTS));
+		if (properties.containsKey(AkylasShapesModule.PROPERTY_POINTS)) {
+			setPointsFromObject((Object[]) properties.get(AkylasShapesModule.PROPERTY_POINTS));
 		}
 	}
 	
 	@Override
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-		if (key.equals(ShapesModule.PROPERTY_POINTS)) {
+		if (key.equals(AkylasShapesModule.PROPERTY_POINTS)) {
 			setPointsFromObject((Object[]) newValue);
 		}
 		else super.propertyChanged(key, oldValue, newValue, proxy);
@@ -147,12 +147,12 @@ public class LineProxy extends ArcProxy{
 			KrollDict animOptions) {
 		super.preparePropertiesSet(tiSet, propertiesList, propertiesListReverse, animOptions);
 		
-		if (animOptions.containsKey(ShapesModule.PROPERTY_POINTS)) {
+		if (animOptions.containsKey(AkylasShapesModule.PROPERTY_POINTS)) {
 			
 			int width = parentBounds.width();
 			int height = parentBounds.height();
 			
-			ArrayList<BezierPoint> realPoints = getRealPointsFromObject((Object[]) animOptions.get(ShapesModule.PROPERTY_POINTS), width, height);
+			ArrayList<BezierPoint> realPoints = getRealPointsFromObject((Object[]) animOptions.get(AkylasShapesModule.PROPERTY_POINTS), width, height);
 			BezierPointsEvaluator evaluator =  new BezierPointsEvaluator();
 			propertiesList.add(PropertyValuesHolder.ofObject("points", evaluator, realPoints));
 			if (propertiesListReverse != null) {
