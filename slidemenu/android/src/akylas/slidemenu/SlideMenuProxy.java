@@ -119,17 +119,20 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	public void releaseViews()
 	{
 		super.releaseViews();
-		if (hasProperty(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW))
+		TiViewProxy viewProxy = (TiViewProxy) getProperty(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW);
+		if (viewProxy != null)
 		{
-			((TiViewProxy)getProperty(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW)).releaseViews();
+			viewProxy.releaseViews();
 		}
-		if (hasProperty(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW))
+		viewProxy = (TiViewProxy) getProperty(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW);
+		if (viewProxy != null)
 		{
-			((TiViewProxy)getProperty(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW)).releaseViews();
+			viewProxy.releaseViews();
 		}
-		if (hasProperty(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW))
+		viewProxy = (TiViewProxy) getProperty(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW);
+		if (viewProxy != null)
 		{
-			((TiViewProxy)getProperty(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW)).releaseViews();
+			viewProxy.releaseViews();
 		}
 	}
 
