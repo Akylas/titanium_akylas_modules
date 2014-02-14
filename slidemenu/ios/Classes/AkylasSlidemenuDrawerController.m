@@ -12,7 +12,7 @@
 
 @interface AkylasSlidemenuDrawerController ()
 {
-    TiProxy* _proxy;
+    TiViewProxy* _proxy;
     
     UIView* _leftViewFadingView;
     UIView* _rightViewFadingView;
@@ -213,7 +213,7 @@
     switch (panGesture.state) {
         case UIGestureRecognizerStateBegan:
             self.startingPanRect = self.centerContainerView.frame;
-            if ([_proxy _hasListeners:@"scrollstart"])
+            if ([(TiViewProxy*)_proxy _hasListeners:@"scrollstart" checkParent:NO])
             {
                 NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:NUMFLOAT(0), @"offset", nil];
                 [_proxy fireEvent:@"scrollstart" withObject:evt propagate:NO checkForListener:NO];
@@ -224,7 +224,7 @@
             newFrame.origin.x = [self roundedOriginXForDrawerConstriants:CGRectGetMinX(self.startingPanRect)+translatedPoint.x];
             newFrame = CGRectIntegral(newFrame);
             CGFloat xOffset = newFrame.origin.x;
-            if ([_proxy _hasListeners:@"scroll"])
+            if ([(TiViewProxy*)_proxy _hasListeners:@"scroll" checkParent:NO])
             {
                 NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:NUMFLOAT(xOffset), @"offset", nil];
                 [_proxy fireEvent:@"scroll" withObject:evt propagate:NO checkForListener:NO];
@@ -239,7 +239,7 @@
             newFrame = CGRectIntegral(newFrame);
             CGFloat xOffset = newFrame.origin.x;
             self.startingPanRect = CGRectNull;
-            if ([_proxy _hasListeners:@"scrollend"])
+            if ([(TiViewProxy*)_proxy _hasListeners:@"scrollend" checkParent:NO])
             {
                 NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:NUMFLOAT(xOffset), @"offset", nil];
                 [_proxy fireEvent:@"scrollend" withObject:evt propagate:NO checkForListener:NO];
