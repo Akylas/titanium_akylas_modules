@@ -30,7 +30,9 @@ import android.graphics.drawable.GradientDrawable.Orientation;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu.ViewTransformer;
@@ -52,6 +54,7 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 	private TiDimension leftViewDisplacement =  defaultDisplacement;
 	private TiDimension rightViewDisplacement =  defaultDisplacement;
 	private TiCompositeLayout parentViewForChildren;
+	private int style = SlidingMenu.SLIDING_CONTENT;
 	
 	public TiUISlideMenu(final SlideMenuProxy proxy, TiBaseActivity activity)
 	{
@@ -73,7 +76,7 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 			}
 			
 			@Override
-			protected void attachViewToParent(ViewGroup group) {
+			public void attachViewToParent(ViewGroup group) {
 				super.attachViewToParent(group);
 				parentViewForChildren = new TiCompositeLayout(this.getContext());
 				RelativeLayout layout = new RelativeLayout(this.getContext());
@@ -152,7 +155,17 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		
 		updateMenuWidth();
 		
-		slidingMenu.attachToActivity(activity, SlidingMenu.SLIDING_WINDOW);
+		style = proxy.getProperties().optInt(TiC.PROPERTY_STYLE, style);
+		if (style == SlidingMenu.SLIDING_CONTENT) {
+			parentViewForChildren = new TiCompositeLayout(activity);
+			RelativeLayout layout = new RelativeLayout(activity);
+			layout.addView(parentViewForChildren, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+			slidingMenu.addView(layout);
+			slidingMenu.setContent(new TiCompositeLayout(activity));
+		}
+		else {
+			slidingMenu.attachToActivity(activity, style);
+		}
 		
 		int[] colors1 = {Color.argb(0, 0, 0, 0), Color.argb(128, 0, 0, 0)};
 		GradientDrawable shadow = new GradientDrawable(Orientation.LEFT_RIGHT, colors1);
@@ -458,7 +471,7 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		boolean isCenterView = forSlideView == 0;
 		TiViewProxy oldProxy = isCenterView?this.centerView:((forSlideView == 1)?this.leftView:this.rightView);
 		if (newProxy == oldProxy) return;
-		TiCompositeLayout content = ((TiCompositeLayout) activity.getLayout());
+		TiCompositeLayout content = ((TiCompositeLayout) ((style == SlidingMenu.SLIDING_CONTENT)?slidingMenu.getContent():activity.getLayout()));
 		int index = 0;
 		if (isCenterView && oldProxy != null)
 		{

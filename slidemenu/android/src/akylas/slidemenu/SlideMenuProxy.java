@@ -28,6 +28,7 @@ import android.app.Activity;
 import android.os.Message;
 
 @Kroll.proxy(creatableInModule=AkylasSlidemenuModule.class, propertyAccessors={
+	TiC.PROPERTY_STYLE,
 	AkylasSlidemenuModule.PROPERTY_LEFT_VIEW,
 	AkylasSlidemenuModule.PROPERTY_CENTER_VIEW,
 	AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW,

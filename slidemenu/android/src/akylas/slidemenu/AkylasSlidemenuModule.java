@@ -13,6 +13,8 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
 
+import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
+
 @Kroll.module(name="AkylasSlidemenu", id="akylas.slidemenu")
 public class AkylasSlidemenuModule extends KrollModule
 {
@@ -32,6 +34,9 @@ public class AkylasSlidemenuModule extends KrollModule
 	public static void onAppCreate(TiApplication app)
 	{
 	}
+	
+	@Kroll.constant public static final int STYLE_NORMAL = SlidingMenu.SLIDING_CONTENT;
+	@Kroll.constant public static final int STYLE_WITH_ACTIONBAR = SlidingMenu.SLIDING_WINDOW;
 	
 	@Kroll.constant public static final int LEFT_VIEW = 0;
 	@Kroll.constant public static final int RIGHT_VIEW = 1;
