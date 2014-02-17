@@ -154,6 +154,10 @@
         {
             //retain proxy until animation end
             odlCenterView = [centerView retain];
+            if ([odlCenterView isKindOfClass:[TiWindowProxy class]]) {
+                TiWindowProxy* window = (TiWindowProxy*)odlCenterView;
+                [window resignFocus];
+            }
             RELEASE_TO_NIL(centerView);
         }
         centerView = [args retain];
