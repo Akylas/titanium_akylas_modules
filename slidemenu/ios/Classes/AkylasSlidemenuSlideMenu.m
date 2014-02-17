@@ -163,6 +163,7 @@
         TiWindowProxy* window = (TiWindowProxy*)centerView;
         [window updateOrientationModes];
         [window setIsManaged:YES];
+        [window gainFocus];
     }
     
     [[self controller] setCenterViewController:ctlr withFullCloseAnimation:YES completion:^(BOOL finished) {
