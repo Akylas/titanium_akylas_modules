@@ -526,7 +526,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
         _strokeLayer.masksToBounds = YES;
         _strokeLayer.opaque= NO;
         _strokeLayer.needsDisplayOnBoundsChange = YES;
-        _strokeLayer.shouldRasterize = YES;
+//        _strokeLayer.shouldRasterize = YES;
         _strokeLayer.rasterizationScale = [[UIScreen mainScreen] scale];
         _strokeLayer.fillColor= [UIColor clearColor].CGColor;
         _strokeLayer.frame = _layer.frame;
@@ -548,7 +548,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
         _fillLayer.opaque= NO;
         _strokeLayer.needsDisplayOnBoundsChange = YES;
         _fillLayer.rasterizationScale = [[UIScreen mainScreen] scale];
-        _fillLayer.shouldRasterize = YES;
+//        _fillLayer.shouldRasterize = YES;
 //        _fillLayer.fillColor= [UIColor clearColor].CGColor;
 //        _fillLayer.delegate = self;
         _fillLayer.frame = [_layer frame];

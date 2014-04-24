@@ -18,7 +18,7 @@
     if (self = [super init])
     {
         self.needsDisplayOnBoundsChange = YES;
-        self.shouldRasterize = YES;
+//        self.shouldRasterize = YES;
         self.contentsScale = self.rasterizationScale = [UIScreen mainScreen].scale;
         
         fillOpacity = lineOpacity = 1.0f;
