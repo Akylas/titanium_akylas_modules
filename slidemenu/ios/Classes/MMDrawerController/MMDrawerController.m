@@ -120,6 +120,7 @@ static NSString *MMDrawerOpenSideKey = @"MMDrawerOpenSide";
     CGFloat _maximumRightDrawerWidth;
     CGFloat _maximumLeftDrawerWidth;
     UIColor * _statusBarViewBackgroundColor;
+    UIPanGestureRecognizer* _panGesture;
 }
 
 @property (nonatomic, assign, readwrite) MMDrawerSide openSide;
@@ -1123,12 +1124,16 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
     }
 }
 
+-(UIPanGestureRecognizer*)panGesture {
+    if (_panGesture == nil) {
+        _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureCallback:)];
+    }
+    return _panGesture;
+}
+
 #pragma mark - Helpers
 -(void)setupGestureRecognizers{
-    UIPanGestureRecognizer * pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureCallback:)];
-    [pan setDelegate:self];
-    [self.view addGestureRecognizer:pan];
-    
+    [self.view addGestureRecognizer:[self panGesture]];
     UITapGestureRecognizer * tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureCallback:)];
     [tap setDelegate:self];
     [self.view addGestureRecognizer:tap];
