@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: My module
+author: Martin Guillon
+license: Specify your license
+copyright: Akylas
+
+
+# these should not be edited
+name: MapBox
+moduleid: akylas.mapbox
+guid: 4c80e438-6315-4936-b3fe-42525f7f46fb
+platform: iphone
+minsdk: 3.3.0.AKYLAS

@@ -1,0 +1,583 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		24416B8111C4CA220047AFDD /* Build & Test */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 24416B8A11C4CA520047AFDD /* Build configuration list for PBXAggregateTarget "Build & Test" */;
+			buildPhases = (
+				24416B8011C4CA220047AFDD /* ShellScript */,
+			);
+			dependencies = (
+				24416B8511C4CA280047AFDD /* PBXTargetDependency */,
+			);
+			name = "Build & Test";
+			productName = "Build & test";
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		24DD6CF91134B3F500162E58 /* AkylasMapboxModule.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DD6CF71134B3F500162E58 /* AkylasMapboxModule.h */; };
+		24DD6CFA1134B3F500162E58 /* AkylasMapboxModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DD6CF81134B3F500162E58 /* AkylasMapboxModule.m */; };
+		24DE9E1111C5FE74003F90F6 /* AkylasMapboxModuleAssets.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DE9E0F11C5FE74003F90F6 /* AkylasMapboxModuleAssets.h */; };
+		24DE9E1211C5FE74003F90F6 /* AkylasMapboxModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* AkylasMapboxModuleAssets.m */; };
+		AA747D9F0F9514B9006C5449 /* AkylasMapbox_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* AkylasMapbox_Prefix.pch */; };
+		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
+		D52DF1F118C77B040076FB71 /* AkylasMapboxAnnotationProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D52DF1D818C77B040076FB71 /* AkylasMapboxAnnotationProxy.h */; };
+		D52DF1F218C77B040076FB71 /* AkylasMapboxAnnotationProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D52DF1D918C77B040076FB71 /* AkylasMapboxAnnotationProxy.m */; };
+		D52DF20318C77B040076FB71 /* AkylasMapboxRouteProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D52DF1EA18C77B040076FB71 /* AkylasMapboxRouteProxy.h */; };
+		D52DF20418C77B040076FB71 /* AkylasMapboxRouteProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D52DF1EB18C77B040076FB71 /* AkylasMapboxRouteProxy.m */; };
+		D52DF20518C77B040076FB71 /* AkylasMapboxView.h in Headers */ = {isa = PBXBuildFile; fileRef = D52DF1EC18C77B040076FB71 /* AkylasMapboxView.h */; };
+		D52DF20618C77B040076FB71 /* AkylasMapboxView.m in Sources */ = {isa = PBXBuildFile; fileRef = D52DF1ED18C77B040076FB71 /* AkylasMapboxView.m */; };
+		D52DF20718C77B040076FB71 /* AkylasMapboxViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D52DF1EE18C77B040076FB71 /* AkylasMapboxViewProxy.h */; };
+		D52DF20818C77B040076FB71 /* AkylasMapboxViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D52DF1EF18C77B040076FB71 /* AkylasMapboxViewProxy.m */; };
+		D52DF20918C77B040076FB71 /* TiMKOverlayPathUniversal.h in Headers */ = {isa = PBXBuildFile; fileRef = D52DF1F018C77B040076FB71 /* TiMKOverlayPathUniversal.h */; };
+		D52DF20E18C77E3E0076FB71 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D52DF20D18C77E3E0076FB71 /* MapKit.framework */; };
+		D564021A18CA11DB007D4804 /* AkylasMapboxTileSourceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D564021818CA11DB007D4804 /* AkylasMapboxTileSourceProxy.h */; };
+		D564021B18CA11DB007D4804 /* AkylasMapboxTileSourceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D564021918CA11DB007D4804 /* AkylasMapboxTileSourceProxy.m */; };
+		D564022118CA1857007D4804 /* AkylasTileSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D564021F18CA1857007D4804 /* AkylasTileSource.h */; };
+		D564022218CA1857007D4804 /* AkylasTileSource.m in Sources */ = {isa = PBXBuildFile; fileRef = D564022018CA1857007D4804 /* AkylasTileSource.m */; };
+		D5E5C40C18F4528100FEFD09 /* libMapbox.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D52DF23A18C7AF570076FB71 /* libMapbox.a */; };
+		D5E5C40D18F4528D00FEFD09 /* Mapbox.bundle in Sources */ = {isa = PBXBuildFile; fileRef = D52DF23C18C7AF570076FB71 /* Mapbox.bundle */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		24416B8411C4CA280047AFDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2AAC07D0554694100DB518D;
+			remoteInfo = MapBox;
+		};
+		D52DF23918C7AF570076FB71 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 17F31EFA1331050A00122B16;
+			remoteInfo = Mapbox;
+		};
+		D52DF23B18C7AF570076FB71 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = DD6A83751644A20C0097F31F;
+			remoteInfo = Resources;
+		};
+		D5932F3A18E83C13001BBA34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = B8C974130E8A19B2007D16AD;
+			remoteInfo = Mapbox;
+		};
+		D5E5C40E18F452AE00FEFD09 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = DD6A83741644A20C0097F31F;
+			remoteInfo = Resources;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		24DD6CF71134B3F500162E58 /* AkylasMapboxModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxModule.h; path = Classes/AkylasMapboxModule.h; sourceTree = "<group>"; };
+		24DD6CF81134B3F500162E58 /* AkylasMapboxModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxModule.m; path = Classes/AkylasMapboxModule.m; sourceTree = "<group>"; };
+		24DD6D1B1134B66800162E58 /* titanium.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = titanium.xcconfig; sourceTree = "<group>"; };
+		24DE9E0F11C5FE74003F90F6 /* AkylasMapboxModuleAssets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxModuleAssets.h; path = Classes/AkylasMapboxModuleAssets.h; sourceTree = "<group>"; };
+		24DE9E1011C5FE74003F90F6 /* AkylasMapboxModuleAssets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxModuleAssets.m; path = Classes/AkylasMapboxModuleAssets.m; sourceTree = "<group>"; };
+		AA747D9E0F9514B9006C5449 /* AkylasMapbox_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasMapbox_Prefix.pch; sourceTree = SOURCE_ROOT; };
+		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		D2AAC07E0554694100DB518D /* libAkylasMapbox.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAkylasMapbox.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D52DF1D818C77B040076FB71 /* AkylasMapboxAnnotationProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxAnnotationProxy.h; path = Classes/AkylasMapboxAnnotationProxy.h; sourceTree = "<group>"; };
+		D52DF1D918C77B040076FB71 /* AkylasMapboxAnnotationProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxAnnotationProxy.m; path = Classes/AkylasMapboxAnnotationProxy.m; sourceTree = "<group>"; };
+		D52DF1DC18C77B040076FB71 /* AkylasMapboxCustomAnnotationView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxCustomAnnotationView.h; path = Classes/AkylasMapboxCustomAnnotationView.h; sourceTree = "<group>"; };
+		D52DF1DD18C77B040076FB71 /* AkylasMapboxCustomAnnotationView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxCustomAnnotationView.m; path = Classes/AkylasMapboxCustomAnnotationView.m; sourceTree = "<group>"; };
+		D52DF1DE18C77B040076FB71 /* AkylasMapboxImageAnnotationView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxImageAnnotationView.h; path = Classes/AkylasMapboxImageAnnotationView.h; sourceTree = "<group>"; };
+		D52DF1DF18C77B040076FB71 /* AkylasMapboxImageAnnotationView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxImageAnnotationView.m; path = Classes/AkylasMapboxImageAnnotationView.m; sourceTree = "<group>"; };
+		D52DF1E818C77B040076FB71 /* AkylasMapboxPinAnnotationView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxPinAnnotationView.h; path = Classes/AkylasMapboxPinAnnotationView.h; sourceTree = "<group>"; };
+		D52DF1E918C77B040076FB71 /* AkylasMapboxPinAnnotationView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxPinAnnotationView.m; path = Classes/AkylasMapboxPinAnnotationView.m; sourceTree = "<group>"; };
+		D52DF1EA18C77B040076FB71 /* AkylasMapboxRouteProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxRouteProxy.h; path = Classes/AkylasMapboxRouteProxy.h; sourceTree = "<group>"; };
+		D52DF1EB18C77B040076FB71 /* AkylasMapboxRouteProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxRouteProxy.m; path = Classes/AkylasMapboxRouteProxy.m; sourceTree = "<group>"; };
+		D52DF1EC18C77B040076FB71 /* AkylasMapboxView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxView.h; path = Classes/AkylasMapboxView.h; sourceTree = "<group>"; };
+		D52DF1ED18C77B040076FB71 /* AkylasMapboxView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxView.m; path = Classes/AkylasMapboxView.m; sourceTree = "<group>"; };
+		D52DF1EE18C77B040076FB71 /* AkylasMapboxViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxViewProxy.h; path = Classes/AkylasMapboxViewProxy.h; sourceTree = "<group>"; };
+		D52DF1EF18C77B040076FB71 /* AkylasMapboxViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxViewProxy.m; path = Classes/AkylasMapboxViewProxy.m; sourceTree = "<group>"; };
+		D52DF1F018C77B040076FB71 /* TiMKOverlayPathUniversal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TiMKOverlayPathUniversal.h; path = Classes/TiMKOverlayPathUniversal.h; sourceTree = "<group>"; };
+		D52DF20D18C77E3E0076FB71 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		D52DF20F18C77F7E0076FB71 /* module.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = module.xcconfig; path = ../../timap/ios/module.xcconfig; sourceTree = "<group>"; };
+		D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Mapbox.xcodeproj; path = ../../../../../ios/MapBox/MapView/Mapbox.xcodeproj; sourceTree = "<group>"; };
+		D564021818CA11DB007D4804 /* AkylasMapboxTileSourceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxTileSourceProxy.h; path = Classes/AkylasMapboxTileSourceProxy.h; sourceTree = "<group>"; };
+		D564021918CA11DB007D4804 /* AkylasMapboxTileSourceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxTileSourceProxy.m; path = Classes/AkylasMapboxTileSourceProxy.m; sourceTree = "<group>"; };
+		D564021F18CA1857007D4804 /* AkylasTileSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasTileSource.h; path = Classes/AkylasTileSource.h; sourceTree = "<group>"; };
+		D564022018CA1857007D4804 /* AkylasTileSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasTileSource.m; path = Classes/AkylasTileSource.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D2AAC07C0554694100DB518D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5E5C40C18F4528100FEFD09 /* libMapbox.a in Frameworks */,
+				D52DF20E18C77E3E0076FB71 /* MapKit.framework in Frameworks */,
+				AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2AAC07E0554694100DB518D /* libAkylasMapbox.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* MapBox */ = {
+			isa = PBXGroup;
+			children = (
+				D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */,
+				08FB77AEFE84172EC02AAC07 /* Classes */,
+				32C88DFF0371C24200C91783 /* Other Sources */,
+				0867D69AFE84028FC02AAC07 /* Frameworks */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = MapBox;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D52DF20D18C77E3E0076FB71 /* MapKit.framework */,
+				AACBBE490F95108600F1A2B1 /* Foundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				D52DF1D818C77B040076FB71 /* AkylasMapboxAnnotationProxy.h */,
+				D52DF1D918C77B040076FB71 /* AkylasMapboxAnnotationProxy.m */,
+				D52DF1DC18C77B040076FB71 /* AkylasMapboxCustomAnnotationView.h */,
+				D52DF1DD18C77B040076FB71 /* AkylasMapboxCustomAnnotationView.m */,
+				D52DF1DE18C77B040076FB71 /* AkylasMapboxImageAnnotationView.h */,
+				D52DF1DF18C77B040076FB71 /* AkylasMapboxImageAnnotationView.m */,
+				D52DF1E818C77B040076FB71 /* AkylasMapboxPinAnnotationView.h */,
+				D52DF1E918C77B040076FB71 /* AkylasMapboxPinAnnotationView.m */,
+				D52DF1EA18C77B040076FB71 /* AkylasMapboxRouteProxy.h */,
+				D52DF1EB18C77B040076FB71 /* AkylasMapboxRouteProxy.m */,
+				D52DF1EC18C77B040076FB71 /* AkylasMapboxView.h */,
+				D52DF1ED18C77B040076FB71 /* AkylasMapboxView.m */,
+				D52DF1EE18C77B040076FB71 /* AkylasMapboxViewProxy.h */,
+				D52DF1EF18C77B040076FB71 /* AkylasMapboxViewProxy.m */,
+				D52DF1F018C77B040076FB71 /* TiMKOverlayPathUniversal.h */,
+				24DE9E0F11C5FE74003F90F6 /* AkylasMapboxModuleAssets.h */,
+				24DE9E1011C5FE74003F90F6 /* AkylasMapboxModuleAssets.m */,
+				24DD6CF71134B3F500162E58 /* AkylasMapboxModule.h */,
+				24DD6CF81134B3F500162E58 /* AkylasMapboxModule.m */,
+				D564021818CA11DB007D4804 /* AkylasMapboxTileSourceProxy.h */,
+				D564021918CA11DB007D4804 /* AkylasMapboxTileSourceProxy.m */,
+				D564021F18CA1857007D4804 /* AkylasTileSource.h */,
+				D564022018CA1857007D4804 /* AkylasTileSource.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		32C88DFF0371C24200C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D52DF20F18C77F7E0076FB71 /* module.xcconfig */,
+				AA747D9E0F9514B9006C5449 /* AkylasMapbox_Prefix.pch */,
+				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		D52DF23418C7AF570076FB71 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D52DF23A18C7AF570076FB71 /* libMapbox.a */,
+				D52DF23C18C7AF570076FB71 /* Mapbox.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D2AAC07A0554694100DB518D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D52DF1F118C77B040076FB71 /* AkylasMapboxAnnotationProxy.h in Headers */,
+				AA747D9F0F9514B9006C5449 /* AkylasMapbox_Prefix.pch in Headers */,
+				D52DF20318C77B040076FB71 /* AkylasMapboxRouteProxy.h in Headers */,
+				24DD6CF91134B3F500162E58 /* AkylasMapboxModule.h in Headers */,
+				D52DF20718C77B040076FB71 /* AkylasMapboxViewProxy.h in Headers */,
+				D52DF20518C77B040076FB71 /* AkylasMapboxView.h in Headers */,
+				24DE9E1111C5FE74003F90F6 /* AkylasMapboxModuleAssets.h in Headers */,
+				D52DF20918C77B040076FB71 /* TiMKOverlayPathUniversal.h in Headers */,
+				D564021A18CA11DB007D4804 /* AkylasMapboxTileSourceProxy.h in Headers */,
+				D564022118CA1857007D4804 /* AkylasTileSource.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D2AAC07D0554694100DB518D /* AkylasMapbox */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "AkylasMapbox" */;
+			buildPhases = (
+				D2AAC07A0554694100DB518D /* Headers */,
+				D2AAC07B0554694100DB518D /* Sources */,
+				D2AAC07C0554694100DB518D /* Frameworks */,
+				D58E73DF1861908C00E56FAE /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D5E5C40F18F452AE00FEFD09 /* PBXTargetDependency */,
+				D5932F3B18E83C13001BBA34 /* PBXTargetDependency */,
+			);
+			name = AkylasMapbox;
+			productName = MapBox;
+			productReference = D2AAC07E0554694100DB518D /* libAkylasMapbox.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+			};
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "MapBox" */;
+			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 0867D691FE84028FC02AAC07 /* MapBox */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = D52DF23418C7AF570076FB71 /* Products */;
+					ProjectRef = D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				D2AAC07D0554694100DB518D /* AkylasMapbox */,
+				24416B8111C4CA220047AFDD /* Build & Test */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		D52DF23A18C7AF570076FB71 /* libMapbox.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libMapbox.a;
+			remoteRef = D52DF23918C7AF570076FB71 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D52DF23C18C7AF570076FB71 /* Mapbox.bundle */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = Mapbox.bundle;
+			remoteRef = D52DF23B18C7AF570076FB71 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		24416B8011C4CA220047AFDD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\n\npython \"${TITANIUM_SDK}/titanium.py\" run --dir=\"${PROJECT_DIR}\"\nexit $?\n";
+		};
+		D58E73DF1861908C00E56FAE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$PROJECT_DIR/build.py\" compilejs";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D2AAC07B0554694100DB518D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5E5C40D18F4528D00FEFD09 /* Mapbox.bundle in Sources */,
+				D52DF20418C77B040076FB71 /* AkylasMapboxRouteProxy.m in Sources */,
+				D564021B18CA11DB007D4804 /* AkylasMapboxTileSourceProxy.m in Sources */,
+				24DD6CFA1134B3F500162E58 /* AkylasMapboxModule.m in Sources */,
+				D52DF20618C77B040076FB71 /* AkylasMapboxView.m in Sources */,
+				24DE9E1211C5FE74003F90F6 /* AkylasMapboxModuleAssets.m in Sources */,
+				D564022218CA1857007D4804 /* AkylasTileSource.m in Sources */,
+				D52DF1F218C77B040076FB71 /* AkylasMapboxAnnotationProxy.m in Sources */,
+				D52DF20818C77B040076FB71 /* AkylasMapboxViewProxy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		24416B8511C4CA280047AFDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2AAC07D0554694100DB518D /* AkylasMapbox */;
+			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
+		};
+		D5932F3B18E83C13001BBA34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Mapbox;
+			targetProxy = D5932F3A18E83C13001BBA34 /* PBXContainerItemProxy */;
+		};
+		D5E5C40F18F452AE00FEFD09 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Resources;
+			targetProxy = D5E5C40E18F452AE00FEFD09 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB921F08733DC00010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DSTROOT = /tmp/AkylasMapbox.dst;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/Volumes/data/dev/titanium/modules/akylas_modules/timap/ios,
+				);
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasMapbox_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = (
+					"-DDEBUG",
+					"-DTI_POST_1_2",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasMapbox;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		1DEB922008733DC00010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = /tmp/AkylasMapbox.dst;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/Volumes/data/dev/titanium/modules/akylas_modules/timap/ios,
+				);
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasMapbox_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)",
+				);
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "-DTI_POST_1_2";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasMapbox;
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		1DEB922308733DC00010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DSTROOT = /tmp/AkylasMapbox.dst;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasMapbox_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				INSTALL_PATH = /usr/local/lib;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				OTHER_CFLAGS = (
+					"-DDEBUG",
+					"-DTI_POST_1_2",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasMapbox;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		1DEB922408733DC00010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = /tmp/AkylasMapbox.dst;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = AkylasMapbox_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				INSTALL_PATH = /usr/local/lib;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				OTHER_CFLAGS = "-DTI_POST_1_2";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = AkylasMapbox;
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		24416B8211C4CA220047AFDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build & test";
+			};
+			name = Debug;
+		};
+		24416B8311C4CA220047AFDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = "Build & test";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "AkylasMapbox" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB921F08733DC00010E9CD /* Debug */,
+				1DEB922008733DC00010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "MapBox" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB922308733DC00010E9CD /* Debug */,
+				1DEB922408733DC00010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		24416B8A11C4CA520047AFDD /* Build configuration list for PBXAggregateTarget "Build & Test" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				24416B8211C4CA220047AFDD /* Debug */,
+				24416B8311C4CA220047AFDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}
