@@ -35,7 +35,10 @@
 -(UIViewController *) controllerForViewProxy:(TiViewProxy * )proxy withFrame:(CGRect)frame
 {
     proxy.sandboxBounds = CGRectMake(0, 0, frame.size.width, frame.size.height);
-    
+    if ([proxy isKindOfClass:[TiWindowProxy class]]) {
+        TiWindowProxy* window = (TiWindowProxy*)proxy;
+        [window setIsManaged:YES]; // has to be done before windowWillOpen!
+    }
     UIViewController* controller;
     if([proxy respondsToSelector:@selector(hostingController)])
     {
@@ -156,6 +159,7 @@
             odlCenterView = [centerView retain];
             if ([odlCenterView isKindOfClass:[TiWindowProxy class]]) {
                 TiWindowProxy* window = (TiWindowProxy*)odlCenterView;
+                [window setIsManaged:NO];
                 [window resignFocus];
             }
             RELEASE_TO_NIL(centerView);
@@ -166,7 +170,6 @@
     if ([centerView isKindOfClass:[TiWindowProxy class]]) {
         TiWindowProxy* window = (TiWindowProxy*)centerView;
         [window updateOrientationModes];
-        [window setIsManaged:YES];
         [window gainFocus];
     }
     
