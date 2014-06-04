@@ -11,7 +11,7 @@ copyright: Copyright (c) 2013 by Your Company
 
 
 # these should not be edited
-name: AkylasCharts
+name: akylas-charts
 moduleid: akylas.charts
 guid: 0d2264a8-c671-4e15-881e-e528a24d0450
 platform: android

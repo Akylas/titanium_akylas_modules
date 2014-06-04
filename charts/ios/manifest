@@ -10,7 +10,7 @@ license: Specify your license
 copyright: Copyright (c) 2013 by Your Company
 
 
-# these should not be edited
+# on ios make sure that moduleid is the name of the project
 name: AkylasCharts
 moduleid: akylas.charts
 guid: 2dfe3e23-ceca-405e-b119-04eca831949b
