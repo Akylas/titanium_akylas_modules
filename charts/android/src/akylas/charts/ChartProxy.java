@@ -61,7 +61,7 @@ public class ChartProxy extends TiViewProxy {
 				protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 					super.onLayout(changed, left, top, right, bottom);
 					onLayoutChanged();
-					TiUIHelper.firePostLayoutEvent(proxy);
+					TiUIHelper.firePostLayoutEvent(ChartView.this);
 				}
 			};
 			try {
@@ -70,6 +70,7 @@ public class ChartProxy extends TiViewProxy {
 				plotView = null;
 				return;
 			}
+//			plotView.setShouldSupportHwAcceleration(false);
 			if (Build.VERSION.SDK_INT >= TiC.API_LEVEL_HONEYCOMB) {
 				plotView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 			}

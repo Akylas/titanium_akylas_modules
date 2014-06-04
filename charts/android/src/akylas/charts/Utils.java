@@ -19,6 +19,7 @@ import android.graphics.DashPathEffect;
 import android.graphics.EmbossMaskFilter;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.Paint.Cap;
 import android.graphics.Paint.Join;
 import android.graphics.RadialGradient;
@@ -248,6 +249,7 @@ public class Utils {
 			}
 		}
 		styleShadow(dict, "shadow", paints, context);
+		Align align = Align.values()[dict.optInt("textAlign", 1)];
 		
 		if (dict.containsKey("font")) {
 			KrollDict fontOptions = dict.getKrollDict("font");
@@ -263,8 +265,17 @@ public class Utils {
 			for (int i = 0; i < paints.length; i++) {
 				Paint paint = paints[i];
 				paint.setTextSize(size);
-				paint.setTypeface(typeface);
+                paint.setTypeface(typeface);
+                paint.setTextAlign(align);
 			}
+		}
+		else {
+		    float defaultSize = TiUIHelper.getRawSize(null, null);
+		    for (int i = 0; i < paints.length; i++) {
+                Paint paint = paints[i];
+                paint.setTextSize(defaultSize);
+                paint.setTextAlign(align);
+            }
 		}
 		
 		styleOpacity(dict, paints);

@@ -11,8 +11,8 @@ import org.appcelerator.kroll.KrollProxyListener;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
+import org.appcelerator.titanium.animation.TiAnimatorSet;
 import org.appcelerator.titanium.proxy.AnimatableProxy;
-import org.appcelerator.titanium.util.TiAnimatorSet;
 import org.appcelerator.titanium.util.TiConvert;
 
 import android.annotation.TargetApi;
@@ -127,8 +127,9 @@ public class PieSegmentProxy extends AnimatableProxy implements KrollProxyListen
 	@SuppressWarnings("rawtypes")
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
-	protected void prepareAnimatorSet(TiAnimatorSet tiSet, List<Animator> list, HashMap options) {
-		super.prepareAnimatorSet(tiSet, list, options);
+	protected void prepareAnimatorSet(TiAnimatorSet tiSet, List<Animator> list, List<Animator> listReverse,
+            HashMap options) {
+	    super.prepareAnimatorSet(tiSet, list, listReverse, options);
 		if (options.containsKey(TiC.PROPERTY_VALUE)) {
 			ObjectAnimator anim = ObjectAnimator.ofInt(this, TiC.PROPERTY_VALUE, TiConvert.toInt(options.get(TiC.PROPERTY_VALUE)));
 			list.add(anim);

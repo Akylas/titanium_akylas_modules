@@ -5,20 +5,19 @@ import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
+import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
-import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
-import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiUIView;
 
 import android.annotation.SuppressLint;
@@ -26,12 +25,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
+import com.androidplot.ui.SizeMetrics;
 import com.androidplot.xy.BarRenderer;
 import com.androidplot.xy.BarRenderer.BarRenderStyle;
 import com.androidplot.xy.BarRenderer.BarWidthStyle;
@@ -42,7 +43,6 @@ import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
 import com.androidplot.xy.YValueMarker;
-import com.sun.tools.example.debug.gui.SourceModel.Line;
 
 // This proxy can be created by calling Android.createExample({message: "hello world"})
 @SuppressWarnings({ "rawtypes", "serial", "unchecked" })
@@ -62,9 +62,9 @@ public class LineChartProxy extends ChartProxy {
 	private boolean barRenderInitiated = false;
 	private KrollFunction formatDomainCallback;
 	private KrollFunction formatRangeCallback;
+    private ArrayList<MarkerProxy> preloadMarkers = null;
 
-	private int markerId;
-	private final HashMap<Integer, ValueMarker> mMarkers;
+	private final ArrayList<MarkerProxy> mMarkers;
 
 	private class LineChartView extends ChartView implements OnTouchListener {
 		// private PointF minXY;
@@ -86,44 +86,25 @@ public class LineChartProxy extends ChartProxy {
 
 		protected void beforeLayoutNativeView() {
 			xyPlotView = (XYPlot) plotView;
-			float defaultSize = TiUIHelper.getRawSize(null,
-					plotView.getContext());
-
-			xyPlotView.getLegendWidget().getTextPaint()
-					.setTextSize(defaultSize);
-			xyPlotView.getGraphWidget().getRangeLabelPaint()
-					.setTextSize(defaultSize);
-			xyPlotView.getGraphWidget().getDomainLabelPaint()
-					.setTextSize(defaultSize);
-			xyPlotView.getGraphWidget().getDomainOriginLabelPaint()
-					.setTextSize(defaultSize);
-			xyPlotView.getGraphWidget().getRangeOriginLabelPaint()
-					.setTextSize(defaultSize);
-
-			xyPlotView.getGraphWidget().getBackgroundPaint()
-					.setColor(Color.TRANSPARENT);
-			xyPlotView.getGraphWidget().getGridBackgroundPaint()
-					.setColor(Color.TRANSPARENT);
-			xyPlotView.getGraphWidget().getRangeGridLinePaint()
-					.setColor(Color.TRANSPARENT);
-			xyPlotView.getGraphWidget().getDomainGridLinePaint()
-					.setColor(Color.TRANSPARENT);
 			
 			xyPlotView.getGraphWidget().setGridPadding(0,0,0,0);
-			xyPlotView.getGraphWidget().setMargins(0,0,0,0);
-			xyPlotView.getGraphWidget().setClippingEnabled(false);
+            xyPlotView.getGraphWidget().setMargins(0,0,0,0);
+            xyPlotView.getGraphWidget().setClippingEnabled(false);
+            xyPlotView.getGraphWidget().setRangeLabelWidth(0);
+            xyPlotView.getGraphWidget().setDomainLabelWidth(0);
+            xyPlotView.getGraphWidget().setDomainOriginLabelOffset(0);
+            xyPlotView.getGraphWidget().setRangeOriginLabelOffset(0);
 
-			for (int i = 0; i < mPlots.size(); i++) {
+            for (int i = 0; i < mPlots.size(); i++) {
 				addSerie(mPlots.get(i), false);
 			}
-
-			for (Map.Entry<Integer, ValueMarker> entry : mMarkers.entrySet()) {
-				ValueMarker marker = entry.getValue();
-				if (marker instanceof YValueMarker)
-					xyPlotView.addMarker((YValueMarker) marker);
-				else
-					xyPlotView.addMarker((XValueMarker) marker);
-			}
+            for (int i = 0; i < mMarkers.size(); i++) {
+                ValueMarker marker = mMarkers.get(i).getMarker();
+                if (marker instanceof YValueMarker)
+                    xyPlotView.addMarker((YValueMarker) marker);
+                else
+                    xyPlotView.addMarker((XValueMarker) marker);
+            }
 			updateMinMax();
 		}
 
@@ -243,10 +224,19 @@ public class LineChartProxy extends ChartProxy {
 				if (gridOptions.containsKey("backgroundGradient")) {
 					KrollDict bgOptions = gridOptions
 							.getKrollDict("backgroundGradient");
-					xyPlotView.getGraphWidget().getGridBackgroundPaint()
+					xyPlotView.getGraphWidget().getOrCreateGridBackgroundPaint()
 							.setShader(Utils.styleGradient(bgOptions, context, rect));
 				}
 			}
+//			if (d.containsKey("plotArea")) {
+//                KrollDict options = d.getKrollDict("plotArea");
+//                if (options.containsKey("backgroundGradient")) {
+//                    KrollDict bgOptions = options
+//                            .getKrollDict("backgroundGradient");
+//                    xyPlotView.getGraphWidget().getOrCreateBackgroundPaint()
+//                            .setShader(Utils.styleGradient(bgOptions, context, rect));
+//                }
+//            }
 		}
 
 		@Override
@@ -315,7 +305,7 @@ public class LineChartProxy extends ChartProxy {
 			if (d.containsKey("gridArea")) {
 				KrollDict gridOptions = d.getKrollDict("gridArea");
 				Paint paint1 = xyPlotView.getGraphWidget()
-						.getGridBackgroundPaint();
+						.getOrCreateGridBackgroundPaint();
 				Utils.styleColor(gridOptions, "backgroundColor",
 						Color.TRANSPARENT, paint1);
 				Utils.styleOpacity(gridOptions, "backgroundOpacity", paint1);
@@ -323,13 +313,17 @@ public class LineChartProxy extends ChartProxy {
 						"setGridPadding", context);
 			}
 
-			if (d.containsKey("plotArea")) {
-				KrollDict plotOptions = d.getKrollDict("plotArea");
-				Utils.styleMargins(plotOptions, xyPlotView.getGraphWidget(),
-						"setMargins", context);
-
-			}
-			Utils.styleMargins(d, plotView, "setPlotMargins", context);
+//			if (d.containsKey("plotArea")) {
+//				KrollDict plotOptions = d.getKrollDict("plotArea");
+//				Utils.styleMargins(plotOptions, xyPlotView.getGraphWidget(),
+//						"setMargins", context);
+//                Paint paint1 = xyPlotView.getGraphWidget()
+//                        .getOrCreateBackgroundPaint();
+//                Utils.styleColor(plotOptions, "backgroundColor",
+//                        Color.TRANSPARENT, paint1);
+//                Utils.styleOpacity(plotOptions, "backgroundOpacity", paint1);
+//			}
+//			Utils.styleMargins(d, plotView, "setPlotMargins", context);
 
 			if (d.containsKey("legend")) {
 				KrollDict legend = d.getKrollDict("legend");
@@ -350,8 +344,8 @@ public class LineChartProxy extends ChartProxy {
 				}
 
 				Paint paint = xyPlotView.getGraphWidget()
-						.getRangeOriginLinePaint();
-				Utils.styleColor(axisOptions, "lineColor", paint);
+						.getOrCreateRangeOriginLinePaint();
+				Utils.styleColor(axisOptions, "lineColor", Color.TRANSPARENT, paint);
 				Utils.styleStrokeWidth(axisOptions, "lineWidth", paint, context);
 
 				if (axisOptions.containsKey("title")) {
@@ -362,7 +356,7 @@ public class LineChartProxy extends ChartProxy {
 					}
 
 					Utils.styleTextWidget(titleOptions, xyPlotView
-							.getGraphWidget().getDomainOriginLabelPaint(), context);
+							.getGraphWidget().getOrCreateDomainOriginLabelPaint(), context);
 					if (titleOptions.containsKey("offset")) {
 						xyPlotView.getGraphWidget().setDomainOriginLabelOffset(Utils.getRawSizeOrZero(titleOptions, "offset", context));
 					}
@@ -382,14 +376,14 @@ public class LineChartProxy extends ChartProxy {
 						KrollDict gridOptions = minorOptions
 								.getKrollDict("gridLines");
 						Paint paint1 = xyPlotView.getGraphWidget()
-								.getDomainSubGridLinePaint();
+								.getOrCreateDomainSubGridLinePaint();
 						
 						Utils.styleCap(gridOptions, "cap", paint1);
 						Utils.styleJoin(gridOptions, "join", paint1);
 						Utils.styleEmboss(gridOptions, "emboss", paint1);
 						Utils.styleDash(gridOptions, "dash", paint1, context);
 						Utils.styleShadow(gridOptions, "shadow", paint1, context);
-						Utils.styleColor(gridOptions, paint1);
+						Utils.styleColor(gridOptions, "color", Color.TRANSPARENT, paint1);
 						Utils.styleStrokeWidth(gridOptions, paint1, context);
 						Utils.styleOpacity(gridOptions, paint1);
 					}
@@ -416,14 +410,11 @@ public class LineChartProxy extends ChartProxy {
 					}
 
 					if (majorOptions.containsKey("labels")) {
+					    Paint labelPaint = xyPlotView.getGraphWidget()
+                                .getOrCreateDomainLabelPaint();
 						KrollDict labelOptions = majorOptions
 								.getKrollDict("labels");
-						Paint[] paints = {
-								xyPlotView.getGraphWidget()
-										.getDomainLabelPaint(),
-								xyPlotView.getGraphWidget()
-										.getDomainLabelPaint() };
-						Utils.styleTextWidget(labelOptions, paints, context);
+						Utils.styleTextWidget(labelOptions, labelPaint, context);
 
 						if (labelOptions.containsKey("formatCallback")) {
 							formatDomainCallback = (KrollFunction) labelOptions
@@ -490,13 +481,13 @@ public class LineChartProxy extends ChartProxy {
 						KrollDict gridOptions = majorOptions
 								.getKrollDict("gridLines");
 						Paint paint1 = xyPlotView.getGraphWidget()
-								.getDomainGridLinePaint();
+								.getOrCreateDomainGridLinePaint();
 						Utils.styleCap(gridOptions, "cap", paint1);
 						Utils.styleJoin(gridOptions, "join", paint1);
 						Utils.styleEmboss(gridOptions, "emboss", paint1);
 						Utils.styleDash(gridOptions, "dash", paint1, context);
 						Utils.styleShadow(gridOptions, "shadow", paint1, context);
-						Utils.styleColor(gridOptions, paint1);
+						Utils.styleColor(gridOptions, "color", Color.TRANSPARENT, paint1);
 						Utils.styleStrokeWidth(gridOptions, paint1, context);
 						Utils.styleOpacity(gridOptions, paint1);
 					}
@@ -528,8 +519,8 @@ public class LineChartProxy extends ChartProxy {
 															.getInt("align")));
 				}
 				Paint paint = xyPlotView.getGraphWidget()
-						.getDomainOriginLinePaint();
-				Utils.styleColor(axisOptions, "lineColor", paint);
+						.getOrCreateDomainOriginLinePaint();
+				Utils.styleColor(axisOptions, "lineColor", Color.TRANSPARENT, paint);
 				Utils.styleStrokeWidth(axisOptions, "lineWidth", paint, context);
 
 				if (axisOptions.containsKey("title")) {
@@ -540,7 +531,7 @@ public class LineChartProxy extends ChartProxy {
 					}
 
 					Utils.styleTextWidget(titleOptions, xyPlotView
-							.getGraphWidget().getRangeOriginLabelPaint(), context);
+							.getGraphWidget().getOrCreateRangeOriginLabelPaint(), context);
 					if (titleOptions.containsKey("offset")) {
 						xyPlotView.getGraphWidget().setRangeOriginLabelOffset(Utils.getRawSizeOrZero(titleOptions, "offset", context));
 					}
@@ -560,13 +551,13 @@ public class LineChartProxy extends ChartProxy {
 						KrollDict gridOptions = minorOptions
 								.getKrollDict("gridLines");
 						Paint paint1 = xyPlotView.getGraphWidget()
-								.getRangeSubGridLinePaint();
+								.getOrCreateRangeSubGridLinePaint();
 						Utils.styleCap(gridOptions, "cap", paint1);
 						Utils.styleJoin(gridOptions, "join", paint1);
 						Utils.styleEmboss(gridOptions, "emboss", paint1);
 						Utils.styleDash(gridOptions, "dash", paint1, context);
 						Utils.styleShadow(gridOptions, "shadow", paint1, context);
-						Utils.styleColor(gridOptions, paint1);
+						Utils.styleColor(gridOptions, "color", Color.TRANSPARENT, paint1);
 						Utils.styleStrokeWidth(gridOptions, paint1, context);
 						Utils.styleOpacity(gridOptions, paint1);
 					}
@@ -589,13 +580,11 @@ public class LineChartProxy extends ChartProxy {
 					}
 
 					if (majorOptions.containsKey("labels")) {
-						KrollDict labelOptions = majorOptions
-								.getKrollDict("labels");
-						Utils.styleTextWidget(labelOptions, new Paint[] {
-								xyPlotView.getGraphWidget()
-										.getRangeLabelPaint(),
-								xyPlotView.getGraphWidget()
-										.getRangeLabelPaint() }, context);
+						Paint labelPaint = xyPlotView.getGraphWidget()
+	                                .getOrCreateRangeLabelPaint();
+                        KrollDict labelOptions = majorOptions
+                                .getKrollDict("labels");
+                        Utils.styleTextWidget(labelOptions, labelPaint, context);
 
 						if (labelOptions.containsKey("formatCallback")) {
 							formatRangeCallback = (KrollFunction) labelOptions
@@ -653,7 +642,7 @@ public class LineChartProxy extends ChartProxy {
 
 						if (labelOptions.containsKey("offset")) {
 							xyPlotView.getGraphWidget()
-									.setRangeLabelVerticalOffset(
+									.setRangeLabelHorizontalOffset(
 											Utils.getRawSize(labelOptions,
 													"offset", context));
 						}
@@ -663,13 +652,13 @@ public class LineChartProxy extends ChartProxy {
 						KrollDict gridOptions = majorOptions
 								.getKrollDict("gridLines");
 						Paint paint1 = xyPlotView.getGraphWidget()
-								.getRangeGridLinePaint();
+								.getOrCreateRangeGridLinePaint();
 						Utils.styleCap(gridOptions, "cap", paint1);
 						Utils.styleJoin(gridOptions, "join", paint1);
 						Utils.styleEmboss(gridOptions, "emboss", paint1);
 						Utils.styleDash(gridOptions, "dash", paint1, context);
 						Utils.styleShadow(gridOptions, "shadow", paint1, context);
-						Utils.styleColor(gridOptions, paint1);
+						Utils.styleColor(gridOptions, "color", Color.TRANSPARENT, paint1);
 						Utils.styleStrokeWidth(gridOptions, paint1, context);
 						Utils.styleOpacity(gridOptions, paint1);
 					}
@@ -866,8 +855,7 @@ public class LineChartProxy extends ChartProxy {
 	public LineChartProxy() {
 		super();
 		mPlots = new ArrayList<XYSerieProxy>();
-		mMarkers = new HashMap<Integer, ValueMarker>();
-		markerId = 0;
+		mMarkers = new ArrayList<MarkerProxy>();
 	}
 
 	public void addSerie(XYSerieProxy proxy) {
@@ -992,76 +980,43 @@ public class LineChartProxy extends ChartProxy {
 		XYSerieProxy proxy = (XYSerieProxy) linePlot;
 		removeSerie(proxy);
 	}
+	
+	@Kroll.method
+    public MarkerProxy addMarker(Object object) {
+	    MarkerProxy marker = null;
+	    if(object instanceof HashMap) {
+	        Log.d(TAG, "addMarker " + object.toString());
+	        marker =  (MarkerProxy) KrollProxy.createProxy(MarkerProxy.class, null, new Object[]{object}, null);
+        } else if(object instanceof MarkerProxy) {
+            marker = (MarkerProxy)object;
+        }
+        if (marker != null) {
+            mMarkers.add(marker);
+            marker.setLineChartProxy(this);
+            
+            if (xyPlotView != null) {
+                ValueMarker vMarker = marker.getMarker();
+                if (vMarker instanceof YValueMarker)
+                    xyPlotView.addMarker((YValueMarker) vMarker);
+                else
+                    xyPlotView.addMarker((XValueMarker) vMarker);
+                xyPlotView.redraw();
+            }
+    	}
+        return marker;
+    }
 
 	@Kroll.method
-	public int addMarker(Object args) {
-		KrollDict options = new KrollDict((HashMap) args);
-		if (options.containsKey(TiC.PROPERTY_VALUE)) {
-			int type = options.optInt(TiC.PROPERTY_TYPE, 0);
-			ValueMarker marker = (type == 1) ? new XValueMarker(
-					options.getInt(TiC.PROPERTY_VALUE), options.optString(
-							TiC.PROPERTY_TITLE, null)) : new YValueMarker(
-					options.getInt(TiC.PROPERTY_VALUE), options.optString(
-							TiC.PROPERTY_TITLE, null));
-
-			Context context = TiApplication.getInstance()
-					.getApplicationContext();
-			Paint paint = marker.getLinePaint();
-			Utils.styleStrokeWidth(options, "lineWidth", "1", paint, context);
-			Utils.styleOpacity(options, "lineOpacity", paint);
-			Utils.styleColor(options, "lineColor", paint);
-			Utils.styleCap(options, "lineCap", paint);
-			Utils.styleJoin(options, "lineJoin", paint);
-			Utils.styleEmboss(options, "lineEmboss", paint);
-			Utils.styleDash(options, "lineDash", paint, context);
-			Utils.styleShadow(options, "shadow", paint, context);
-
-			if (options.containsKey("label")) {
-				Paint paint2 = marker.getTextPaint();
-				KrollDict labelOptions = options.getKrollDict("label");
-				Utils.styleShadow(labelOptions, "shadow", paint2, context);
-
-				Utils.styleTextWidget(labelOptions, paint2, context);
-
-				if (labelOptions.containsKey("offset")) {
-					KrollDict offset = labelOptions.getKrollDict("offset");
-					if (marker instanceof YValueMarker) {
-						((YValueMarker) marker).vOffset += Utils
-								.getRawSizeOrZero(offset, "y", context);
-					} else {
-						((XValueMarker) marker).hOffset += Utils
-								.getRawSizeOrZero(offset, "x", context);
-					}
-				}
-			}
-
-			int myMarkerId = markerId;
-			mMarkers.put(myMarkerId, marker);
+	public void removeMarker(MarkerProxy marker) {
+		if (mMarkers.contains(marker)) {
+	        marker.setLineChartProxy(null);
+			ValueMarker vMarker = marker.getMarker();
+			mMarkers.remove(marker);
 			if (xyPlotView != null) {
-				if (marker instanceof YValueMarker)
-					xyPlotView.addMarker((YValueMarker) marker);
+				if (vMarker instanceof YValueMarker)
+					xyPlotView.removeMarker((YValueMarker) vMarker);
 				else
-					xyPlotView.addMarker((XValueMarker) marker);
-			}
-
-			markerId++;
-			return myMarkerId;
-		} else {
-			Log.e(TAG, "can't add marker without a value");
-			return -1;
-		}
-	}
-
-	@Kroll.method
-	public void removeMarker(int markerId) {
-		if (mMarkers.containsKey(markerId)) {
-			ValueMarker marker = mMarkers.get(markerId);
-			mMarkers.remove(markerId);
-			if (xyPlotView != null) {
-				if (marker instanceof YValueMarker)
-					xyPlotView.removeMarker((YValueMarker) marker);
-				else
-					xyPlotView.removeMarker((XValueMarker) marker);
+					xyPlotView.removeMarker((XValueMarker) vMarker);
 			}
 		}
 	}
