@@ -11,8 +11,8 @@ copyright: Akylas
 
 
 # these should not be edited
-name:  akylas-mapbox
-moduleid: akylas.mapbox
+name:  akylas-map
+moduleid: akylas.map
 guid: 0e81237e-7ec2-4064-9ed0-d6cf26d10e23
 platform: android
 minsdk: 3.3.0.AKYLAS

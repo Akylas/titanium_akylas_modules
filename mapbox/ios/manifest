@@ -10,9 +10,9 @@ license: Specify your license
 copyright: Akylas
 
 
-# these should not be edited
-name: MapBox
-moduleid: akylas.mapbox
+# on ios make sure that moduleid is the name of the project
+name:  akylas-map
+moduleid: akylas.map
 guid: 4c80e438-6315-4936-b3fe-42525f7f46fb
 platform: iphone
 minsdk: 3.3.0.AKYLAS

@@ -1,0 +1,11 @@
+{
+    "MapBox":{
+        "title":"MapBox",
+        "copyright":"Copyright Mapbox Inc 2014",
+         "licenseId":"apache_2"
+    },
+    "OSMDroid":{
+        "title":"OSMDroid",
+        "licenseId":"apache_2"
+    }
+}
