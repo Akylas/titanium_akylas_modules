@@ -10,7 +10,7 @@ license: Specify your license
 copyright: Copyright (c) 2013 by Your Company
 
 
-# these should not be edited
+# on ios make sure that moduleid is the name of the project
 name: ak_commonjs_ios
 moduleid: akylas.commonjs
 guid: 473dacaa-f088-4cdf-a2b2-78a238fdf09e
