@@ -7,3 +7,6 @@
 [submodule "scancode/ios/zxing"]
 	path = scancode/ios/zxing
 	url = git@github.com:zxing/zxing.git
+[submodule "testflight"]
+	path = testflight
+	url = git@github.com:Akylas/testflight-module.git

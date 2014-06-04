@@ -1,7 +1,7 @@
 var __myPath = Ti.resourcesRelativePath;
 if (__myPath.length > 0 && __myPath[__myPath.length - 1] != '/')
 	__myPath += '/';
-Ti.API.info('__myPath in commonjs ' + __myPath);
+Ti.API.info('__myPath in akylas.commonjs is ' + __myPath);
 
 exports.load = function(_context, _config) {
 	var modules_dir = _config.modules_dir || this.config.modules_dir;
@@ -37,4 +37,12 @@ exports.loadExtraWidgets = function(_context) {
 			}).call(_context);
 		}
 	}
+};
+
+exports.createApp = function(_context, _args) {
+    Ti.API.info('createApp');
+    _args = _args || {};
+    _args.modules = _args.modules ||{};
+    _args.modules.commonjs = this;
+    return require(__myPath  +'AkInclude/App')(_context, _args);
 };
