@@ -28,6 +28,10 @@
 		24DE9E1211C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m */; };
 		AA747D9F0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
+		D5039309193F49EA00F0A0B3 /* NSData+AES.h in Headers */ = {isa = PBXBuildFile; fileRef = D5039305193F49EA00F0A0B3 /* NSData+AES.h */; };
+		D503930A193F49EA00F0A0B3 /* NSData+AES.m in Sources */ = {isa = PBXBuildFile; fileRef = D5039306193F49EA00F0A0B3 /* NSData+AES.m */; };
+		D503930B193F49EA00F0A0B3 /* NSString+AES.h in Headers */ = {isa = PBXBuildFile; fileRef = D5039307193F49EA00F0A0B3 /* NSString+AES.h */; };
+		D503930C193F49EA00F0A0B3 /* NSString+AES.m in Sources */ = {isa = PBXBuildFile; fileRef = D5039308193F49EA00F0A0B3 /* NSString+AES.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,7 +52,11 @@
 		24DE9E1011C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasCommonjsModuleAssets.m; path = Classes/AkylasCommonjsModuleAssets.m; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasCommonjs_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		D2AAC07E0554694100DB518D /* libAkylasCommonjs.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAkylasCommonjs.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2AAC07E0554694100DB518D /* libakylas.commonjs.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.commonjs.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5039305193F49EA00F0A0B3 /* NSData+AES.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+AES.h"; path = "Classes/NSData+AES.h"; sourceTree = "<group>"; };
+		D5039306193F49EA00F0A0B3 /* NSData+AES.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+AES.m"; path = "Classes/NSData+AES.m"; sourceTree = "<group>"; };
+		D5039307193F49EA00F0A0B3 /* NSString+AES.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+AES.h"; path = "Classes/NSString+AES.h"; sourceTree = "<group>"; };
+		D5039308193F49EA00F0A0B3 /* NSString+AES.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+AES.m"; path = "Classes/NSString+AES.m"; sourceTree = "<group>"; };
 		D5EE1BF01860CAF500579573 /* akylas.commonjs.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.commonjs.js; path = assets/akylas.commonjs.js; sourceTree = "<group>"; };
 		D5EE1BF11860CAFE00579573 /* akylas.additions.function.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.additions.function.js; path = assets/AkInclude/akylas.additions.function.js; sourceTree = "<group>"; };
 		D5EE1BF21860CAFE00579573 /* akylas.additions.math.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.additions.math.js; path = assets/AkInclude/akylas.additions.math.js; sourceTree = "<group>"; };
@@ -78,7 +86,7 @@
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D2AAC07E0554694100DB518D /* libAkylasCommonjs.a */,
+				D2AAC07E0554694100DB518D /* libakylas.commonjs.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -106,6 +114,10 @@
 		08FB77AEFE84172EC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				D5039305193F49EA00F0A0B3 /* NSData+AES.h */,
+				D5039306193F49EA00F0A0B3 /* NSData+AES.m */,
+				D5039307193F49EA00F0A0B3 /* NSString+AES.h */,
+				D5039308193F49EA00F0A0B3 /* NSString+AES.m */,
 				24DE9E0F11C5FE74003F90F6 /* AkylasCommonjsModuleAssets.h */,
 				24DE9E1011C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m */,
 				24DD6CF71134B3F500162E58 /* AkylasCommonjsModule.h */,
@@ -166,6 +178,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA747D9F0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch in Headers */,
+				D5039309193F49EA00F0A0B3 /* NSData+AES.h in Headers */,
+				D503930B193F49EA00F0A0B3 /* NSString+AES.h in Headers */,
 				24DD6CF91134B3F500162E58 /* AkylasCommonjsModule.h in Headers */,
 				24DE9E1111C5FE74003F90F6 /* AkylasCommonjsModuleAssets.h in Headers */,
 			);
@@ -174,9 +188,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D2AAC07D0554694100DB518D /* ak_commonjs_ios */ = {
+		D2AAC07D0554694100DB518D /* akylas.commonjs */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "ak_commonjs_ios" */;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.commonjs" */;
 			buildPhases = (
 				D58E73DE1861896C00E56FAE /* ShellScript */,
 				D2AAC07A0554694100DB518D /* Headers */,
@@ -187,9 +201,9 @@
 			);
 			dependencies = (
 			);
-			name = ak_commonjs_ios;
+			name = akylas.commonjs;
 			productName = ak_commonjs_ios;
-			productReference = D2AAC07E0554694100DB518D /* libAkylasCommonjs.a */;
+			productReference = D2AAC07E0554694100DB518D /* libakylas.commonjs.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -199,7 +213,7 @@
 			isa = PBXProject;
 			attributes = {
 			};
-			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "ak_commonjs_ios" */;
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.commonjs" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -214,7 +228,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D2AAC07D0554694100DB518D /* ak_commonjs_ios */,
+				D2AAC07D0554694100DB518D /* akylas.commonjs */,
 				24416B8111C4CA220047AFDD /* Build & Test */,
 			);
 		};
@@ -255,7 +269,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				24DD6CFA1134B3F500162E58 /* AkylasCommonjsModule.m in Sources */,
+				D503930C193F49EA00F0A0B3 /* NSString+AES.m in Sources */,
 				24DE9E1211C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m in Sources */,
+				D503930A193F49EA00F0A0B3 /* NSData+AES.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,7 +280,7 @@
 /* Begin PBXTargetDependency section */
 		24416B8511C4CA280047AFDD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D2AAC07D0554694100DB518D /* ak_commonjs_ios */;
+			target = D2AAC07D0554694100DB518D /* akylas.commonjs */;
 			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -300,7 +316,7 @@
 					"-DTI_POST_1_2",
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasCommonjs;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
@@ -335,7 +351,7 @@
 				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasCommonjs;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				USER_HEADER_SEARCH_PATHS = "";
@@ -440,7 +456,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "ak_commonjs_ios" */ = {
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.commonjs" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB921F08733DC00010E9CD /* Debug */,
@@ -449,7 +465,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "ak_commonjs_ios" */ = {
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.commonjs" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB922308733DC00010E9CD /* Debug */,

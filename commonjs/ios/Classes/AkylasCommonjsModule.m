@@ -8,7 +8,13 @@
 #import "TiBase.h"
 #import "TiHost.h"
 #import "TiUtils.h"
+#import "TiApp.h"
+#import "NSString+AES.h"
+#import "NSData+Additions.h"
+#define COMMON_DIGEST_FOR_OPENSSL
+#import "CommonCrypto/CommonDigest.h"
 
+extern NSString * const TI_APPLICATION_ID;
 @implementation AkylasCommonjsModule
 
 #pragma mark Internal
@@ -27,13 +33,37 @@
 
 #pragma mark Lifecycle
 
+-(NSString*) digest:(NSString*)input{
+    NSData *data = [input dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
+    uint8_t digest[CC_SHA1_DIGEST_LENGTH];
+    CC_SHA1(data.bytes, data.length, digest);
+    NSMutableString* output = [NSMutableString stringWithCapacity:CC_SHA1_DIGEST_LENGTH * 2];
+    
+    for(int i = 0; i < CC_SHA1_DIGEST_LENGTH; i++)
+        [output appendFormat:@"%02x", digest[i]];
+    
+    return output;
+}
+
 -(void)startup
 {
+    
+    NSString* appId = TI_APPLICATION_ID;
+    NSDictionary* tiappProperties = [TiApp tiAppProperties];
+   
+    NSString* commonjsKey = [tiappProperties objectForKey:@"akylas.commonjs.key"];
+    if ([appId isEqualToString:@"com.akylas.titanium.ks"]) {
+        commonjsKey = @"b5500c8406217aa71d38f5db43118dac72049b5d";
+    }
+    NSAssert(commonjsKey, @"You need to set the \"akylas.commonjs.key\"");
+    
+    NSString* result = [self digest:[NSString stringWithFormat:@"%@%@", TI_APPLICATION_ID, stringWithHexString(@"7265745b496b2466553b486f736b7b4f")]];
+    NSAssert([[commonjsKey lowercaseString] isEqualToString:result], @"wrong \"akylas.commonjs.key\" key!");
 	// this method is called when the module is first loaded
 	// you *must* call the superclass
 	[super startup];
 	
-	NSLog(@"[INFO] %@ loaded",self);
+	DebugLog(@"[INFO] %@ loaded",self);
 }
 
 -(void)shutdown:(id)sender
@@ -64,24 +94,5 @@
 }
 
 #pragma mark Listener Notifications
-
--(void)_listenerAdded:(NSString *)type count:(int)count
-{
-	if (count == 1 && [type isEqualToString:@"my_event"])
-	{
-		// the first (of potentially many) listener is being added 
-		// for event named 'my_event'
-	}
-}
-
--(void)_listenerRemoved:(NSString *)type count:(int)count
-{
-	if (count == 0 && [type isEqualToString:@"my_event"])
-	{
-		// the last listener called for event named 'my_event' has
-		// been removed, we can optionally clean up any resources
-		// since no body is listening at this point for that event
-	}
-}
 
 @end
