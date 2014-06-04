@@ -26,7 +26,7 @@
 		24DD6CFA1134B3F500162E58 /* AkylasSlidemenuModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DD6CF81134B3F500162E58 /* AkylasSlidemenuModule.m */; };
 		24DE9E1111C5FE74003F90F6 /* AkylasSlidemenuModuleAssets.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DE9E0F11C5FE74003F90F6 /* AkylasSlidemenuModuleAssets.h */; };
 		24DE9E1211C5FE74003F90F6 /* AkylasSlidemenuModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* AkylasSlidemenuModuleAssets.m */; };
-		AA747D9F0F9514B9006C5449 /* AkylasSlidemenu_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* AkylasSlidemenu_Prefix.pch */; };
+		AA747D9F0F9514B9006C5449 /* akylas.slidemenu_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* akylas.slidemenu_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 		D5EE1BBC1860AB8D00579573 /* MMDrawerBarButtonItem.h in Headers */ = {isa = PBXBuildFile; fileRef = D5EE1BB31860AB8D00579573 /* MMDrawerBarButtonItem.h */; };
 		D5EE1BBD1860AB8D00579573 /* MMDrawerBarButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EE1BB41860AB8D00579573 /* MMDrawerBarButtonItem.m */; };
@@ -63,9 +63,9 @@
 		24DD6D1B1134B66800162E58 /* titanium.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = titanium.xcconfig; sourceTree = "<group>"; };
 		24DE9E0F11C5FE74003F90F6 /* AkylasSlidemenuModuleAssets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasSlidemenuModuleAssets.h; path = Classes/AkylasSlidemenuModuleAssets.h; sourceTree = "<group>"; };
 		24DE9E1011C5FE74003F90F6 /* AkylasSlidemenuModuleAssets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasSlidemenuModuleAssets.m; path = Classes/AkylasSlidemenuModuleAssets.m; sourceTree = "<group>"; };
-		AA747D9E0F9514B9006C5449 /* AkylasSlidemenu_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasSlidemenu_Prefix.pch; sourceTree = SOURCE_ROOT; };
+		AA747D9E0F9514B9006C5449 /* akylas.slidemenu_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = akylas.slidemenu_Prefix.pch; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		D2AAC07E0554694100DB518D /* libAkylasSlidemenu.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAkylasSlidemenu.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2AAC07E0554694100DB518D /* libakylas.slidemenu.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.slidemenu.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5EE1BB31860AB8D00579573 /* MMDrawerBarButtonItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MMDrawerBarButtonItem.h; path = Classes/MMDrawerController/MMDrawerBarButtonItem.h; sourceTree = "<group>"; };
 		D5EE1BB41860AB8D00579573 /* MMDrawerBarButtonItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MMDrawerBarButtonItem.m; path = Classes/MMDrawerController/MMDrawerBarButtonItem.m; sourceTree = "<group>"; };
 		D5EE1BB51860AB8D00579573 /* MMDrawerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MMDrawerController.h; path = Classes/MMDrawerController/MMDrawerController.h; sourceTree = "<group>"; };
@@ -100,7 +100,7 @@
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D2AAC07E0554694100DB518D /* libAkylasSlidemenu.a */,
+				D2AAC07E0554694100DB518D /* libakylas.slidemenu.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -147,7 +147,7 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				AA747D9E0F9514B9006C5449 /* AkylasSlidemenu_Prefix.pch */,
+				AA747D9E0F9514B9006C5449 /* akylas.slidemenu_Prefix.pch */,
 				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
 			);
 			name = "Other Sources";
@@ -179,7 +179,7 @@
 				D5EE1BD11860AB9A00579573 /* AkylasSlidemenuSlideMenuProxy.h in Headers */,
 				D5EE1BBC1860AB8D00579573 /* MMDrawerBarButtonItem.h in Headers */,
 				D5EE1BBE1860AB8D00579573 /* MMDrawerController.h in Headers */,
-				AA747D9F0F9514B9006C5449 /* AkylasSlidemenu_Prefix.pch in Headers */,
+				AA747D9F0F9514B9006C5449 /* akylas.slidemenu_Prefix.pch in Headers */,
 				D5EE1BC11860AB8D00579573 /* MMDrawerVisualState.h in Headers */,
 				D5EE1BD71860ABB700579573 /* AkylasSlidemenuDrawerController.h in Headers */,
 				D5EE1BCD1860AB9A00579573 /* AkylasSlidemenuSlideMenu.h in Headers */,
@@ -194,9 +194,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D2AAC07D0554694100DB518D /* AkylasSlidemenu */ = {
+		D2AAC07D0554694100DB518D /* akylas.slidemenu */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "AkylasSlidemenu" */;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.slidemenu" */;
 			buildPhases = (
 				D2AAC07A0554694100DB518D /* Headers */,
 				D2AAC07B0554694100DB518D /* Sources */,
@@ -206,9 +206,9 @@
 			);
 			dependencies = (
 			);
-			name = AkylasSlidemenu;
+			name = akylas.slidemenu;
 			productName = ios;
-			productReference = D2AAC07E0554694100DB518D /* libAkylasSlidemenu.a */;
+			productReference = D2AAC07E0554694100DB518D /* libakylas.slidemenu.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -218,7 +218,7 @@
 			isa = PBXProject;
 			attributes = {
 			};
-			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "AkylasSlidemenu" */;
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.slidemenu" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -233,7 +233,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D2AAC07D0554694100DB518D /* AkylasSlidemenu */,
+				D2AAC07D0554694100DB518D /* akylas.slidemenu */,
 				24416B8111C4CA220047AFDD /* Build & Test */,
 			);
 		};
@@ -278,7 +278,7 @@
 /* Begin PBXTargetDependency section */
 		24416B8511C4CA280047AFDD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D2AAC07D0554694100DB518D /* AkylasSlidemenu */;
+			target = D2AAC07D0554694100DB518D /* akylas.slidemenu */;
 			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -294,7 +294,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = AkylasSlidemenu_Prefix.pch;
+				GCC_PREFIX_HEADER = akylas.slidemenu_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_VERSION = "";
@@ -317,7 +317,7 @@
 					"-DTI_POST_1_2",
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasSlidemenu;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
@@ -335,7 +335,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = AkylasSlidemenu_Prefix.pch;
+				GCC_PREFIX_HEADER = akylas.slidemenu_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_VERSION = "";
@@ -355,7 +355,7 @@
 				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasSlidemenu;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				USER_HEADER_SEARCH_PATHS = "";
@@ -456,7 +456,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "AkylasSlidemenu" */ = {
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.slidemenu" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB921F08733DC00010E9CD /* Debug */,
@@ -465,7 +465,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "AkylasSlidemenu" */ = {
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.slidemenu" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB922308733DC00010E9CD /* Debug */,

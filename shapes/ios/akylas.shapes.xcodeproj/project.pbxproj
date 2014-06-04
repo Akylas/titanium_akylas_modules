@@ -26,7 +26,7 @@
 		24DD6CFA1134B3F500162E58 /* AkylasShapesModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DD6CF81134B3F500162E58 /* AkylasShapesModule.m */; };
 		24DE9E1111C5FE74003F90F6 /* AkylasShapesModuleAssets.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DE9E0F11C5FE74003F90F6 /* AkylasShapesModuleAssets.h */; };
 		24DE9E1211C5FE74003F90F6 /* AkylasShapesModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* AkylasShapesModuleAssets.m */; };
-		AA747D9F0F9514B9006C5449 /* AkylasShapes_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* AkylasShapes_Prefix.pch */; };
+		AA747D9F0F9514B9006C5449 /* akylas.shapes_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* akylas.shapes_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 		D53560161860963600F8DEFD /* ShapeCustomProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5355FF91860963600F8DEFD /* ShapeCustomProxy.h */; };
 		D53560171860963600F8DEFD /* ShapeCustomProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5355FFA1860963600F8DEFD /* ShapeCustomProxy.m */; };
@@ -77,9 +77,9 @@
 		24DD6D1B1134B66800162E58 /* titanium.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = titanium.xcconfig; sourceTree = "<group>"; };
 		24DE9E0F11C5FE74003F90F6 /* AkylasShapesModuleAssets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesModuleAssets.h; path = Classes/AkylasShapesModuleAssets.h; sourceTree = "<group>"; };
 		24DE9E1011C5FE74003F90F6 /* AkylasShapesModuleAssets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesModuleAssets.m; path = Classes/AkylasShapesModuleAssets.m; sourceTree = "<group>"; };
-		AA747D9E0F9514B9006C5449 /* AkylasShapes_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasShapes_Prefix.pch; sourceTree = SOURCE_ROOT; };
+		AA747D9E0F9514B9006C5449 /* akylas.shapes_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = akylas.shapes_Prefix.pch; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		D2AAC07E0554694100DB518D /* libAkylasShapes.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAkylasShapes.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2AAC07E0554694100DB518D /* libakylas.shapes.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.shapes.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5355FF91860963600F8DEFD /* ShapeCustomProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShapeCustomProxy.h; path = Classes/ShapeCustomProxy.h; sourceTree = "<group>"; };
 		D5355FFA1860963600F8DEFD /* ShapeCustomProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ShapeCustomProxy.m; path = Classes/ShapeCustomProxy.m; sourceTree = "<group>"; };
 		D5355FFD1860963600F8DEFD /* ShapeProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShapeProxy.h; path = Classes/ShapeProxy.h; sourceTree = "<group>"; };
@@ -128,7 +128,7 @@
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D2AAC07E0554694100DB518D /* libAkylasShapes.a */,
+				D2AAC07E0554694100DB518D /* libakylas.shapes.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -197,7 +197,7 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				AA747D9E0F9514B9006C5449 /* AkylasShapes_Prefix.pch */,
+				AA747D9E0F9514B9006C5449 /* akylas.shapes_Prefix.pch */,
 				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
 			);
 			name = "Other Sources";
@@ -213,7 +213,7 @@
 				D535602B1860963600F8DEFD /* AkylasShapesRectProxy.h in Headers */,
 				D5EE1BAF1860A3BB00579573 /* UIBezierPath+Additions.h in Headers */,
 				D535601E1860963600F8DEFD /* AkylasShapesAnimation+Friend.h in Headers */,
-				AA747D9F0F9514B9006C5449 /* AkylasShapes_Prefix.pch in Headers */,
+				AA747D9F0F9514B9006C5449 /* akylas.shapes_Prefix.pch in Headers */,
 				D53560291860963600F8DEFD /* AkylasShapesPieSliceProxy.h in Headers */,
 				24DD6CF91134B3F500162E58 /* AkylasShapesModule.h in Headers */,
 				D535601F1860963600F8DEFD /* AkylasShapesAnimationStep.h in Headers */,
@@ -235,9 +235,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D2AAC07D0554694100DB518D /* AkylasShapes */ = {
+		D2AAC07D0554694100DB518D /* akylas.shapes */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "AkylasShapes" */;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.shapes" */;
 			buildPhases = (
 				D2AAC07A0554694100DB518D /* Headers */,
 				D2AAC07B0554694100DB518D /* Sources */,
@@ -247,9 +247,9 @@
 			);
 			dependencies = (
 			);
-			name = AkylasShapes;
+			name = akylas.shapes;
 			productName = ios;
-			productReference = D2AAC07E0554694100DB518D /* libAkylasShapes.a */;
+			productReference = D2AAC07E0554694100DB518D /* libakylas.shapes.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -259,7 +259,7 @@
 			isa = PBXProject;
 			attributes = {
 			};
-			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "AkylasShapes" */;
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.shapes" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -274,7 +274,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D2AAC07D0554694100DB518D /* AkylasShapes */,
+				D2AAC07D0554694100DB518D /* akylas.shapes */,
 				24416B8111C4CA220047AFDD /* Build & Test */,
 			);
 		};
@@ -326,7 +326,7 @@
 /* Begin PBXTargetDependency section */
 		24416B8511C4CA280047AFDD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D2AAC07D0554694100DB518D /* AkylasShapes */;
+			target = D2AAC07D0554694100DB518D /* akylas.shapes */;
 			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -342,7 +342,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = AkylasShapes_Prefix.pch;
+				GCC_PREFIX_HEADER = akylas.shapes_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_VERSION = "";
@@ -365,7 +365,7 @@
 					"-DTI_POST_1_2",
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasShapes;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
@@ -384,7 +384,7 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = AkylasShapes_Prefix.pch;
+				GCC_PREFIX_HEADER = akylas.shapes_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_VERSION = "";
@@ -404,7 +404,7 @@
 				LIBRARY_SEARCH_PATHS = "$(USER_LIBRARY_DIR)/Application\\ Support/Titanium/mobilesdk/osx/3.3.0.AKYLAS/iphone/libexternals";
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasShapes;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				TITANIUM_BASE_SDK2 = /Volumes/data/dev/titanium/titanium_mobile/iphone/Classes;
@@ -518,7 +518,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "AkylasShapes" */ = {
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.shapes" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB921F08733DC00010E9CD /* Debug */,
@@ -527,7 +527,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "AkylasShapes" */ = {
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.shapes" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB922308733DC00010E9CD /* Debug */,

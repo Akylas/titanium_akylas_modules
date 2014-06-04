@@ -10,8 +10,8 @@ license: Proprietary
 copyright: Copyright (c) 2013 by Akylas
 
 
-# these should not be edited
-name: ios
+# on ios make sure that moduleid is the name of the project
+name: AkylasSlidemenu
 moduleid: akylas.slidemenu
 guid: 9ed69418-fbbc-45a8-aa1b-35185bc2b7b5
 platform: iphone

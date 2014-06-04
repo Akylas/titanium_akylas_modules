@@ -10,8 +10,8 @@ license: Proprietary
 copyright: Copyright (c) 2013 by Akylas
 
 
-# these should not be edited
-name: ios
+# on ios make sure that moduleid is the name of the project
+name: AkylasShapes
 moduleid: akylas.shapes
 guid: 763bf950-a27d-4af1-8dc8-046026e52956
 platform: iphone
