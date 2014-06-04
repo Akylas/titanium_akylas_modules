@@ -117,7 +117,7 @@ static NSString * const kLayerAnimationGroupKey = @"AkylasShapesAnimation";
         // Remark: For each property we animate, we still must set the final value manually (CoreAnimations animate properties
         // but do not set them). Since we do not need to support delays (which are implemented at the HLSAnimation level), we
         // can do it right here, eliminating potentially flickering animations (for more information, see HLSAnimation.m)
-        NSMutableArray *animations;
+        NSMutableArray *animations = nil;
         if ([shapeAnimation.shapeProxy isKindOfClass:[ShapeCustomProxy class]]) {
             animations = [(ShapeCustomProxy*)shapeAnimation.shapeProxy animationsForShapeAnimation:shapeAnimation];
         }
@@ -147,7 +147,7 @@ static NSString * const kLayerAnimationGroupKey = @"AkylasShapesAnimation";
         
         
         // Create the animation group and attach it to the layer
-        if (animated) {
+        if (animations && animated) {
             CAAnimationGroup *animationGroup = [CAAnimationGroup animation];
             animationGroup.animations = [NSArray arrayWithArray:animations];
             animationGroup.duration = duration;

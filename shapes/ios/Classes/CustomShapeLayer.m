@@ -176,7 +176,7 @@ CG_INLINE CGContextRef CGContextCreate(CGSize size)
 {
     UIBezierPath* bPath = [self getBPath];
     CGRect currentBounds = bPath.bounds;
-    CGRect currentFrame = self.frame;
+//    CGRect currentFrame = self.frame;
    _proxy.currentShapeBounds = currentBounds;
     CGContextRef context = CGContextCreate(self.frame.size);
     CGContextSetLineWidth(context, self.lineWidth);

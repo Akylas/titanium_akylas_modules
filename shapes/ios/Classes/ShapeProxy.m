@@ -63,23 +63,7 @@ parentBounds = _parentBounds;
 
 +(ShapeProxy*)shapeFromArg:(id)args context:(id<TiEvaluator>)context
 {
-	id arg = nil;
-	
-	if ([args isKindOfClass:[ShapeProxy class]])
-	{
-		return (ShapeProxy*)args;
-	}
-	else if ([args isKindOfClass:[NSArray class]])
-	{
-		arg = [args objectAtIndex:0];
-		if ([arg isKindOfClass:[ShapeProxy class]])
-		{
-			return (ShapeProxy*)arg;
-		}
-	}
-    if (![arg isKindOfClass:[NSDictionary class]]) return nil;
-    
-	return [[[ShapeProxy alloc] _initWithPageContext:context args:args] autorelease];
+    return [ShapeProxy objectOfClass:[ShapeProxy class] fromArg:args inContext:context];
 }
 
 -(TiPoint *)defaultCenter

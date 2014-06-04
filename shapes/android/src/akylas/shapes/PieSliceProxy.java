@@ -6,6 +6,7 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiContext;
+import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 
 import com.nineoldandroids.animation.PropertyValuesHolder;
@@ -18,7 +19,7 @@ import android.graphics.Point;
 public class PieSliceProxy extends ArcProxy{
 	// Standard Debugging variables
 	private static final String TAG = "PieSliceProxy";
-	protected Object innerRadius;
+	protected Object innerRadius = new TiPoint(0, 0);;
 	
 	public PieSliceProxy() {
 		super();
