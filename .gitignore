@@ -16,3 +16,6 @@ libs
 *.pyc
 /commonjs/ios/Classes/AkylasCommonjsModuleAssets.m
 /commonjs/ios/metadata.json
+.tags_sorted_by_file
+
+.tags
