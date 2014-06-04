@@ -11,12 +11,8 @@
 
 @interface AkylasChartsMarkerAnnotation : CPTPlotSpaceAnnotation
 {
-@private
-//    CPTPlotSpaceAnnotation* layer;
-
 }
 
 
--(id)initWithProperties:(NSDictionary*)props;
--(void) setGraph:(CPTGraph*)graph;
+-(id)initForPlotSpace:(CPTPlotSpace *)plotSpace withProperties:(NSDictionary*)properties;
 @end

@@ -11,6 +11,7 @@
 #import "AkylasChartsChartProxy.h"
 #import "AkylasChartsPlotProxy.h"
 #import "AkylasChartsMarkerAnnotation.h"
+#import "AkylasChartsMarkerProxy.h"
 
 @implementation AkylasChartsChart
 
@@ -202,7 +203,6 @@
                                  [NSNumber numberWithInt:CPTGraphLayerTypeAxisTitles],
                                  [NSNumber numberWithInt:CPTGraphLayerTypeAxisLabels],
                                  [NSNumber numberWithInt:CPTGraphLayerTypeAxisLines],
-                                 [NSNumber numberWithInt:CPTGraphLayerTypeAnnotations],
                                  [NSNumber numberWithInt:CPTGraphLayerTypePlots],
                                  [NSNumber numberWithInt:CPTGraphLayerTypeMajorGridLines],
                                  [NSNumber numberWithInt:CPTGraphLayerTypeMinorGridLines],
@@ -261,18 +261,18 @@
 -(void)removeAllMarkers
 {
 	if (graph != nil) {
-		for (AkylasChartsMarkerAnnotation* annotation in ((AkylasChartsChartProxy*)self.proxy).markers) {
-			[graph removeAnnotation:annotation];
+		for (AkylasChartsMarkerProxy* annotation in ((AkylasChartsChartProxy*)self.proxy).markers) {
+			[graph.plotAreaFrame.plotArea removeAnnotation:[annotation marker]];
 		}
 	}
 }
 
 
--(void)addMarker:(AkylasChartsMarkerAnnotation*)marker
+-(void)addMarker:(AkylasChartsMarkerProxy*)marker
 {
+    ENSURE_UI_THREAD_1_ARG(marker)
 	if (graph != nil) {
-        [marker setGraph:graph];
-		[graph.plotAreaFrame.plotArea addAnnotation:marker];
+		[graph.plotAreaFrame.plotArea addAnnotation:[marker getMarkerAnnotationForGraph:graph.defaultPlotSpace]];
 	}
 }
 

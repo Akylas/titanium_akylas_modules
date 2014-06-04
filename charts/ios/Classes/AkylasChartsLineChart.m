@@ -138,14 +138,14 @@
 	// Add these to property watch list
     
 	BOOL scaleToFit;
-	float expandBy;
+//	float expandBy;
     CPTXYPlotSpace* plotSpace;
     
 	
 	id options = [self.proxy valueForUndefinedKey:@"plotSpace"];
 	if (options) {
 		scaleToFit = [TiUtils boolValue:@"scaleToFit" properties:options def:(![options valueForKey:@"xRange"] && ![options valueForKey:@"xRange"])];
-		expandBy = [TiUtils floatValue:@"expandRangeByFactor" properties:options def:1.0];
+//		expandBy = [TiUtils floatValue:@"expandRangeByFactor" properties:options def:1.0];
         
         if (scaleToFit == NO) {
             plotSpace = (CPTXYPlotSpace*)graph.defaultPlotSpace;
@@ -155,21 +155,21 @@
 	} else {
         // default
 		scaleToFit = YES;
-		expandBy = 1.25;
+//		expandBy = 1.25;
 	}
     
 	if (scaleToFit == YES) {
 		[graph.defaultPlotSpace scaleToFitPlots:[graph allPlots]];
-		CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace*)graph.defaultPlotSpace;
-		CPTPlotRange *xRange = plotSpace.xRange;
-		CPTPlotRange *yRange = plotSpace.yRange;
-        
-		if ([xRange respondsToSelector:@selector(expandRangeByFactor:)]) {
-            [xRange expandRangeByFactor:CPTDecimalFromDouble(expandBy)];
-            [yRange expandRangeByFactor:CPTDecimalFromDouble(expandBy)];
-            plotSpace.yRange = yRange;
-            plotSpace.xRange = xRange;
-		}
+//		CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace*)graph.defaultPlotSpace;
+//		CPTPlotRange *xRange = plotSpace.xRange;
+//		CPTPlotRange *yRange = plotSpace.yRange;
+//        
+//		if ([xRange respondsToSelector:@selector(expandRangeByFactor:)]) {
+//            [xRange expandRangeByFactor:CPTDecimalFromDouble(expandBy)];
+//            [yRange expandRangeByFactor:CPTDecimalFromDouble(expandBy)];
+//            plotSpace.yRange = yRange;
+//            plotSpace.xRange = xRange;
+//		}
 	}
 }
 
@@ -235,22 +235,22 @@
         float newMinX = xRange.locationDouble - displacement.x;
         float newMaxX = newMinX + xRange.lengthDouble;
         if (newMinX < minXValue && newMaxX <= maxXValue) {
-            return CGPointMake(-(minXValue - xRange.locationDouble) + 1 ,0);// +1 to make sure we saw the axis
+            return CGPointMake(0 ,0);// +1 to make sure we saw the axis
         } else if (newMinX >= minXValue && newMaxX > maxXValue) {
-            return CGPointMake(-(maxXValue - (xRange.locationDouble + xRange.lengthDouble)) -1 ,0);// -1 to make sure we saw the axis
+            return CGPointMake(0 ,0);// -1 to make sure we saw the axis
         }
-        return CGPointMake(displacement.x,0);
+        return CGPointMake(displacement.x,displacement.y);
     }
     else
-        return CGPointMake(displacement.x,0);
+        return CGPointMake(displacement.x,displacement.y);
 }
 
--(CPTPlotRange *)plotSpace:(CPTPlotSpace *)space willChangePlotRangeTo:(CPTPlotRange *)newRange forCoordinate:(CPTCoordinate)coordinate{
-    if (coordinate == CPTCoordinateY) {
-        newRange = ((CPTXYPlotSpace*)space).yRange;
-    }
-    return newRange;
-}
+//-(CPTPlotRange *)plotSpace:(CPTPlotSpace *)space willChangePlotRangeTo:(CPTPlotRange *)newRange forCoordinate:(CPTCoordinate)coordinate{
+//    if (coordinate == CPTCoordinateY) {
+//        newRange = ((CPTXYPlotSpace*)space).yRange;
+//    }
+//    return newRange;
+//}
 
 
 -(BOOL)plotSpace:(CPTPlotSpace *)space shouldScaleBy:(CGFloat)interactionScale aboutPoint:(CGPoint)interactionPoint {

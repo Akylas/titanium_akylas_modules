@@ -12,11 +12,11 @@
     int markerId;
 @protected
 	NSMutableArray	*plots;
-	NSMutableDictionary	*markers;
+	NSMutableArray	*markers;
 }
 
 -(NSMutableArray*)plots;
--(NSMutableDictionary*)markers;
+-(NSMutableArray*)markers;
 -(void)refreshPlotSpaces;
 
 @end

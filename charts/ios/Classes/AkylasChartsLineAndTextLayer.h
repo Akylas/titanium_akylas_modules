@@ -24,5 +24,5 @@
 -(void)setText:(NSString *)newValue;
 -(void)setTextStyle:(CPTTextStyle *)newStyle;
 -(void)setAttributedText:(NSAttributedString *)newValue;
--(void)setDisplacement:(CGPoint)displacement;
+//-(void)setDisplacement:(CGPoint)displacement;
 @end

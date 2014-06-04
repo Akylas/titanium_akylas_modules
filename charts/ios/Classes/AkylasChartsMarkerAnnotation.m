@@ -14,9 +14,9 @@
 
 @implementation AkylasChartsMarkerAnnotation
 
--(id)initWithProperties:(NSDictionary*)properties
+-(id)initForPlotSpace:(CPTPlotSpace *)plotSpace withProperties:(NSDictionary*)properties
 {
-	if (self = [super init]) {
+	if (self = [super initWithPlotSpace:plotSpace anchorPlotPoint:nil]) {
         CPTTextStyle* textStyle = nil;
         NSDictionary* labelProps = [properties valueForKey:@"label"];
         if (labelProps) {
@@ -61,12 +61,5 @@
                                              selector:@selector(sizeToFit)
                                                  name:CPTLayerBoundsDidChangeNotification
                                                object:self.annotationHostLayer];
-}
-
-
-
--(void) setGraph:(CPTGraph*)graph
-{
-    [self setPlotSpace:[graph defaultPlotSpace]];
 }
 @end

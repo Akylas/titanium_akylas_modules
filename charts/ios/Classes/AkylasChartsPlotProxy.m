@@ -176,12 +176,12 @@
 	[self performSelectorOnMainThread:@selector(reconfigurePlot) withObject:nil waitUntilDone:NO];
 }
 
--(void)addData:(NSArray*)values startingAtIndex:(int)index
+-(void)addData:(NSArray*)values startingAtIndex:(NSUInteger)index
 {
 	if (values != nil) {
 		Class dictionaryClass = [NSDictionary class];
 		Class arrayClass = [NSArray class];
-		int length = [values count];
+		NSUInteger length = [values count];
         if (dataX == nil) {
             dataX = [[NSMutableArray arrayWithCapacity:length] retain];
         }

@@ -53,19 +53,22 @@
 
     pieChart.identifier = graph.title;
     pieChart.shadow = [AkylasChartsParsers parseShadow:@"shadow" inProperties:self.proxy def:nil];
-    pieChart.startAngle = M_PI_2 - [TiUtils floatValue:[self.proxy valueForUndefinedKey:@"startAngle"] def:0.0f] * M_PI / 180 ;
-    pieChart.endAngle = M_PI_2 - [TiUtils floatValue:[self.proxy valueForUndefinedKey:@"endAngle"] def:360.0f] * M_PI / 180 ;
+    
+    float startDegrees = 90 + [TiUtils floatValue:[self.proxy valueForKey:@"startAngle"] def:0.0f];
+    float endDegrees = 90 + [TiUtils floatValue:[self.proxy valueForKey:@"endAngle"] def:360.0f];
+    pieChart.startAngle = fmod(startDegrees, 360.0f) * M_PI / 180 ;
+    pieChart.endAngle = fmod(endDegrees, 360.0f) * M_PI / 180 ;
 
     pieChart.sliceDirection = CPTPieDirectionClockwise;
     
-    pieChart.overlayFill = [AkylasChartsParsers parseFillColor:[self.proxy valueForUndefinedKey:@"overlayColor"]
-                                              withGradient:[self.proxy valueForUndefinedKey:@"overlayGradient"]
-                                                andOpacity:[self.proxy valueForUndefinedKey:@"overlayOpacity"]
+    pieChart.overlayFill = [AkylasChartsParsers parseFillColor:[self.proxy valueForKey:@"overlayColor"]
+                                              withGradient:[self.proxy valueForKey:@"overlayGradient"]
+                                                andOpacity:[self.proxy valueForKey:@"overlayOpacity"]
                                                        def:nil];
-	pieChart.borderLineStyle = [AkylasChartsParsers parseLineColor:[self.proxy valueForUndefinedKey:@"borderColor"]
-                                                     withWidth:[self.proxy valueForUndefinedKey:@"borderWidth"]
-                                                  withGradient:[self.proxy valueForUndefinedKey:@"borderGradient"]
-                                                    andOpacity:[self.proxy valueForUndefinedKey:@"borderOpacity"]
+	pieChart.borderLineStyle = [AkylasChartsParsers parseLineColor:[self.proxy valueForKey:@"borderColor"]
+                                                     withWidth:[self.proxy valueForKey:@"borderWidth"]
+                                                  withGradient:[self.proxy valueForKey:@"borderGradient"]
+                                                    andOpacity:[self.proxy valueForKey:@"borderOpacity"]
                                                            def:nil];
 }
 
@@ -78,13 +81,13 @@
 
 -(void)refreshPlotSpaces
 {
-    [super refreshPlotSpaces];
     pieChart.pieRadius = 0.95 * MIN([self getAvailableWidth] / 2.0, [self getAvailableHeight] / 2.0);
-    CGFloat innerRadius = TiDimensionCalculateValue([TiUtils dimensionValue:[self.proxy valueForUndefinedKey:@"donutSize"]], pieChart.pieRadius);
+    CGFloat innerRadius = TiDimensionCalculateValue([TiUtils dimensionValue:[self.proxy valueForKey:@"donutSize"]], pieChart.pieRadius);
     if (innerRadius < 0) {
         innerRadius = pieChart.pieRadius + innerRadius;
     }
     pieChart.pieInnerRadius = innerRadius;
+    [super refreshPlotSpaces];
 }
 
 -(CGPoint)viewPointFromGraphPoint:(CGPoint)point

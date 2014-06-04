@@ -244,16 +244,15 @@
     CGMutablePathRef pathRef = CGPathCreateMutable();
     CGFloat inset      = self.lineStyle.lineWidth * CPTFloat(0.5);
     if (direction == CPTLineDirectionHorizontal) {
-        float yPos = (self.bounds.size.height - self.lineStyle.lineWidth) / 2.0f;
+        float yPos = (self.bounds.size.height) / 2.0f;
         CGPathMoveToPoint(pathRef, NULL, self.paddingLeft, yPos);
         CGPathAddLineToPoint(pathRef, NULL, self.frame.size.width - self.paddingLeft - self.paddingRight, yPos);
     }
     else {
-        float xPos = (self.bounds.size.width - self.lineStyle.lineWidth) / 2.0f;
+        float xPos = (self.bounds.size.width) / 2.0f;
         CGPathMoveToPoint(pathRef, NULL, xPos, self.paddingTop);
         CGPathAddLineToPoint(pathRef, NULL, xPos, self.frame.size.height - self.paddingTop - self.paddingBottom);
     }
-    CGPathCloseSubpath(pathRef);
     return pathRef;
 }
 
@@ -270,20 +269,11 @@
     CPTLineStyle *theLineStyle = self.lineStyle;
     if ( theLineStyle ) {
         CGPathRef path = [self getPath];
-        CGFloat inset      = self.lineStyle.lineWidth * CPTFloat(0.5);
-        if (direction == CPTLineDirectionHorizontal) {
-            float yPos = (self.bounds.size.height - self.lineStyle.lineWidth) / 2.0f;
-            CGContextMoveToPoint(context, self.paddingLeft, yPos);
-            CGContextAddLineToPoint(context, self.frame.size.width - self.paddingLeft - self.paddingRight, yPos);
-        }
-        else {
-            float xPos = (self.bounds.size.width - self.lineStyle.lineWidth) / 2.0f;
-            CGContextMoveToPoint(context, xPos, self.paddingTop);
-            CGContextAddLineToPoint(context, xPos, self.frame.size.height - self.paddingTop - self.paddingBottom);
-        }
+        CGContextAddPath(context, path);
 
         [theLineStyle setLineStyleInContext:context];
-        [theLineStyle strokePathWithinRect:self.bounds inContext:context];
+        [theLineStyle strokePathInContext:context];
+        CGPathRelease(path);
     }
 }
 

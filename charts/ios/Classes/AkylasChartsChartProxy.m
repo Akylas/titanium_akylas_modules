@@ -10,10 +10,13 @@
 
 #import "AkylasChartsPieSegmentProxy.h"
 #import "AkylasChartsMarkerAnnotation.h"
+#import "AkylasChartsMarkerProxy.h"
 
 #import "TiUtils.h"
 
 @implementation AkylasChartsChartProxy
+{
+}
 
 -(void)_initWithProperties:(NSDictionary*)properties
 {
@@ -55,10 +58,10 @@
 	return plots;
 }
 
--(NSMutableDictionary*)markers
+-(NSMutableArray*)markers
 {
 	if (markers == nil) {
-		markers = [[NSMutableDictionary alloc] init];
+		markers = [[NSMutableArray alloc] init];
 	}
 	
 	return markers;
@@ -147,14 +150,14 @@
 	}
 }
 
--(void)viewDidAttach
+-(void)viewDidInitialize
 {
-	[super viewDidAttach];
+	[super viewDidInitialize];
     for (id plot in plots) {
         [(AkylasChartsChart*)[self view] addPlot:plot];
     }
-    for (NSNumber* mId in markers) {
-        [(AkylasChartsChart*)[self view] addMarker:[markers objectForKey:mId]];
+    for (AkylasChartsMarkerProxy* marker in markers) {
+        [(AkylasChartsChart*)[self view] addMarker:marker];
     }
 }
 
@@ -174,30 +177,35 @@
 #endif
 USE_VIEW_FOR_UI_METHOD(refresh);
 
--(void)addMarker:(id)arg
+-(AkylasChartsMarkerProxy*)markerFromArg:(id)arg
 {
-    ENSURE_SINGLE_ARG(arg, NSDictionary)
-    int currentMarkerId = markerId;
-    markerId ++;
-    
-    AkylasChartsMarkerAnnotation* marker = [[AkylasChartsMarkerAnnotation alloc] initWithProperties:arg];
-    [[self markers] setObject:marker forKey:[NSNumber numberWithInt:markerId]];
+    AkylasChartsMarkerProxy *proxy = [self objectOfClass:[AkylasChartsMarkerProxy class] fromArg:arg];
+	return proxy;
+}
+
+-(id)addMarker:(id)arg
+{
+    ENSURE_SINGLE_ARG(arg, NSObject)
+    AkylasChartsMarkerProxy* marker = [self markerFromArg:arg];
+    if(!marker || [markers containsObject:marker]) return;
+    [self rememberProxy:marker];
+    [[self markers] addObject:marker];
     if ([self view]) {
         [(AkylasChartsChart*)[self view] addMarker:marker];
     }
+    return marker;
 }
 
 -(void)removeMarker:(id)arg
 {
-    ENSURE_SINGLE_ARG(arg, NSNumber)
-    NSNumber* currentMarkerId = (NSNumber*)arg;
-    
-    AkylasChartsMarkerAnnotation* marker = [[self markers] objectForKey:currentMarkerId];
-    if (marker != nil) {
+    ENSURE_SINGLE_ARG(arg, AkylasChartsMarkerProxy)
+    if (arg != nil) {
+        [self forgetProxy:arg];
+        if(![markers containsObject:arg]) return;
         if ([self view]) {
-            [(AkylasChartsChart*)[self view] removeMarker:marker];
+            [(AkylasChartsChart*)[self view] removeMarker:arg];
         }
-        [markers removeObjectForKey:currentMarkerId];
+        [markers removeObject:arg];
     }
 }
 

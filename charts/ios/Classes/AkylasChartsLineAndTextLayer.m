@@ -8,8 +8,8 @@
 #pragma mark -
 #pragma mark Init/Dealloc
 
-#define kDefaultTextDisplacementX 4.0
-#define kDefaultTextDisplacementY 14.0
+#define kDefaultTextDisplacementX 0.0
+#define kDefaultTextDisplacementY 0.0
 
 
 /** @brief Initializes a newly allocated CPTLineLayer object with the provided direction and style. This is the designated initializer.

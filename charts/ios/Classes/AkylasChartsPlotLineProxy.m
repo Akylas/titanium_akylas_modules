@@ -11,6 +11,11 @@
 
 @implementation AkylasChartsPlotLineProxy
 
+typedef enum AkylasChartsFillDirection {
+    CPTFillDirectionBottom,
+    CPTFillDirectionTop,
+    CPTFillDirectionOrigin
+} AkylasChartsFillDirection;
 
 -(void)configurePlot
 {
@@ -22,13 +27,40 @@
 	// from the theme are retained unless overridden.
 	
 	plot.dataLineStyle = [AkylasChartsParsers parseLine:self withPrefix:@"line" def:plot.dataLineStyle];
-	
-	plot.areaFill = [AkylasChartsParsers parseFillColor:[self valueForUndefinedKey:@"fillColor"]
-									   withGradient:[self valueForUndefinedKey:@"fillGradient"]
-										 andOpacity:[self valueForUndefinedKey:@"fillOpacity"]
-												def:plot.areaFill];
-	plot.areaBaseValue = [AkylasChartsParsers decimalFromFloat:[self valueForUndefinedKey:@"fillBase"] def:plot.areaBaseValue];
-	
+    
+    AkylasChartsFillDirection direction = CPTFillDirectionBottom;
+    NSString* fillDirectionOption = [TiUtils stringValue:[self valueForUndefinedKey:@"fillDirection"]];
+    if (fillDirectionOption != nil) {
+        if ([fillDirectionOption isEqualToString:@"top"]) {
+            direction = CPTFillDirectionTop;
+        }
+        else if ([fillDirectionOption isEqualToString:@"origin"]) {
+            direction = CPTFillDirectionOrigin;
+        }
+    }
+    NSDecimal areaBaseValue;
+    plot.areaFill = [AkylasChartsParsers parseFillColor:[self valueForUndefinedKey:@"fillColor"]
+                                           withGradient:[self valueForUndefinedKey:@"fillGradient"]
+                                             andOpacity:[self valueForUndefinedKey:@"fillOpacity"]
+                                                    def:nil];
+    	switch (direction) {
+        case CPTFillDirectionBottom:
+                areaBaseValue = [[NSDecimalNumber minimumDecimalNumber] decimalValue];
+            break;
+        case CPTFillDirectionTop:
+            areaBaseValue = [[NSDecimalNumber maximumDecimalNumber] decimalValue];
+            break;
+        case CPTFillDirectionOrigin:
+            {
+            NSArray* axes = plot.plotArea.axisSet.axes;
+            areaBaseValue= ([axes count] > 1)?((CPTXYAxis*)axes[1]).orthogonalCoordinateDecimal:([axes count] > 0)?((CPTXYAxis*)axes[0]).orthogonalCoordinateDecimal:CPTDecimalFromFloat(0);
+            }
+            break;
+        default:
+            break;
+    }
+    plot.areaBaseValue = [AkylasChartsParsers decimalFromFloat:[self valueForUndefinedKey:@"fillBase"] def:areaBaseValue];
+    
 	// Plot Symbols
 	plot.plotSymbol = [AkylasChartsParsers parseSymbol:[self valueForUndefinedKey:@"symbol"] def:plot.plotSymbol];
     highlightSymbol = [[AkylasChartsParsers parseSymbol:[self valueForUndefinedKey:@"symbolHighlight"] def:nil] retain];
@@ -53,7 +85,7 @@
 							  @"lineColor", @"lineWidth", @"lineOpacity",
 							  @"fillColor", @"fillGradient", @"fillOpacity", @"fillBase",
 							  @"symbol", @"symbolHighlight", @"labels", @"dataClickMargin",
-                              @"scatterAlgorithm",
+                              @"scatterAlgorithm", @"fillSpacePath", @"fillDirection",
 							  nil];
 		}
 		
@@ -74,7 +106,7 @@
     double pts[2];
     pts[CPTCoordinateX] = [[self numberForPlot:index forCoordinate:CPTCoordinateX] doubleValue];
     pts[CPTCoordinateY] = [[self numberForPlot:index forCoordinate:CPTCoordinateY] doubleValue];
-    CGPoint plotPoint = [self.plot.plotSpace plotAreaViewPointForDoublePrecisionPlotPoint:pts];
+    CGPoint plotPoint = [self.plot.plotSpace plotAreaViewPointForDoublePrecisionPlotPoint:pts numberOfCoordinates:2];
 
 	[self notifyOfDataClickedEvent:index atPlotPoint:plotPoint];
 }

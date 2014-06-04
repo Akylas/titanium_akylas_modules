@@ -35,6 +35,13 @@
 	[super dealloc];
 }
 
+-(void)setValue:(NSNumber *)newValue
+{
+    RELEASE_TO_NIL(value);
+    value = [newValue retain];
+    [self.chartProxy refreshData];
+}
+
 -(void)removeFromChart:(CPTGraph*)fromGraph
 {
 }

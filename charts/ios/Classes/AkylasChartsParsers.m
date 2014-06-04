@@ -197,12 +197,12 @@
 {
 	CPTMutableLineStyle* lineStyle = [CPTMutableLineStyle lineStyle];
 	
-	lineStyle.lineColor = [AkylasChartsParsers parseColor:color andOpacity:opacity def:def.lineColor];
+	lineStyle.lineColor = [AkylasChartsParsers parseColor:color andOpacity:opacity def:[def lineColor]];
     
     if (gradient != nil)
-        lineStyle.lineFill = [CPTFill fillWithGradient:[AkylasChartsParsers parseGradient:gradient andOpacity:opacity def:nil]];
+        lineStyle.lineFill = [CPTFill fillWithGradient:[AkylasChartsParsers parseGradient:gradient andOpacity:opacity def:[def lineFill]]];
 		
-	lineStyle.lineWidth = [TiUtils floatValue:width def:def.lineWidth];
+	lineStyle.lineWidth = [TiUtils floatValue:width def:[def lineWidth]];
 		
 	return lineStyle;
 }
@@ -396,7 +396,6 @@
 		
 		// Parse the tick direction
 		axis.tickDirection = [TiUtils intValue:@"tickDirection" properties:properties def:CPTSignNegative];
-		
         // Parse the visible range
         axis.visibleRange = [AkylasChartsParsers parsePlotRange:[properties objectForKey:@"visibleRange"] def:axis.visibleRange];
         
@@ -405,7 +404,7 @@
 											       withWidth:[properties objectForKey:@"lineWidth"]
                                                 withGradient:[properties objectForKey:@"lineGradient"]
 											      andOpacity:[properties objectForKey:@"lineOpacity"]
-											   		      def:axis.axisLineStyle];
+											   		      def:nil];
 		
         // Set the default labeling policy
 		axis.labelingPolicy = CPTAxisLabelingPolicyAutomatic;
@@ -414,6 +413,7 @@
 		axis.majorTickLineStyle = nil;
 		axis.majorGridLineStyle = nil;
         axis.majorTickLocations = nil;
+        axis.labelTextStyle = nil;
         
         NSDictionary* props = [properties valueForKey:@"majorTicks"];
         if (props != nil) {
@@ -453,6 +453,12 @@
                 axis.labelOffset = [TiUtils floatValue:@"offset" properties:labelProps def:axis.labelOffset];
                 axis.labelRotation = degreesToRadians([TiUtils floatValue:@"angle" properties:labelProps def:axis.labelRotation]);
                 axis.labelAlignment = [TiUtils intValue:@"textAlign" properties:labelProps def:axis.labelAlignment];
+                if (axis.labelAlignment == CPTAlignmentRight) {
+                    axis.tickLabelDirection = CPTSignNegative;
+                }
+                else if (axis.labelAlignment == CPTAlignmentLeft) {
+                    axis.tickLabelDirection = CPTSignPositive;
+                }
                 
                 id formatCallback = [labelProps objectForKey:@"formatCallback"];
                 if (formatCallback != nil && [formatCallback isKindOfClass:[KrollCallback class]]) {

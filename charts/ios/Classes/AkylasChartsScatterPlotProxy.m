@@ -75,7 +75,7 @@
     CGPoint pointInPlotArea = [hostingView.layer convertPoint:point toLayer:self.plot.plotArea];
 
     NSDecimal newPoint[2];
-    [self.plot.graph.defaultPlotSpace plotPoint:newPoint forPlotAreaViewPoint:pointInPlotArea];
+    [self.plot.graph.defaultPlotSpace plotPoint:newPoint numberOfCoordinates:2 forPlotAreaViewPoint:pointInPlotArea];
     NSDecimalRound(&newPoint[0], &newPoint[0], 0, NSRoundPlain);
 
     int x = [[NSDecimalNumber decimalNumberWithDecimal:newPoint[0]] intValue];
@@ -98,7 +98,7 @@
     double pts[2];
     pts[CPTCoordinateX] = [[self numberForPlot:index forCoordinate:CPTCoordinateX] doubleValue];
     pts[CPTCoordinateY] = [[self numberForPlot:index forCoordinate:CPTCoordinateY] doubleValue];
-    CGPoint plotPoint = [self.plot.plotSpace plotAreaViewPointForDoublePrecisionPlotPoint:pts];
+    CGPoint plotPoint = [self.plot.plotSpace plotAreaViewPointForDoublePrecisionPlotPoint:pts numberOfCoordinates:2];
     CGPoint graphPoint = [self.plot.plotArea convertPoint:plotPoint toLayer:self.plot.graph];
     CGPoint viewPoint = [self viewPointFromGraphPoint:graphPoint];
 
