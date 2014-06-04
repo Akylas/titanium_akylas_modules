@@ -1127,6 +1127,7 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
 -(UIPanGestureRecognizer*)panGesture {
     if (_panGesture == nil) {
         _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureCallback:)];
+        [_panGesture setDelegate:self];
     }
     return _panGesture;
 }
@@ -1208,18 +1209,20 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
 }
 
 #pragma mark - UIGestureRecognizerDelegate
+
 -(BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch{
     
     BOOL shouldReceiveTouch = NO;
+    MMOpenDrawerGestureMode possibleGestureModes = MMCloseDrawerGestureModeNone;
     if(self.openSide == MMDrawerSideNone){
-        MMOpenDrawerGestureMode possibleOpenGestureModes = [self possibleOpenGestureModesForGestureRecognizer:gestureRecognizer
+        possibleGestureModes = [self possibleOpenGestureModesForGestureRecognizer:gestureRecognizer
                                                                                                     withTouch:touch];
-        return ((self.openDrawerGestureModeMask & possibleOpenGestureModes)>0);
+        shouldReceiveTouch = (self.openDrawerGestureModeMask & possibleGestureModes) > 0;
     }
     else{
-        MMCloseDrawerGestureMode possibleCloseGestureModes = [self possibleCloseGestureModesForGestureRecognizer:gestureRecognizer
+        possibleGestureModes = [self possibleCloseGestureModesForGestureRecognizer:gestureRecognizer
                                                                                                        withTouch:touch];
-        return ((self.closeDrawerGestureModeMask & possibleCloseGestureModes)>0);
+        shouldReceiveTouch = (self.closeDrawerGestureModeMask & possibleGestureModes) > 0;
     }
     return shouldReceiveTouch;
 }

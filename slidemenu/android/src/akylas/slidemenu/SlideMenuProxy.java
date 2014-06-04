@@ -136,6 +136,16 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 			viewProxy.releaseViews(activityFinishing);
 		}
 	}
+	
+    @Override
+	public void onWindowFocusChange(boolean focused) {
+        TiViewProxy proxy = getCenterView();
+        if (proxy != null && proxy instanceof TiWindowProxy)
+        {
+            ((TiWindowProxy) proxy).onWindowFocusChange(focused);
+        }
+        else super.onWindowFocusChange(focused);
+    }
 
 	private void handleToggleLeftView(boolean animated)
 	{
@@ -332,19 +342,24 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	public boolean handleOpen(TiWindowProxy proxy, Object arg) {
 		return false;
 	}
+	
+	private TiViewProxy getCenterView() {
+	    if (hasProperty(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW))
+        {
+          return (TiViewProxy)getProperty(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW);
+        }
+	    return null;
+	}
 
 	@Override
 	public boolean realUpdateOrientationModes()
 	{
-		if (hasProperty(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW))
-		{
-			TiViewProxy proxy = ((TiViewProxy)getProperty(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW));
-			if (proxy instanceof TiWindowProxy)
-			{
-				if (((TiWindowProxy) proxy).realUpdateOrientationModes())
-					return true;
-			}
-		}
+	    TiViewProxy proxy = getCenterView();
+        if (proxy != null && proxy instanceof TiWindowProxy)
+        {
+            if (((TiWindowProxy) proxy).realUpdateOrientationModes())
+                return true;
+        }
 		return super.realUpdateOrientationModes();
 	}
 

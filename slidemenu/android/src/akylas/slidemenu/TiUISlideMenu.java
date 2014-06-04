@@ -149,6 +149,7 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		
 		slidingMenu.setMode(SlidingMenu.LEFT);
 		slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+        slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_NONE);
 		slidingMenu.setFadeDegree(0.0f);
 		slidingMenu.setBehindScrollScale(0.0f);
 		slidingMenu.setShadowWidth(20);
@@ -299,17 +300,18 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 	
 	private void updatePanningMode(int panningMode)
 	{
-		slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
+		slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_MARGIN);
 		if (panningMode == AkylasSlidemenuModule.MENU_PANNING_BORDERS) {
-			slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
+            slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_MARGIN);
+//            slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_MARGIN);
 		} else if (panningMode == AkylasSlidemenuModule.MENU_PANNING_CENTER_VIEW)
 			slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
 		else if (panningMode == AkylasSlidemenuModule.MENU_PANNING_ALL_VIEWS) {
 			slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-			slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
+//			slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
 		} else{
 			slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_NONE);
-			slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
+//			slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
 		}
 	}
 	

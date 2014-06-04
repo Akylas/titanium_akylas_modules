@@ -207,6 +207,10 @@
     }
 }
 
+-(BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch{
+    return [super gestureRecognizer:gestureRecognizer shouldReceiveTouch:touch];
+}
+
 -(void)panGestureCallback:(UIPanGestureRecognizer *)panGesture __attribute((objc_requires_super))
 {
     [super panGestureCallback:panGesture];

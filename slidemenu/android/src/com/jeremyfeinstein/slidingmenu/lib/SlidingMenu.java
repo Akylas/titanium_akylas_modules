@@ -874,7 +874,7 @@ public class SlidingMenu extends RelativeLayout {
 	}
 
 	/**
-	 * Controls whether the SlidingMenu can be opened with a swipe gesture.
+	 * Controls whether the SlidingMenu can be closed with a swipe gesture.
 	 * Options are {@link #TOUCHMODE_MARGIN TOUCHMODE_MARGIN}, {@link #TOUCHMODE_FULLSCREEN TOUCHMODE_FULLSCREEN},
 	 * or {@link #TOUCHMODE_NONE TOUCHMODE_NONE}
 	 *

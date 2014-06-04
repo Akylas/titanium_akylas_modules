@@ -45,7 +45,7 @@ public class AkylasSlidemenuModule extends KrollModule
 	@Kroll.constant public static final int MENU_PANNING_ALL_VIEWS = 1;
 	@Kroll.constant public static final int MENU_PANNING_CENTER_VIEW = 2;
 	@Kroll.constant public static final int MENU_PANNING_BORDERS = 3;
-	
+
 	
 	@Kroll.constant public static final int ANIMATION_NONE = 0;
 	@Kroll.constant public static final int ANIMATION_ZOOM = 1;

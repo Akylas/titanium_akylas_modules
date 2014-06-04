@@ -62,11 +62,11 @@
 #pragma Public APIs
 
 
-MAKE_SYSTEM_PROP(PANNING_NONE, MMOpenDrawerGestureModeNone);
-MAKE_SYSTEM_PROP(PANNING_ALL_VIEWS, MMOpenDrawerGestureModeAll);
-MAKE_SYSTEM_PROP(PANNING_CENTER_VIEW, MMOpenDrawerGestureModePanningCenterView);
-MAKE_SYSTEM_PROP(PANNING_BORDERS, MMOpenDrawerGestureModeBezelPanningCenterView);
-MAKE_SYSTEM_PROP(PANNING_NAVBAR, MMOpenDrawerGestureModePanningNavigationBar);
+MAKE_SYSTEM_PROP(MENU_PANNING_NONE, MMOpenDrawerGestureModeNone);
+MAKE_SYSTEM_PROP(MENU_PANNING_ALL_VIEWS, MMOpenDrawerGestureModeAll);
+MAKE_SYSTEM_PROP(MENU_PANNING_CENTER_VIEW, MMOpenDrawerGestureModePanningCenterView);
+MAKE_SYSTEM_PROP(MENU_PANNING_BORDERS, MMOpenDrawerGestureModeBezelPanningCenterView);
+MAKE_SYSTEM_PROP(MENU_PANNING_NAVBAR, MMOpenDrawerGestureModePanningNavigationBar);
 
 
 MAKE_SYSTEM_PROP(ANIMATION_NONE, 0);
