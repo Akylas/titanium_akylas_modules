@@ -35,10 +35,10 @@
     minYValue = 0;
     maxXValue = 0;
     maxYValue = 0;
+//	self.modelDelegate = self;
     
 	[super _initWithProperties:properties];
 	// Set up for property change notifications
-	self.modelDelegate = self;
     
 }
 

@@ -76,79 +76,68 @@
 	}
 	
 	// Clear the current list of plots
+    [plots enumerateObjectsUsingBlock:^(TiProxy * plot, NSUInteger idx, BOOL *stop) {
+        [self forgetProxy:plot];
+    }];
 	RELEASE_TO_NIL(plots);
-	
 	// Now set the current list to this new list
 	[self add:args];
 }
 
--(void)add:(id)arg
+-(void)addProxy:(id)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
 {
-	if (!IS_NULL_OR_NIL(arg)) {
-		// If we get an array of plot proxy objects we can just iterate through it
-		// and add each one individually. This is just a helper for adding a set of
-		// plot proxies in one call.
-		if ([arg isKindOfClass:[NSArray class]])
-		{
-			for (id a in arg) {
-				[self add:a];
-			}
-			return;
-		}
-		
-		// Make sure that we are getting a plot proxy object
-		if (![arg isKindOfClass:[AkylasChartsPlotProxy class]] && ![arg isKindOfClass:[AkylasChartsPieSegmentProxy class]]) {
-			[self throwException:@"Plot type is invalid" subreason:nil location:CODELOCATION];
-		}
-		
-		// Only add if not already it the list
-//		AkylasChartsPlotProxy *plot = (AkylasChartsPlotProxy*)arg;
-		if ([[self plots] indexOfObject:arg] == NSNotFound) {
-			[[self plots] addObject:arg];
-            
-            if ([arg isKindOfClass:[AkylasChartsPlotProxy class]])
-                ((AkylasChartsPlotProxy*)arg).chartProxy = self;
-            else if ([arg isKindOfClass:[AkylasChartsPieSegmentProxy class]])
-                ((AkylasChartsPieSegmentProxy*)arg).chartProxy = self;
-		
-			// If a view is currently attached to this proxy then tell it to add this new plot
-			// to the graph
-			if ([self view]) {
-				[(AkylasChartsChart*)[self view] addPlot:arg];
-			}
-            
-            // Remember the proxy or else it will get GC'd if created by a logic variable
-            [self rememberProxy:arg];
-		}
-		else {
-			NSLog(@"[DEBUG] Attempted to add plot that is already in the plot array");
-		}
-	}
-}
+    // Make sure that we are getting a plot proxy object
+    if (![child isKindOfClass:[AkylasChartsPlotProxy class]] && ![child isKindOfClass:[AkylasChartsPieSegmentProxy class]]) {
+        [super addProxy:child atIndex:position shouldRelayout:shouldRelayout];
+        return;
+    }
 
--(void)remove:(id)arg
+    // Only add if not already it the list
+    //		AkylasChartsPlotProxy *plot = (AkylasChartsPlotProxy*)arg;
+    if ([[self plots] indexOfObject:child] == NSNotFound) {
+        [[self plots] addObject:child];
+        
+        if ([child isKindOfClass:[AkylasChartsPlotProxy class]])
+            ((AkylasChartsPlotProxy*)child).chartProxy = self;
+        else if ([child isKindOfClass:[AkylasChartsPieSegmentProxy class]])
+            ((AkylasChartsPieSegmentProxy*)child).chartProxy = self;
+		
+        // If a view is currently attached to this proxy then tell it to add this new plot
+        // to the graph
+        if ([self view]) {
+            [(AkylasChartsChart*)[self view] addPlot:child];
+        }
+        
+        // Remember the proxy or else it will get GC'd if created by a logic variable
+        [self rememberProxy:child];
+    }
+    else {
+        NSLog(@"[DEBUG] Attempted to add plot that is already in the plot array");
+    }
+}
+-(void)removeProxy:(id)child
 {
-	ENSURE_SINGLE_ARG(arg, TiProxy);
-	
-	// Make sure that we are getting a plot proxy object
-    if (![arg isKindOfClass:[AkylasChartsPlotProxy class]] && ![arg isKindOfClass:[AkylasChartsPieSegmentProxy class]]) {
-		[self throwException:@"Plot type is invalid" subreason:nil location:CODELOCATION];
+    // Make sure that we are getting a plot proxy object
+    if (![child isKindOfClass:[AkylasChartsPlotProxy class]] && ![child isKindOfClass:[AkylasChartsPieSegmentProxy class]]) {
+		[super removeProxy:child];
+        return;
 	}
 	
-//	AkylasChartsPlotProxy *plot = (AkylasChartsPlotProxy*)arg;
+    //	AkylasChartsPlotProxy *plot = (AkylasChartsPlotProxy*)arg;
     
     // Remove the plot from our list of plot proxy objects
-	[plots removeObject:arg];
+	[plots removeObject:child];
     
     // Forget the previously remembered proxy
-    [self forgetProxy:arg];
+    [self forgetProxy:child];
 	
 	// If a view is currently attached to this proxy then tell it to remove the plot
 	// from the graph
 	if ([self view]) {
-		[(AkylasChartsChart*)[self view] removePlot:arg];
+		[(AkylasChartsChart*)[self view] removePlot:child];
 	}
 }
+
 
 -(void)viewDidInitialize
 {
@@ -207,6 +196,30 @@ USE_VIEW_FOR_UI_METHOD(refresh);
         }
         [markers removeObject:arg];
     }
+}
+
++(Class)proxyClassFromString:(NSString*)qualifiedName
+{
+    Class proxyClass = (Class)CFDictionaryGetValue([TiProxy classNameLookup], qualifiedName);
+	if (proxyClass == nil) {
+		NSString *prefix = [NSString stringWithFormat:@"%@%s",@"Ak","ylasCharts."];
+		if ([qualifiedName hasPrefix:prefix]) {
+			qualifiedName = [qualifiedName stringByReplacingOccurrencesOfString:prefix withString:@"AkylasCharts"];
+		}
+        else {
+            return [[TiViewProxy class] proxyClassFromString:qualifiedName];
+        }
+		NSString *className = [[qualifiedName stringByReplacingOccurrencesOfString:@"." withString:@""] stringByAppendingString:@"Proxy"];
+		proxyClass = NSClassFromString(className);
+		if (proxyClass==nil) {
+			DebugLog(@"[WARN] Attempted to load %@: Could not find class definition.", className);
+			@throw [NSException exceptionWithName:@"org.appcelerator.module"
+                                           reason:[NSString stringWithFormat:@"Class not found: %@", qualifiedName]
+                                         userInfo:nil];
+		}
+		CFDictionarySetValue([TiProxy classNameLookup], qualifiedName, proxyClass);
+	}
+    return proxyClass;
 }
 
 @end

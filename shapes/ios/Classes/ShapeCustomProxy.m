@@ -348,7 +348,7 @@
     }
     
     if ([animation valueForKey:@"transform"]) {
-        Ti2DMatrix* matrix = [animProps objectForKey:@"transform"];
+        Ti2DMatrix* matrix = [TiUtils matrixValue:@"transform" properties:animProps];
         CGAffineTransform transform = [self prepareTransform:matrix bounds:_currentShapeBounds parentSize:_parentBounds.size];
         [animations addObject:[self animationForKeyPath:kAnimShapeTransform value:[NSValue valueWithCATransform3D:CATransform3DMakeAffineTransform(transform)] restartFromBeginning:restartFromBeginning]];
     }

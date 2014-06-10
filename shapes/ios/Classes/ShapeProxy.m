@@ -719,14 +719,8 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 
 -(void)setTransform:(id)transform
 {
-    ENSURE_SINGLE_ARG_OR_NIL(transform, Ti2DMatrix)
     _realTransform = CGAffineTransformIdentity;
-    if (transform != nil) {
-        _transform = [transform retain];
-    }
-    else {
-        _transform = nil;
-    }
+    _transform = [[TiUtils matrixValue:transform] retain];
     [self replaceValue:transform forKey:@"transform" notification:NO];
     if (!_configurationSet)  return;
     [self updateRealTransform];

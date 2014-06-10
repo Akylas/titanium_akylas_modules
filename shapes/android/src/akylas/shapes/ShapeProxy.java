@@ -814,17 +814,11 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyListener {
 				properties, propertiesList, propertiesListReverse, Color.TRANSPARENT);
 
 		if (animOptions.containsKey(TiC.PROPERTY_TRANSFORM)) {
-			Ti2DMatrix matrix = (Ti2DMatrix) animOptions
-					.get(TiC.PROPERTY_TRANSFORM);
-			if (matrix.getClass().getSuperclass().equals(Ti2DMatrix.class)) {
-				matrix = new Ti2DMatrix(matrix); // case of _2DMatrixProxy
-			}
+		    Ti2DMatrix matrix = TiConvert.toMatrix(animOptions, TiC.PROPERTY_TRANSFORM);
 			Ti2DMatrixEvaluator evaluator = new Ti2DMatrixEvaluator(this);
 			propertiesList.add(PropertyValuesHolder.ofObject(
 					"animated2DMatrix", evaluator, matrix));
 			if (needsReverse) {
-				matrix = (Ti2DMatrix) animOptions
-						.get(TiC.PROPERTY_TRANSFORM);
 				propertiesListReverse.add(PropertyValuesHolder.ofObject(
 						"animated2DMatrix", evaluator, this.transform));
 			}
@@ -1194,12 +1188,7 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyListener {
 			this.anchor = AnchorPosition.values()[TiConvert.toInt(newValue)];
 		}
 		else if (key.equals(TiC.PROPERTY_TRANSFORM)) {
-			if (newValue.getClass().getSuperclass().equals(Ti2DMatrix.class)) {
-				this.transform = new Ti2DMatrix((Ti2DMatrix)newValue); // case of _2DMatrixProxy
-			}
-			else {
-				this.transform = (Ti2DMatrix)newValue;
-			}
+		    this.transform = TiConvert.toMatrix(key);
 			this.matrix = null;
 			needsMatrix = true;
 		}
@@ -1286,7 +1275,7 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyListener {
 			applyAnchorPoint(properties.get(TiC.PROPERTY_ANCHOR_POINT));
 		}
 		if (properties.containsKey(TiC.PROPERTY_TRANSFORM)) {
-			this.transform = (Ti2DMatrix)properties.get(TiC.PROPERTY_TRANSFORM);
+			this.transform = TiConvert.toMatrix(properties, TiC.PROPERTY_TRANSFORM);
 			this.matrix = null;
 			needsMatrix = (this.transform != null);
 		}

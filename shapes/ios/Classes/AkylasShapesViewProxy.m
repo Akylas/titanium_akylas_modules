@@ -81,40 +81,45 @@ static NSArray *supportedEvents;
     [[self view] setNeedsDisplay];
 }
 
--(void)add:(id)args
+-(void)setShapes:(id)args
 {
-    ShapeProxy * shape = [ShapeProxy shapeFromArg:args context:[self executionContext]];
-
-   if (shape != nil) {
-       if ([mShapes indexOfObject:shape] == NSNotFound) {
-           [mShapes addObject:shape];
-           [self rememberProxy:shape];
-           [shape setShapeViewProxy:self];
-           if ([self viewAttached]) {
-               [[self view].layer addSublayer:[shape layer]];
-               [shape boundsChanged:self.view.bounds];
-               [[self view] setNeedsDisplay];
-           }
-       }
-   }
-   else {
-       [super add:args];
-   }
+	// Clear the current list of plots
+    [mShapes enumerateObjectsUsingBlock:^(ShapeProxy * child, NSUInteger idx, BOOL *stop) {
+        [self forgetProxy:child];
+        [mShapes removeObject:child];
+        [[child layer] removeFromSuperlayer];
+        [child setShapeViewProxy:nil];
+    }];
+	RELEASE_TO_NIL(mShapes);
+	// Now set the current list to this new list
+	[self add:args];
 }
 
--(BOOL)animating
+-(void)addProxy:(id)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
 {
-    return [self viewAttached] && [super animating];
-}
-
--(void)remove:(id)child
-{
- 	ENSURE_SINGLE_ARG(child,TiProxy);
-    if ([child isKindOfClass:[TiViewProxy class]]) {
-        [super remove:child];
+    if (![child isKindOfClass:[ShapeProxy class]]) {
+		[super addProxy:child atIndex:position shouldRelayout:shouldRelayout];
         return;
+	}
+    
+    if ([mShapes indexOfObject:child] == NSNotFound) {
+        [mShapes addObject:child];
+        [self rememberProxy:child];
+        [child setShapeViewProxy:self];
+        if (shouldRelayout && [self viewAttached]) {
+            [[self view].layer addSublayer:[child layer]];
+            [child boundsChanged:self.view.bounds];
+            [[self view] setNeedsDisplay];
+        }
     }
-    ENSURE_SINGLE_ARG(child, ShapeProxy)
+}
+-(void)removeProxy:(id)child
+{
+    if (![child isKindOfClass:[ShapeProxy class]]) {
+		[super removeProxy:child];
+        return;
+	}
+	
     if ([mShapes indexOfObject:child] != NSNotFound) {
         [self forgetProxy:child];
         [mShapes removeObject:child];
@@ -124,6 +129,11 @@ static NSArray *supportedEvents;
             [[self view] setNeedsDisplay];
         }
     }
+}
+
+-(BOOL)animating
+{
+    return [self viewAttached] && [super animating];
 }
 
 -(BOOL)_hasListeners:(NSString *)type
@@ -158,5 +168,28 @@ static NSArray *supportedEvents;
 }
 
 
++(Class)proxyClassFromString:(NSString*)qualifiedName
+{
+    Class proxyClass = (Class)CFDictionaryGetValue([TiProxy classNameLookup], qualifiedName);
+	if (proxyClass == nil) {
+		NSString *prefix = [NSString stringWithFormat:@"%@%s",@"Ak","ylasShapes."];
+		if ([qualifiedName hasPrefix:prefix]) {
+			qualifiedName = [qualifiedName stringByReplacingOccurrencesOfString:prefix withString:@"AkylasShapes"];
+		}
+        else {
+            return [[TiViewProxy class] proxyClassFromString:qualifiedName];
+        }
+		NSString *className = [[qualifiedName stringByReplacingOccurrencesOfString:@"." withString:@""] stringByAppendingString:@"Proxy"];
+		proxyClass = NSClassFromString(className);
+		if (proxyClass==nil) {
+			DebugLog(@"[WARN] Attempted to load %@: Could not find class definition.", className);
+			@throw [NSException exceptionWithName:@"org.appcelerator.module"
+                                           reason:[NSString stringWithFormat:@"Class not found: %@", qualifiedName]
+                                         userInfo:nil];
+		}
+		CFDictionarySetValue([TiProxy classNameLookup], qualifiedName, proxyClass);
+	}
+    return proxyClass;
+}
 
 @end
