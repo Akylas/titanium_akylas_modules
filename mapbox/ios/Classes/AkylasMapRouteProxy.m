@@ -63,8 +63,10 @@ int lineJoinFromString(NSString* value)
 
 -(void)dealloc
 {
-	pthread_rwlock_destroy(&routeLineLock);
+    pthread_rwlock_rdlock(&routeLineLock);
     RELEASE_TO_NIL(_routeLine);
+    pthread_rwlock_unlock(&routeLineLock);
+	pthread_rwlock_destroy(&routeLineLock);
     RELEASE_TO_NIL(_shape);
     RELEASE_TO_NIL(_color);
     RELEASE_TO_NIL(_lineJoin);
@@ -115,7 +117,9 @@ int lineJoinFromString(NSString* value)
         newPoint = [AkylasMapModule cllocationFromArray:point];
     }
     if (newPoint) {
+        pthread_rwlock_rdlock(&routeLineLock);
         [_routeLine addObject:newPoint];
+        pthread_rwlock_unlock(&routeLineLock);
         [self updateBoundingBoxWithPoint:newPoint];
     }
     return newPoint;
@@ -132,10 +136,16 @@ int lineJoinFromString(NSString* value)
     }
     NSUInteger count = [_routeLine count];
     pthread_rwlock_unlock(&routeLineLock);
+//    if (_shape) {
+//        [_shape setCoordinates:_routeLine];
+//    }
+//    else {
     RELEASE_TO_NIL(_shape)
     RELEASE_TO_NIL(routeRenderer)
-    RELEASE_TO_NIL(_routePolyline)
-    if (count > 1)[self setNeedsRefreshingWithSelection:YES];
+        RELEASE_TO_NIL(_routePolyline)
+        if (count > 1)[self setNeedsRefreshingWithSelection:YES];
+//    }
+    
 }
 
 -(void)updateBoundingBoxWithPoint:(CLLocation*) point {
@@ -169,14 +179,17 @@ int lineJoinFromString(NSString* value)
         return;
     }
     CLLocation* newPoint = [self processPoint:[value objectAtIndex:0]];
+    if (newPoint == nil) return;
     pthread_rwlock_rdlock(&routeLineLock);
     NSUInteger count = [_routeLine count];
     pthread_rwlock_unlock(&routeLineLock);
+    if (_shape) {
+        [_shape addLineToCoordinate:newPoint.coordinate];
+    }
     if (newPoint && count > 1){
-        RELEASE_TO_NIL(_shape)
         RELEASE_TO_NIL(routeRenderer)
         RELEASE_TO_NIL(_routePolyline)
-        [self setNeedsRefreshingWithSelection:YES];
+        if (routeRenderer) [self setNeedsRefreshingWithSelection:YES];
     }
 }
 
@@ -282,14 +295,16 @@ int lineJoinFromString(NSString* value)
 {
     if (_shape == nil) {
         _shape = [[RMShape alloc] initWithView:[mapView map]];
-        _shape.lineCap = _lineCap;
-        _shape.lineJoin = _lineJoin;
-        _shape.lineColor = _color;
-        _shape.lineWidth = _lineWidth;
-       
         NSArray*line = [self getRouteLine];
-        for (CLLocation *location in line)
-            [_shape addLineToCoordinate:location.coordinate];
+        [_shape performBatchOperations:^(RMShape *aShape) {
+            _shape.lineCap = _lineCap;
+            _shape.lineJoin = _lineJoin;
+            _shape.lineColor = _color;
+            _shape.lineWidth = _lineWidth;
+            for (CLLocation *location in line) {
+                [aShape addLineToCoordinate:location.coordinate];
+            }
+        }];
     }
     return _shape;
 }
@@ -330,6 +345,7 @@ int lineJoinFromString(NSString* value)
         routeRenderer.lineCap = lineCapFromString(_lineCap);
         routeRenderer.lineJoin = lineJoinFromString(_lineJoin);
         routeRenderer.strokeColor = routeRenderer.fillColor = _color;
+        routeRenderer.fillColor = nil;
         routeRenderer.lineWidth = _lineWidth;
     }
     return routeRenderer;
