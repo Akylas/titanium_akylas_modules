@@ -309,9 +309,7 @@ public class Utils {
 				.containsKey("numberSuffixNegative"));
 	
 		if (realpattern != null || hasSuffixOrPrefix) {
-			DecimalFormat format = new DecimalFormat("0.0");
-			if (realpattern != null)
-				format.applyPattern(realpattern);
+			DecimalFormat format = new DecimalFormat((realpattern != null)?realpattern:"0.0");
 			String prefix = dict.optString("numberPrefix", "");
 			format.setNegativePrefix(dict.optString("numberPrefixNegative",
 					prefix));

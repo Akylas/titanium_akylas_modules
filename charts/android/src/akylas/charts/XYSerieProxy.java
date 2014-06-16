@@ -6,28 +6,30 @@ import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
+import org.appcelerator.kroll.KrollPropertyChange;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.view.KrollProxyReusableListener;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
+import com.androidplot.Plot;
 import com.androidplot.xy.FillDirection;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
 import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYSeriesFormatter;
 
 @Kroll.proxy
-public class XYSerieProxy extends KrollProxy {
+public class XYSerieProxy extends KrollProxy implements KrollProxyReusableListener {
 	// Standard Debugging variables
 	private static final String TAG = "PlotStepProxy";
 	protected SimpleXYSeries series;
@@ -38,6 +40,10 @@ public class XYSerieProxy extends KrollProxy {
 	protected PointLabelFormatter labelformatter;
 	protected KrollFunction labelFormatCallback;
 	protected boolean mFillSpacePath = true;
+    private KrollDict additionalEventData;
+    
+    private KrollDict fillGradientProps;
+    private KrollDict lineGradientProps;
     
 	// Constructor
 	public XYSerieProxy(TiContext tiContext) {
@@ -66,6 +72,7 @@ public class XYSerieProxy extends KrollProxy {
 	public void handleCreationDict(KrollDict options) {
 		Log.d(TAG, "handleCreationDict ");
 		super.handleCreationDict(options);
+        setModelListener(this);
 
 		mTitle = options.optString("name", "");
 		series = new SimpleXYSeries(mTitle);
@@ -73,11 +80,6 @@ public class XYSerieProxy extends KrollProxy {
 		if (options.containsKey("implicitXVals")) {
 			series.useImplicitXVals();
 		}
-		if (options.containsKey("data")) {
-			setData((Object[]) options.get("data"));
-		}
-
-
 	}
 
 	@Kroll.method
@@ -137,39 +139,43 @@ public class XYSerieProxy extends KrollProxy {
 		return series.size();
 	}
 	
-    protected void internalUpdateFillGradient(Context context, Rect rect, KrollDict options) {
-        if (options.containsKey("fillGradient")) {
+    protected void internalUpdateFillGradient(Context context, Rect rect) {
+        if (fillGradientProps != null) {
             Paint paint = formatter.getFillPaint();
             paint.setColor(Color.WHITE);
-            KrollDict bgOptions = options.getKrollDict("fillGradient");
             paint.setShader(
-                    Utils.styleGradient(bgOptions, context, rect));
-            Utils.styleOpacity(options, "fillOpacity", paint);
+                    Utils.styleGradient(fillGradientProps, context, rect));
         }
     }
     
-    protected void internalUpdateLineGradient(Context context, Rect rect, KrollDict options) {
-        if (options.containsKey("lineGradient")) {
+    protected void internalUpdateLineGradient(Context context, Rect rect) {
+        if (lineGradientProps != null) {
             Paint paint = getFormatter().getLinePaint();
             paint.setColor(Color.WHITE);
-            KrollDict bgOptions = options.getKrollDict("lineGradient");
-            paint.setShader(Utils.styleGradient(bgOptions, context, rect));
-            Utils.styleCap(options, "lineCap", paint);
-            Utils.styleOpacity(options, "lineOpacity", paint);
+            paint.setShader(Utils.styleGradient(lineGradientProps, context, rect));
+//            Utils.styleCap(options, "lineCap", paint);
+        }
+    }
+    
+    protected void updateGradients() {
+        if (mFillSpacePath|| plot == null) return;
+        Plot thePlot = plot.getPlot();
+        if (thePlot != null) {
+            updateGradients(thePlot.getContext(), plot.getGraphRect());
         }
     }
 
+
     protected void updateGradients(Context context, Rect rect) {
         if (mFillSpacePath) return;
-        KrollDict options = getProperties();
-        internalUpdateFillGradient(context, rect, options);
-        internalUpdateLineGradient(context, rect, options);
+        internalUpdateFillGradient(context, rect);
+        internalUpdateLineGradient(context, rect);
     }
     
     protected LineAndPointFormatter createFormatter() {
         return null;
     }
-
+    
     protected void styleFormatter(KrollDict options) {
         Paint paint = formatter.getLinePaint();
         Utils.styleStrokeWidth(options, "lineWidth", "1", paint, context);
@@ -244,16 +250,79 @@ public class XYSerieProxy extends KrollProxy {
         } else {
             formatter.setVertexPaint(null);
         }
+        
+        if (options.containsKey("lineGradient")) {
+            lineGradientProps = options.getKrollDict("lineGradient");
+        }
+        if (options.containsKey("fillGradient")) {
+            fillGradientProps = options.getKrollDict("fillGradient");
+        }
+        if (!mFillSpacePath) updateGradients();
     }
 
     public LineAndPointFormatter getFormatter() {
         if (formatter == null) {
-            KrollDict options = getProperties();
+//            KrollDict options = getProperties();
 
             labelformatter = null;
             formatter = createFormatter();
-            styleFormatter(options);
+//            styleFormatter(options);
         }
         return formatter;
+    }
+    
+
+    @Override
+    public void setAdditionalEventData(KrollDict dict) {
+        additionalEventData = dict;
+    }
+    
+    @Override
+    public KrollDict getAdditionalEventData() {
+        return additionalEventData;
+    }
+
+    @Override
+    public void setReusing(boolean reusing) {
+//        if (reusing == false) {
+//            update();
+//        }
+        
+    }
+
+    @Override
+    public void listenerAdded(String arg0, int arg1, KrollProxy arg2) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void listenerRemoved(String arg0, int arg1, KrollProxy arg2) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void processProperties(KrollDict d) {
+        getFormatter();
+        styleFormatter(d);
+        if (d.containsKey("data")) {
+            setData((Object[]) d.get("data"));
+        }
+    }
+
+    @Override
+    public void propertiesChanged(List<KrollPropertyChange> arg0,
+            KrollProxy arg1) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void propertyChanged(String key, Object oldValue, Object newValue,
+            KrollProxy arg3) {
+        if (key.equals("data")) {
+            setData(newValue);
+        }
     }
 }

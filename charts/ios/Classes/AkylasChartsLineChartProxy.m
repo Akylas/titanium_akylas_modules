@@ -5,7 +5,23 @@
  */
 
 #import "AkylasChartsLineChartProxy.h"
+#import "NSDictionary+Merge.h"
+
 @implementation AkylasChartsLineChartProxy
 
+
+-(void)setXAxis:(id)value
+{
+    ENSURE_SINGLE_ARG_OR_NIL(value, NSDictionary)
+    [self replaceValue:[NSDictionary dictionaryByMerging:[self valueForUndefinedKey:@"xAxis"] with:value force:YES] forKey:@"xAxis" notification:YES];
+}
+
+
+-(void)setYAxis:(id)value
+{
+    ENSURE_SINGLE_ARG_OR_NIL(value, NSDictionary)
+
+    [self replaceValue:[NSDictionary dictionaryByMerging:[self valueForUndefinedKey:@"yAxis"] with:value force:YES] forKey:@"yAxis" notification:YES];
+}
 
 @end

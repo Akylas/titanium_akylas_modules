@@ -465,8 +465,8 @@
                     // Label locations can be explicitly specified. It is important to know that the value for the label
                     // must be included in the set of values for the major ticks in order for them to be displayed. Core-plot
                     // will not display them if there isn't a major tick for the value.
-                    AkylasChartsLabelFormatter* labelFormatter = [[[AkylasChartsLabelFormatter alloc] initWithCallback:formatCallback] autorelease];
-                    axis.labelFormatter = labelFormatter;
+                    AkylasChartsLabelFormatter* labelFormatter = [[AkylasChartsLabelFormatter alloc] initWithCallback:formatCallback];
+                    axis.labelFormatter = [labelFormatter autorelease];
 //                    axis.labelingPolicy = CPTAxisLabelingPolicyLocationsProvided;
                 }
                 else {
@@ -491,7 +491,7 @@
                     // this is done with the '#' and '0' characters (e.g. "###0.00"). Optionally, prefix and suffix strings can
                     // be specified. See http://unicode.org/reports/tr35/tr35-6.html#Number_Format_Patterns for details.
                     if (axis.labelFormatter) {
-                        AkylasChartsLabelFormatter* formatter = (AkylasChartsLabelFormatter*)axis.labelFormatter;
+                        NSNumberFormatter* formatter = axis.labelFormatter;
                         formatter.positiveFormat = [TiUtils stringValue:@"numberFormatPositive" properties:labelProps
                                                                     def:[TiUtils stringValue:@"numberFormat" properties:labelProps def:formatter.positiveFormat]];
                         formatter.negativeFormat = [TiUtils stringValue:@"numberFormatNegative" properties:labelProps

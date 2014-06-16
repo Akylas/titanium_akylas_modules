@@ -9,7 +9,6 @@
 #import "AkylasChartsParsers.h"
 #import "TiUtils.h"
 
-@implementation AkylasChartsPlotLineProxy
 
 typedef enum AkylasChartsFillDirection {
     CPTFillDirectionBottom,
@@ -17,59 +16,91 @@ typedef enum AkylasChartsFillDirection {
     CPTFillDirectionOrigin
 } AkylasChartsFillDirection;
 
--(void)configurePlot
+@implementation AkylasChartsPlotLineProxy
 {
-	[super configurePlot];
+    BOOL _needsParseLine;
+    BOOL _needsParseFill;
+    BOOL _needsParseSymbols;
+    BOOL _needsParseDirection;
+}
+
+-(void)_initWithProperties:(NSDictionary*)properties
+{
+    _needsParseLine = YES;
+    _needsParseFill = YES;
+    _needsParseSymbols = YES;
+    _needsParseDirection = YES;
+	[super _initWithProperties:properties];
+}
+
+
+-(void)configurePlot:(NSDictionary*)props
+{
+	[super configurePlot:props];
 	
 	CPTScatterPlot* plot = (CPTScatterPlot*)[self plot];
+    if (plot ==nil) return;
 	
 	// NOTE: We pass in the current plot values as the default so that any existing settings
 	// from the theme are retained unless overridden.
 	
-	plot.dataLineStyle = [AkylasChartsParsers parseLine:self withPrefix:@"line" def:plot.dataLineStyle];
-    
-    AkylasChartsFillDirection direction = CPTFillDirectionBottom;
-    NSString* fillDirectionOption = [TiUtils stringValue:[self valueForUndefinedKey:@"fillDirection"]];
-    if (fillDirectionOption != nil) {
-        if ([fillDirectionOption isEqualToString:@"top"]) {
-            direction = CPTFillDirectionTop;
-        }
-        else if ([fillDirectionOption isEqualToString:@"origin"]) {
-            direction = CPTFillDirectionOrigin;
-        }
+    if (_needsParseLine) {
+        _needsParseLine = NO;
+        plot.dataLineStyle = [AkylasChartsParsers parseLine:props withPrefix:@"line" def:plot.dataLineStyle];
     }
-    NSDecimal areaBaseValue;
-    plot.areaFill = [AkylasChartsParsers parseFillColor:[self valueForUndefinedKey:@"fillColor"]
-                                           withGradient:[self valueForUndefinedKey:@"fillGradient"]
-                                             andOpacity:[self valueForUndefinedKey:@"fillOpacity"]
-                                                    def:nil];
-    	switch (direction) {
-        case CPTFillDirectionBottom:
-                areaBaseValue = [[NSDecimalNumber minimumDecimalNumber] decimalValue];
-            break;
-        case CPTFillDirectionTop:
-            areaBaseValue = [[NSDecimalNumber maximumDecimalNumber] decimalValue];
-            break;
-        case CPTFillDirectionOrigin:
-            {
-            NSArray* axes = plot.plotArea.axisSet.axes;
-            areaBaseValue= ([axes count] > 1)?((CPTXYAxis*)axes[1]).orthogonalCoordinateDecimal:([axes count] > 0)?((CPTXYAxis*)axes[0]).orthogonalCoordinateDecimal:CPTDecimalFromFloat(0);
+    
+
+    if (_needsParseFill) {
+        _needsParseFill = NO;
+        
+        plot.areaFill = [AkylasChartsParsers parseFillColor:[props objectForKey:@"fillColor"]
+                                               withGradient:[props objectForKey:@"fillGradient"]
+                                                 andOpacity:[props objectForKey:@"fillOpacity"]
+                                                        def:nil];
+        AkylasChartsFillDirection direction = CPTFillDirectionBottom;
+        NSString* fillDirectionOption = [TiUtils stringValue:[props objectForKey:@"fillDirection"]];
+        if (fillDirectionOption != nil) {
+            if ([fillDirectionOption isEqualToString:@"top"]) {
+                direction = CPTFillDirectionTop;
             }
-            break;
-        default:
-            break;
+            else if ([fillDirectionOption isEqualToString:@"origin"]) {
+                direction = CPTFillDirectionOrigin;
+            }
+        }
+        
+        NSDecimal areaBaseValue;
+        switch (direction) {
+            case CPTFillDirectionBottom:
+                    areaBaseValue = [[NSDecimalNumber minimumDecimalNumber] decimalValue];
+                break;
+            case CPTFillDirectionTop:
+                areaBaseValue = [[NSDecimalNumber maximumDecimalNumber] decimalValue];
+                break;
+            case CPTFillDirectionOrigin:
+                {
+                NSArray* axes = plot.plotArea.axisSet.axes;
+                areaBaseValue= ([axes count] > 1)?((CPTXYAxis*)axes[1]).orthogonalCoordinateDecimal:([axes count] > 0)?((CPTXYAxis*)axes[0]).orthogonalCoordinateDecimal:CPTDecimalFromFloat(0);
+                }
+                break;
+            default:
+                break;
+        }
+        plot.areaBaseValue = [AkylasChartsParsers decimalFromFloat:[props objectForKey:@"fillBase"] def:areaBaseValue];
     }
-    plot.areaBaseValue = [AkylasChartsParsers decimalFromFloat:[self valueForUndefinedKey:@"fillBase"] def:areaBaseValue];
     
-	// Plot Symbols
-	plot.plotSymbol = [AkylasChartsParsers parseSymbol:[self valueForUndefinedKey:@"symbol"] def:plot.plotSymbol];
-    highlightSymbol = [[AkylasChartsParsers parseSymbol:[self valueForUndefinedKey:@"symbolHighlight"] def:nil] retain];
+    if (_needsParseSymbols) {
+        _needsParseSymbols = NO;
+        // Plot Symbols
+        plot.plotSymbol = [AkylasChartsParsers parseSymbol:[props objectForKey:@"symbol"] def:plot.plotSymbol];
+        highlightSymbol = [[AkylasChartsParsers parseSymbol:[props objectForKey:@"symbolHighlight"] def:nil] retain];
+        // Symbol
+        plot.plotSymbolMarginForHitDetection = [TiUtils floatValue:[props objectForKey:@"dataClickMargin"] def:plot.plotSymbolMarginForHitDetection];
+    }
     
-    // Symbol
-    plot.plotSymbolMarginForHitDetection = [TiUtils floatValue:[self valueForUndefinedKey:@"dataClickMargin"] def:plot.plotSymbolMarginForHitDetection];
+   
     
     // Scatter algorithm
-    plot.interpolation = [TiUtils intValue:[self valueForUndefinedKey:@"scatterAlgorithm"] def:plot.interpolation];
+    plot.interpolation = [TiUtils intValue:[props objectForKey:@"scatterAlgorithm"] def:plot.interpolation];
 }
 
 -(id)init
@@ -78,18 +109,18 @@ typedef enum AkylasChartsFillDirection {
         highlightSymbolIndex = NSUIntegerMax;
         
 		// these properties should trigger a redisplay
-		static NSSet * plotProperties = nil;
-		if (plotProperties == nil)
-		{
-			plotProperties = [[NSSet alloc] initWithObjects:
-							  @"lineColor", @"lineWidth", @"lineOpacity",
-							  @"fillColor", @"fillGradient", @"fillOpacity", @"fillBase",
-							  @"symbol", @"symbolHighlight", @"labels", @"dataClickMargin",
-                              @"scatterAlgorithm", @"fillSpacePath", @"fillDirection",
-							  nil];
-		}
-		
-		self.propertyChangedProperties = plotProperties;
+//		static NSSet * plotProperties = nil;
+//		if (plotProperties == nil)
+//		{
+//			plotProperties = [[NSSet alloc] initWithObjects:
+//							  @"lineColor", @"lineWidth", @"lineOpacity",
+//							  @"fillColor", @"fillGradient", @"fillOpacity", @"fillBase",
+//							  @"symbol", @"symbolHighlight", @"labels", @"dataClickMargin",
+//                              @"scatterAlgorithm", @"fillSpacePath", @"fillDirection",
+//							  nil];
+//		}
+//		
+//		self.propertyChangedProperties = plotProperties;
 	}
 	
 	return self;
@@ -150,6 +181,18 @@ typedef enum AkylasChartsFillDirection {
 -(CPTPlotSymbol *)symbolForScatterPlot:(CPTScatterPlot *)plot recordIndex:(NSUInteger)index
 {
 	return (index == highlightSymbolIndex) ? highlightSymbol : plot.plotSymbol;
+}
+
+-(void)setValue:(id)value forKey:(NSString *)key
+{
+    if ([key hasPrefix:@"line"])
+    {
+        _needsParseLine = YES;
+    } else if ([key hasPrefix:@"fill"])
+    {
+        _needsParseFill = YES;
+    }
+    [super setValue:value forKey:key];
 }
 
 @end

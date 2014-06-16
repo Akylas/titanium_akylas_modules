@@ -11,9 +11,9 @@
 
 @implementation AkylasChartsPlotStepProxy
 
--(void)configurePlot
+-(void)configurePlot:(NSDictionary*)props
 {
-	[super configurePlot];
+	[super configurePlot:props];
 	
 	CPTScatterPlot* plot = (CPTScatterPlot*)[self plot];
 	plot.interpolation = CPTScatterPlotInterpolationStepped;

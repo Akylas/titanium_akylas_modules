@@ -16,26 +16,26 @@
 	return [[CPTBarPlot alloc] init];
 }
 
--(void)configurePlot
+-(void)configurePlot:(NSDictionary*)props
 {
-	[super configurePlot];
+	[super configurePlot:props];
 	
 	CPTBarPlot* plot = (CPTBarPlot*)[self plot];
 	
 	// NOTE: We pass in the current plot values as the default so that any existing settings
 	// from the theme are retained unless overridden.
 	
-	plot.lineStyle = [AkylasChartsParsers parseLine:self withPrefix:@"line" def:plot.lineStyle];
+	plot.lineStyle = [AkylasChartsParsers parseLine:props withPrefix:@"line" def:plot.lineStyle];
 	
-	plot.fill = [AkylasChartsParsers parseFillColor:[self valueForUndefinedKey:@"fillColor"]
-								   withGradient:[self valueForUndefinedKey:@"fillGradient"]
-									 andOpacity:[self valueForUndefinedKey:@"fillOpacity"]
+	plot.fill = [AkylasChartsParsers parseFillColor:[props objectForKey:@"fillColor"]
+								   withGradient:[props objectForKey:@"fillGradient"]
+									 andOpacity:[props objectForKey:@"fillOpacity"]
 											def:plot.fill];
 	
-	plot.barsAreHorizontal = [TiUtils boolValue:[self valueForUndefinedKey:@"barDirection"] def:[TiUtils boolValue:[self.chartProxy valueForUndefinedKey:@"barDirection"] def:plot.barsAreHorizontal]];
-	plot.barWidth = [AkylasChartsParsers decimalFromFloat:[self valueForUndefinedKey:@"barWidth"] def:[AkylasChartsParsers decimalFromFloat:[self.chartProxy valueForUndefinedKey:@"barWidth"] def:plot.barWidth]];
-	plot.barOffset = [AkylasChartsParsers decimalFromFloat:[self valueForUndefinedKey:@"barOffset"] def:[AkylasChartsParsers decimalFromFloat:[self.chartProxy valueForUndefinedKey:@"barOffset"] def:plot.barOffset]];
-	plot.barCornerRadius = [TiUtils floatValue:[self valueForUndefinedKey:@"barRadius"] def:[TiUtils floatValue:[self.chartProxy valueForUndefinedKey:@"barRadius"] def:plot.cornerRadius]];
+	plot.barsAreHorizontal = [TiUtils boolValue:[props objectForKey:@"barDirection"] def:[TiUtils boolValue:[self.chartProxy valueForUndefinedKey:@"barDirection"] def:plot.barsAreHorizontal]];
+	plot.barWidth = [AkylasChartsParsers decimalFromFloat:[props objectForKey:@"barWidth"] def:[AkylasChartsParsers decimalFromFloat:[self.chartProxy valueForUndefinedKey:@"barWidth"] def:plot.barWidth]];
+	plot.barOffset = [AkylasChartsParsers decimalFromFloat:[props objectForKey:@"barOffset"] def:[AkylasChartsParsers decimalFromFloat:[self.chartProxy valueForUndefinedKey:@"barOffset"] def:plot.barOffset]];
+	plot.barCornerRadius = [TiUtils floatValue:[props objectForKey:@"barRadius"] def:[TiUtils floatValue:[self.chartProxy valueForUndefinedKey:@"barRadius"] def:plot.cornerRadius]];
 
 	// These fields allow for changing the base of the bar -- could be used for stacked bar charts
 	// TODO
@@ -47,18 +47,18 @@
 {
 	if (self = [super init]) {
 		// these properties should trigger a redisplay
-		static NSSet * plotProperties = nil;
-		if (plotProperties==nil)
-		{
-			plotProperties = [[NSSet alloc] initWithObjects:
-							  @"lineColor", @"lineWidth", @"lineOpacity",
-							  @"fillColor", @"fillGradient", @"fillOpacity",
-							  @"barDirection", @"barWidth", @"barOffset", @"barCornerRadius",
-							  @"labels",
-							  nil];
-		}
-		
-		self.propertyChangedProperties = plotProperties;
+//		static NSSet * plotProperties = nil;
+//		if (plotProperties==nil)
+//		{
+//			plotProperties = [[NSSet alloc] initWithObjects:
+//							  @"lineColor", @"lineWidth", @"lineOpacity",
+//							  @"fillColor", @"fillGradient", @"fillOpacity",
+//							  @"barDirection", @"barWidth", @"barOffset", @"barCornerRadius",
+//							  @"labels",
+//							  nil];
+//		}
+//		
+//		self.propertyChangedProperties = plotProperties;
 	}
 	
 	return self;

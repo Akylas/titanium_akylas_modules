@@ -24,7 +24,7 @@
 	return nil;
 }
 
--(void)configurePlot
+-(void)configurePlot:(NSDictionary*)props
 {
 	// Override this method
 }
@@ -68,7 +68,7 @@
 		return;
 	}
 	
-	[self configurePlot];
+	[self configurePlot: [self allProperties]];
 	
 	// Make sure to set the frame to match the graph
 	plot.frame = [toGraph frame];
@@ -153,7 +153,7 @@
 		return;
 	}
 	
-	[self performSelectorOnMainThread:@selector(refreshData) withObject:nil waitUntilDone:NO];
+	[self performSelectorOnMainThread:@selector(refreshData) withObject:nil waitUntilDone:YES];
 }
 
 
@@ -164,7 +164,7 @@
 	
 	OSAtomicTestAndClearBarrier(NEEDS_RECONFIGURE, &dirtyDataFlags);
 	
-	[self configurePlot];
+	[self configurePlot:[self allProperties]];
 }
 
 -(void)triggerReconfigure
@@ -245,6 +245,7 @@
 	
 	// Signal that the data needs to be reloaded
 	[self triggerDataUpdate];
+    [self replaceValue:values forKey:@"data" notification:NO];
 }
 
 -(void)appendData:(id)values

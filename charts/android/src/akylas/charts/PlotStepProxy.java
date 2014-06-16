@@ -32,7 +32,7 @@ public class PlotStepProxy extends XYSerieProxy {
                 path.computeBounds(rect, true);
                 Rect bounds = new Rect();
                 rect.round(bounds);
-                PlotStepProxy.this.internalUpdateFillGradient(context, bounds, getProperties());
+                PlotStepProxy.this.internalUpdateFillGradient(context, bounds);
             }
             super.drawFillPath(canvas, path);
         }
@@ -44,7 +44,7 @@ public class PlotStepProxy extends XYSerieProxy {
                 path.computeBounds(rect, true);
                 Rect bounds = new Rect();
                 rect.round(bounds);
-                PlotStepProxy.this.internalUpdateLineGradient(context, bounds, getProperties());
+                PlotStepProxy.this.internalUpdateLineGradient(context, bounds);
             }
             super.drawLinePath(canvas, path);
         }

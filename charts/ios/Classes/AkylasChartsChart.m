@@ -17,6 +17,24 @@
 
 @synthesize hostingView;
 
+-(id)init
+{
+	if (self = [super init])
+	{
+		_needsConfigureGraph = YES;
+        _needsConfigureLegend = YES;
+        _needsConfigureChart = YES;
+        _needsConfigureHost = YES;
+        _needsConfigureTheme = YES;
+        _needsConfigureTitle = YES;
+        _needsConfigureFill = YES;
+        _needsConfigurePadding = YES;
+        _needsConfigurePlotArea = YES;
+    }
+	return self;
+}
+
+
 -(void)killGraph
 {
 	if (hostingView) {
@@ -38,9 +56,19 @@
 	[super dealloc];
 }
 
+-(CPTGraph*)graph {
+    if (!graph && configurationSet) {
+        [self initPlot];
+        [self configurePlot:[self.proxy allProperties]];
+
+    }
+    return graph;
+}
+
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
 	[super frameSizeChanged:frame bounds:bounds];
+    
 	if (hostingView != nil) {
 		[TiUtils setView:hostingView positionRect:bounds];
 	}
@@ -55,7 +83,7 @@
 	// this object, and then assigning it to the graph.titleTextStyle property
 	
 	// Configure the font name and size and color
-	graph.titleTextStyle  = [AkylasChartsParsers parseTextStyle:properties def:graph.titleTextStyle];
+	[self graph].titleTextStyle  = [AkylasChartsParsers parseTextStyle:properties def:graph.titleTextStyle];
 	
 	// The frame anchor defines the location of the title
 	graph.titlePlotAreaFrameAnchor = [TiUtils intValue:@"location" properties:properties def:CPTRectAnchorTop];
@@ -79,13 +107,13 @@
 	
 -(void)configurePadding:(NSDictionary*)properties
 {	
-	graph.paddingLeft = [TiUtils floatValue:@"left" properties:properties def:0];
+	[self graph].paddingLeft = [TiUtils floatValue:@"left" properties:properties def:0];
 	graph.paddingTop = [TiUtils floatValue:@"top" properties:properties def: 0];
 	graph.paddingRight = [TiUtils floatValue:@"right" properties:properties def:0];
 	graph.paddingBottom = [TiUtils floatValue:@"bottom" properties:properties def:0];
 }
 
--(void)configureTheme:(NSString*)themeName
+-(void)configureThemeWithName:(NSString*)themeName
 {
 	if (themeName != nil) {
 		CPTTheme *theme = [CPTTheme themeNamed:themeName];
@@ -103,7 +131,7 @@
 -(void)configurePlotArea:(NSDictionary*)properties
 {
     // Border
-	graph.plotAreaFrame.borderLineStyle = [AkylasChartsParsers parseLineColor:[properties objectForKey:@"borderColor"]
+	[self graph].plotAreaFrame.borderLineStyle = [AkylasChartsParsers parseLineColor:[properties objectForKey:@"borderColor"]
 																withWidth:[properties objectForKey:@"borderWidth"]
                                                              withGradient:[properties objectForKey:@"borderGradient"]
 															   andOpacity:[properties objectForKey:@"borderOpacity"]
@@ -144,8 +172,8 @@
 
 -(void)addPlot:(id)plot
 {
-	if (graph != nil && [plot respondsToSelector:@selector(renderInChart:)]) {
-		[plot renderInChart:graph];
+	if ([plot respondsToSelector:@selector(renderInChart:)]) {
+		[plot renderInChart:[self graph]];
 	}
 }
 
@@ -159,8 +187,12 @@
 -(void)configurationSet
 {
     [super configurationSet];
-    [self initPlot];
-    [self configurePlot];
+    if (graph != nil) {
+		for (id plot in ((AkylasChartsChartProxy*)self.proxy).plots) {
+			[plot configurePlot: [plot allProperties]];
+		}
+	}
+    [self configurePlot:[self.proxy allProperties]];
 }
 
 -(void)refreshPlotSpaces
@@ -183,60 +215,102 @@
     
     // Create graph object
     graph = [self newGraph];
+    [graph setTopDownLayerOrder:[NSArray arrayWithObjects:
+                                        [NSNumber numberWithInt:CPTGraphLayerTypeAxisTitles],
+                                        [NSNumber numberWithInt:CPTGraphLayerTypeAxisLabels],
+                                        [NSNumber numberWithInt:CPTGraphLayerTypeAxisLines],
+                                        [NSNumber numberWithInt:CPTGraphLayerTypePlots],
+                                        [NSNumber numberWithInt:CPTGraphLayerTypeMajorGridLines],
+                                        [NSNumber numberWithInt:CPTGraphLayerTypeMinorGridLines],
+                                        nil]];
     hostingView.hostedGraph = graph;
     hostingView.collapsesLayers = NO; // Setting to YES reduces GPU memory usage, but can slow drawing/scrolling
 }
 
--(void)configurePlot {
-    [self configureHost];
-    [self configureGraph];
-    [self configureChart];
-    [self configureLegend];
-    [self configureTheme];
+-(void)configurePlot:(NSDictionary*)props {
+    if (_needsConfigureHost) {
+        _needsConfigureHost = NO;
+        [self configureHost:props];
+    }
+    if (_needsConfigureGraph) {
+        _needsConfigureGraph = NO;
+        [self configureGraph:props];
+    }
+    if (_needsConfigureChart) {
+        _needsConfigureChart = NO;
+        [self configureChart:props];
+    }
+    if (_needsConfigureLegend) {
+        _needsConfigureLegend = NO;
+        [self configureLegend:props];
+    }
+    if (_needsConfigureTheme) {
+        _needsConfigureTheme = NO;
+        [self configureTheme:props];
+    }
 }
 
--(void)configureHost {
+-(void)configureHost:(NSDictionary*)props {
 }
 
--(void)configureGraph {
-    [graph setTopDownLayerOrder:[NSArray arrayWithObjects:
-                                 [NSNumber numberWithInt:CPTGraphLayerTypeAxisTitles],
-                                 [NSNumber numberWithInt:CPTGraphLayerTypeAxisLabels],
-                                 [NSNumber numberWithInt:CPTGraphLayerTypeAxisLines],
-                                 [NSNumber numberWithInt:CPTGraphLayerTypePlots],
-                                 [NSNumber numberWithInt:CPTGraphLayerTypeMajorGridLines],
-                                 [NSNumber numberWithInt:CPTGraphLayerTypeMinorGridLines],
-                                 nil]];
+-(void)configureGraph:(NSDictionary*)props
+{
+    
     
     
     // Background fill
-    graph.fill = [AkylasChartsParsers parseFillColor:[self.proxy valueForUndefinedKey:@"fillColor"]
-                                    withGradient:[self.proxy valueForUndefinedKey:@"fillGradient"]
-                                      andOpacity:[self.proxy valueForUndefinedKey:@"fillOpacity"]
+    if (_needsConfigureFill) {
+        _needsConfigureFill = NO;
+        graph.fill = [AkylasChartsParsers parseFillColor:[props objectForKey:@"fillColor"]
+                                    withGradient:[props objectForKey:@"fillGradient"]
+                                      andOpacity:[props objectForKey:@"fillOpacity"]
                                              def:nil];
+    }
     // Configure the graph title area
-	[self configureTitle:[self.proxy valueForUndefinedKey:@"title"]];
-	
+    if (_needsConfigureTitle) {
+        _needsConfigureTitle = NO;
+        [self configureTitle:[props objectForKey:@"title"]];
+    }
+	if (_needsConfigurePadding) {
+        _needsConfigurePadding = NO;
 	// Configure the padding on the outside of the graph
-	[self configurePadding:[self.proxy valueForUndefinedKey:@"padding"]];
+        [self configurePadding:[props objectForKey:@"padding"]];
+    }
     
+    if (_needsConfigurePlotArea) {
+        _needsConfigurePlotArea = NO;
     // Configure the frame and inside padding for the graph
-	[self configurePlotArea:[self.proxy valueForUndefinedKey:@"plotArea"]];
+        [self configurePlotArea:[props objectForKey:@"plotArea"]];
+    }
 }
 
--(void)configureChart {
+-(void)configureChart:(NSDictionary*)props {
 }
 
--(void)configureLegend {
+-(void)configureLegend:(NSDictionary*)props {
 }
 
--(void)configureTheme {
+-(void)configureTheme:(NSDictionary*)props {
     // Configure theme first -- it may set default options for the
 	// entire graph, which would override any other settings if we don't
 	// process it first
-	[self configureTheme:[self.proxy valueForUndefinedKey:@"theme"]];
+	[self configureThemeWithName:[props objectForKey:@"theme"]];
 }
 
+-(void)setTitle_:(id)value
+{
+	[self configureTitle:value];
+}
+
+-(void)setPadding_:(id)value
+{
+	[self configurePadding:value];
+}
+
+-(void)setPlotArea_:(id)value
+{
+	[self configurePlotArea:value];
+}
 
 -(void)refresh:(id)args
 {
@@ -248,7 +322,6 @@
 	// On rotation, re-render the view
 	[self refreshPlotSpaces];
 }
-
 
 -(CGFloat) getAvailableWidth {
     return hostingView.frame.size.width - graph.plotAreaFrame.paddingLeft - graph.plotAreaFrame.paddingRight - graph.paddingLeft - graph.paddingRight;

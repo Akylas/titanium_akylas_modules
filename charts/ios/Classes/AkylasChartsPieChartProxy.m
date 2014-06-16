@@ -11,13 +11,13 @@
 
 -(NSUInteger)numberOfRecordsForPlot:(CPTPlot *)plot
 {
-    return [plots count];
+    return [[self plots] count];
 }
 
 -(NSNumber *)numberForPlot:(CPTPlot *)plot field:(NSUInteger)fieldEnum recordIndex:(NSUInteger)idx
 {
     if (fieldEnum == CPTPieChartFieldSliceWidth) {
-        AkylasChartsPieSegmentProxy* segment = [plots objectAtIndex:idx];
+        AkylasChartsPieSegmentProxy* segment = [[self plots] objectAtIndex:idx];
         if (segment)
             return [NSDecimalNumber decimalNumberWithDecimal:[segment.value decimalValue]];
     }
@@ -26,7 +26,7 @@
 
 -(CPTFill *)sliceFillForPieChart:(CPTPieChart *)pieChart recordIndex:(NSUInteger)idx
 {
-    AkylasChartsPieSegmentProxy* segment = [plots objectAtIndex:idx];
+    AkylasChartsPieSegmentProxy* segment = [[self plots] objectAtIndex:idx];
     if (segment)
         return segment.fill;
     return nil;
@@ -35,7 +35,7 @@
 
 -(CPTLineStyle *)sliceBorderForPieChart:(CPTPieChart *)pieChart recordIndex:(NSUInteger)idx
 {
-    AkylasChartsPieSegmentProxy* segment = [plots objectAtIndex:idx];
+    AkylasChartsPieSegmentProxy* segment = [[self plots] objectAtIndex:idx];
     if (segment)
         return segment.border;
     return nil;
@@ -43,7 +43,7 @@
 
 -(CPTLayer *)dataLabelForPlot:(CPTPlot *)plot recordIndex:(NSUInteger)idx
 {
-    AkylasChartsPieSegmentProxy* segment = [plots objectAtIndex:idx];
+    AkylasChartsPieSegmentProxy* segment = [[self plots] objectAtIndex:idx];
     if (segment)
         return [[CPTTextLayer alloc] initWithText:segment.title style:segment.labelStyle];
     return nil;
@@ -52,7 +52,7 @@
 -(CGFloat)radialOffsetForPieChart:(CPTPieChart *)pieChart recordIndex:(NSUInteger)index
 {
 
-    AkylasChartsPieSegmentProxy* segment = [plots objectAtIndex:index];
+    AkylasChartsPieSegmentProxy* segment = [[self plots] objectAtIndex:index];
     if (segment)
         return segment.explodeOffset;
 	

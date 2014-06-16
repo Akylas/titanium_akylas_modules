@@ -5,10 +5,8 @@ import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
@@ -25,14 +23,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Align;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
-import com.androidplot.ui.SizeMetrics;
 import com.androidplot.xy.BarRenderer;
 import com.androidplot.xy.BarRenderer.BarRenderStyle;
 import com.androidplot.xy.BarRenderer.BarWidthStyle;
@@ -69,19 +65,31 @@ public class LineChartProxy extends ChartProxy {
 	private class LineChartView extends ChartView implements OnTouchListener {
 		// private PointF minXY;
 		// private PointF maxXY;
+	    private boolean needsUpdateGradients = true;
 
 		protected Class viewClass() {
 			return XYPlot.class;
 		}
+		
+		public void updateGradient() {
+		    updateGradient(false);
+		}
+		public void updateGradient(final boolean force) {
+		    if (force || needsUpdateGradients == true) {
+		        needsUpdateGradients = false;
+		        Rect rect = new Rect();
+	            ((XYPlot) plotView).getGraphWidget().getWidgetDimensions().paddedRect.round(rect);
+	            updateGradients(layout.getContext(), rect);
+	            for (int i = 0; i < mPlots.size(); i++) {
+	                XYSerieProxy lProxy = mPlots.get(i);
+	                lProxy.updateGradients(layout.getContext(), rect);
+	            }
+		    }
+		}
 
 		protected void onLayoutChanged() {
-			Rect rect = new Rect();
-			((XYPlot) plotView).getGraphWidget().getWidgetDimensions().paddedRect.round(rect);
-			updateGradients(layout.getContext(), rect);
-			for (int i = 0; i < mPlots.size(); i++) {
-				XYSerieProxy lProxy = mPlots.get(i);
-				lProxy.updateGradients(layout.getContext(), rect);
-			}
+		    needsUpdateGradients = true;
+		    updateGradient();
 		}
 
 		protected void beforeLayoutNativeView() {
@@ -332,7 +340,12 @@ public class LineChartProxy extends ChartProxy {
 							legend.getBoolean("visible"));
 			}
 			if (d.containsKey("xAxis")) {
+			    HashMap currentOptions = (HashMap) getProperty("xAxis");
 				KrollDict axisOptions = d.getKrollDict("xAxis");
+				if (currentOptions != null && d.get("xAxis") != currentOptions) {
+				    axisOptions = KrollDict.merge(currentOptions, axisOptions);
+				}
+				
 				if (axisOptions.containsKey("origin")) {
 					xyPlotView.setUserDomainOrigin((Number) axisOptions
 							.get("origin"));
@@ -446,8 +459,8 @@ public class LineChartProxy extends ChartProxy {
 										}
 									});
 						} else {
-							xyPlotView.getGraphWidget().setDomainValueFormat(
-									new DecimalFormat("0.0"));
+//							xyPlotView.getGraphWidget().setDomainValueFormat(
+//									new DecimalFormat("0.0"));
 							if (labelOptions.containsKey("locations")) {
 								Object[] locations = (Object[]) labelOptions
 										.get("locations");
@@ -466,7 +479,7 @@ public class LineChartProxy extends ChartProxy {
 									}
 								}
 							}
-							Utils.styleValueFormat(labelOptions, plotView,
+							Utils.styleValueFormat(labelOptions, xyPlotView.getGraphWidget(),
 									"setDomainValueFormat");
 						}
 						if (labelOptions.containsKey("offset")) {
@@ -508,7 +521,11 @@ public class LineChartProxy extends ChartProxy {
 				xyPlotView.setTicksPerDomainLabel(ticksPerDomain);
 			}
 			if (d.containsKey("yAxis")) {
-				KrollDict axisOptions = d.getKrollDict("yAxis");
+			    HashMap currentOptions = (HashMap) getProperty("yAxis");
+                KrollDict axisOptions = d.getKrollDict("yAxis");
+                if (currentOptions != null && d.get("yAxis") != currentOptions) {
+                    axisOptions = KrollDict.merge(currentOptions, axisOptions);
+                }
 				if (axisOptions.containsKey("origin")) {
 					xyPlotView.setUserRangeOrigin((Number) axisOptions
 							.get("origin"));
@@ -616,8 +633,8 @@ public class LineChartProxy extends ChartProxy {
 										}
 									});
 						} else {
-							xyPlotView.getGraphWidget().setRangeValueFormat(
-									new DecimalFormat("0.0"));
+//							xyPlotView.getGraphWidget().setRangeValueFormat(
+//									new DecimalFormat("0.0"));
 							if (labelOptions.containsKey("locations")) {
 								Object[] locations = (Object[]) labelOptions
 										.get("locations");
@@ -636,7 +653,7 @@ public class LineChartProxy extends ChartProxy {
 									}
 								}
 							}
-							Utils.styleValueFormat(labelOptions, plotView,
+							Utils.styleValueFormat(labelOptions, xyPlotView.getGraphWidget(),
 									"setRangeValueFormat");
 						}
 
@@ -857,6 +874,16 @@ public class LineChartProxy extends ChartProxy {
 		mPlots = new ArrayList<XYSerieProxy>();
 		mMarkers = new ArrayList<MarkerProxy>();
 	}
+	
+	protected void clearPlots()
+    {
+        if (view != null) {
+            for (int i = 0; i < mPlots.size(); i++) {
+                ((LineChartView) view).removeSerie(mPlots.get(i));
+            }
+        }
+        mPlots.clear();
+    }
 
 	public void addSerie(XYSerieProxy proxy) {
 		if (!mPlots.contains(proxy)) {
@@ -901,18 +928,6 @@ public class LineChartProxy extends ChartProxy {
 		zoomEnabled = options.optBoolean("zoomEnabled", zoomEnabled);
 		clampInteraction = options.optBoolean("clampInteraction",
 				clampInteraction);
-
-	}
-
-	@Kroll.method
-	public void add(Object linePlot) {
-		Log.d(TAG, "add", Log.DEBUG_MODE);
-		if (!(linePlot instanceof XYSerieProxy)) {
-			Log.e(TAG, "add: must be a LinePlot");
-			return;
-		}
-		XYSerieProxy proxy = (XYSerieProxy) linePlot;
-		addSerie(proxy);
 	}
 
 	@Kroll.method
@@ -970,16 +985,6 @@ public class LineChartProxy extends ChartProxy {
 		}
 	}
 
-	@Kroll.method
-	public void remove(Object linePlot) {
-		Log.d(TAG, "remove", Log.DEBUG_MODE);
-		if (!(linePlot instanceof XYSerieProxy)) {
-			Log.e(TAG, "remove: must be a LinePlot");
-			return;
-		}
-		XYSerieProxy proxy = (XYSerieProxy) linePlot;
-		removeSerie(proxy);
-	}
 	
 	@Kroll.method
     public MarkerProxy addMarker(Object object) {
@@ -1030,4 +1035,32 @@ public class LineChartProxy extends ChartProxy {
 			plotView.redraw();
 		}
 	}
+	
+	@Override
+	protected void handleChildAdded(KrollProxy child, int index) {
+	    if (!(child instanceof XYSerieProxy)) {
+            super.handleChildAdded(child, index);
+            return;
+        }
+        XYSerieProxy proxy = (XYSerieProxy) child;
+        addSerie(proxy);
+    }
+    
+    @Override
+    protected void handleChildRemoved(KrollProxy child) {
+        if (!(child instanceof XYSerieProxy)) {
+            super.handleChildRemoved(child);
+            return;
+        }
+        XYSerieProxy proxy = (XYSerieProxy) child;
+        removeSerie(proxy);
+    }
+    
+    public final Rect getGraphRect() {
+        Rect rect = new Rect();
+        if (xyPlotView != null) {
+            xyPlotView.getGraphWidget().getWidgetDimensions().paddedRect.round(rect);
+        }
+        return rect;
+    }
 }

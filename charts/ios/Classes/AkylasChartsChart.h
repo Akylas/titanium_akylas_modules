@@ -16,16 +16,25 @@
 	CPTGraphHostingView	*hostingView;
 	CPTGraph			*graph;
 	CPTLayerAnnotation	*symbolTextAnnotation;
+    BOOL _needsConfigureGraph;
+    BOOL _needsConfigureLegend;
+    BOOL _needsConfigureChart;
+    BOOL _needsConfigureHost;
+    BOOL _needsConfigureTheme;
+    BOOL _needsConfigureTitle;
+    BOOL _needsConfigureFill;
+    BOOL _needsConfigurePadding;
+    BOOL _needsConfigurePlotArea;
 }
 @property(nonatomic,readonly) CPTGraphHostingView* hostingView;
 
--(void)configurePlot;
+-(void)configurePlot:(NSDictionary*)props;
 -(void)initPlot;
--(void)configureHost;
--(void)configureGraph;
--(void)configureChart;
--(void)configureLegend;
--(void)configureTheme;
+-(void)configureHos:(NSDictionary*)propst;
+-(void)configureGraph:(NSDictionary*)props;
+-(void)configureChart:(NSDictionary*)props;
+-(void)configureLegend:(NSDictionary*)props;
+-(void)configureTheme:(NSDictionary*)props;
 
 -(void)removeAllPlots;
 -(void)addPlot:(id)plot;

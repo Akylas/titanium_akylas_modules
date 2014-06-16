@@ -6,7 +6,7 @@
 
 #import "AkylasChartsPlotProxy.h"
 
-@interface AkylasChartsPieSegmentProxy : TiProxy {
+@interface AkylasChartsPieSegmentProxy : TiParentingProxy {
 	
 @private
 	CPTFill             *fill;

@@ -14,6 +14,7 @@ import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 import org.appcelerator.titanium.proxy.AnimatableProxy;
 import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.view.KrollProxyReusableListener;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -32,7 +33,7 @@ import com.nineoldandroids.animation.ObjectAnimator;
 @Kroll.proxy(creatableInModule = AkylasChartsModule.class, propertyAccessors={
 	TiC.PROPERTY_NAME
 })
-public class PieSegmentProxy extends AnimatableProxy implements KrollProxyListener {
+public class PieSegmentProxy extends AnimatableProxy implements KrollProxyReusableListener {
 	// Standard Debugging variables
 	@SuppressWarnings("unused")
 	private static final String TAG = "PieSegmentProxy";
@@ -42,6 +43,7 @@ public class PieSegmentProxy extends AnimatableProxy implements KrollProxyListen
 	private Number mValue;
 	private Context context;
 	private PieChartProxy pieChartProxy;
+    private KrollDict additionalEventData;
 
 	public PieSegmentProxy() {
 		super();
@@ -174,17 +176,40 @@ public class PieSegmentProxy extends AnimatableProxy implements KrollProxyListen
 		segment = new Segment(mTitle, mValue);
 	}
 
-	@Override
-	public void propertiesChanged(List<KrollPropertyChange> changes,
-			KrollProxy proxy) {
-	}
+    @Override
+    public void setAdditionalEventData(KrollDict dict) {
+        additionalEventData = dict;
+    }
+    
+    @Override
+    public KrollDict getAdditionalEventData() {
+        return additionalEventData;
+    }
 
-	@Override
-	public void listenerAdded(String type, int count, KrollProxy proxy) {
-	}
+    @Override
+    public void setReusing(boolean reusing) {
+//        if (reusing == false) {
+//            update();
+//        }
+        
+    }
 
-	@Override
-	public void listenerRemoved(String type, int count, KrollProxy proxy) {		
-	}
+    @Override
+    public void listenerAdded(String arg0, int arg1, KrollProxy arg2) {
+        // TODO Auto-generated method stub
+        
+    }
 
+    @Override
+    public void listenerRemoved(String arg0, int arg1, KrollProxy arg2) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void propertiesChanged(List<KrollPropertyChange> arg0,
+            KrollProxy arg1) {
+        // TODO Auto-generated method stub
+        
+    }
 }

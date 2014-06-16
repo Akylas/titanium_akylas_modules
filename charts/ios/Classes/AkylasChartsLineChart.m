@@ -11,6 +11,9 @@
 
 
 @implementation AkylasChartsLineChart
+{
+    BOOL _needsParseAxis;
+}
 
 
 #pragma mark CPTPlotSpaceDelegate methods
@@ -20,21 +23,25 @@
     minYValue = 0;
     maxXValue = 0;
     maxYValue = 0;
+    _needsParseAxis = YES;
     [super initPlot];
 }
 
 -(void)configureAxesX:(id)xProperties andY:(id)yProperties
 {
+    NSArray* current = graph.axisSet.axes;
+    
 	NSMutableArray *axes = [[[NSMutableArray alloc] init] autorelease];
-	CPTXYAxis* axis;
+	CPTXYAxis* axis = [current count] > 0 ? [current objectAtIndex:0] : nil;
 	if (xProperties) {
-		axis = [AkylasChartsParsers parseAxis:CPTCoordinateX properties:xProperties usingPlotSpace:graph.defaultPlotSpace def:nil];
+		axis = [AkylasChartsParsers parseAxis:CPTCoordinateX properties:xProperties usingPlotSpace:graph.defaultPlotSpace def:axis];
 		if (axis) {
 			[axes addObject:axis];
 		}
 	}
+    axis = [current count] > 1 ? [current objectAtIndex:1] : nil;
 	if (yProperties) {
-		axis = [AkylasChartsParsers parseAxis:CPTCoordinateY properties:yProperties usingPlotSpace:graph.defaultPlotSpace def:nil];
+		axis = [AkylasChartsParsers parseAxis:CPTCoordinateY properties:yProperties usingPlotSpace:graph.defaultPlotSpace def:axis];
 		if (axis) {
 			[axes addObject:axis];
 		}
@@ -114,21 +121,34 @@
     return [[CPTXYGraph alloc] initWithFrame:CGRectZero];
 }
 
--(void)configureGraph
+-(void)configureGraph:(NSDictionary*)props
 {
-    [super configureGraph];
+    [super configureGraph:props];
     
-	[self configureAxesX:[self.proxy valueForUndefinedKey:@"xAxis"] andY:[self.proxy valueForUndefinedKey:@"yAxis"]];
+    if (_needsParseAxis) {
+        _needsParseAxis = NO;
+        [self configureAxesX:[props objectForKey:@"xAxis"] andY:[props objectForKey:@"yAxis"]];
+    }
 }
 
--(void)configurePlot
+-(void)configurePlot:(NSDictionary*)props
 {
-    [super configurePlot];
+    [super configurePlot:props];
     
 	[self configureUserInteraction];
 	
 }
 
+-(void)setXAxis_:(id)value
+{
+    _needsParseAxis = _needsConfigureGraph = YES;
+}
+
+
+-(void)setYAxis_:(id)value
+{
+    _needsParseAxis = _needsConfigureGraph = YES;
+}
 
 -(void)refreshPlotSpaces
 {

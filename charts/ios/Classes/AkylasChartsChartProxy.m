@@ -31,7 +31,6 @@
 -(void)dealloc
 {
 	// release any resources that have been retained by the module
-	RELEASE_TO_NIL(plots);
 	RELEASE_TO_NIL(markers);
 	
 	[super dealloc];
@@ -49,13 +48,16 @@
     [(AkylasChartsChart*)[self view] refreshPlotSpaces];
 }
 
--(NSMutableArray*)plots
+-(NSArray*)plots
 {
-	if (plots == nil) {
-		plots = [[NSMutableArray alloc] init];
-	}
-	
-	return plots;
+    if (childrenCount == 0) return nil;
+    pthread_rwlock_rdlock(&childrenLock);
+    NSArray* copy = [[children filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+        return [object isKindOfClass:[AkylasChartsPlotProxy class]] || [object isKindOfClass:[AkylasChartsPieSegmentProxy class]];
+    }]] retain];
+    pthread_rwlock_unlock(&childrenLock);
+    
+	return [copy autorelease];
 }
 
 -(NSMutableArray*)markers
@@ -67,70 +69,31 @@
 	return markers;
 }
 
--(void)setPlots:(id)args
-{
-	// If a view is currently attached to this proxy then tell it to remove all plots
-	// currently shown in the graph
-	if ([self view]) {
-		[(AkylasChartsChart*)[self view] removeAllPlots];
-	}
-	
-	// Clear the current list of plots
-    [plots enumerateObjectsUsingBlock:^(TiProxy * plot, NSUInteger idx, BOOL *stop) {
-        [self forgetProxy:plot];
-    }];
-	RELEASE_TO_NIL(plots);
-	// Now set the current list to this new list
-	[self add:args];
-}
-
--(void)addProxy:(id)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
+-(void)childAdded:(TiProxy*)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
 {
     // Make sure that we are getting a plot proxy object
     if (![child isKindOfClass:[AkylasChartsPlotProxy class]] && ![child isKindOfClass:[AkylasChartsPieSegmentProxy class]]) {
-        [super addProxy:child atIndex:position shouldRelayout:shouldRelayout];
         return;
     }
-
-    // Only add if not already it the list
-    //		AkylasChartsPlotProxy *plot = (AkylasChartsPlotProxy*)arg;
-    if ([[self plots] indexOfObject:child] == NSNotFound) {
-        [[self plots] addObject:child];
-        
-        if ([child isKindOfClass:[AkylasChartsPlotProxy class]])
-            ((AkylasChartsPlotProxy*)child).chartProxy = self;
-        else if ([child isKindOfClass:[AkylasChartsPieSegmentProxy class]])
-            ((AkylasChartsPieSegmentProxy*)child).chartProxy = self;
+    
+    if ([child isKindOfClass:[AkylasChartsPlotProxy class]])
+        ((AkylasChartsPlotProxy*)child).chartProxy = self;
+    else if ([child isKindOfClass:[AkylasChartsPieSegmentProxy class]])
+        ((AkylasChartsPieSegmentProxy*)child).chartProxy = self;
+    
+    // If a view is currently attached to this proxy then tell it to add this new plot
+    // to the graph
+    if ([self view]) {
+        [(AkylasChartsChart*)[self view] addPlot:child];
+    }
+}
+-(void)childRemoved:(TiProxy*)child
+{
+    // Make sure that we are getting a plot proxy object
+    if (![child isKindOfClass:[AkylasChartsPlotProxy class]] && ![child isKindOfClass:[AkylasChartsPieSegmentProxy class]]) {
+        return;
+	}
 		
-        // If a view is currently attached to this proxy then tell it to add this new plot
-        // to the graph
-        if ([self view]) {
-            [(AkylasChartsChart*)[self view] addPlot:child];
-        }
-        
-        // Remember the proxy or else it will get GC'd if created by a logic variable
-        [self rememberProxy:child];
-    }
-    else {
-        NSLog(@"[DEBUG] Attempted to add plot that is already in the plot array");
-    }
-}
--(void)removeProxy:(id)child
-{
-    // Make sure that we are getting a plot proxy object
-    if (![child isKindOfClass:[AkylasChartsPlotProxy class]] && ![child isKindOfClass:[AkylasChartsPieSegmentProxy class]]) {
-		[super removeProxy:child];
-        return;
-	}
-	
-    //	AkylasChartsPlotProxy *plot = (AkylasChartsPlotProxy*)arg;
-    
-    // Remove the plot from our list of plot proxy objects
-	[plots removeObject:child];
-    
-    // Forget the previously remembered proxy
-    [self forgetProxy:child];
-	
 	// If a view is currently attached to this proxy then tell it to remove the plot
 	// from the graph
 	if ([self view]) {
@@ -142,7 +105,7 @@
 -(void)viewDidInitialize
 {
 	[super viewDidInitialize];
-    for (id plot in plots) {
+    for (id plot in [self plots]) {
         [(AkylasChartsChart*)[self view] addPlot:plot];
     }
     for (AkylasChartsMarkerProxy* marker in markers) {

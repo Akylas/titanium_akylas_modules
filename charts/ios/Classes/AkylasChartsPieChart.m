@@ -72,9 +72,9 @@
                                                            def:nil];
 }
 
--(void)configureGraph
+-(void)configureGraph:(NSDictionary*)props
 {
-    [super configureGraph];
+    [super configureGraph:props];
     graph.axisSet = nil;
 }
 

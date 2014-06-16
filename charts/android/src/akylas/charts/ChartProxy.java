@@ -2,6 +2,7 @@ package akylas.charts;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiC;
@@ -30,6 +31,7 @@ import com.androidplot.xy.XYPlot;
 // This proxy can be created by calling Android.createExample({message: "hello world"})
 @SuppressLint("NewApi")
 @SuppressWarnings({"unchecked", "rawtypes"})
+
 @Kroll.proxy
 public class ChartProxy extends TiViewProxy {
 	// Standard Debugging variables
@@ -261,4 +263,9 @@ public class ChartProxy extends TiViewProxy {
 			plotView.redraw();
 		}
 	}
+	
+	public Plot getPlot() {
+	    return plotView;
+	}
+	
 }

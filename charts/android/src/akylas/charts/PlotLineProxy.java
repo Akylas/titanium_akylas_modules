@@ -37,8 +37,7 @@ public class PlotLineProxy extends XYSerieProxy {
                 path.computeBounds(rect, true);
                 Rect bounds = new Rect();
                 rect.round(bounds);
-                PlotLineProxy.this.internalUpdateFillGradient(context, bounds,
-                        getProperties());
+                PlotLineProxy.this.internalUpdateFillGradient(context, bounds);
             }
             super.drawFillPath(canvas, path);
         }
@@ -50,8 +49,7 @@ public class PlotLineProxy extends XYSerieProxy {
                 path.computeBounds(rect, true);
                 Rect bounds = new Rect();
                 rect.round(bounds);
-                PlotLineProxy.this.internalUpdateLineGradient(context, bounds,
-                        getProperties());
+                PlotLineProxy.this.internalUpdateLineGradient(context, bounds);
             }
             super.drawLinePath(canvas, path);
         }

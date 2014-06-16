@@ -4,13 +4,13 @@
  * Please see the LICENSE included with this distribution for details.
  */
 
-#import "TiProxy.h"
+#import "TiParentingProxy.h"
 
 #import "CorePlot-CocoaTouch.h"
 
 @class AkylasChartsChartProxy;
 
-@interface AkylasChartsPlotProxy : TiProxy <TiProxyDelegate, CPTPlotDataSource> {
+@interface AkylasChartsPlotProxy : TiParentingProxy <TiProxyDelegate, CPTPlotDataSource> {
 	
 @private
 	CPTPlot				*plot;
@@ -36,7 +36,7 @@
 @property(nonatomic, readonly) float maxYValue;
 
 -(CPTPlot*)allocPlot;
--(void)configurePlot;
+-(void)configurePlot:(NSDictionary*)props;
 -(void)renderInChart:(CPTGraph*)graph;
 -(void)removeFromChart:(CPTGraph*)graph;
 -(NSNumber*)numberForPlot:(NSUInteger)index;

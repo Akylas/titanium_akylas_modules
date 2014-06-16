@@ -16,24 +16,37 @@
 // line and bar plots so they exist in different classes for now.
 
 @implementation AkylasChartsScatterPlotProxy
+{
+    BOOL _needsParseLabels;
+}
+
+-(void)_initWithProperties:(NSDictionary*)properties
+{
+    _needsParseLabels = YES;
+	[super _initWithProperties:properties];
+}
 
 -(CPTPlot*)allocPlot
 {
 	return [[AkylasChartsScatterPlot alloc] init];
 }
 
--(void)configurePlot
+-(void)configurePlot:(NSDictionary*)props
 {
-    [super configurePlot];
+    [super configurePlot:props];
     
 	CPTPlot* plot = (CPTPlot*)[self plot];
-  
+    if (plot ==nil) return;
+ 
     // identifier is copied, so no need to retain
-	plot.identifier = [TiUtils stringValue:[self valueForUndefinedKey:@"name"]];
+	plot.identifier = [TiUtils stringValue:[props objectForKey:@"name"]];
     plot.shadow = [AkylasChartsParsers parseShadow:@"shadow" inProperties:self def:nil];
 
 	// Parse the labels
-	[AkylasChartsParsers parseLabelStyle:[self valueForUndefinedKey:@"labels"] forPlot:plot def:nil];
+    if (_needsParseLabels) {
+        _needsParseLabels = NO;
+        [AkylasChartsParsers parseLabelStyle:[props objectForKey:@"labels"] forPlot:plot def:nil];
+    }
 }
 
 -(NSDictionary*)plotSpace

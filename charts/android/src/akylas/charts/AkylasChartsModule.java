@@ -1,9 +1,14 @@
 package akylas.charts;
 
+import java.util.HashMap;
+
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
+
+import com.androidplot.util.PixelUtils;
 
 import android.graphics.Matrix;
 
@@ -59,6 +64,16 @@ public class AkylasChartsModule extends KrollModule
 	public static void onAppCreate(TiApplication app)
 	{
 		Log.d(TAG, "inside onAppCreate");
+		PixelUtils.init(app.getBaseContext());
+		HashMap<String, String> map = new HashMap();
+        map.put("AkylasCharts.LineChart", "akylas.charts.LineChartProxy");
+        map.put("AkylasCharts.Marker", "akylas.charts.MarkerProxy");
+        map.put("AkylasCharts.PieChart", "akylas.charts.PieChartProxy");
+        map.put("AkylasCharts.PieSegment", "akylas.charts.PieSegmentProxy");
+        map.put("AkylasCharts.PlotBar", "akylas.charts.PlotBarProxy");
+        map.put("AkylasCharts.PlotLine", "akylas.charts.PlotLineProxy");
+        map.put("AkylasCharts.PlotStep", "akylas.charts.PlotSteptProxy");
+		APIMap.addMapping(map);
 		// put module init code that needs to run when the application is created
 	}
 }
