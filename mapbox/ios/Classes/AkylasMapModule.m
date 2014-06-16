@@ -159,8 +159,8 @@ MAKE_IOS7_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
     CLLocationCoordinate2D loc = CLLocationCoordinate2DMake([[array objectAtIndex:0] doubleValue],  [[array objectAtIndex:1] doubleValue]);
 
     double altitude = (count > 2)?[[array objectAtIndex:2] doubleValue]:0;
-    double speed = (count > 3)?[[array objectAtIndex:3] doubleValue]:0;
-    NSString* timestamp = (count > 4)?[[array objectAtIndex:4] stringValue]:nil;
+    NSString* timestamp = (count > 3)?[[array objectAtIndex:3] stringValue]:nil;
+    double speed = (count > 4)?[[array objectAtIndex:4] doubleValue]:0;
     double course = (count > 5)?[[array objectAtIndex:5] doubleValue]:0;
     
     return [[[CLLocation alloc] initWithCoordinate:loc altitude:altitude horizontalAccuracy:0 verticalAccuracy:0 course:course speed:speed timestamp:[TiUtils dateValue:timestamp]] autorelease];
