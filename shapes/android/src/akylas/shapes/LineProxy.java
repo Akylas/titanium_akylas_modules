@@ -97,10 +97,10 @@ public class LineProxy extends ArcProxy{
 
 	@Override
 	public void processProperties(KrollDict properties) {
-		super.processProperties(properties);
 		if (properties.containsKey(AkylasShapesModule.PROPERTY_POINTS)) {
 			setPointsFromObject((Object[]) properties.get(AkylasShapesModule.PROPERTY_POINTS));
 		}
+        super.processProperties(properties);
 	}
 	
 	@Override

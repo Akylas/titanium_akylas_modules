@@ -9,6 +9,14 @@
 #import "TiHost.h"
 #import "TiUtils.h"
 #import "ShapeProxy.h"
+#import "AkylasShapesArcProxy.h"
+#import "AkylasShapesCircleProxy.h"
+#import "AkylasShapesEllipseProxy.h"
+#import "AkylasShapesRectProxy.h"
+#import "AkylasShapesRoundedRectProxy.h"
+#import "AkylasShapesViewProxy.h"
+#import "AkylasShapesLineProxy.h"
+#import "AkylasShapesPieSliceProxy.h"
 
 @implementation AkylasShapesModule
 
@@ -30,6 +38,14 @@
 
 -(void)startup
 {
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.View", [AkylasShapesViewProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.RoundedRect", [AkylasShapesRoundedRectProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.Rect", [AkylasShapesRectProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.PieSlice", [AkylasShapesPieSliceProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.Line", [AkylasShapesLineProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.Ellipse", [AkylasShapesEllipseProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.Circle", [AkylasShapesCircleProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.Arc", [AkylasShapesArcProxy class]);
 	// this method is called when the module is first loaded
 	// you *must* call the superclass
 	[super startup];

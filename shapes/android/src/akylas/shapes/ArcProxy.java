@@ -30,13 +30,13 @@ public class ArcProxy extends ShapeProxy{
 
 	@Override
 	public void processProperties(KrollDict properties) {
-		super.processProperties(properties);
 		if (properties.containsKey(AkylasShapesModule.PROPERTY_SWEEPANGLE)) {
 			((Arc) pathable).setSweepAngle(properties.getFloat(AkylasShapesModule.PROPERTY_SWEEPANGLE));
 		}
 		if (properties.containsKey(AkylasShapesModule.PROPERTY_STARTANGLE)) {
 			((Arc) pathable).setStartAngle(properties.getFloat(AkylasShapesModule.PROPERTY_STARTANGLE));
 		}
+        super.processProperties(properties);
 	}
 	
 	@Override

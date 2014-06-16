@@ -24,10 +24,10 @@ public class RoundedRectProxy extends ShapeProxy{
 
 	@Override
 	public void processProperties(KrollDict properties) {
-		super.processProperties(properties);
 		if (properties.containsKey(AkylasShapesModule.PROPERTY_CORNERRADIUS)) {
 			((PRoundRect) pathable).setCornerRadius(properties.get(AkylasShapesModule.PROPERTY_CORNERRADIUS));
 		}
+        super.processProperties(properties);
 	}
 	
 	@Override

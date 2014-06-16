@@ -40,10 +40,10 @@ public class PieSliceProxy extends ArcProxy{
 
 	@Override
 	public void processProperties(KrollDict properties) {
-		super.processProperties(properties);
 		if (properties.containsKey(AkylasShapesModule.PROPERTY_INNERRADIUS)) {
 			this.innerRadius = properties.get(AkylasShapesModule.PROPERTY_INNERRADIUS);
 		}
+        super.processProperties(properties);
 	}
 	
 	@Override

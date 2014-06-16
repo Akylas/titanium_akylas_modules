@@ -13,30 +13,34 @@
 - (id)init {
     if (self = [super init])
     {
-        mShapes = [[NSMutableArray alloc] init];
     }
     return self;
 }
 
 - (void) dealloc
 {
-    for (ShapeProxy* proxy in mShapes) {
+    for (ShapeProxy* proxy in [self shapes]) {
         [proxy setShapeViewProxy:nil];
-        [self forgetProxy:proxy];
     }
-	RELEASE_TO_NIL(mShapes);
 	[super dealloc];
 }
 
 -(NSArray*)shapes
 {
-    return [NSArray arrayWithArray:mShapes];
+    if (childrenCount == 0) return nil;
+    pthread_rwlock_rdlock(&childrenLock);
+    NSArray* copy = [[children filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+        return [object isKindOfClass:[ShapeProxy class]];
+    }]] retain];
+    pthread_rwlock_unlock(&childrenLock);
+
+	return [copy autorelease];
 }
 
 -(void)detachView
 {
     ENSURE_UI_THREAD_0_ARGS
-    for (ShapeProxy* shape in mShapes) {
+    for (ShapeProxy* shape in [self shapes]) {
         [shape removeFromSuperLayer];
     }
 	[super detachView];
@@ -56,9 +60,8 @@ static NSArray *supportedEvents;
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
     if (CGSizeEqualToSize(bounds.size,CGSizeZero)) return;
-    for (int i = 0; i < [mShapes count]; i++) {
-        ShapeProxy* shapeProxy = [mShapes objectAtIndex:i];
-        [shapeProxy boundsChanged:bounds];
+    for (ShapeProxy* shape in [self shapes]) {
+        [shape boundsChanged:bounds];
     }
 }
 
@@ -68,8 +71,8 @@ static NSArray *supportedEvents;
     ENSURE_UI_THREAD_1_ARG(arg)
     [CATransaction begin];
     [CATransaction setDisableActions: YES];
-    for (ShapeProxy* shapeProxy in mShapes) {
-        [shapeProxy boundsChanged:[self view].bounds];
+    for (ShapeProxy* shape in [self shapes]) {
+        [shape boundsChanged:[self view].bounds];
     }
     [[self view] setNeedsDisplay];
     [CATransaction commit];
@@ -81,53 +84,30 @@ static NSArray *supportedEvents;
     [[self view] setNeedsDisplay];
 }
 
--(void)setShapes:(id)args
-{
-	// Clear the current list of plots
-    [mShapes enumerateObjectsUsingBlock:^(ShapeProxy * child, NSUInteger idx, BOOL *stop) {
-        [self forgetProxy:child];
-        [mShapes removeObject:child];
-        [[child layer] removeFromSuperlayer];
-        [child setShapeViewProxy:nil];
-    }];
-	RELEASE_TO_NIL(mShapes);
-	// Now set the current list to this new list
-	[self add:args];
-}
-
--(void)addProxy:(id)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
+-(void)childAdded:(TiProxy*)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
 {
     if (![child isKindOfClass:[ShapeProxy class]]) {
-		[super addProxy:child atIndex:position shouldRelayout:shouldRelayout];
         return;
 	}
-    
-    if ([mShapes indexOfObject:child] == NSNotFound) {
-        [mShapes addObject:child];
-        [self rememberProxy:child];
-        [child setShapeViewProxy:self];
-        if (shouldRelayout && [self viewAttached]) {
-            [[self view].layer addSublayer:[child layer]];
-            [child boundsChanged:self.view.bounds];
-            [[self view] setNeedsDisplay];
-        }
+    ShapeProxy* shape = (ShapeProxy*)child;
+    [shape setShapeViewProxy:self];
+    if (shouldRelayout && [self viewAttached]) {
+        [[self view].layer addSublayer:[shape layer]];
+        [shape boundsChanged:self.view.bounds];
+        [[self view] setNeedsDisplay];
     }
 }
--(void)removeProxy:(id)child
+-(void)childRemoved:(TiProxy*)child
 {
     if (![child isKindOfClass:[ShapeProxy class]]) {
-		[super removeProxy:child];
         return;
 	}
 	
-    if ([mShapes indexOfObject:child] != NSNotFound) {
-        [self forgetProxy:child];
-        [mShapes removeObject:child];
-        [[child layer] removeFromSuperlayer];
-        [child setShapeViewProxy:nil];
-        if ([self viewAttached]) {
-            [[self view] setNeedsDisplay];
-        }
+    ShapeProxy* shape = (ShapeProxy*)child;
+    [[shape layer] removeFromSuperlayer];
+    [shape setShapeViewProxy:nil];
+    if ([self viewAttached]) {
+        [[self view] setNeedsDisplay];
     }
 }
 
@@ -139,16 +119,15 @@ static NSArray *supportedEvents;
 -(BOOL)_hasListeners:(NSString *)type
 {
     BOOL handledByChildren = NO;
-    for (int i = 0; i < [mShapes count]; i++) {
-        ShapeProxy* shapeProxy = [mShapes objectAtIndex:i];
-        handledByChildren |= [shapeProxy _hasListeners:type];
+    for (ShapeProxy* shape in [self shapes]) {
+        handledByChildren |= [shape _hasListeners:type];
     }
 	return [super _hasListeners:type] || handledByChildren;
 }
 
 -(void)fireEvent:(NSString*)type withObject:(id)obj propagate:(BOOL)propagate reportSuccess:(BOOL)report errorCode:(int)code message:(NSString*)message checkForListener:(BOOL)checkForListener
 {
-	if ([[AkylasShapesViewProxy supportedEvents] indexOfObject:type] != NSNotFound && [mShapes count] > 0) {
+	if ([[AkylasShapesViewProxy supportedEvents] indexOfObject:type] != NSNotFound && childrenCount > 0) {
         CGPoint point  = CGPointMake(-1, -1);
         if ([obj isKindOfClass:[NSDictionary class]]) {
             point.x = [[((NSDictionary*)obj) objectForKey:@"x"] intValue];
@@ -156,9 +135,8 @@ static NSArray *supportedEvents;
         }
         BOOL handledByChildren = NO;
         
-        for (int i = 0; i < [mShapes count]; i++) {
-            ShapeProxy* shapeProxy = [mShapes objectAtIndex:i];
-            handledByChildren |= [shapeProxy handleTouchEvent:type withObject:obj propagate:propagate point:point];
+        for (ShapeProxy* shape in [self shapes]) {
+            handledByChildren |= [shape handleTouchEvent:type withObject:obj propagate:propagate point:point];
         }
         if (handledByChildren && yn) {
             return YES;

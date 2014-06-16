@@ -26,7 +26,6 @@ import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUIView;
 
-
 import akylas.shapes.ShapeProxy.PRoundRect;
 import android.app.Activity;
 import android.app.NativeActivity;
@@ -46,8 +45,6 @@ public class ShapeViewProxy extends TiViewProxy {
 	// Standard Debugging variables
 	private static final String TAG = "ShapeViewProxy";
 
-	private final ArrayList<ShapeProxy> mShapes;
-	protected HashMap<String, ShapeProxy> mShapeBindings;
 	private static final List<String> supportedEvents = Arrays.asList(
 			TiC.EVENT_CLICK, TiC.EVENT_DOUBLE_CLICK, TiC.EVENT_DOUBLE_TAP,
 			TiC.EVENT_SINGLE_TAP, TiC.EVENT_LONGPRESS, TiC.EVENT_TOUCH_CANCEL, TiC.EVENT_TOUCH_END,
@@ -64,9 +61,11 @@ public class ShapeViewProxy extends TiViewProxy {
 		@Override
 		protected void onDraw(Canvas canvas) {
 			super.onDraw(canvas);
-			for (int i = 0; i < mShapes.size(); i++) {
-				ShapeProxy shapeProxy = mShapes.get(i);
-				shapeProxy.drawOnCanvas(canvas);
+			for (int i = 0; i < children.size(); i++) {
+                KrollProxy childProxy = children.get(i);
+			    if (childProxy instanceof ShapeProxy) {
+			        ((ShapeProxy) childProxy).drawOnCanvas(canvas);
+			    }
 			}
 		}
 	}
@@ -77,20 +76,18 @@ public class ShapeViewProxy extends TiViewProxy {
 
 		protected void onLayoutChanged(int left, int top, int right, int bottom) {
 			nativeViewBounds.set(0, 0, right - left, bottom - top);
-			for (int i = 0; i < mShapes.size(); i++) {
-				ShapeProxy shapeProxy = mShapes.get(i);
-				shapeProxy.onLayoutChanged(nativeView.getContext(),
-						nativeViewBounds);
-			}
-			// nativeView.requestLayout();
+			update();
 		}
 
 		public void update() {
-			for (int i = 0; i < mShapes.size(); i++) {
-				ShapeProxy shapeProxy = mShapes.get(i);
-				shapeProxy.onLayoutChanged(nativeView.getContext(),
-						nativeViewBounds);
-			}
+		    KrollProxy[] children = ShapeViewProxy.this.getChildren();
+			for (int i = 0; i < children.length; i++) {
+                KrollProxy childProxy = children[i];
+                if (childProxy instanceof ShapeProxy) {
+                    ((ShapeProxy) childProxy).onLayoutChanged(nativeView.getContext(),
+                            nativeViewBounds);
+                }
+            }
 		}
 
 		protected void createNativeView(Activity activity) {
@@ -119,34 +116,16 @@ public class ShapeViewProxy extends TiViewProxy {
 		public void processProperties(KrollDict d) {
 
 			super.processProperties(d);
-			for (Entry<String, ShapeProxy> entry : mShapeBindings.entrySet()) {
-			    String key = entry.getKey();
-			    if (d.containsKey(key)) {
-			    	KrollDict dict = d.getKrollDict(key);
-			    	if (dict != null) {
-				    	entry.getValue().processProperties(dict);
-			    	}
-			    }
-			}
+			if (d.containsKey(AkylasShapesModule.PROPERTY_SHAPES)) {
+	            ShapeViewProxy.this.add(d.get(AkylasShapesModule.PROPERTY_SHAPES), null);
+	        }
 			redrawNativeView();
-		}
-		
-		@Override
-		public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-			if (mShapeBindings.containsKey(key)) {
-				mShapeBindings.get(key).processProperties((KrollDict) newValue);
-			}
-			else super.propertyChanged(key, oldValue, newValue, proxy);
 		}
 
 		@Override
 		public void release() {
 			super.release();
 			nativeView = null;
-			for (int i = 0; i < mShapes.size(); i++) {
-				ShapeProxy shapeProxy = mShapes.get(i);
-				shapeProxy.recursiveCancelAllAnimations();
-			}
 		}
 
 		public void redrawNativeView() {
@@ -157,13 +136,11 @@ public class ShapeViewProxy extends TiViewProxy {
 	// Constructor
 	public ShapeViewProxy() {
 		super();
-		mShapes = new ArrayList<ShapeProxy>();
-		mShapeBindings = new HashMap<String, ShapeProxy>();
 	}
 
 	@Override
 	public boolean fireEvent(String eventName, Object data, boolean bubbles) {
-		if (supportedEvents.contains(eventName) && mShapes.size() > 0) {
+		if (supportedEvents.contains(eventName) && children.size() > 0) {
 			int x = -1;
 			int y = -1;
 			if (data instanceof HashMap) {
@@ -172,9 +149,13 @@ public class ShapeViewProxy extends TiViewProxy {
 			}
 			boolean handledByChildren = false;
 			boolean result = false;
-			for (int i = 0; i < mShapes.size(); i++) {
-				ShapeProxy shapeProxy = mShapes.get(i);
-				handledByChildren |= shapeProxy.handleTouchEvent(eventName, data, bubbles, x, y);
+			KrollProxy[] children = ShapeViewProxy.this.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                KrollProxy childProxy = children[i];
+                if (childProxy instanceof ShapeProxy) {
+                    handledByChildren |= ((ShapeProxy) childProxy).handleTouchEvent(eventName, data, bubbles, x, y);
+
+                }
 			}
 			if (handledByChildren && bubbles) {
 				return true;
@@ -196,34 +177,11 @@ public class ShapeViewProxy extends TiViewProxy {
 		TiUIView view = super.getOrCreateView(true);
 		return view;
 	}
-	
 
-	private void processShapesAndBindings (Object[] array) {
-		for (int i = 0; i < array.length; i++) {
-		    HashMap dict = (HashMap) array[i];
-		    if (dict != null) {
-			    String bindId = TiConvert.toString(dict, TiC.PROPERTY_BIND_ID);
-			    String type = TiConvert.toString(dict, TiC.PROPERTY_TYPE);
-			    Class shapeClass = AkylasShapesModule.ShapeClassFromString(type);
-			    ShapeProxy proxy = (ShapeProxy) KrollProxy.createProxy(shapeClass, null, new Object[] { dict }, null);
-				addShape(proxy);
-				if (bindId != null) {
-					mShapeBindings.put(bindId, proxy);
-				}
-		    }
-		}
-	}
-	
-	
-	
-	
 	// Handle creation options
 	@Override
 	public void handleCreationDict(KrollDict options) {
 		Log.d(TAG, "handleCreationDict ");
-		if (options.containsKey(AkylasShapesModule.PROPERTY_SHAPES)) {
-			processShapesAndBindings((Object[]) options.get(AkylasShapesModule.PROPERTY_SHAPES));
-		}
 		super.handleCreationDict(options);
 		
 	}
@@ -244,46 +202,33 @@ public class ShapeViewProxy extends TiViewProxy {
 	}
 
 	private void addShape(ShapeProxy proxy) {
-		if (!mShapes.contains(proxy)) {
-			mShapes.add(proxy);
-			proxy.setShapeViewProxy(this);
-			redraw();
-		}
+		proxy.setShapeViewProxy(this);
+		redraw();
 	}
 
 	private void removeShape(ShapeProxy proxy) {
-		if (!mShapes.contains(proxy))
-			return;
-		proxy.cancelAllAnimations();
-		mShapes.remove(proxy);
+		proxy.recursiveCancelAllAnimations();
 		proxy.setShapeViewProxy(null);
 		redraw();
 	}
 
-	@Kroll.method
-	public void add(Object arg) {
-		Log.d(TAG, "add", Log.DEBUG_MODE);
-		if ((arg instanceof TiViewProxy)) {
-			super.add((TiViewProxy) arg);
-			return;
-		} else if (arg instanceof ShapeProxy) {
-			addShape((ShapeProxy) arg);
-		} else if (arg instanceof HashMap) {
-			Class shapeClass = AkylasShapesModule.ShapeClassFromString(TiConvert.toString(arg, TiC.PROPERTY_TYPE));
-		    ShapeProxy proxy = (ShapeProxy) KrollProxy.createProxy(shapeClass, null, new Object[] { arg }, null);
-			addShape(proxy);
-		} else {
-			Log.e(TAG, "add: must be a Shape");
-		}
-	}
-
-	@Kroll.method
-	public void remove(Object arg) {
-		Log.d(TAG, "remove", Log.DEBUG_MODE);
-		if ((arg instanceof TiViewProxy)) {
-			super.remove((TiViewProxy) arg);
-			return;
-		}
-		removeShape((ShapeProxy) arg);
-	}
+	@Override
+    protected void handleChildAdded(KrollProxy object, final int index) {
+        if (!(object instanceof ShapeProxy)) {
+            super.handleChildAdded(object, index);
+            return;
+        }
+        ShapeProxy proxy = (ShapeProxy) object;
+        addShape(proxy);
+    }
+    
+    @Override
+    protected void handleChildRemoved(KrollProxy object) {
+        if (!(object instanceof ShapeProxy)) {
+            super.handleChildRemoved(object);
+            return;
+        }
+        ShapeProxy proxy = (ShapeProxy) object;
+        removeShape(proxy);
+    }
 }

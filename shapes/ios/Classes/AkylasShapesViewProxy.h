@@ -10,7 +10,6 @@
 
 @interface AkylasShapesViewProxy : TiViewProxy
 {
-    NSMutableArray* mShapes;
 }
 -(NSArray*)shapes;
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds;

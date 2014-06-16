@@ -22,6 +22,7 @@ import org.appcelerator.titanium.proxy.AnimatableProxy;
 import org.appcelerator.titanium.util.AffineTransform;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
+import org.appcelerator.titanium.view.KrollProxyReusableListener;
 import org.appcelerator.titanium.view.Ti2DMatrix;
 
 import com.nineoldandroids.animation.Animator;
@@ -59,7 +60,7 @@ import android.view.animation.LinearInterpolator;
 @Kroll.proxy(creatableInModule = AkylasShapesModule.class, propertyAccessors={
 	TiC.PROPERTY_NAME
 })
-public class ShapeProxy extends AnimatableProxy implements KrollProxyListener {
+public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableListener {
 	// Standard Debugging variables
 	private static final String TAG = "PathProxy";
 	
@@ -118,6 +119,8 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyListener {
 	
 
 	public final TiPoint DEFAULT_CENTER = new TiPoint(0, 0);
+
+    private KrollDict additionalEventData;
 	public TiPoint getDefaultCenter() {
 		return DEFAULT_CENTER;
 	}
@@ -910,6 +913,12 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyListener {
 		}
 	}
 	
+	@Override
+    public void release(){
+	    cancelAllAnimations();
+	    super.release();
+	}
+	    
 	protected void redraw(){
 		if (shapeViewProxy != null) {
 			shapeViewProxy.redraw();
@@ -1288,6 +1297,7 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyListener {
 		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_CLIPPED)) {
 			this.lineClipped = properties.getBoolean(AkylasShapesModule.PROPERTY_LINE_CLIPPED);
 		}
+		redraw();
 	}
 	
 	@Override
@@ -1318,4 +1328,22 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyListener {
 
 	@Override
 	public void listenerRemoved(String type, int count, KrollProxy proxy) {}
+
+    @Override
+    public void setAdditionalEventData(KrollDict dict) {
+        additionalEventData = dict;
+    }
+    
+    @Override
+    public KrollDict getAdditionalEventData() {
+        return additionalEventData;
+    }
+
+    @Override
+    public void setReusing(boolean reusing) {
+//        if (reusing == false) {
+//            update();
+//        }
+        
+    }
 }

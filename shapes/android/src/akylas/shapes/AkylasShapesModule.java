@@ -1,9 +1,11 @@
 package akylas.shapes;
 
+import java.util.HashMap;
+
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
-
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.kroll.common.Log;
 
 
@@ -88,38 +90,15 @@ public class AkylasShapesModule extends KrollModule
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app)
 	{
+	       HashMap<String, String> map = new HashMap();
+	        map.put("AkylasShapes.Arc", "akylas.shapes.ArcProxy");
+	        map.put("AkylasShapes.Circle", "akylas.shapes.CircleProxy");
+	        map.put("AkylasShapes.Line", "akylas.shapes.LineProxy");
+	        map.put("AkylasShapes.PieSlice", "akylas.shapes.PieSliceProxy");
+	        map.put("AkylasShapes.Rect", "akylas.shapes.RectProxy");
+	        map.put("AkylasShapes.RoundedRect", "akylas.shapes.RoundedRectProxy");
+	        map.put("AkylasShapes.View", "akylas.shapes.ShapeViewProxy");
+	        APIMap.addMapping(map);
 	}
-	
-	@SuppressWarnings("rawtypes")
-	public static Class ShapeClassFromString(String value)
-	{
-	    if (value == null) return ShapeProxy.class;
-		if (value.equals("circle"))
-		{
-			return CircleProxy.class;
-		}
-		else if (value.equals("rect"))
-		{
-			return ShapeProxy.class;
-		}
-	    else if (value.equals("roundedrect"))
-		{
-			return RoundedRectProxy.class;
-		}
-	    else if (value.equals("arc"))
-		{
-			return ArcProxy.class;
-		}
-	    else if (value.equals("pieslice"))
-		{
-			return PieSliceProxy.class;
-		}
-	    else if (value.equals("points"))
-		{
-			return ShapeProxy.class;
-		}
-		return ShapeProxy.class;
-	}
-
 }
 
