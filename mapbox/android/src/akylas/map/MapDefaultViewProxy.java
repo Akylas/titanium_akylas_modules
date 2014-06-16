@@ -30,21 +30,6 @@ import akylas.map.TileSourceProxy;
 import android.app.Activity;
 import android.os.Message;
 
-@Kroll.proxy(creatableInModule = AkylasMapModule.class, propertyAccessors = {
-    AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED,
-    TiC.PROPERTY_USER_LOCATION,
-    AkylasMapModule.PROPERTY_CENTER_COORDINATE, 
-    AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT,
-    AkylasMapModule.PROPERTY_REGION_FIT,
-    AkylasMapModule.PROPERTY_CENTER_COORDINATE,
-    AkylasMapModule.PROPERTY_ZOOM,
-    AkylasMapModule.PROPERTY_MINZOOM,
-    AkylasMapModule.PROPERTY_MAXZOOM,
-    AkylasMapModule.PROPERTY_ROUTES,
-    TiC.PROPERTY_REGION,
-    TiC.PROPERTY_ANNOTATIONS, 
-    AkylasMapModule.PROPERTY_ANIMATE_CHANGES,
-    TiC.PROPERTY_ENABLE_ZOOM_CONTROLS })
 public abstract class MapDefaultViewProxy extends TiViewProxy {
 	private static final String TAG = "MapDefaultViewProxy";
 
