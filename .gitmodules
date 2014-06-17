@@ -1,7 +1,7 @@
-[submodule "commonjs/ios/assets"]
-	path = commonjs/ios/asset
+[submodule "commonjs_ios"]
+	path = commonjs/ios/assets
 	url = git@bitbucket.org:farfromrefuge/ti.ak.include.git
-[submodule "commonjs/android/assets"]
+[submodule "commonjs_android"]
 	path = commonjs/android/assets
 	url = git@bitbucket.org:farfromrefuge/ti.ak.include.git
 [submodule "scancode/ios/zxing"]
