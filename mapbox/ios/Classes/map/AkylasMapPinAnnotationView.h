@@ -14,6 +14,7 @@
 	
 	NSString * lastHitName;
 }
+@property (nonatomic, assign) SMCalloutView* calloutView;
 
 -(id)initWithAnnotation:(id<MKAnnotation>)annotation reuseIdentifier:(NSString *)reuseIdentifier map:(AkylasMapMapView*)map;
 -(NSString *)lastHitName;

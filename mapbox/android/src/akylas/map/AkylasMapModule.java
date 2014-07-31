@@ -11,6 +11,7 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiFileProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiDatabaseHelper;
+import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.kroll.common.Log;
 
 import akylas.map.TileSourceProxy;
@@ -47,7 +48,8 @@ public class AkylasMapModule extends KrollModule
 	public static final String PROPERTY_MAP = "map";
 	public static final String PROPERTY_CENTER_COORDINATE = "centerCoordinate";
 	public static final String PROPERTY_NEWSTATE = "newState";
-	public static final String PROPERTY_CUSTOM_VIEW = "customView";
+    public static final String PROPERTY_PIN_VIEW = "pinView";
+    public static final String PROPERTY_CUSTOM_VIEW = "customView";
 	public static final String PROPERTY_PIN = "pin";
     public static final String PROPERTY_INFO_WINDOW = "infoWindow";
 	public static final String PROPERTY_LEFT_PANE = "leftPane";
@@ -56,7 +58,8 @@ public class AkylasMapModule extends KrollModule
 	public static final String PROPERTY_BEARING = "bearing";
 	public static final String PROPERTY_ZOOM = "zoom";
 	public static final String PROPERTY_MINZOOM = "minZoom";
-	public static final String PROPERTY_MAXZOOM = "maxZoom";
+    public static final String PROPERTY_MAXZOOM = "maxZoom";
+    public static final String PROPERTY_MAX_ANNOTATIONS = "maxAnnotations";
 	public static final String PROPERTY_SCROLLABLE_AREA_LIMIT = "scrollableAreaLimit";
 	public static final String PROPERTY_ZORDER_ON_TOP = "zOrderOnTop";
 	public static final String PROPERTY_USER_TRACKING_MODE = "userTrackingMode";
@@ -69,7 +72,8 @@ public class AkylasMapModule extends KrollModule
 	public static final String EVENT_ON_SNAPSHOT_READY = "onsnapshotready";
 	public static final String EVENT_USER_LOCATION = "userlocation";
 	public static final String PROPERTY_DEFAULT_PIN_IMAGE = "defaultPinImage";
-	public static final String PROPERTY_DEFAULT_PIN_ANCHOR = "defaultPinAnchor";
+    public static final String PROPERTY_DEFAULT_PIN_ANCHOR = "defaultPinAnchor";
+    public static final String PROPERTY_DEFAULT_CALLOUT_ANCHOR = "defaultCalloutAnchor";
 	public static final String PROPERTY_SPEED = "speed";
     public static final String PROPERTY_TIMESTAMP = "timestamp";
     public static final String PROPERTY_ROUTES = "routes";
@@ -78,6 +82,14 @@ public class AkylasMapModule extends KrollModule
     public static final String PROPERTY_DISK_CACHE = "diskCache";
     public static final String PROPERTY_SHOW_INFO_WINDOW = "showInfoWindow";
     public static final String PROPERTY_ANIMATE_CHANGES = "animateChanges";
+    public static final String PROPERTY_ANCHOR = "anchorPoint";
+    
+    public static final String PROPERTY_CAN_SHOW_CALLOUT = "canShowCallout";
+    public static final String PROPERTY_CALLOUT_BACKGROUND_COLOR = "calloutBackgroundColor";
+    public static final String PROPERTY_CALLOUT_BORDER_RADIUS = "calloutBorderRadius";
+    public static final String PROPERTY_CALLOUT_PADDING = "calloutPadding";
+    public static final String PROPERTY_CALLOUT_ANCHOR = "calloutAnchorPoint";
+
     
     
     public static final String PROPERTY_USER_LOCATION_BUTTON = "userLocationButton";
@@ -88,8 +100,12 @@ public class AkylasMapModule extends KrollModule
     @Kroll.constant public static final int TERRAIN_TYPE = GoogleMap.MAP_TYPE_TERRAIN;
     @Kroll.constant public static final int SATELLITE_TYPE = GoogleMap.MAP_TYPE_SATELLITE;
     @Kroll.constant public static final int HYBRID_TYPE = GoogleMap.MAP_TYPE_HYBRID;
-    @Kroll.constant public static final int ANNOTATION_DRAG_STATE_START = 0;
-    @Kroll.constant public static final int ANNOTATION_DRAG_STATE_END = 1;
+    
+    
+    @Kroll.constant public static final int ANNOTATION_DRAG_STATE_START = 1;
+    @Kroll.constant public static final int ANNOTATION_DRAG_STATE_DRAGGING = 2;
+    @Kroll.constant public static final int ANNOTATION_DRAG_STATE_CANCEL = 3;
+    @Kroll.constant public static final int ANNOTATION_DRAG_STATE_END = 4;
 
     @Kroll.constant public static final int SUCCESS = 0;
     @Kroll.constant public static final int SERVICE_MISSING = 1;
@@ -122,7 +138,13 @@ public class AkylasMapModule extends KrollModule
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app)
 	{
-		// put module init code that needs to run when the application is created
+	    HashMap<String, String> map = new HashMap();
+        map.put("AkylasMap.MapboxView", akylas.map.MapboxViewProxy.class.getName());
+        map.put("AkylasMap.MapView", akylas.map.MapViewProxy.class.getName());
+        map.put("AkylasMap.Annotation", akylas.map.AnnotationProxy.class.getName());
+        map.put("AkylasMap.Route", akylas.map.RouteProxy.class.getName());
+        map.put("AkylasMap.TileSource", akylas.map.TileSourceProxy.class.getName());
+        APIMap.addMapping(map);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -357,8 +379,7 @@ public class AkylasMapModule extends KrollModule
 	}
 	
 	static public int googlePlayServicesAvailable() {
-        return 1;
-//        return GooglePlayServicesUtil.isGooglePlayServicesAvailable(TiApplication.getAppRootOrCurrentActivity());
+        return GooglePlayServicesUtil.isGooglePlayServicesAvailable(TiApplication.getAppRootOrCurrentActivity());
 	}
 	
 	@Kroll.method

@@ -18,6 +18,7 @@
 	NSMutableArray* routesToAdd;
 	NSMutableArray* routesToRemove;
 	int zoomCount; // Number of times to zoom in/out on initial display
+	NSMutableArray* _annotations;
 }
 
 #pragma mark Internal
@@ -60,8 +61,9 @@
 //	ENSURE_UI_THREAD_0_ARGS;
 	AkylasMapView * ourView = (AkylasMapView *)[self view];
 
-    if (annotationsToAdd )[ourView addAnnotations:annotationsToAdd];
-    if (annotationsToRemove )[ourView removeAnnotations:annotationsToRemove];
+    if (_annotations) {
+        [ourView addAnnotations:_annotations];
+    }
 
     for (id arg in routesToAdd)
     {
@@ -86,8 +88,6 @@
 	}
 	
 	RELEASE_TO_NIL(selectedAnnotation);
-	RELEASE_TO_NIL(annotationsToAdd);
-	RELEASE_TO_NIL(annotationsToRemove);
 	RELEASE_TO_NIL(routesToAdd);
 	RELEASE_TO_NIL(routesToRemove);
     
@@ -96,6 +96,9 @@
 
 -(AkylasMapAnnotationProxy*)annotationFromArg:(id)arg
 {
+    if ([arg isKindOfClass:[RMAnnotation class]]) {
+        
+    }
 	AkylasMapAnnotationProxy *proxy = [self objectOfClass:[AkylasMapAnnotationProxy class] fromArg:arg];
     if (proxy) {
         [proxy setPlaced:NO];
@@ -172,188 +175,94 @@
 {
 	ENSURE_SINGLE_ARG(arg,NSObject);
     AkylasMapAnnotationProxy* annProxy = [self annotationFromArg:arg];
-    if (!annProxy) return;
+    if (!annProxy || [_annotations containsObject:annProxy]) return;
     [self rememberProxy:annProxy];
+    if (!_annotations) {
+        _annotations = [NSMutableArray new];
+    }
+    [_annotations addObject:annProxy];
     
 	if ([self viewInitialized]) {
-        TiThreadPerformOnMainThread(^{[(AkylasMapView*)[self view] addAnnotation:arg];}, YES);
-	}
-	else 
-	{
-		if (annotationsToAdd==nil)
-		{
-			annotationsToAdd = [[NSMutableArray alloc] init];
-		}
-		if (annotationsToRemove!=nil && [annotationsToRemove containsObject:annProxy])
-		{
-			[annotationsToRemove removeObject:annProxy];
-		}
-		else 
-		{
-			[annotationsToAdd addObject:annProxy];
-		}
+        TiThreadPerformOnMainThread(^{[(AkylasMapView*)[self view] addAnnotation:annProxy];}, YES);
 	}
 }
 
 -(void)addAnnotations:(id)arg
 {
-	ENSURE_SINGLE_ARG(arg,NSArray);
+	ENSURE_SINGLE_ARG_OR_NIL(arg,NSArray);
+    if (arg == nil) return;
     NSMutableArray* newAnnotations = [NSMutableArray arrayWithCapacity:[arg count]];
     for (id ann in arg) {
-        AkylasMapAnnotationProxy* annotation = [self annotationFromArg:ann];
-        [newAnnotations addObject:annotation];
-        [self rememberProxy:annotation];
+        AkylasMapAnnotationProxy* annProxy = [self annotationFromArg:ann];
+        if (!annProxy || [_annotations containsObject:annProxy]) {
+            continue;
+        }
+        [newAnnotations addObject:annProxy];
+        [self rememberProxy:annProxy];
     }
+    if (!_annotations) {
+        _annotations = [NSMutableArray new];
+    }
+    [_annotations addObjectsFromArray:newAnnotations];
     
 	if ([self viewInitialized]) {
         TiThreadPerformOnMainThread(^{[(AkylasMapView*)[self view] addAnnotations:newAnnotations];}, YES);
 	}
-	else {
-		for (id annotation in newAnnotations) {
-			[self addAnnotation:annotation];
-		}
-	}
 }
 
 -(void)setAnnotations:(id)arg{
-    ENSURE_TYPE(arg,NSArray);
-    
-    NSMutableArray* newAnnotations = [NSMutableArray arrayWithCapacity:[arg count]];
-    for (id ann in arg) {
-        [newAnnotations addObject:[self annotationFromArg:ann]];
-    }
-    
-    BOOL attached = [self viewInitialized];
-    __block NSArray* currentAnnotations = nil;
-    if (attached) {
-        TiThreadPerformOnMainThread(^{
-            currentAnnotations = [[(AkylasMapView*)[self view] customAnnotations] retain];
-        }, YES);
-    }
-    else {
-        currentAnnotations = annotationsToAdd;
-    }
- 
-    // Because the annotations may contain an annotation proxy and not just
-    // descriptors for them, we have to check and make sure there is
-    // no overlap and remember/forget appropriately.
-    
-    for(AkylasMapAnnotationProxy * annProxy in currentAnnotations) {
-        if (![newAnnotations containsObject:annProxy]) {
-            [self forgetProxy:annProxy];
-        }
-    }
-    for(AkylasMapAnnotationProxy* annProxy in newAnnotations) {
-        if (![currentAnnotations containsObject:annProxy]) {
-            [self rememberProxy:annProxy];
-        }
-    }
-    
-    if(attached) {
-        TiThreadPerformOnMainThread(^{
-            [(AkylasMapView*)[self view] setAnnotations_:newAnnotations];
-        }, YES);
-        [currentAnnotations release];
-    }
-    else {
-        RELEASE_TO_NIL(annotationsToAdd);
-        RELEASE_TO_NIL(annotationsToRemove);
-        
-        annotationsToAdd = [[NSMutableArray alloc] initWithArray:newAnnotations];
-    }
+    [self removeAnnotations:_annotations];
+    [self addAnnotations:@[arg]];
+
 }
 
 -(NSArray*)annotations
 {
-    if ([self viewInitialized]) {
-        __block NSArray* currentAnnotations = nil;
-        TiThreadPerformOnMainThread(^{
-            currentAnnotations = [[(AkylasMapView*)[self view] customAnnotations] retain];
-        }, YES);
-        return [currentAnnotations autorelease];
-    }
-    else {
-        return annotationsToAdd;
-    }
+    return _annotations;
 }
 
 -(void)removeAnnotation:(id)arg
 {
+    if (!arg) return;
 	ENSURE_SINGLE_ARG(arg,NSObject);
-    
-    // For legacy reasons, we can apparently allow the arg here to be a string (0.8 compatibility?!?)
-    // and so only need to convert/remember/forget if it is an annotation instead.
-    if ([arg isKindOfClass:[AkylasMapAnnotationProxy class]]) {
+    if ([_annotations containsObject:arg]) {
         [self forgetProxy:arg];
+        [_annotations removeObject:arg];
+        if ([self viewInitialized])
+        {
+            TiThreadPerformOnMainThread(^{
+                [(AkylasMapView*)[self view] removeAnnotation:arg];
+            }, YES);
+        }
     }
-    
-	if ([self viewInitialized])
-	{
-        TiThreadPerformOnMainThread(^{
-            [(AkylasMapView*)[self view] removeAnnotation:arg];
-        }, NO);
-	}
-	else 
-	{
-		if (annotationsToRemove==nil)
-		{
-			annotationsToRemove = [[NSMutableArray alloc] init];
-		}
-		if (annotationsToAdd!=nil && [annotationsToAdd containsObject:arg]) 
-		{
-			[annotationsToAdd removeObject:arg];
-		}
-		else 
-		{
-			[annotationsToRemove addObject:arg];
-		}
-	}
 }
 
 -(void)removeAnnotations:(id)arg
 {
+    if (!arg) return;
     ENSURE_SINGLE_ARG(arg,NSArray);
+    
+    NSMutableArray* removeAnnotations = [NSMutableArray arrayWithCapacity:[arg count]];
     for (id ann in arg) {
-        if ([ann isKindOfClass:[AkylasMapAnnotationProxy class]]) {
-            [self forgetProxy:ann];
+        AkylasMapAnnotationProxy* annProxy = [self annotationFromArg:ann];
+        if (!annProxy || ![_annotations containsObject:annProxy]) {
+            continue;
         }
+        [removeAnnotations addObject:annProxy];
+        [self forgetProxy:annProxy];
     }
+    [_annotations removeObjectsInArray:removeAnnotations];
     
 	if ([self viewInitialized]) {
-        [(AkylasMapView*)[self view] removeAnnotations:arg];
-	}
-	else {
-		for (id annotation in arg) {
-			[self removeAnnotation:annotation];
-		}
+        [(AkylasMapView*)[self view] removeAnnotations:removeAnnotations];
 	}
 }
 
 -(void)removeAllAnnotations:(id)unused
 {
-	if ([self viewInitialized]) {
-        __block NSArray* currentAnnotations = nil;
-        TiThreadPerformOnMainThread(^{
-            currentAnnotations = [[(AkylasMapView*)[self view] customAnnotations] retain];
-        }, YES);
-        
-        for(id object in currentAnnotations)
-        {
-            AkylasMapAnnotationProxy * annProxy = [self annotationFromArg:object];
-            [self forgetProxy:annProxy];
-        }
-        [currentAnnotations release];
-        TiThreadPerformOnMainThread(^{[(AkylasMapView*)[self view] removeAllAnnotations:unused];}, YES);
-	}
-	else 
-	{
-        for (AkylasMapAnnotationProxy* annotation in annotationsToAdd) {
-            [self forgetProxy:annotation];
-        }
-        
-        RELEASE_TO_NIL(annotationsToAdd);
-        RELEASE_TO_NIL(annotationsToRemove);
-	}
+    if (_annotations) {
+        [self removeAnnotations:@[_annotations]];
+    }
 }
 
 -(void)addRoute:(id)arg

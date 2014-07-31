@@ -546,7 +546,6 @@
 					"$(TITANIUM_BASE_SDK2)",
 					"$(BUILT_PRODUCTS_DIR)/include/MapBox",
 				);
-				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_CFLAGS = (
 					"-DDEBUG",
@@ -588,7 +587,6 @@
 					"$(TITANIUM_BASE_SDK2)",
 					"$(BUILT_PRODUCTS_DIR)/include/MapBox",
 				);
-				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				OTHER_LDFLAGS = "-ObjC";

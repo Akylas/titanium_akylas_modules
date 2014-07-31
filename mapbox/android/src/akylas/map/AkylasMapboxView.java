@@ -4,13 +4,16 @@ import java.lang.reflect.Array;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
+import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 
-import android.util.Log;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.location.Location;
 import android.view.MotionEvent;
 
 import com.mapbox.mapboxsdk.api.ILatLng;
@@ -21,10 +24,12 @@ import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.tileprovider.tilesource.TileLayer;
 import com.mapbox.mapboxsdk.views.MapController;
 import com.mapbox.mapboxsdk.views.MapView;
-import com.mapbox.mapboxsdk.views.MapViewListener;
 import com.mapbox.mapboxsdk.views.util.TilesLoadedListener;
 
-public class AkylasMapboxView extends AkylasMapDefaultView {
+public class AkylasMapboxView extends AkylasMapDefaultView implements MapView.OnCameraChangeListener,
+MapView.OnInfoWindowClickListener, MapView.OnInfoWindowShowListener, MapView.OnMapClickListener,
+MapView.OnMapLongClickListener, MapView.OnMarkerClickListener, MapView.OnMarkerLongClickListener,
+MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
 
     private static final String TAG = "AkylasMapboxView";
     private MapView map;
@@ -50,60 +55,42 @@ public class AkylasMapboxView extends AkylasMapDefaultView {
                 super.onDetachedFromWindow();
                 canDetach = true;
             }
+            
+            @Override
+            public boolean dispatchTouchEvent(MotionEvent ev)
+            {
+                return interceptTouchEvent(ev) || super.dispatchTouchEvent(ev);
+            }
         };
-//        try {
-//            map.setDefaultPinRes(TiRHelper.getResource("drawable.def_pin",
-//                    false));
-//        } catch (ResourceNotFoundException e) {
-//        }
+        
+        map.setOnMarkerClickListener(this);
+        map.setOnMapClickListener(this);
+        map.setOnCameraChangeListener(this);
+        map.setOnMarkerDragListener(this);
+        map.setOnInfoWindowClickListener(this);
+        map.setOnInfoWindowShowListener(this);
+        map.setOnMapLongClickListener(this);
+
         mapController = map.getController();
-        map.setOnTilesLoadedListener(new TilesLoadedListener() {
-            @Override
-            public boolean onTilesLoaded() {
-                return false;
-            }
-
-            @Override
-            public boolean onTilesLoadStarted() {
-                return false;
-            }
-        });
-        map.setMapViewListener(new MapViewListener() {
-
-            @Override
-            public void onTapMarker(MapView pMapView, Marker pMarker) {
-                fireEventOnMarker(TiC.EVENT_CLICK, getAkMarker(pMarker), "pin");
-            }
-
-            @Override
-            public void onTapMap(MapView pMapView, ILatLng pPosition) {
-                fireEventOnMap(TiC.EVENT_CLICK, pPosition);
-            }
-
-            @Override
-            public void onShowMarker(MapView pMapView, Marker pMarker) {
-                fireEventOnMarker(TiC.EVENT_FOCUS, getAkMarker(pMarker), "pin");
-            }
-
-            @Override
-            public void onLongPressMarker(MapView pMapView, Marker pMarker) {
-                fireEventOnMarker(TiC.EVENT_LONGPRESS, getAkMarker(pMarker),
-                        "pin");
-            }
-
-            @Override
-            public void onLongPressMap(MapView pMapView, ILatLng pPosition) {
-                fireEventOnMap(TiC.EVENT_LONGPRESS, pPosition);
-            }
-
-            @Override
-            public void onHidemarker(MapView pMapView, Marker pMarker) {
-                fireEventOnMarker(TiC.EVENT_BLUR, getAkMarker(pMarker), "pin");
-
-            }
-        });
 
         setNativeView(map);
+    }
+    
+ // Intercept the touch event to find out the correct clicksource if clicking on the info window.
+    protected boolean interceptTouchEvent(MotionEvent ev)
+    {
+        if (ev.getAction() == MotionEvent.ACTION_UP && selectedAnnotation != null) {
+            AkylasMapInfoView infoWindow = selectedAnnotation.getMapInfoWindow();
+            AkylasMarker timarker = selectedAnnotation.getMarker();
+            if (infoWindow != null && timarker != null) {
+                Marker marker = ((MapboxMarker) timarker).getMarker();
+                if (marker != null && marker.isInfoWindowShown()) {
+                    PointF markerPoint = marker.getPositionOnScreen(null);
+                    infoWindow.analyzeTouchEvent( ev, new Point((int) markerPoint.x, (int) markerPoint.y), 0);
+                }
+            }
+        }
+        return false;
     }
     
     @Override
@@ -121,8 +108,7 @@ public class AkylasMapboxView extends AkylasMapDefaultView {
     @Override
     public boolean customInterceptTouchEvent(MotionEvent event) {
         // to prevent double events
-        return map.onTouchEvent(event)
-                || super.customInterceptTouchEvent(event);
+        return super.customInterceptTouchEvent(event);
     }
 
     // private UserLocationOverlay getOrCreateLocationOverlay() {
@@ -228,9 +214,12 @@ public class AkylasMapboxView extends AkylasMapDefaultView {
                     .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)));
         }
         if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
-            TiPoint point = TiConvert.toPoint(d
-                    .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE));
-            map.setDefaultPinAnchor(point.computeFloat(null, 0, 0));
+            map.setDefaultPinAnchor(TiConvert.toPointF(d
+                    .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)));
+        }
+        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
+            map.setDefaultInfoWindowAnchor(TiConvert.toPointF(d
+                    .get(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)));
         }
         if (d.containsKey(AkylasMapModule.PROPERTY_DISK_CACHE)) {
             setDiskCacheEnabled(TiConvert.toBoolean(d, AkylasMapModule.PROPERTY_DISK_CACHE));
@@ -268,8 +257,9 @@ public class AkylasMapboxView extends AkylasMapDefaultView {
         } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
             map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(newValue));
         } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
-            TiPoint point = TiConvert.toPoint(newValue);
-            map.setDefaultPinAnchor(point.computeFloat(null, 0, 0));
+            map.setDefaultPinAnchor(TiConvert.toPointF(newValue));
+        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
+            map.setDefaultInfoWindowAnchor(TiConvert.toPointF(newValue));
         } else if (key.equals(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM)) {
             setUserLocationRequiredZoom(TiConvert.toFloat(newValue));
         } else if (key.equals(AkylasMapModule.PROPERTY_REGION_FIT)) {
@@ -415,7 +405,7 @@ public class AkylasMapboxView extends AkylasMapDefaultView {
             marker = new MapboxMarker(proxy);
             proxy.setMarker(marker);
         }
-        return ((MapboxMarker) marker).getMarker(map, proxy.getMarkerOptions());
+        return ((MapboxMarker) marker).getMarker(map);
     }
 
     Marker getMapboxMarker(AnnotationProxy proxy) {
@@ -460,16 +450,179 @@ public class AkylasMapboxView extends AkylasMapDefaultView {
             // already in
             removeAnnotation(marker);
         } else {
-            timarkers.add(annotation.getMarker());
+            marker = getOrCreateMapboxMarker(annotation);
         }
-        map.addMarker(getOrCreateMapboxMarker(annotation));
+        timarkers.add(annotation.getMarker());
+        map.addMarker(marker);
     }
 
     @Override
     void handleRemoveMarker(AkylasMarker marker) {
-        if (marker instanceof MapboxMarker
-                && ((MapboxMarker) marker).getMarker() != null) {
-            map.getOverlays().remove(((MapboxMarker) marker).getMarker());
+        if (marker instanceof MapboxMarker) {
+            timarkers.remove(marker);
+            Marker mapBoxMarker = ((MapboxMarker) marker).getMarker();
+            if (mapBoxMarker != null) {
+                map.removeMarker(mapBoxMarker);
+            }
+            AnnotationProxy proxy = marker.getProxy();
+            if (proxy != null) {
+                proxy.setMarker(null);
+            }
         }
     }
+    
+    public void fireLongClickEvent(ILatLng point)
+    {
+        fireEventOnMap(TiC.EVENT_LONGPRESS, point);
+    }
+    
+    public void fireClickEvent(final Marker marker, final String source)
+    {
+        fireEventOnMarker(TiC.EVENT_CLICK, marker, source);
+    }
+    
+    protected void fireEventOnMarker(String type, Marker marker, String clickSource) {
+        fireEventOnMarker(type, getAkMarker(marker), clickSource);
+    }
+    
+
+    @Override
+    public boolean onMarkerClick(Marker marker)
+    {
+        fireClickEvent(marker, AkylasMapModule.PROPERTY_PIN);
+        return true;
+    }
+
+    @Override
+    public void onMapClick(ILatLng point)
+    {
+        fireEventOnMap(TiC.EVENT_CLICK, point);
+    }
+    
+    @Override
+    public void onMapLongClick(ILatLng point)
+    {
+        fireLongClickEvent(point);
+    }
+
+//    @Override
+//    public void onMarkerDrag(Marker marker)
+//    {
+//        Log.d(TAG, "The annotation is dragged.", Log.DEBUG_MODE);
+//    }
+
+//    @Override
+//    public void onMarkerDragEnd(Marker marker)
+//    {
+//        AnnotationProxy annoProxy = getProxyByMarker(marker);
+//        if (annoProxy != null) {
+//            LatLng position = marker.getPosition();
+//            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.longitude);
+//            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.latitude);
+//            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_END);
+//        }
+//    }
+
+//    @Override
+//    public void onMarkerDragStart(Marker marker)
+//    {
+//        AnnotationProxy annoProxy = getProxyByMarker(marker);
+//        if (annoProxy != null) {
+//            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_START);
+//        }
+//    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker)
+    {
+        AkylasMarker akMarker = getAkMarker(marker);
+        if (akMarker != null) {
+            String clicksource = akMarker.getProxy().getMapInfoWindow().getClicksource();
+            // The clicksource is null means the click event is not inside "leftPane", "title", "subtible"
+            // or "rightPane". In this case, use "infoWindow" as the clicksource.
+            if (clicksource == null) {
+                clicksource = AkylasMapModule.PROPERTY_INFO_WINDOW;
+            }
+            fireClickEvent(marker, clicksource);
+        }
+    }
+
+    @Override
+    public void onMyLocationChange(Location location) {
+    }
+
+    @Override
+    public boolean onMarkerLongClick(Marker marker) {
+        fireEventOnMarker(TiC.EVENT_LONGPRESS, marker, AkylasMapModule.PROPERTY_PIN);
+        return false;
+    }
+
+    @Override
+    public void onInfoWindowShow(Marker marker) {
+        selectedAnnotation = getAkMarker(marker).getProxy();
+        fireEventOnMarker(TiC.EVENT_FOCUS, getAkMarker(marker), AkylasMapModule.PROPERTY_PIN);
+    }
+
+    @Override
+    public void onInfoWindowHide(Marker marker) {
+        selectedAnnotation = null;
+        fireEventOnMarker(TiC.EVENT_BLUR, getAkMarker(marker), AkylasMapModule.PROPERTY_PIN);
+    }
+
+    @Override
+    public void onCameraChange(BoundingBox box, float zoom) {
+        if (proxy != null) {
+            KrollDict result = new KrollDict();
+            result.put(TiC.PROPERTY_REGION, AkylasMapModule.regionToDict(box));
+            result.put(AkylasMapModule.PROPERTY_ZOOM, zoom);
+            proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result);
+        }
+        
+    }
+
+    @Override
+    public void onMarkerDragCancel(Marker marker) {
+        AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
+        if (annoProxy != null) {
+//            LatLng position = marker.getPosition();
+//            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.longitude);
+//            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.latitude);
+            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_CANCEL);
+        }
+    }
+    
+    @Override
+    public void onMarkerDrag(Marker marker)
+    {
+        AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
+        if (annoProxy != null) {
+//            LatLng position = marker.getPosition();
+//            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.longitude);
+//            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.latitude);
+            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_DRAGGING);
+        }
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker)
+    {
+        AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
+        if (annoProxy != null) {
+            LatLng position = marker.getPosition();
+            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.getLongitude());
+            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.getLatitude());
+            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_END);
+        }
+    }
+
+    @Override
+    public void onMarkerDragStart(Marker marker)
+    {
+        AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
+        if (annoProxy != null) {
+            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_START);
+        }
+    }
+
+
 }

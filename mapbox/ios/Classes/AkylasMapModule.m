@@ -8,6 +8,8 @@
 #import "AkylasMapTileSourceProxy.h"
 #import "AkylasMapMapViewProxy.h"
 #import "AkylasMapMapIOS7ViewProxy.h"
+#import "AkylasMapMapboxViewProxy.h"
+#import "AkylasMapRouteProxy.h"
 #import "TiBase.h"
 #import "TiHost.h"
 #import "TiUtils.h"
@@ -42,6 +44,11 @@
 {
 	// this method is called when the module is first loaded
 	// you *must* call the superclass
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.MapboxView", [AkylasMapMapboxViewProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.MapView", [AkylasMapMapViewProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.Annotation", [AkylasMapAnnotationProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.TileSource", [AkylasMapTileSourceProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.Route", [AkylasMapRouteProxy class]);
 	[super startup];
 	
 	NSLog(@"[INFO] %@ loaded",self);

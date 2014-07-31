@@ -15,18 +15,18 @@
     if (self = [super initWithAnnotation:annotation reuseIdentifier:reuseIdentifier]) {
         self.backgroundColor = [UIColor clearColor];
         wrapperView = [[UIView alloc] initWithFrame:CGRectZero];
-        wrapperView.userInteractionEnabled = false;
+//        wrapperView.userInteractionEnabled = false;
         [self addSubview:wrapperView];
     }
     return self;
 }
 
-- (void)setProxy:(TiViewProxy*)customView
+- (void)setProxy:(TiViewProxy*)pinView
 {
-    if (theProxy != customView) {
+    if (theProxy != pinView) {
         [[theProxy view] removeFromSuperview];
         RELEASE_TO_NIL(theProxy);
-        [self initWithProxy:customView];
+        [self initWithProxy:pinView];
     }
     else {
         TiUIView* theView = [theProxy barButtonViewForSize:CGSizeZero];
@@ -34,9 +34,9 @@
     }
 }
 
-- (void)initWithProxy:(TiViewProxy*)customView
+- (void)initWithProxy:(TiViewProxy*)pinView
 {
-    theProxy = [customView retain];
+    theProxy = [pinView retain];
     TiUIView* theView = [theProxy barButtonViewForSize:CGSizeZero];
     self.frame = wrapperView.frame = [theView bounds];
     [wrapperView addSubview:theView];
@@ -60,9 +60,9 @@
 
 - (UIView *)hitTest:(CGPoint) point withEvent:(UIEvent *)event
 {
-    UIView * result = [super hitTest:point withEvent:event];
+    UIView * result = [self.calloutView hitTest:[self.calloutView convertPoint:point fromView:self] withEvent:event];
 	
-    if (result==nil) {
+	if (result==nil) {
         for (UIView * ourSubView in [self subviews]) {
             CGPoint subPoint = [self convertPoint:point toView:ourSubView];
             for (UIView * ourSubSubView in [ourSubView subviews]) {

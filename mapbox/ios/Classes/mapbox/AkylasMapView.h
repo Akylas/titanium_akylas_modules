@@ -9,6 +9,7 @@
 #import "TiUIView.h"
 
 #define REGION_VALID(region) (region.northEast.latitude > region.southWest.latitude && region.northEast.longitude > region.southWest.longitude && !isnan(region.northEast.latitude) && !isnan(region.northEast.longitude) && !isnan(region.southWest.latitude) && !isnan(region.southWest.longitude))
+#define PostVersion7 (floor(NSFoundationVersionNumber) >  NSFoundationVersionNumber_iOS_6_1)
 
 @class AkylasMapAnnotationProxy;
 @class AkylasMapTileSourceProxy;
@@ -27,11 +28,14 @@
 	BOOL forceRender;
 	RMSphericalTrapezium region;
     CGFloat _zoom;
+    long _maxAnnotations;
 }
 
 @property (nonatomic, readonly) NSArray *customAnnotations;
 @property (nonatomic, retain) UIImage *defaultPinImage;
 @property (nonatomic, assign) CGPoint defaultPinAnchor;
+@property (nonatomic, assign) CGPoint defaultCalloutAnchor;
+@property (nonatomic, assign) long maxAnnotations;
 
 #pragma mark Private APIs
 -(AkylasMapAnnotationProxy*)annotationFromArg:(id)arg;

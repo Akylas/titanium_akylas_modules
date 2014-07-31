@@ -13,32 +13,41 @@
 #import "AkylasMapViewProxy.h"
 #import "AkylasMapView.h"
 #import "AkylasMapMapboxView.h"
+#import "ImageLoader.h"
 
 @implementation AkylasMapAnnotationProxy
 {
     MKPinAnnotationColor _pinColor;
+	TiViewProxy* _leftViewProxy;
+	TiViewProxy* _rightViewProxy;
+	TiViewProxy* _customViewProxy;
+    CGPoint _anchorPoint;
+    CGPoint _calloutAnchorPoint;
+    CGFloat _calloutAlpha;
 }
 
 @synthesize delegate;
 @synthesize needsRefreshingWithSelection;
 @synthesize placed;
-@synthesize offset;
 @synthesize draggable;
 @synthesize rmannotation = _rmannotation;
 
 #define LEFT_BUTTON  1
 #define RIGHT_BUTTON 2
+#define DETACH_RELEASE_TO_NIL(x) { if (x!=nil) { [x detachView];  [x release]; x = nil; } }
 
 #pragma mark Internal
+
 
 -(void)_configure
 {
 	static int mapTags = 0;
 	tag = mapTags++;
 	needsRefreshingWithSelection = NO;
-	offset = CGPointZero;
     _anchorPoint = CGPointMake(0.5, 0.5);
+    _calloutAnchorPoint = CGPointMake(0, -0.5f);
     _size = RMMarkerMapboxImageSizeMedium;
+    _calloutAlpha = 1;
     _tintColor = nil;
 	[super _configure];
 }
@@ -49,6 +58,9 @@
     RELEASE_TO_NIL(_marker);
     RELEASE_TO_NIL(_image);
     RELEASE_TO_NIL(_tintColor);
+    DETACH_RELEASE_TO_NIL(_leftViewProxy)
+    DETACH_RELEASE_TO_NIL(_rightViewProxy)
+    DETACH_RELEASE_TO_NIL(_customViewProxy)
 	
 	[super dealloc];
 }
@@ -142,7 +154,7 @@
 
 - (NSString *)title
 {
-	return [self valueForUndefinedKey:@"subtitle"];
+	return [self valueForUndefinedKey:@"title"];
 }
 
 -(void)setTitle:(id)title
@@ -174,7 +186,12 @@
     [self setNeedsRefreshingWithSelection:NO];
 }
 
-- (id)pinColor
+- (int)mapPincolor
+{
+	return _pinColor;
+}
+
+- (id)pincolor
 {
 	return [self valueForUndefinedKey:@"pincolor"];
 }
@@ -183,9 +200,14 @@
 {
     RELEASE_TO_NIL(_tintColor);
 	[self replaceValue:color forKey:@"pincolor" notification:NO];
-    TiColor* tiColor= [TiUtils colorValue:color];
-    if (tiColor) {
-        _tintColor = [tiColor.color retain];
+    if ([color isKindOfClass:[NSNumber class]]) {
+        _pinColor = [TiUtils intValue:color];
+    }
+    else {
+        TiColor* tiColor= [TiUtils colorValue:color];
+        if (tiColor) {
+            _tintColor = [tiColor.color retain];
+        }
     }
     [self setNeedsRefreshingWithSelection:YES];
 }
@@ -195,39 +217,98 @@
 	return [TiUtils boolValue:[self valueForUndefinedKey:@"animate"]];
 }
 
+-(UIColor*)calloutBackgroundColor {
+    if ([self valueForUndefinedKey:@"calloutBackgroundColor"])
+        return [[TiUtils colorValue:[self valueForUndefinedKey:@"calloutBackgroundColor"]] color];
+    return [UIColor whiteColor];
+}
+
+-(CGFloat)calloutBorderRadius {
+    return [TiUtils floatValue:[self valueForUndefinedKey:@"animate"] def:DEFAULT_CALLOUT_CORNER_RADIUS];
+}
+
+-(UIEdgeInsets)calloutPadding {
+    if ([self valueForUndefinedKey:@"calloutPadding"])
+        return [TiUtils insetValue:[self valueForUndefinedKey:@"calloutPadding"]];
+    return DEFAULT_CALLOUT_PADDING;
+}
+
 - (UIView*)leftViewAccessory
 {
-	TiViewProxy* viewProxy = [self valueForUndefinedKey:@"leftView"];
-	if (viewProxy!=nil && [viewProxy isKindOfClass:[TiViewProxy class]])
-	{
-		return [viewProxy view];
-	}
-	else
-	{
-		id button = [self valueForUndefinedKey:@"leftButton"];
-		if (button!=nil)
-		{
-			return [self makeButton:button tag:LEFT_BUTTON];
-		}
-	}
-	return nil;
+	if (_leftViewProxy == nil) {
+        id value = [self valueForUndefinedKey:@"leftView"];
+        if ([value isKindOfClass:[TiViewProxy class]])
+        {
+            _leftViewProxy = (TiViewProxy*)value;
+        } else if ([value isKindOfClass:[NSDictionary class]]) {
+            id<TiEvaluator> context = self.executionContext;
+            if (context == nil) {
+                context = self.pageContext;
+            }
+            _leftViewProxy = (TiViewProxy*)[[TiViewProxy class] createFromDictionary:value rootProxy:self inContext:context];
+        }
+        [self rememberProxy:_leftViewProxy];
+    }
+    if (_leftViewProxy) {
+        [_leftViewProxy setCanBeResizedByFrame:YES];
+		return [_leftViewProxy getAndPrepareViewForOpening:[TiUtils appFrame]];
+    }
+    id button = [self valueForUndefinedKey:@"leftButton"];
+    if (button!=nil)
+    {
+        return [self makeButton:button tag:LEFT_BUTTON];
+    }
+    return nil;
 }
 
 - (UIView*)rightViewAccessory
 {
-	TiViewProxy* viewProxy = [self valueForUndefinedKey:@"rightView"];
-	if (viewProxy!=nil && [viewProxy isKindOfClass:[TiViewProxy class]])
-	{
-		return [viewProxy view];
-	}
-	else
-	{
-		id button = [self valueForUndefinedKey:@"rightButton"];
-		if (button!=nil)
-		{
-			return [self makeButton:button tag:RIGHT_BUTTON];
-		}
-	}
+    if (_rightViewProxy == nil) {
+        id value = [self valueForUndefinedKey:@"rightView"];
+        if ([value isKindOfClass:[TiViewProxy class]])
+        {
+            _rightViewProxy = (TiViewProxy*)value;
+        } else if ([value isKindOfClass:[NSDictionary class]]) {
+            id<TiEvaluator> context = self.executionContext;
+            if (context == nil) {
+                context = self.pageContext;
+            }
+            _rightViewProxy = (TiViewProxy*)[[TiViewProxy class] createFromDictionary:value rootProxy:self inContext:context];
+        }
+        [self rememberProxy:_rightViewProxy];
+    }
+    if (_rightViewProxy) {
+        [_rightViewProxy setCanBeResizedByFrame:YES];
+		return [_rightViewProxy getAndPrepareViewForOpening:[TiUtils appFrame]];
+    }
+    id button = [self valueForUndefinedKey:@"rightButton"];
+    if (button!=nil)
+    {
+        return [self makeButton:button tag:RIGHT_BUTTON];
+    }
+	return nil;
+}
+
+- (UIView*)customViewAccessory
+{
+    if (_customViewProxy == nil) {
+        id value = [self valueForUndefinedKey:@"customView"];
+        if ([value isKindOfClass:[TiViewProxy class]])
+        {
+            _customViewProxy = (TiViewProxy*)value;
+        } else if ([value isKindOfClass:[NSDictionary class]]) {
+            id<TiEvaluator> context = self.executionContext;
+            if (context == nil) {
+                context = self.pageContext;
+            }
+            _customViewProxy = (TiViewProxy*)[[TiViewProxy class] createFromDictionary:value rootProxy:self inContext:context];
+        }
+        [self rememberProxy:_customViewProxy];
+    }
+    if (_customViewProxy) {
+        [_customViewProxy setCanBeResizedByFrame:YES];
+		return [_customViewProxy getAndPrepareViewForOpening:[TiUtils appFrame]];
+    }
 	return nil;
 }
 
@@ -253,7 +334,7 @@
 
 - (void)setRightView:(id)rightview
 {
-	id current = [self valueForUndefinedKey:@"rightView"];
+    DETACH_RELEASE_TO_NIL(_rightViewProxy)
 	[self replaceValue:rightview forKey:@"rightView" notification:NO];
 	if (_marker) {
         _marker.rightCalloutAccessoryView = [self rightViewAccessory];
@@ -263,7 +344,7 @@
 
 - (void)setLeftView:(id)leftview
 {
-	id current = [self valueForUndefinedKey:@"leftView"];
+    DETACH_RELEASE_TO_NIL(_leftViewProxy)
 	[self replaceValue:leftview forKey:@"leftView" notification:NO];
     if (_marker) {
         _marker.leftCalloutAccessoryView = [self leftViewAccessory];
@@ -271,10 +352,21 @@
     [self setNeedsRefreshingWithSelection:NO];
 }
 
--(void)setCustomView:(id)customView
+- (void)setCustomView:(id)leftview
 {
-	id current = [self valueForUndefinedKey:@"customView"];
-	[self replaceValue:customView forKey:@"customView" notification:NO];
+    DETACH_RELEASE_TO_NIL(_customViewProxy)
+	[self replaceValue:leftview forKey:@"customView" notification:NO];
+    if (_marker) {
+        _marker.customCalloutAccessoryView = [self customViewAccessory];
+    }
+    [self setNeedsRefreshingWithSelection:NO];
+}
+
+
+-(void)setPinView:(id)customView
+{
+	id current = [self valueForUndefinedKey:@"pinView"];
+	[self replaceValue:customView forKey:@"pinView" notification:NO];
 	if ([current isEqual: customView] == NO)
 	{
         [current setProxyObserver:nil];
@@ -290,8 +382,35 @@
     _anchorPoint = [TiUtils pointValue:value def:_anchorPoint];
 	[self replaceValue:value forKey:@"anchorPoint" notification:NO];
     if (_marker) {
+        [_marker replaceUIImage:_image anchorPoint:_anchorPoint];
     }
-    [_marker replaceUIImage:_image anchorPoint:_anchorPoint];
+}
+
+-(CGPoint)anchorPoint
+{
+    return _anchorPoint;
+}
+
+-(void)setCalloutAnchorPoint:(id)value
+{
+    _calloutAnchorPoint = [TiUtils pointValue:value def:_calloutAnchorPoint];
+	[self replaceValue:value forKey:@"calloutAnchorPoint" notification:NO];
+}
+
+-(void)setCalloutAlpha:(id)value
+{
+    _calloutAlpha = [TiUtils floatValue:value def:1.0f];
+	[self replaceValue:value forKey:@"calloutAlpha" notification:NO];
+}
+
+-(CGPoint)calloutAnchorPoint
+{
+    return _calloutAnchorPoint;
+}
+
+-(CGFloat)calloutAlpha
+{
+    return _calloutAlpha;
 }
 
 -(void)setImage:(id)image
@@ -300,8 +419,8 @@
     _image = [[[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:image proxy:self]] retain];
 	[self replaceValue:image forKey:@"image" notification:NO];
     if (_marker) {
+        [_marker replaceUIImage:_image anchorPoint:_anchorPoint];
     }
-    [_marker replaceUIImage:_image anchorPoint:_anchorPoint];
 }
 
 -(void)setMbImage:(id)image
@@ -312,25 +431,15 @@
     [self setNeedsRefreshingWithSelection:(_marker != nil)];
 }
 
-- (void)setCenterOffset:(id)centeroffset
-{
-    [self replaceValue:centeroffset forKey:@"centerOffset" notification:NO];
-    CGPoint newVal = [TiUtils pointValue:centeroffset];
-    if (!CGPointEqualToPoint(newVal,offset)) {
-        offset = newVal;
-        [self setNeedsRefreshingWithSelection:YES];
-    }
-}
-
 #pragma mark Mapbox
 
 
 -(RMAnnotation*)getRMAnnotationForMapView:(RMMapView*)mapView
 {
     if (_rmannotation == nil) {
-        _rmannotation = [[RMAnnotation alloc] initWithMapView:mapView coordinate:self.coordinate andTitle:[self title]];
+        _rmannotation = [[RMAnnotation alloc] initWithMapView:mapView coordinate:self.coordinate andTitle:nil];
         _rmannotation.userInfo = self;
-        _rmannotation.subtitle = [self subtitle];
+//        _rmannotation.subtitle = [self subtitle];
     }
     else if (_rmannotation.mapView != mapView) {
         RELEASE_TO_NIL(_rmannotation)
@@ -349,6 +458,104 @@
     return _marker;
 }
 
+-(UIImage*)coloredImage:(UIImage*)image withColor:(UIColor*)color
+{
+    if (image == nil || color == nil) return image;
+    // begin a new image context, to draw our colored image onto
+    UIGraphicsBeginImageContext(image.size);
+    
+    // get a reference to that context we created
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set the fill color
+    [color setFill];
+    
+    // translate/flip the graphics context (for transforming from CG* coords to UI* coords
+    CGContextTranslateCTM(context, 0, image.size.height);
+    CGContextScaleCTM(context, 1.0, -1.0);
+    
+    // set the blend mode to color burn, and the original image
+    CGContextSetBlendMode(context, kCGBlendModeColorBurn);
+    CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
+    CGContextDrawImage(context, rect, image.CGImage);
+    
+    // set a mask that matches the shape of the image, then draw (color burn) a colored rectangle
+    CGContextClipToMask(context, rect, image.CGImage);
+    CGContextAddRect(context, rect);
+    CGContextDrawPath(context,kCGPathFill);
+    
+    // generate a new UIImage from the graphics context we drew onto
+    UIImage *coloredImg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    //return the color-burned image
+    return coloredImg;
+}
+
+-(UIImage*)getMapBoxImage:(NSString *)symbolName color:(UIColor*)color size:(RMMarkerMapboxImageSize)size
+{
+    NSString *sizeString = nil;
+    
+    switch (size)
+    {
+        case RMMarkerMapboxImageSizeSmall:
+            sizeString = @"small";
+            break;
+            
+        case RMMarkerMapboxImageSizeMedium:
+        default:
+            sizeString = @"medium";
+            break;
+            
+        case RMMarkerMapboxImageSizeLarge:
+            sizeString = @"large";
+            break;
+    }
+    
+    BOOL useRetina = ([[UIScreen mainScreen] scale] > 1.0);
+    
+    NSString *colorHex = nil;
+
+    if (color)
+    {
+        CGFloat white, red, green, blue, alpha;
+
+        if ([color getRed:&red green:&green blue:&blue alpha:&alpha])
+        {
+            colorHex = [NSString stringWithFormat:@"%02lx%02lx%02lx", (unsigned long)(red * 255), (unsigned long)(green * 255), (unsigned long)(blue * 255)];
+        }
+        else if ([color getWhite:&white alpha:&alpha])
+        {
+            colorHex = [NSString stringWithFormat:@"%02lx%02lx%02lx", (unsigned long)(white * 255), (unsigned long)(white * 255), (unsigned long)(white * 255)];
+        }
+    }
+    NSURL *imageURLForCache = [NSURL URLWithString:[NSString stringWithFormat:@"http://api.tiles.mapbox.com/v3/marker/pin-%@%@%@%@.png",
+                                            (sizeString ? [sizeString substringToIndex:1] : @"m"),
+                                            (symbolName ? [@"-" stringByAppendingString:symbolName] : @""),
+                                            (colorHex?colorHex:@"+000000"),
+                                            (useRetina  ? @"@2x" : @"")]];
+     NSURL *imageURLForDownload = [NSURL URLWithString:[NSString stringWithFormat:@"http://api.tiles.mapbox.com/v3/marker/pin-%@%@%@%@.png",
+                                                     (sizeString ? [sizeString substringToIndex:1] : @"m"),
+                                                     (symbolName ? [@"-" stringByAppendingString:symbolName] : @""),
+                                                     (colorHex?@"+cccccc":@"+000000"),
+                                                     (useRetina  ? @"@2x" : @"")]];
+    UIImage* image = [[ImageLoader sharedLoader] loadImmediateImage:imageURLForCache];
+    if (image == nil)  {
+        image = [[ImageLoader sharedLoader] loadImmediateImage:imageURLForDownload];
+        if (image == nil) {
+            NSData* data = [NSData brandedDataWithContentsOfURL:imageURLForDownload];
+            image = [UIImage imageWithData:data scale:(useRetina ? 2.0 : 1.0)];
+            [[ImageLoader sharedLoader] cache:image forURL:imageURLForDownload];
+        }
+        if (color) {
+            image = [self coloredImage:image withColor:color];
+        }
+        [[ImageLoader sharedLoader] cache:image forURL:imageURLForCache];
+    }
+    
+    return image;
+}
+
 -(RMMapLayer*)shapeLayerForMapView:(AkylasMapMapboxView*)mapView
 {
     if (_marker == nil) {
@@ -359,12 +566,20 @@
             _marker = [[RMMarker alloc] initWithUIImage:mapView.defaultPinImage anchorPoint:mapView.defaultPinAnchor];
         }
         else {
-            _marker = [[RMMarker alloc] initWithMapboxMarkerImage:_mbImage tintColor:_tintColor size:_size];
+            
+            _marker = [[RMMarker alloc] initWithUIImage:[self getMapBoxImage:_mbImage color:_tintColor size:_size] anchorPoint:mapView.defaultPinAnchor];
         }
-        _marker.userInfo = self;
-        _marker.canShowCallout = YES;
-        _marker.leftCalloutAccessoryView = [self leftViewAccessory];
-        _marker.rightCalloutAccessoryView = [self rightViewAccessory];
+        if ([self valueForUndefinedKey:@"anchorPoint"]) {
+            _marker.anchorPoint = _anchorPoint;
+        }
+        else {
+            _marker.anchorPoint = mapView.defaultPinAnchor;
+        }
+        
+        if (![self valueForUndefinedKey:@"calloutAnchorPoint"]) {
+            _calloutAnchorPoint = mapView.defaultCalloutAnchor;
+        }
+        _marker.canShowCallout = [TiUtils boolValue:[self valueForUndefinedKey:@"canShowCallout"] def:YES];
     }
     return _marker;
 }
@@ -375,7 +590,7 @@
 
 -(void)proxyDidRelayout:(id)sender
 {
-    id current = [self valueForUndefinedKey:@"customView"];
+    id current = [self valueForUndefinedKey:@"pinView"];
     if ( ([current isEqual:sender] == YES) && (self.placed) ) {
         [self setNeedsRefreshingWithSelection:YES];
     }

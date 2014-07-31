@@ -34,14 +34,23 @@
 	return result;
 }
 
+- (BOOL) isView:(UIView *) childView childOfView:(UIView *) parentView  {
+    for (UIView * theView in [parentView subviews]){
+        if (childView == theView) return YES;
+        if ([theView subviews] != nil && [self isView:childView childOfView:theView])
+        {
+            return YES;
+        }
+    }
+}
 
 - (UIView *)hitTest:(CGPoint) point withEvent:(UIEvent *)event 
 {
-    UIView * result = [super hitTest:point withEvent:event];
+    UIView * result = [self.calloutView hitTest:[self.calloutView convertPoint:point fromView:self] withEvent:event];
 	
 	if (result==nil)
 	{
-		for (UIView * ourSubView in [self subviews])
+		for (UIView * ourSubView in [self.calloutView subviews])
 		{
 			CGPoint subPoint = [self convertPoint:point toView:ourSubView];
 			for (UIView * ourSubSubView in [ourSubView subviews])
@@ -71,7 +80,9 @@
 				return nil;
 			}
 		}
-	}
+	} else if ([self isView:result childOfView:self.calloutView]) {
+        
+    }
 	RELEASE_TO_NIL(lastHitName);
 	return result;
 }

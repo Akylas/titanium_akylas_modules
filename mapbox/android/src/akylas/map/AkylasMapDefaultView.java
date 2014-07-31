@@ -9,10 +9,10 @@ package akylas.map;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
@@ -55,6 +55,9 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     }
 
     public void processPreMapProperties(final KrollDict d) {
+        if (d.containsKey(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS)) {
+            ((MapDefaultViewProxy)proxy).maxAnnotations = d.optInt(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS, 0);
+        }
         if (d.containsKey(AkylasMapModule.PROPERTY_REGION_FIT)) {
             regionFit = d.optBoolean(AkylasMapModule.PROPERTY_REGION_FIT,
                     regionFit);
@@ -86,9 +89,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     public void processPostMapProperties(final KrollDict d, final boolean animated) {
 
         if (d.containsKey(AkylasMapModule.PROPERTY_ANNOTATIONS)) {
-            Object[] annotations = (Object[]) d
-                    .get(AkylasMapModule.PROPERTY_ANNOTATIONS);
-            addAnnotations(annotations);
+            ((MapDefaultViewProxy)proxy).setAnnotations(d.get(AkylasMapModule.PROPERTY_ANNOTATIONS));
         }
         if (d.containsKey(AkylasMapModule.PROPERTY_ROUTES)) {
             Object[] routes = (Object[]) d.get(AkylasMapModule.PROPERTY_ROUTES);
@@ -138,6 +139,8 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
             setUserLocationEnabled(TiConvert.toBoolean(newValue));
         } else if (key.equals(AkylasMapModule.PROPERTY_USER_TRACKING_MODE)) {
             setUserTrackingMode(TiConvert.toInt(newValue, 0));
+        } else if (key.equals(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS)) {
+            ((MapDefaultViewProxy)proxy).maxAnnotations = TiConvert.toInt(newValue, 0);
         } else if (key.equals(TiC.PROPERTY_REGION)) {
             updateRegion(newValue, true);
         } else if (key.equals(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
@@ -149,7 +152,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         } else if (key.equals(AkylasMapModule.PROPERTY_REGION_FIT)) {
             regionFit = TiConvert.toBoolean(newValue, regionFit);
         } else if (key.equals(TiC.PROPERTY_ANNOTATIONS)) {
-            updateAnnotations((Object[]) newValue);
+            ((MapDefaultViewProxy)proxy).setAnnotations(newValue);
         } else if (key.equals(AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT)) {
             updateScrollableAreaLimit(newValue);
         } else {
@@ -177,24 +180,18 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     abstract void zoomOut(final LatLng about, final boolean userAction);
     abstract KrollDict getRegionDict();
 
-    protected ArrayList<AnnotationProxy> addAnnotations(Object[] annotations) {
-        ArrayList<AnnotationProxy> result = new ArrayList<AnnotationProxy>();
+    protected void addAnnotations(Object[] annotations) {
         for (int i = 0; i < annotations.length; i++) {
-            AnnotationProxy annotation = addAnnotation(annotations[i]);
-            if (annotation != null) {
-                result.add(annotation);
-            }
+            handleAddAnnotation((AnnotationProxy) annotations[i]);
         }
-        return null;
-    }
-
-    protected void updateAnnotations(Object[] annotations) {
-        // First, remove old annotations from map
-        removeAllAnnotations();
-        // Then we add new annotations to the map
-        addAnnotations(annotations);
     }
     
+    protected void removeAnnotations(Object[] annotations) {
+        for (int i = 0; i < annotations.length; i++) {
+            removeAnnotation(annotations[i]);
+        }
+    }
+
     public AkylasMarker findMarkerByTitle(String title) {
         for (int i = 0; i < timarkers.size(); i++) {
             AkylasMarker timarker = timarkers.get(i);
@@ -214,18 +211,18 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     abstract void handleRemoveMarker(final AkylasMarker marker); 
     
 
-    public AnnotationProxy addAnnotation(Object object) {
-        if (object instanceof HashMap) {
-            object = KrollProxy.createProxy(AnnotationProxy.class, null,
-                    new Object[] { object }, null);
-        }
-        if (object instanceof AnnotationProxy) {
-            AnnotationProxy annotation = (AnnotationProxy) object;
-            handleAddAnnotation((AnnotationProxy) object);
-            return annotation;
-        }
-        return null;
-    }
+//    public void addAnnotation(Object object) {
+//        if (object instanceof HashMap) {
+//            object = KrollProxy.createProxy(AnnotationProxy.class, null,
+//                    new Object[] { object }, null);
+//        }
+//        if (object instanceof AnnotationProxy) {
+//            AnnotationProxy annotation = (AnnotationProxy) object;
+//            handleAddAnnotation((AnnotationProxy) object);
+//            return annotation;
+//        }
+//        return null;
+//    }
     
     protected void removeAllAnnotations() {
         for (int i = 0; i < timarkers.size(); i++) {
@@ -364,6 +361,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         fireEvent(type, d, true, false);
 
     }
+    
 
     public void firePinChangeDragStateEvent(Marker marker,
             AnnotationProxy annoProxy, int dragState) {

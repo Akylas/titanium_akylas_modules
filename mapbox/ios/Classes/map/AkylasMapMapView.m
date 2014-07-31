@@ -1,4 +1,4 @@
-/**
+    /**
  * Appcelerator Titanium Mobile
  * Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License
@@ -14,6 +14,7 @@
 #import "AkylasMapImageAnnotationView.h"
 #import "AkylasMapCustomAnnotationView.h"
 #import "AkylasMapRouteProxy.h"
+
 
 @interface MKMapView (ZoomLevel)
 - (void)setCenterCoordinate:(CLLocationCoordinate2D)centerCoordinate
@@ -52,6 +53,8 @@
 {
     CGFloat _minZoom;
     CGFloat _maxZoom;
+    SMCalloutView* _calloutView;
+    UIView* calloutTouchedView;
 }
 
 #pragma mark Internal
@@ -72,6 +75,10 @@
 		map.delegate = nil;
 		RELEASE_TO_NIL(map);
 	}
+    if (_calloutView) {
+        _calloutView.delegate = nil;
+        RELEASE_TO_NIL(_calloutView)
+    }
     if (mapLine2View) {
         CFRelease(mapLine2View);
         mapLine2View = nil;
@@ -225,6 +232,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     if ([annotations isKindOfClass:[NSArray class]]) {
         for (AkylasMapAnnotationProxy* annotProxy in annotations) {
             if ([annotProxy isKindOfClass:[AkylasMapAnnotationProxy class]]) {
+                NSArray* current = [mapView annotations];
                 [mapView removeAnnotation:(AkylasMapAnnotationProxy*)annotProxy];
             }
         }
@@ -353,11 +361,13 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 -(void)setUserLocationEnabled_:(id)value
 {
 	ENSURE_SINGLE_ARG(value,NSObject);
-	[self map].showsUserLocation = [TiUtils boolValue:value];
+    TiThreadPerformOnMainThread(^{
+        [self map].showsUserLocation = [TiUtils boolValue:value];
+    }, NO);
 }
 
 
--(id)userLocationEnabled
+-(id)userLocationEnabled_
 {
     return NUMINT([self map].showsUserLocation);
 }
@@ -374,7 +384,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     return result;
 }
 
--(id)userLocation
+-(id)userLocation_
 {
     return [self dictFromUserLocation:[self map].userLocation];
 }
@@ -382,10 +392,12 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 -(void)setUserTrackingMode_:(id)value
 {
 	ENSURE_SINGLE_ARG(value,NSNumber);
-	[[self map] setUserTrackingMode:[TiUtils intValue:value def:MKUserTrackingModeNone] animated:animate];
+    TiThreadPerformOnMainThread(^{
+        [[self map] setUserTrackingMode:[TiUtils intValue:value def:MKUserTrackingModeNone] animated:animate];
+    }, NO);
 }
 
--(id)userTrackingMode
+-(id)userTrackingMode_
 {
     return NUMINT([self map].userTrackingMode);
 }
@@ -483,7 +495,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 	[self render];
 }
 
--(id)centerCoordinate
+-(id)centerCoordinate_
 {
     return [AkylasMapModule dictFromLocation2D:RMSphericalTrapeziumCenter(region)];
 }
@@ -543,6 +555,13 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     [map addOverlay:polyline];
 }
 
+- (void)tintColorDidChange
+{
+    if (_calloutView)
+        _calloutView.tintColor = self.tintColor;
+}
+
+
 #pragma mark Delegates
 
 // Delegate for >= iOS 7
@@ -570,7 +589,10 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     _zoom = [mapView getZoomLevel];
     if ([self.proxy _hasListeners:@"regionchanged"])
 	{
-		[self.proxy fireEvent:@"regionchanged" withObject:[AkylasMapModule dictFromRegion:region] propagate:NO checkForListener:NO];
+		[self.proxy fireEvent:@"regionchanged" withObject:@{
+                                                            @"region":[AkylasMapModule dictFromRegion:region],
+                                                            @"zoom":@(_zoom)
+                                                            } propagate:NO checkForListener:NO];
 	}
 }
 
@@ -660,21 +682,99 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 	return nil;
 }
 
-- (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)view{
-	if ([view conformsToProtocol:@protocol(AkylasMapAnnotation)])
+
+-(UIView *)hitTest:(CGPoint) point withEvent:(UIEvent *)event
+{
+	BOOL hasTouchListeners = [self hasTouchableListener];
+	UIView *hitView = [super hitTest:point withEvent:event];
+    if (!([hitView isKindOfClass:[UIControl class]]) && [_calloutView pointInside:[_calloutView convertPoint:point fromView:self] withEvent:event]) {
+        calloutTouchedView = hitView;
+    }
+    else {
+        calloutTouchedView = nil;
+    }
+
+	return hitView;
+}
+
+- (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)annotationView {
+    if (calloutTouchedView) {
+        calloutTouchedView = nil;
+        return;
+    }
+    BOOL canShowCallout = YES;
+    AkylasMapAnnotationProxy *annProxy = nil;
+    if ([[annotationView annotation] isKindOfClass:[AkylasMapAnnotationProxy class]]) {
+        annProxy = (AkylasMapAnnotationProxy*)[annotationView annotation];
+        canShowCallout = [TiUtils boolValue:[annProxy valueForUndefinedKey:@"canShowCallout"] def:YES];
+    }
+    if (canShowCallout) {
+        if (!_calloutView) {
+            _calloutView = [[SMCalloutView platformCalloutView] retain];
+            _calloutView.delegate = self;
+            if (PostVersion7) {
+                _calloutView.tintColor = self.tintColor;
+            }
+        }
+        if ([annotationView respondsToSelector:@selector(setCalloutView:)]) {
+            [annotationView setCalloutView:_calloutView];
+        }
+        // apply the MKAnnotationView's basic properties
+        _calloutView.title = annotationView.annotation.title;
+        _calloutView.subtitle = annotationView.annotation.subtitle;
+        
+        // Apply the desired calloutOffset (from the top-middle of the view)
+        CGPoint calloutOffset = [annProxy calloutAnchorPoint];
+        calloutOffset.y +=0.5f;
+        calloutOffset.x *= annotationView.frame.size.width;
+        calloutOffset.y *= annotationView.frame.size.height;
+        
+        if ([annotationView isKindOfClass:[MKPinAnnotationView class]]) {
+            calloutOffset.x -=8;
+        }
+        
+        _calloutView.calloutOffset = calloutOffset;
+        
+        SMCalloutMaskedBackgroundView* backView = (SMCalloutMaskedBackgroundView*)_calloutView.backgroundView;
+        backView.alpha = [annProxy calloutAlpha];
+       _calloutView.leftAccessoryView = [annProxy leftViewAccessory];
+        _calloutView.rightAccessoryView = [annProxy rightViewAccessory];
+        _calloutView.contentView = [annProxy customViewAccessory];
+        if (annProxy) {
+            _calloutView.padding = [annProxy calloutPadding];
+            backView.backgroundColor = [annProxy calloutBackgroundColor];
+            backView.cornerRadius = [annProxy calloutBorderRadius];
+        }
+        else {
+            backView.backgroundColor = [UIColor whiteColor];
+            backView.cornerRadius = DEFAULT_CALLOUT_CORNER_RADIUS;
+            _calloutView.padding = DEFAULT_CALLOUT_PADDING;
+        }
+
+        // This does all the magic.
+        [_calloutView presentCalloutFromRect:annotationView.bounds inView:annotationView constrainedToView:self animated:YES];
+    }
+    
+    if ([annotationView conformsToProtocol:@protocol(AkylasMapAnnotation)])
 	{
-		BOOL isSelected = [view isSelected];
-		MKAnnotationView<AkylasMapAnnotation> *ann = (MKAnnotationView<AkylasMapAnnotation> *)view;
-		[self fireClickEvent:view source:isSelected?@"pin":[ann lastHitName]];
+		BOOL isSelected = [annotationView isSelected];
+		MKAnnotationView<AkylasMapAnnotation> *ann = (MKAnnotationView<AkylasMapAnnotation> *)annotationView;
+		[self fireClickEvent:annotationView source:isSelected?@"pin":[ann lastHitName]];
 		return;
 	}
 }
-- (void)mapView:(MKMapView *)mapView didDeselectAnnotationView:(MKAnnotationView *)view{
-	if ([view conformsToProtocol:@protocol(AkylasMapAnnotation)])
+
+- (void)mapView:(MKMapView *)mapView didDeselectAnnotationView:(MKAnnotationView *)annotationView {
+    if (calloutTouchedView) {
+        [mapView selectAnnotation:annotationView.annotation animated:NO];
+        return;
+    }
+    [_calloutView dismissCalloutAnimated:YES];
+    if ([annotationView conformsToProtocol:@protocol(AkylasMapAnnotation)])
 	{
-		BOOL isSelected = [view isSelected];
-		MKAnnotationView<AkylasMapAnnotation> *ann = (MKAnnotationView<AkylasMapAnnotation> *)view;
-		[self fireClickEvent:view source:isSelected?@"pin":[ann lastHitName]];
+		BOOL isSelected = [annotationView isSelected];
+		MKAnnotationView<AkylasMapAnnotation> *ann = (MKAnnotationView<AkylasMapAnnotation> *)annotationView;
+		[self fireClickEvent:annotationView source:isSelected?@"pin":[ann lastHitName]];
 		return;
 	}
 }
@@ -705,13 +805,13 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 {
     if ([annotation isKindOfClass:[AkylasMapAnnotationProxy class]]) {
         AkylasMapAnnotationProxy *ann = (AkylasMapAnnotationProxy*)annotation;
-        id customView = [ann valueForUndefinedKey:@"customView"];
-        if ( (customView == nil) || (customView == [NSNull null]) || (![customView isKindOfClass:[TiViewProxy class]]) ){
-            customView = nil;
+        id pinView = [ann valueForUndefinedKey:@"pinView"];
+        if ( (pinView == nil) || (pinView == [NSNull null]) || (![pinView isKindOfClass:[TiViewProxy class]]) ){
+            pinView = nil;
         }
         NSString *identifier = nil;
         UIImage* image = nil;
-        if (customView == nil) {
+        if (pinView == nil) {
             id imagePath = [ann valueForUndefinedKey:@"image"];
             image = [TiUtils image:imagePath proxy:ann];
             identifier = (image!=nil) ? @"timap-image":@"timap-pin";
@@ -722,6 +822,8 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         MKAnnotationView *annView = nil;
 		
         annView = (MKAnnotationView*) [mapView dequeueReusableAnnotationViewWithIdentifier:identifier];
+        
+
 		
         if (annView==nil) {
             if ([identifier isEqualToString:@"timap-customView"]) {
@@ -735,28 +837,32 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
             }
         }
         if ([identifier isEqualToString:@"timap-customView"]) {
-            [((AkylasMapCustomAnnotationView*)annView) setProxy:customView];
+            [((AkylasMapCustomAnnotationView*)annView) setProxy:pinView];
         }
         else if ([identifier isEqualToString:@"timap-image"]) {
             annView.image = image;
         }
         else {
             MKPinAnnotationView *pinview = (MKPinAnnotationView*)annView;
-            pinview.pinColor = [ann pinColor];
+            pinview.pinColor = [ann mapPincolor];
             pinview.animatesDrop = [ann animatesDrop] && ![(AkylasMapAnnotationProxy *)annotation placed];
-            annView.calloutOffset = CGPointMake(-8, 0);
+            annView.centerOffset = CGPointMake(8, -15); //reinit centerOffset for default Pin
         }
-        annView.canShowCallout = [TiUtils boolValue:[ann valueForUndefinedKey:@"canShowCallout"] def:YES];;
+        CGPoint currentOffset = annView.centerOffset;
+        // Apply the desired calloutOffset (from the top-middle of the view)
+        CGPoint centerOffset = [ann anchorPoint];
+        centerOffset.x = 0.5f - centerOffset.x;
+        centerOffset.y = 0.5f - centerOffset.y;
+        centerOffset.x *= annView.frame.size.width;
+        centerOffset.y *= annView.frame.size.height;
+        centerOffset.x += currentOffset.x;
+        centerOffset.y += currentOffset.y;
+        annView.centerOffset = centerOffset;
+        
+        annView.canShowCallout = NO; //SMCalloutView
         annView.enabled = YES;
-        annView.centerOffset = ann.offset;
-        UIView *left = [ann leftViewAccessory];
-        UIView *right = [ann rightViewAccessory];
-        if (left!=nil) {
-            annView.leftCalloutAccessoryView = left;
-        }
-        if (right!=nil) {
-            annView.rightCalloutAccessoryView = right;
-        }
+        annView.backgroundColor = [UIColor greenColor];
+//        annView.centerOffset = CGPointMake(-8, 0);
 
         BOOL draggable = [TiUtils boolValue: [ann valueForUndefinedKey:@"draggable"]];
         if (draggable && [[MKAnnotationView class] instancesRespondToSelector:NSSelectorFromString(@"isDraggable")])
@@ -800,6 +906,46 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         }
 		[thisProxy setPlaced:YES];
 	}
+}
+
+#pragma mark SMCalloutViewDelegate
+//
+// SMCalloutView delegate methods
+//
+
+- (void)calloutViewClicked:(SMCalloutView *)calloutView {
+    
+}
+
+- (NSTimeInterval)calloutView:(SMCalloutView *)calloutView delayForRepositionWithSize:(CGSize)offset {
+    
+    // When the callout is being asked to present in a way where it or its target will be partially offscreen, it asks us
+    // if we'd like to reposition our surface first so the callout is completely visible. Here we scroll the map into view,
+    // but it takes some math because we have to deal in lon/lat instead of the given offset in pixels.
+    
+    CLLocationCoordinate2D coordinate = self.map.centerCoordinate;
+    
+    // where's the center coordinate in terms of our view?
+    CGPoint center = [self.map convertCoordinate:coordinate toPointToView:self];
+    
+    // move it by the requested offset
+    center.x -= offset.width;
+    center.y -= offset.height;
+    
+    // and translate it back into map coordinates
+    coordinate = [self.map convertPoint:center toCoordinateFromView:self];
+    
+    // move the map!
+    [self.map setCenterCoordinate:coordinate animated:YES];
+    
+    // tell the callout to wait for a while while we scroll (we assume the scroll delay for MKMapView matches UIScrollView)
+    return kSMCalloutViewRepositionDelayForUIScrollView;
+}
+
+- (void)disclosureTapped {
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Tap!" message:@"You tapped the disclosure button."
+                                                   delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK",nil];
+    [alert show];
 }
 
 #pragma mark Click detection

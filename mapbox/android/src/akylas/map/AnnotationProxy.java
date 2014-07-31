@@ -6,53 +6,53 @@
  */
 package akylas.map;
 
+import java.util.HashMap;
+
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.AsyncResult;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.titanium.TiApplication;
-import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
-import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.view.TiDrawableReference;
-
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import akylas.map.AkylasMarker;
-import android.graphics.Bitmap;
+import android.graphics.RectF;
 import android.os.Message;
-import android.view.View;
 
 @Kroll.proxy(creatableInModule = AkylasMapModule.class, propertyAccessors = {
-        TiC.PROPERTY_SUBTITLE, TiC.PROPERTY_SUBTITLEID, TiC.PROPERTY_TITLE,
-        TiC.PROPERTY_TITLEID, TiC.PROPERTY_LATITUDE, TiC.PROPERTY_LONGITUDE,
-        AkylasMapModule.PROPERTY_DRAGGABLE, TiC.PROPERTY_IMAGE,
-        TiC.PROPERTY_PINCOLOR, AkylasMapModule.PROPERTY_CUSTOM_VIEW,
-        TiC.PROPERTY_LEFT_BUTTON, TiC.PROPERTY_LEFT_VIEW,
-        TiC.PROPERTY_RIGHT_BUTTON, TiC.PROPERTY_RIGHT_VIEW })
+        TiC.PROPERTY_SUBTITLE, 
+        TiC.PROPERTY_SUBTITLEID, 
+        TiC.PROPERTY_TITLE,
+        TiC.PROPERTY_TITLEID, 
+        TiC.PROPERTY_LATITUDE, 
+        TiC.PROPERTY_LONGITUDE,
+        AkylasMapModule.PROPERTY_DRAGGABLE, 
+        TiC.PROPERTY_IMAGE,
+        TiC.PROPERTY_PINCOLOR, 
+        AkylasMapModule.PROPERTY_CUSTOM_VIEW,
+        TiC.PROPERTY_LEFT_BUTTON, 
+        TiC.PROPERTY_LEFT_VIEW,
+        TiC.PROPERTY_RIGHT_BUTTON, 
+        TiC.PROPERTY_RIGHT_VIEW })
 public class AnnotationProxy extends KrollProxy {
     private static final String TAG = "AnnotationProxy";
 
-    private MarkerOptions markerOptions;
     private AkylasMarker marker;
-    private AkylasMapInfoWindow infoWindow = null;
-    private static final String defaultIconImageHeight = "40dip"; // The height
-                                                                  // of the
-                                                                  // default
-                                                                  // marker icon
-    // The height of the marker icon in the unit of "px". Will use it to analyze
-    // the touch event to find out
-    // the correct clicksource for the click event.
-    private int iconImageHeight = 0;
+    private AkylasMapInfoView infoWindow = null;
+    
     private String annoTitle;
     private String annoSubtitle;
+    private boolean draggable;
+    private float pinColor;
+    private com.mapbox.mapboxsdk.geometry.LatLng latLong;
+    
+    private TiViewProxy _leftViewProxy;
+    private TiViewProxy _rightViewProxy;
+    private TiViewProxy _customViewProxy;
 
     private static final int MSG_FIRST_ID = KrollProxy.MSG_LAST_ID + 1;
 
@@ -64,7 +64,6 @@ public class AnnotationProxy extends KrollProxy {
     public AnnotationProxy() {
         super();
         annoTitle = "";
-        markerOptions = new MarkerOptions();
         // defaultValues.put(AkylasMapboxModule.PROPERTY_SHOW_INFO_WINDOW,
         // true);
     }
@@ -73,9 +72,9 @@ public class AnnotationProxy extends KrollProxy {
         this();
     }
 
-    public MarkerOptions getMarkerOptions() {
-        return markerOptions;
-    }
+//    public MarkerOptions getMarkerOptions() {
+//        return markerOptions;
+//    }
 
     @Override
     protected KrollDict getLangConversionTable() {
@@ -91,6 +90,18 @@ public class AnnotationProxy extends KrollProxy {
 
     public String getSubtitle() {
         return annoSubtitle;
+    }
+    
+    public boolean getDraggable() {
+        return draggable;
+    }
+    
+    public float getPinColor() {
+        return pinColor;
+    }
+    
+    public com.mapbox.mapboxsdk.geometry.LatLng getPosition() {
+        return latLong;
     }
 
     @Override
@@ -136,40 +147,95 @@ public class AnnotationProxy extends KrollProxy {
     }
 
     public void setPosition(double latitude, double longitude) {
-        markerOptions.position(new LatLng(latitude, longitude));
+        latLong = new com.mapbox.mapboxsdk.geometry.LatLng(latitude, longitude);
         if (marker != null) {
             marker.setPosition(latitude, longitude);
         }
     }
     
-    private void prepareInfoWindow(KrollDict dict) {
+    private void prepareInfoView(KrollDict dict) {
         if (infoWindow == null) return;
         if (dict == null) dict = getProperties();
         infoWindow.setTitle(annoTitle);
         infoWindow.setSubtitle(annoSubtitle);
+        if (dict.containsKey(AkylasMapModule.PROPERTY_CALLOUT_PADDING)) {
+            RectF paddingRect = TiConvert.toPaddingRect(dict, AkylasMapModule.PROPERTY_CALLOUT_PADDING);
+            infoWindow.setPadding((int)paddingRect.left, (int)paddingRect.top, (int)paddingRect.right, (int)paddingRect.bottom);
+        }
         
-        Object leftButton = dict.get(TiC.PROPERTY_LEFT_BUTTON);
-        Object leftView = dict.get(TiC.PROPERTY_LEFT_VIEW);
-        Object rightButton = dict.get(TiC.PROPERTY_RIGHT_BUTTON);
-        Object rightView = dict.get(TiC.PROPERTY_RIGHT_VIEW);
-        if (leftButton != null) {
-            infoWindow.setLeftOrRightPane(leftButton,
-                    AkylasMapInfoWindow.LEFT_PANE);
-        } else {
-            infoWindow.setLeftOrRightPane(leftView,
-                    AkylasMapInfoWindow.LEFT_PANE);
+        if (_leftViewProxy == null) {
+            if (dict.containsKey(TiC.PROPERTY_LEFT_VIEW)) {
+                Object value = dict.get(TiC.PROPERTY_LEFT_VIEW);
+                if (value instanceof HashMap) {
+                    _leftViewProxy = (TiViewProxy)createProxyFromTemplate((HashMap) value,
+                           this, true);
+                    if (_leftViewProxy != null) {
+                        _leftViewProxy.updateKrollObjectProperties();
+                    }
+                }
+                else if (value instanceof TiViewProxy) {
+                    _leftViewProxy = (TiViewProxy)value;
+                }
+            }
         }
-        if (rightButton != null) {
-            infoWindow.setLeftOrRightPane(rightButton,
-                    AkylasMapInfoWindow.RIGHT_PANE);
-        } else {
-            infoWindow.setLeftOrRightPane(rightView,
-                    AkylasMapInfoWindow.RIGHT_PANE);
+        if (_leftViewProxy != null) {
+            infoWindow.setLeftOrRightPane(_leftViewProxy,
+                    AkylasMapInfoView.LEFT_PANE);
         }
+        else {
+            infoWindow.setLeftOrRightPane(dict.get(TiC.PROPERTY_LEFT_BUTTON),
+                    AkylasMapInfoView.LEFT_PANE);
+        }
+        
+        if (_rightViewProxy == null) {
+            if (dict.containsKey(TiC.PROPERTY_RIGHT_VIEW)) {
+                Object value = dict.get(TiC.PROPERTY_RIGHT_VIEW);
+                if (value instanceof HashMap) {
+                    _rightViewProxy = (TiViewProxy)createProxyFromTemplate((HashMap) value,
+                           this, true);
+                    if (_rightViewProxy != null) {
+                        _rightViewProxy.updateKrollObjectProperties();
+                    }
+                }
+                else if (value instanceof TiViewProxy) {
+                    _rightViewProxy = (TiViewProxy)value;
+                }
+            }
+        }
+        if (_rightViewProxy != null) {
+            infoWindow.setLeftOrRightPane(_rightViewProxy,
+                    AkylasMapInfoView.RIGHT_PANE);
+        }
+        else {
+            infoWindow.setLeftOrRightPane(dict.get(TiC.PROPERTY_RIGHT_BUTTON),
+                    AkylasMapInfoView.RIGHT_PANE);
+        }
+        
+        //has to done last
+        if (_customViewProxy == null) {
+            if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
+                Object value = dict.get(AkylasMapModule.PROPERTY_CUSTOM_VIEW);
+                if (value instanceof HashMap) {
+                    _customViewProxy = (TiViewProxy)createProxyFromTemplate((HashMap) value,
+                           this, true);
+                    if (_customViewProxy != null) {
+                        _customViewProxy.updateKrollObjectProperties();
+                    }
+                }
+                else if (value instanceof TiViewProxy) {
+                    _customViewProxy = (TiViewProxy)value;
+                }
+            }
+        }
+        if (_customViewProxy != null) {
+            infoWindow.setCustomView(_customViewProxy);
+        }
+
     }
 
     @Override
     public void handleCreationDict(KrollDict dict) {
+        
         super.handleCreationDict(dict);
         double longitude = 0;
         double latitude = 0;
@@ -190,66 +256,13 @@ public class AnnotationProxy extends KrollProxy {
             String subtitle = TiConvert.toString(dict, TiC.PROPERTY_SUBTITLE);
             annoSubtitle = subtitle;
         }
-        prepareInfoWindow(dict);
 
         if (dict.containsKey(AkylasMapModule.PROPERTY_DRAGGABLE)) {
-            markerOptions
-                    .draggable(TiConvert
-                            .toBoolean(getProperty(AkylasMapModule.PROPERTY_DRAGGABLE)));
+            draggable = dict.optBoolean(AkylasMapModule.PROPERTY_DRAGGABLE, false);
         }
-
-        // customView, image and pincolor must be defined before adding to
-        // mapview. Once added, their values are final.
-        if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
-            handleCustomView(dict.get(AkylasMapModule.PROPERTY_CUSTOM_VIEW));
-        } else if (dict.containsKey(TiC.PROPERTY_IMAGE)) {
-            handleImage(dict.get(TiC.PROPERTY_IMAGE));
-        } else if (dict.containsKey(TiC.PROPERTY_PINCOLOR)) {
-            Object value = dict.get(TiC.PROPERTY_PINCOLOR);
-            if (value instanceof Number) {
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(TiConvert
-                        .toFloat(getProperty(TiC.PROPERTY_PINCOLOR))));
-            }
-           
-            setIconImageHeight(-1);
-        } else {
-            setIconImageHeight(-1);
-        }
+        prepareInfoView(dict);
     }
 
-    private void handleCustomView(Object obj) {
-        if (obj instanceof TiViewProxy) {
-            TiBlob imageBlob = ((TiViewProxy) obj).toImage(null, 1);
-            if (imageBlob != null) {
-                Bitmap image = ((TiBlob) imageBlob).getImage();
-                if (image != null) {
-                    markerOptions.icon(BitmapDescriptorFactory
-                            .fromBitmap(image));
-                    setIconImageHeight(image.getHeight());
-                    return;
-                }
-            }
-        }
-        Log.w(TAG, "Unable to get the image from the custom view: " + obj);
-        setIconImageHeight(-1);
-    }
-
-    private void handleImage(Object image) {
-        // image path
-        if (image instanceof String) {
-            TiDrawableReference imageref = TiDrawableReference.fromUrl(this,
-                    (String) image);
-            Bitmap bitmap;
-            bitmap = imageref.getBitmap();
-            if (bitmap != null) {
-                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
-                setIconImageHeight(bitmap.getHeight());
-                return;
-            }
-        }
-        Log.w(TAG, "Unable to get the image from the path: " + image);
-        setIconImageHeight(-1);
-    }
 
     public void setMarker(AkylasMarker m) {
         marker = m;
@@ -263,7 +276,7 @@ public class AnnotationProxy extends KrollProxy {
         if (marker == null) {
             return;
         }
-        marker.showInfoWindow();
+        marker.hideInfoWindow();
     }
 
     public void hideInfo() {
@@ -274,27 +287,11 @@ public class AnnotationProxy extends KrollProxy {
 
     }
 
-    public AkylasMapInfoWindow getMapInfoWindow() {
+    public AkylasMapInfoView getMapInfoWindow() {
         return infoWindow;
     }
 
-    private void setIconImageHeight(int h) {
-        if (h >= 0) {
-            iconImageHeight = h;
-        } else { // default maker icon
-            TiDimension dimension = new TiDimension(defaultIconImageHeight,
-                    TiDimension.TYPE_UNDEFINED);
-            // TiDimension needs a view to grab the window manager, so we'll
-            // just use the decorview of the current window
-            View view = TiApplication.getAppCurrentActivity().getWindow()
-                    .getDecorView();
-            iconImageHeight = dimension.getAsPixels(view);
-        }
-    }
-
-    public int getIconImageHeight() {
-        return iconImageHeight;
-    }
+    
 
     @Override
     public void onPropertyChanged(String name, Object value) {
@@ -323,32 +320,47 @@ public class AnnotationProxy extends KrollProxy {
         } else if (infoWindow != null) {
             if (name.equals(TiC.PROPERTY_LEFT_BUTTON)) {
                 infoWindow.setLeftOrRightPane(value,
-                        AkylasMapInfoWindow.LEFT_PANE);
+                        AkylasMapInfoView.LEFT_PANE);
                 if (value == null) {
                     Object leftView = getProperty(TiC.PROPERTY_LEFT_VIEW);
                     if (leftView != null) {
                         infoWindow.setLeftOrRightPane(leftView,
-                                AkylasMapInfoWindow.LEFT_PANE);
+                                AkylasMapInfoView.LEFT_PANE);
                     }
                 }
-            } else if (name.equals(TiC.PROPERTY_LEFT_VIEW)
-                    && getProperty(TiC.PROPERTY_LEFT_BUTTON) == null) {
+            } else if (name.equals(TiC.PROPERTY_LEFT_VIEW)) {
+                if (_leftViewProxy != null) {
+                    _leftViewProxy.releaseViews(true);
+                    _leftViewProxy.setParent(null);
+                    _leftViewProxy = null;
+                }
                 infoWindow.setLeftOrRightPane(value,
-                        AkylasMapInfoWindow.LEFT_PANE);
+                        AkylasMapInfoView.LEFT_PANE);
             } else if (name.equals(TiC.PROPERTY_RIGHT_BUTTON)) {
-                getOrCreateMapInfoWindow().setLeftOrRightPane(value,
-                        AkylasMapInfoWindow.RIGHT_PANE);
+                getOrCreateMapInfoView().setLeftOrRightPane(value,
+                        AkylasMapInfoView.RIGHT_PANE);
                 if (value == null) {
                     Object rightView = getProperty(TiC.PROPERTY_RIGHT_VIEW);
                     if (rightView != null) {
-                        getOrCreateMapInfoWindow().setLeftOrRightPane(
-                                rightView, AkylasMapInfoWindow.LEFT_PANE);
+                        getOrCreateMapInfoView().setLeftOrRightPane(
+                                rightView, AkylasMapInfoView.LEFT_PANE);
                     }
                 }
-            } else if (name.equals(TiC.PROPERTY_RIGHT_VIEW)
-                    && getProperty(TiC.PROPERTY_RIGHT_BUTTON) == null) {
+            } else if (name.equals(TiC.PROPERTY_RIGHT_VIEW)) {
+                if (_rightViewProxy != null) {
+                    _rightViewProxy.releaseViews(true);
+                    _rightViewProxy.setParent(null);
+                    _rightViewProxy = null;
+                }
                 infoWindow.setLeftOrRightPane(value,
-                        AkylasMapInfoWindow.RIGHT_PANE);
+                        AkylasMapInfoView.RIGHT_PANE);
+            } else if (name.equals(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
+                if (_customViewProxy != null) {
+                    _customViewProxy.releaseViews(true);
+                    _customViewProxy.setParent(null);
+                    _customViewProxy = null;
+                }
+                infoWindow.setCustomView(value);
             } else if (name.equals(AkylasMapModule.PROPERTY_DRAGGABLE)) {
                 TiMessenger.sendBlockingMainMessage(getMainHandler()
                         .obtainMessage(MSG_SET_DRAGGABLE), TiConvert
@@ -359,11 +371,11 @@ public class AnnotationProxy extends KrollProxy {
 
     }
 
-    AkylasMapInfoWindow getOrCreateMapInfoWindow() {
+    AkylasMapInfoView getOrCreateMapInfoView() {
         if (infoWindow == null) {
-            infoWindow = new AkylasMapInfoWindow(TiApplication.getInstance()
+            infoWindow = new AkylasMapInfoView(TiApplication.getInstance()
                     .getApplicationContext());
-            prepareInfoWindow(null);
+            prepareInfoView(null);
         }
         return infoWindow;
     }

@@ -30,7 +30,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class AkylasMapInfoWindow extends RelativeLayout
+public class AkylasMapInfoView extends RelativeLayout
 {
 	private static final String TAG = "TiMapInfoWindow";
 	public static final int LEFT_PANE = 0;
@@ -43,17 +43,18 @@ public class AkylasMapInfoWindow extends RelativeLayout
 
 	private TiCompositeLayout leftPane;
 	private TiCompositeLayout rightPane;
+	private RelativeLayout textLayout;
 	private TextView title;
 	private TextView snippet;
 	private View[] clicksourceList;
 	private String currentClicksource = null;
 
-	public AkylasMapInfoWindow(Context context)
+	public AkylasMapInfoView(Context context)
 	{
 		super(context);
-		setBackgroundColor(Color.WHITE);
+		setBackgroundColor(Color.TRANSPARENT);
 		setGravity(Gravity.NO_GRAVITY);
-
+		setPadding(14, 14, 14, 14);
 		RelativeLayout.LayoutParams params = null;
 
 		// Left button or left view
@@ -67,7 +68,7 @@ public class AkylasMapInfoWindow extends RelativeLayout
 		addView(leftPane, params);
 
 		// Title and subtitle
-		RelativeLayout textLayout = new RelativeLayout(context);
+		textLayout = new RelativeLayout(context);
 		textLayout.setGravity(Gravity.NO_GRAVITY);
 		textLayout.setId(textLayoutId);
 
@@ -144,6 +145,30 @@ public class AkylasMapInfoWindow extends RelativeLayout
 		}
 		return null;
 	}
+	
+	public void setCustomView(Object obj)
+    {
+        leftPane.removeAllViews();
+        rightPane.removeAllViews();
+        rightPane.setVisibility(GONE);
+
+        if (obj == null) {
+            textLayout.setVisibility(VISIBLE);
+            leftPane.setVisibility(GONE);
+            return;
+        }
+
+        leftPane.setVisibility(VISIBLE);
+        textLayout.setVisibility(GONE);
+        if (obj instanceof TiViewProxy) {
+            TiUIView view = ((TiViewProxy) obj).getOrCreateView();
+            if (view != null) {
+                leftPane.addView(view.getOuterView());
+            } else {
+                Log.w(TAG, "Unable to get the view from the left / right view: " + obj, Log.DEBUG_MODE);
+            }
+        }
+    }
 
 	public void setLeftOrRightPane(Object obj, int flag)
 	{
@@ -178,7 +203,7 @@ public class AkylasMapInfoWindow extends RelativeLayout
 		} else if (obj instanceof TiViewProxy) {
 			TiUIView view = ((TiViewProxy) obj).getOrCreateView();
 			if (view != null) {
-				pane.addView(view.getNativeView());
+				pane.addView(view.getOuterView());
 			} else {
 				Log.w(TAG, "Unable to get the view from the left / right view: " + obj, Log.DEBUG_MODE);
 			}

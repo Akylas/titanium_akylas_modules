@@ -6,6 +6,7 @@
  */
 package akylas.map;
 
+import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
@@ -16,25 +17,28 @@ import android.os.Message;
 import android.util.Log;
 
 @Kroll.proxy(creatableInModule = AkylasMapModule.class, propertyAccessors = {
+//  AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED,
+  AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM,
+//  AkylasMapModule.PROPERTY_USER_TRACKING_MODE,
+//  TiC.PROPERTY_USER_LOCATION,
+  AkylasMapModule.PROPERTY_CENTER_COORDINATE, 
+  AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT,
+  AkylasMapModule.PROPERTY_REGION_FIT,
+  AkylasMapModule.PROPERTY_CENTER_COORDINATE,
+  AkylasMapModule.PROPERTY_ZOOM,
+//  AkylasMapModule.PROPERTY_MINZOOM,
+//  AkylasMapModule.PROPERTY_MAXZOOM,
+  AkylasMapModule.PROPERTY_ROUTES,
+  AkylasMapModule.PROPERTY_MAX_ANNOTATIONS,
+//  TiC.PROPERTY_REGION,
+//  TiC.PROPERTY_ANNOTATIONS, 
+  AkylasMapModule.PROPERTY_ANIMATE_CHANGES,
+    
     AkylasMapModule.PROPERTY_USER_LOCATION_BUTTON,
 	TiC.PROPERTY_MAP_TYPE,
 	AkylasMapModule.PROPERTY_TRAFFIC,
 	TiC.PROPERTY_ENABLE_ZOOM_CONTROLS,
-	AkylasMapModule.PROPERTY_COMPASS_ENABLED,
-	AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED,
-    TiC.PROPERTY_USER_LOCATION,
-    AkylasMapModule.PROPERTY_CENTER_COORDINATE, 
-    AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT,
-    AkylasMapModule.PROPERTY_REGION_FIT,
-    AkylasMapModule.PROPERTY_CENTER_COORDINATE,
-    AkylasMapModule.PROPERTY_ZOOM,
-    AkylasMapModule.PROPERTY_MINZOOM,
-    AkylasMapModule.PROPERTY_MAXZOOM,
-    AkylasMapModule.PROPERTY_ROUTES,
-    TiC.PROPERTY_REGION,
-    TiC.PROPERTY_ANNOTATIONS, 
-    AkylasMapModule.PROPERTY_ANIMATE_CHANGES,
-    TiC.PROPERTY_ENABLE_ZOOM_CONTROLS 
+	AkylasMapModule.PROPERTY_COMPASS_ENABLED
 })
 public class MapViewProxy extends MapDefaultViewProxy
 {
@@ -42,12 +46,18 @@ public class MapViewProxy extends MapDefaultViewProxy
 	
 	private static final int MSG_FIRST_ID = MapDefaultViewProxy.MSG_LAST_ID + 1;
     private static final int MSG_SNAP_SHOT = MSG_FIRST_ID;
-    private final int googlePlayServicesState;
+    private int googlePlayServicesState;
     private final boolean googlePlayServicesAvailable;
 	
 	public MapViewProxy() {
 		super();
-		googlePlayServicesState = AkylasMapModule.googlePlayServicesAvailable();
+		
+		try {
+	        googlePlayServicesState = AkylasMapModule.googlePlayServicesAvailable();
+        } catch (Exception e) {
+            googlePlayServicesState = -1;
+            e.printStackTrace();
+        }
         googlePlayServicesAvailable = googlePlayServicesState == 0;
         if (!googlePlayServicesAvailable) {
             Log.e(TAG, "Google Play Services not available: Error " + AkylasMapModule.getGoogleServiceStateMessage(googlePlayServicesState));
@@ -80,18 +90,6 @@ public class MapViewProxy extends MapDefaultViewProxy
 		}
 		}
 	}
-
-
-	
-	@Kroll.method
-	public void snapshot()
-	{
-		if (TiApplication.isUIThread()) {
-			handleSnapshot();
-		} else {
-			getMainHandler().obtainMessage(MSG_SNAP_SHOT).sendToTarget();
-		}
-	}
 	
 	private void handleSnapshot() 
 	{
@@ -100,5 +98,153 @@ public class MapViewProxy extends MapDefaultViewProxy
 			((AkylasMapView) view).snapshot();
 		}
 	}
+	
+    //KROLL ACCESSORS
+	
+	 @Kroll.method
+    public void snapshot()
+    {
+        if (TiApplication.isUIThread()) {
+            handleSnapshot();
+        } else {
+            getMainHandler().obtainMessage(MSG_SNAP_SHOT).sendToTarget();
+        }
+    }
+    
+    @Kroll.method
+    @Override
+    public void addAnnotation(Object annotation) {
+        super.addAnnotation(annotation);
+    }
+
+    @Kroll.method
+    @Override
+    public void addAnnotations(Object annos) {
+        super.addAnnotations(annos);
+    }
+
+    @Kroll.method
+    @Override
+    public void removeAllAnnotations() {
+        super.removeAllAnnotations();
+    }
+    
+
+    @Kroll.method
+    @Override
+    public void removeAnnotation(Object annotation) {
+        super.removeAnnotation(annotation);
+    }
+
+    @Kroll.method
+    @Override
+    public void removeAnnotations(Object annos) {
+        super.removeAnnotations(annos);
+    }
+
+    @Kroll.method
+    @Override
+    public void selectAnnotation(Object annotation) {
+        super.selectAnnotation(annotation);
+    }
+    
+       
+    @Kroll.method
+    @Kroll.setProperty
+    @Override
+    public void setAnnotations(Object annos) {
+        super.setAnnotations(annos);
+    }
+    
+    @Kroll.method
+    @Kroll.getProperty
+    @Override
+    public Object getAnnotations() {
+        return super.getAnnotations();
+    }
+    
+    @Kroll.method
+    @Override
+    public void selectUserAnnotation() {
+        super.selectUserAnnotation();
+    }
+
+    @Kroll.method
+    @Override
+    public void deselectAnnotation(Object annotation) {
+        super.deselectAnnotation(annotation);
+    }
+
+    @Kroll.method
+    @Override
+    public void addRoute(Object route) {
+        super.addRoute(route);
+    }
+    
+
+    @Kroll.method
+    @Kroll.getProperty
+    public float getMaxZoom() {
+        return super.getMaxZoom();
+    }
+
+    @Kroll.method
+    @Kroll.getProperty
+    @Override
+    public float getMinZoom() {
+        return super.getMinZoom();
+    }
+    
+    @Kroll.method
+    @Kroll.getProperty
+    @Override
+    public KrollDict getRegion() {
+        return super.getRegion();
+    }
+    
+    @Kroll.method
+    @Kroll.getProperty
+    @Override
+    public boolean getUserLocationEnabled() {
+        return super.getUserLocationEnabled();
+    }
+    
+    @Kroll.method
+    @Kroll.getProperty
+    @Override
+    public int getUserTrackingMode() {
+        return super.getUserTrackingMode();
+    }
+
+    @Kroll.method
+    @Kroll.getProperty
+    @Override
+    public KrollDict getUserLocation() {
+        return super.getUserLocation();
+    }
+    
+
+    @Kroll.method
+    @Override
+    public void removeRoute(RouteProxy route) {
+        super.removeRoute(route);
+    }
+
+    @Kroll.method
+    @Override
+    public void zoom(int delta) {
+        super.zoom(delta);
+    }
+
+    @Kroll.method
+    public void zoomIn(@Kroll.argument(optional = true) final Object about) {
+        super.zoomIn(about);
+    }
+
+    @Kroll.method
+    @Override
+    public void zoomOut(@Kroll.argument(optional = true) final Object about) {
+        super.zoomOut(about);
+    }
 
 }

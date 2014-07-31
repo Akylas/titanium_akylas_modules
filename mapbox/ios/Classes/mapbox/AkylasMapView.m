@@ -18,6 +18,8 @@
 }
 @synthesize defaultPinImage;
 @synthesize defaultPinAnchor;
+@synthesize defaultCalloutAnchor;
+@synthesize maxAnnotations = _maxAnnotations;
 
 #pragma mark Internal
 
@@ -25,7 +27,9 @@
 {
     if ((self = [super init])) {
         defaultPinAnchor = CGPointMake(0.5, 0.5);
+        defaultCalloutAnchor = CGPointMake(0, -0.5f);
         _zoom = -1;
+        _maxAnnotations = 0;
         animate = true;
     }
     return self;
@@ -64,6 +68,27 @@
 {
 }
 
+-(void)handleMaxAnnotations
+{
+    if (_maxAnnotations <= 0) return;
+    NSArray* currentAnnotations = [self customAnnotations];
+    if ([currentAnnotations count] > _maxAnnotations) {
+        unsigned long length = [currentAnnotations count] - _maxAnnotations;
+        NSRange range = NSMakeRange(0, length);
+        NSMutableArray* toRemove = [NSMutableArray arrayWithCapacity:length];
+        NSArray* subArray = [currentAnnotations subarrayWithRange:NSMakeRange(0, length)];
+        for (id pin in subArray) {
+            if ([pin isKindOfClass:[AkylasMapAnnotationProxy class]]) {
+                [toRemove addObject:pin];
+            } else if ([[pin userInfo] isKindOfClass:[AkylasMapAnnotationProxy class]]) {
+                [toRemove addObject:[pin userInfo]];
+            }
+        }
+        [(AkylasMapViewProxy*)self.proxy removeAnnotations:@[toRemove]];
+    }
+    
+}
+
 -(void)internalAddAnnotations:(id)annotations
 {
 }
@@ -76,31 +101,25 @@
 
 -(void)addAnnotation:(id)args
 {
-	ENSURE_SINGLE_ARG(args,NSObject);
-	ENSURE_UI_THREAD(addAnnotation,args);
 	[self internalAddAnnotations:[self annotationFromArg:args]];
+    [self handleMaxAnnotations];
 }
 
 -(void)addAnnotations:(id)args
 {
-	ENSURE_TYPE(args,NSArray);
-	ENSURE_UI_THREAD(addAnnotations,args);
 
 	[self internalAddAnnotations:[self annotationsFromArgs:args]];
+    [self handleMaxAnnotations];
 }
 
 -(void)removeAnnotation:(id)args
 {
-	ENSURE_SINGLE_ARG(args,NSObject);
-	ENSURE_UI_THREAD(removeAnnotation,args);
 
 	 [self internalRemoveAnnotations:args];
 }
 
 -(void)removeAnnotations:(id)args
 {
-	ENSURE_TYPE_OR_NIL(args,NSArray); // assumes an array of AkylasMapboxAnnotationProxy, and NSString classes
-	ENSURE_UI_THREAD(removeAnnotation,args);
     [self internalRemoveAnnotations:args];
 }
 
@@ -119,10 +138,10 @@
 {
 	ENSURE_TYPE_OR_NIL(value,NSArray);
 	ENSURE_UI_THREAD(setAnnotations_,value)
-    [self internalRemoveAllAnnotations];
 	if (value != nil) {
 		[self addAnnotations:value];
 	}
+    [self handleMaxAnnotations];
 }
 
 
@@ -181,12 +200,12 @@
 {
 }
 
--(id)userLocationEnabled
+-(id)userLocationEnabled_
 {
     return NO;
 }
 
--(id)userLocation
+-(id)userLocation_
 {
     return nil;
 }
@@ -195,9 +214,15 @@
 {
 }
 
--(id)userTrackingMode
+-(id)userTrackingMode_
 {
     return NUMINT(0);
+}
+
+-(void)setMaxAnnotations_:(id)value
+{
+    _maxAnnotations = [TiUtils intValue:value];
+    [self handleMaxAnnotations];
 }
 
 -(void)setZoom_:(id)zoom
@@ -224,7 +249,7 @@
 {
 }
 
--(id)centerCoordinate
+-(id)centerCoordinate_
 {
     return nil;
 }
@@ -245,10 +270,14 @@
 
 -(void)setDefaultPinImage_:(id)image
 {
-    self.defaultPinImage = [[[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:image proxy:self.proxy]] retain];
+    self.defaultPinImage = [[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:image proxy:self.proxy]];
 }
 -(void)setDefaultPinAnchor_:(id)anchor
 {
     self.defaultPinAnchor = [TiUtils pointValue:anchor];
+}
+-(void)setDefaultCalloutAnchor_:(id)anchor
+{
+    self.defaultCalloutAnchor = [TiUtils pointValue:anchor];
 }
 @end

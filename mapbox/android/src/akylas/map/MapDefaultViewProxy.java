@@ -9,6 +9,7 @@ package akylas.map;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
@@ -30,6 +31,7 @@ import akylas.map.TileSourceProxy;
 import android.app.Activity;
 import android.os.Message;
 
+@Kroll.proxy()
 public abstract class MapDefaultViewProxy extends TiViewProxy {
 	private static final String TAG = "MapDefaultViewProxy";
 
@@ -51,12 +53,15 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
     public static final int MSG_LAST_ID = MSG_GET_USER_LOCATION;
 
     private ArrayList<RouteProxy> preloadRoutes = null;
-    private ArrayList<AnnotationProxy> preloadAnnotations = null;
+    
+    
+    protected long maxAnnotations = 0;
+    private ArrayList<AnnotationProxy> annotations = new ArrayList<AnnotationProxy>();
+    
+    
 
 	public MapDefaultViewProxy() {
 		super();
-		
-        preloadAnnotations = new ArrayList<AnnotationProxy>();
 	}
 	
 	public void processPreloaded() {
@@ -66,11 +71,6 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 	        setProperty(AkylasMapModule.PROPERTY_ROUTES, preloadRoutes.toArray());
             preloadRoutes.clear();
 	    }
-
-        if (preloadAnnotations != null && preloadAnnotations.size() > 0) {
-            setProperty(AkylasMapModule.PROPERTY_ANNOTATIONS, preloadAnnotations.toArray());
-            preloadAnnotations.clear();
-        }
 	}
 
 	public abstract TiUIView createView(Activity activity);
@@ -167,42 +167,11 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		}
 	}
 
-    @Kroll.method
-    public void addAnnotation(Object annotation) {
-        if (annotation == null) return;
-        if (TiApplication.isUIThread()) {
-            handleInsertAnnotationAt(-1, annotation);
-        } else {
-            sendIndexMessage(MSG_ADD_ANNOTATION, -1, annotation);
-        }
-    }
-
-	@Kroll.method
-	public void addAnnotations(Object[] annos) {
-		addAnnotation(annos);
-	}
-
-	@Kroll.method
-	public void removeAllAnnotations() {
-		// Update the JS object
-		setProperty(TiC.PROPERTY_ANNOTATIONS, new Object[0]);
-
-		if (TiApplication.isUIThread()) {
-			handleRemoveAllAnnotations();
-		} else {
-			TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(
-					MSG_REMOVE_ALL_ANNOTATIONS));
-		}
-	}
-	
-
 	public void handleRemoveAllAnnotations() {
 	    AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
         if (mapView != null) {
             mapView.removeAllAnnotations();
         }
-        preloadAnnotations.clear();
-        setProperty(AkylasMapModule.PROPERTY_ANNOTATIONS, preloadAnnotations);
 	}
 
 	public boolean isAnnotationValid(Object annotation) {
@@ -229,59 +198,6 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		return true;
 	}
 
-	@Kroll.method
-	public void removeAnnotation(Object annotation) {
-
-		if (TiApplication.isUIThread()) {
-			handleRemoveAnnotation(annotation);
-		} else {
-			TiMessenger.sendBlockingMainMessage(
-					getMainHandler().obtainMessage(MSG_REMOVE_ANNOTATION),
-					annotation);
-		}
-	}
-
-	@Kroll.method
-	public void removeAnnotations(Object annos) {
-
-		removeAnnotation(annos);
-	}
-
-	@Kroll.method
-	public void selectAnnotation(Object annotation) {
-		if (!isAnnotationValid(annotation)) {
-			return;
-		}
-
-		if (TiApplication.isUIThread()) {
-			handleSelectAnnotation(annotation);
-		} else {
-			TiMessenger.sendBlockingMainMessage(
-					getMainHandler().obtainMessage(MSG_SELECT_ANNOTATION),
-					annotation);
-		}
-	}
-	
-	@Kroll.method
-    public void selectUserAnnotation() {
-        if (TiApplication.isUIThread()) {
-            handleSelectUserAnnotation();
-        } else {
-            TiMessenger.sendBlockingMainMessage(
-                    getMainHandler().obtainMessage(MSG_SELECT_USER_ANNOTATION));
-        }
-    }
-
-    @Kroll.method
-	@Kroll.getProperty
-	public KrollDict getUserLocation() {
-		AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
-		if (mapView != null) {
-			return mapView.getUserLocation();
-		}
-		return null;
-	}
-
 	public void handleSelectAnnotation(Object annotation) {
 		AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
 		if (mapView != null) {
@@ -296,38 +212,12 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
         }
     }
 
-	@Kroll.method
-	public void deselectAnnotation(Object annotation) {
-		if (!isAnnotationValid(annotation)) {
-			return;
-		}
-
-		if (TiApplication.isUIThread()) {
-			handleDeselectAnnotation(annotation);
-		} else {
-			TiMessenger.sendBlockingMainMessage(
-					getMainHandler().obtainMessage(MSG_DESELECT_ANNOTATION),
-					annotation);
-		}
-	}
-
 	public void handleDeselectAnnotation(Object annotation) {
 		AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
 		if (mapView != null) {
 			mapView.deselectAnnotation(annotation);
 		}
 	}
-
-	@Kroll.method
-	public void addRoute(Object route) {
-        if (route == null) return;
-		if (TiApplication.isUIThread()) {
-		    handleInsertRouteAt(-1, route);
-		} else {
-		    sendIndexMessage(MSG_ADD_ROUTE, -1, route);
-		}
-	}
-	
 	
 	private void handleInsertRouteAt(int index, Object route) {
 	    AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
@@ -391,11 +281,14 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
             return;
         }
         ArrayList<Object> newObj = new ArrayList<Object>(Arrays.asList(array));
+        boolean isArray = object instanceof Object[];
         boolean needsUpdate = false;
         if (object instanceof Number) {
             needsUpdate = newObj.remove(((Number)object).intValue()) != null;
         }
-        else {
+        else if (object instanceof Object[]) {
+            needsUpdate = newObj.removeAll(Arrays.asList(object));
+        } else {
             needsUpdate = newObj.remove(object);
         }
         if (needsUpdate) {
@@ -403,21 +296,54 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
         }
 	}
 	
+	private AnnotationProxy annotationFromObject(Object object) {
+        if (object instanceof HashMap) {
+            return (AnnotationProxy) KrollProxy.createProxy(AnnotationProxy.class, null,
+                    new Object[] { object }, null);
+        }
+        if (object instanceof AnnotationProxy) {
+            return (AnnotationProxy) object;
+        }
+        return null;
+	}
+	
+    public void handleMaxAnnotations() {
+        if (maxAnnotations <= 0) return;
+        if (annotations.size() > maxAnnotations) {
+            int length = (int) (annotations.size() - maxAnnotations);
+            List<AnnotationProxy> toRemove = annotations.subList(0, length);;
+            handleRemoveAnnotation(toRemove.toArray());
+        }
+    }
+
+	
 	private void handleInsertAnnotationAt(int index, Object annotation) {
         AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
-        if (mapView != null) {
-            Object result = null;
-            if (annotation instanceof Object[]) {
-                result = mapView.addAnnotations((Object[]) annotation);
+        Object result = null;
+        if (annotation instanceof Object[]) {
+            Object[] array  = (Object[]) annotation;
+            List<AnnotationProxy> toAdd = new ArrayList<AnnotationProxy>();
+            for (int i = 0; i < array.length; i++) {
+                AnnotationProxy annProxy  = annotationFromObject(array[i]);
+                if (annProxy != null && !annotations.contains(annProxy)) {
+                    toAdd.add(annProxy);
+                }
             }
-            else {
-                result = mapView.addAnnotation(annotation);
+            if (toAdd.size() > 0) {
+                mapView.addAnnotations(toAdd.toArray());
+                annotations.addAll(toAdd);
             }
-            if (result != null) {
-                addToProperty(AkylasMapModule.PROPERTY_ANNOTATIONS, index, result);
+            handleMaxAnnotations();
+        }
+        else {
+            AnnotationProxy annProxy  = annotationFromObject(annotation);
+            if (!annotations.contains(annProxy)) {
+                annotations.add(index, annProxy);
+                if (mapView != null) {
+                    mapView.handleAddAnnotation(annProxy);
+                }
+                handleMaxAnnotations();
             }
-        } else {
-            addPreloadAnnotation(annotation, index, false);
         }
     }
 	
@@ -436,11 +362,28 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
     private void handleRemoveAnnotation(Object annotation) {
         if (annotation == null) return;
         AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
-        if (mapView != null) {
-            mapView.removeAnnotation(annotation);
-            removeFromProperty(AkylasMapModule.PROPERTY_ANNOTATIONS, annotation);
-        } else {
-            deletePreloadObject(preloadAnnotations, annotation);
+        if (annotation instanceof Object[]) {
+            Object[] array  = (Object[]) annotation;
+            List<AnnotationProxy> toRemove = new ArrayList<AnnotationProxy>();
+            for (int i = 0; i < array.length; i++) {
+                AnnotationProxy annProxy  = (AnnotationProxy) array[i] ;
+                if (annProxy != null && annotations.contains(annProxy)) {
+                    toRemove.add(annProxy);
+                }
+            }
+            if (toRemove.size() > 0) {
+                mapView.removeAnnotations(toRemove.toArray());
+                annotations.removeAll(toRemove);
+            }
+        }
+        else {
+            if (annotations.contains(annotation)) {
+                if (mapView != null) {
+                    mapView.removeAnnotation(annotation);
+                }
+                annotations.remove(annotation);
+            }
+            
         }
     }
 	
@@ -515,10 +458,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 	public void addPreloadRoute(Object value, int index, boolean arrayOnly) {
         addPreloadObject(RouteProxy.class, getOrCreatePreloadRoutes(), value, index, arrayOnly);
 	}
-	public void addPreloadAnnotation(Object value, int index, boolean arrayOnly) {
-        addPreloadObject(AnnotationProxy.class, getOrCreatePreloadAnnotations(), value, index, arrayOnly);
-    }
-	
+
 	public ArrayList getOrCreatePreloadRoutes() {
 	    if (preloadRoutes == null) {
 	        preloadRoutes = new ArrayList<RouteProxy>();
@@ -528,16 +468,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 	    }
 	    return preloadRoutes;
 	}
-	
-	public ArrayList getOrCreatePreloadAnnotations() {
-        if (preloadAnnotations == null) {
-            preloadAnnotations = new ArrayList<AnnotationProxy>();
-            if (hasProperty(AkylasMapModule.PROPERTY_ANNOTATIONS)) {
-                addPreloadObject(RouteProxy.class, preloadAnnotations, getProperty(AkylasMapModule.PROPERTY_ANNOTATIONS), -1, false);
-            }
-        }
-        return preloadAnnotations;
-    }
+
 //	
 //	public void removePreloadRoute(Object value) {
 //	    deletePreloadObject(preloadRoutes, value);
@@ -574,8 +505,118 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
         }
     }
 
-	@Kroll.method
-	@Kroll.getProperty
+    public void handleZoom(int delta) {
+        AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
+        if (mapView != null) {
+            mapView.changeZoomLevel(delta, true);
+        }
+    }
+    
+
+    public ArrayList<RouteProxy> getPreloadRoutes() {
+        return preloadRoutes;
+    }
+    
+    
+    //KROLL ACCESSORS
+
+    public void addAnnotation(Object annotation) {
+        if (annotation == null) return;
+        if (TiApplication.isUIThread()) {
+            handleInsertAnnotationAt(-1, annotation);
+        } else {
+            sendIndexMessage(MSG_ADD_ANNOTATION, -1, annotation);
+        }
+    }
+
+    public void addAnnotations(Object annos) {
+        addAnnotation(annos);
+    }
+
+    public void removeAllAnnotations() {
+        // Update the JS object
+        if (TiApplication.isUIThread()) {
+            handleRemoveAllAnnotations();
+        } else {
+            TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(
+                    MSG_REMOVE_ALL_ANNOTATIONS));
+        }
+        annotations.clear();
+    }
+    
+
+    public void removeAnnotation(Object annotation) {
+
+        if (TiApplication.isUIThread()) {
+            handleRemoveAnnotation(annotation);
+        } else {
+            TiMessenger.sendBlockingMainMessage(
+                    getMainHandler().obtainMessage(MSG_REMOVE_ANNOTATION),
+                    annotation);
+        }
+    }
+
+    public void removeAnnotations(Object annos) {
+        removeAnnotation(annos);
+    }
+
+    public void selectAnnotation(Object annotation) {
+        if (!isAnnotationValid(annotation)) {
+            return;
+        }
+
+        if (TiApplication.isUIThread()) {
+            handleSelectAnnotation(annotation);
+        } else {
+            TiMessenger.sendBlockingMainMessage(
+                    getMainHandler().obtainMessage(MSG_SELECT_ANNOTATION),
+                    annotation);
+        }
+    }
+    
+       
+    public void setAnnotations(Object annos) {
+        removeAllAnnotations();
+        addAnnotations(annos);
+    }
+    
+    public Object getAnnotations() {
+        return annotations;
+    }
+    
+    public void selectUserAnnotation() {
+        if (TiApplication.isUIThread()) {
+            handleSelectUserAnnotation();
+        } else {
+            TiMessenger.sendBlockingMainMessage(
+                    getMainHandler().obtainMessage(MSG_SELECT_USER_ANNOTATION));
+        }
+    }
+
+    public void deselectAnnotation(Object annotation) {
+        if (!isAnnotationValid(annotation)) {
+            return;
+        }
+
+        if (TiApplication.isUIThread()) {
+            handleDeselectAnnotation(annotation);
+        } else {
+            TiMessenger.sendBlockingMainMessage(
+                    getMainHandler().obtainMessage(MSG_DESELECT_ANNOTATION),
+                    annotation);
+        }
+    }
+
+    public void addRoute(Object route) {
+        if (route == null) return;
+        if (TiApplication.isUIThread()) {
+            handleInsertRouteAt(-1, route);
+        } else {
+            sendIndexMessage(MSG_ADD_ROUTE, -1, route);
+        }
+    }
+    
+
 	public float getMaxZoom() {
 		if (TiApplication.isUIThread()) {
 			return getMaxZoomInternal();
@@ -585,8 +626,6 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		}
 	}
 
-	@Kroll.method
-	@Kroll.getProperty
 	public float getMinZoom() {
 		if (TiApplication.isUIThread()) {
 			return getMinZoomInternal();
@@ -596,8 +635,6 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		}
 	}
 	
-	@Kroll.method
-	@Kroll.getProperty
 	public KrollDict getRegion() {
         AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
 		if (mapView != null) {
@@ -606,8 +643,6 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		return null;
 	}
 	
-	@Kroll.method
-	@Kroll.getProperty
 	public boolean getUserLocationEnabled() {
 	    if (TiApplication.isUIThread()) {
             return getUserLocationEnabledInternal();
@@ -617,8 +652,6 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
         }
 	}
 	
-	@Kroll.method
-	@Kroll.getProperty
 	public int getUserTrackingMode() {
 		AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
 		if (mapView != null) {
@@ -627,7 +660,15 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		return TiConvert.toInt(getProperty(AkylasMapModule.PROPERTY_USER_TRACKING_MODE), 0);
 	}
 
-	@Kroll.method
+    public KrollDict getUserLocation() {
+        AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
+        if (mapView != null) {
+            return mapView.getUserLocation();
+        }
+        return null;
+    }
+    
+
 	public void removeRoute(RouteProxy route) {
         if (route == null) return;
 		if (TiApplication.isUIThread()) {
@@ -638,13 +679,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 
 		}
 	}
-	
 
-	public ArrayList<RouteProxy> getPreloadRoutes() {
-		return preloadRoutes;
-	}
-
-	@Kroll.method
 	public void zoom(int delta) {
 		if (TiApplication.isUIThread()) {
 			handleZoom(delta);
@@ -654,8 +689,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		}
 	}
 
-	@Kroll.method
-	public void zoomIn(@Kroll.argument(optional = true) final Object about) {
+	public void zoomIn(final Object about) {
 		final AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
 		if (mapView != null) {
 			getActivity().runOnUiThread(new Runnable() {
@@ -673,8 +707,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		}
 	}
 
-	@Kroll.method
-	public void zoomOut(@Kroll.argument(optional = true) final Object about) {
+	public void zoomOut(final Object about) {
 		final AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
 		if (mapView != null) {
 			getActivity().runOnUiThread(new Runnable() {
@@ -692,18 +725,9 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		}
 	}
 
-	public void handleZoom(int delta) {
-		AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
-		if (mapView != null) {
-			mapView.changeZoomLevel(delta, true);
-		}
-	}
-	
-	@Kroll.method
     public void addTileSource(Object value, @Kroll.argument(optional = true) final Object indexObj) {
     }
 
-    @Kroll.method
     public void removeTileSource(Object value) {
     }
 }

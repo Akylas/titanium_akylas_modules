@@ -8,6 +8,9 @@
 #import "TiBase.h"
 #import "TiViewProxy.h"
 
+#define DEFAULT_CALLOUT_PADDING UIEdgeInsetsMake(13,13,13,13)
+#define DEFAULT_CALLOUT_CORNER_RADIUS 8
+
 @class AkylasMapViewProxy;
 @class AkylasMapView;
 @class AkylasMapMapboxView;
@@ -17,7 +20,6 @@
     UIImage* _image;
     NSString* _mbImage;
     UIColor* _tintColor;
-    CGPoint _anchorPoint;
 	int tag;
 	AkylasMapViewProxy *delegate;
 	BOOL needsRefreshing;
@@ -37,7 +39,6 @@
 @property (nonatomic,readonly)	BOOL needsRefreshingWithSelection;
 @property (nonatomic, readwrite, assign) BOOL placed;
 @property (nonatomic, readwrite, assign) BOOL draggable;
-@property (nonatomic, readonly) CGPoint offset;
 
 // Title and subtitle for use by selection UI.
 - (NSString *)title;
@@ -54,9 +55,16 @@
 
 //native
 - (int)tag;
-- (id)pinColor;
+- (int)mapPincolor;
 - (BOOL)animatesDrop;
 - (UIView*)leftViewAccessory;
 - (UIView*)rightViewAccessory;
+- (UIView*)customViewAccessory;
+-(UIColor*)calloutBackgroundColor;
+-(CGFloat)calloutBorderRadius;
+-(UIEdgeInsets)calloutPadding;
+-(CGPoint)anchorPoint;
+-(CGPoint)calloutAnchorPoint;
+-(CGFloat)calloutAlpha;
 
 @end

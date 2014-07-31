@@ -1,6 +1,22 @@
 package akylas.map;
 
-import com.google.android.gms.maps.model.MarkerOptions;
+import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.util.TiRHelper;
+import org.appcelerator.titanium.util.TiRHelper.ResourceNotFoundException;
+import org.appcelerator.titanium.util.TiUIHelper;
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.Bitmap.Config;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.views.InfoWindow;
@@ -30,8 +46,8 @@ public class MapboxMarker extends AkylasMarker{
         }
         
         @Override
-        protected InfoWindow createTooltip(MapView mv){
-            return super.createTooltip(mv);
+        protected MabpoxInfoWindow createInfoWindow(){
+            return new MabpoxInfoWindow(context, getProxy());
         }
         
         public AnnotationProxy getProxy() {
@@ -41,26 +57,80 @@ public class MapboxMarker extends AkylasMarker{
         public MapboxMarker getAkylasMarker() {
             return MapboxMarker.this;
         }
+        @Override
+        public void showInfoWindow(InfoWindow infoWindow, MapView aMapView, boolean panIntoView) {
+            
+            Object value = proxy.getProperty(AkylasMapModule.PROPERTY_CALLOUT_ANCHOR);
+            if (value != null) {
+                infoWindow.setAnchor(TiConvert.toPointF(value));
+            }
+            super.showInfoWindow(infoWindow, aMapView, panIntoView);
+        }
+
+    }
+    
+    private Bitmap changeBitmapColor(Bitmap sourceBitmap, int color) {
+
+        Bitmap resultBitmap = Bitmap.createBitmap(sourceBitmap.getWidth(), sourceBitmap.getHeight(), Config.ARGB_8888);
+        Paint p = new Paint();
+        ColorFilter filter = new LightingColorFilter(color, 1);
+        p.setColorFilter(filter);
+        Canvas canvas = new Canvas(resultBitmap);
+        canvas.drawBitmap(sourceBitmap, 0, 0, p);
+        return resultBitmap;
+    }
+    
+    
+    protected BitmapDrawable getColorImage() {
+        BitmapDrawable drawable = (BitmapDrawable) mapView.getDefaultPinDrawable();
+        String value = TiConvert.toString(proxy.getProperty(TiC.PROPERTY_PINCOLOR));
+        if (value != null) {
+            int color = TiConvert.toColor(value);
+            if (color != Color.TRANSPARENT) {
+                BitmapDrawable bitmapDrawable;
+                try {
+                    bitmapDrawable = (BitmapDrawable) TiUIHelper.getResourceDrawable(TiRHelper.getResource("drawable.graypin"));
+                    if (bitmapDrawable != null) {
+                        return new BitmapDrawable(mapView.getResources(), changeBitmapColor(bitmapDrawable.getBitmap(), color));
+                    }
+                } catch (ResourceNotFoundException e) {
+                }
+                
+            }
+        }
+        return drawable;
     }
 
-    Marker getMarker(MapView mv, String aTitle, String aDescription, LatLng aLatLng) {
+    Marker getMarker(MapView mv, AnnotationProxy proxy) {
         this.mapView = mv;
         if (marker == null) {
-            marker = new MapboxRealMarker(mv, aTitle, aDescription, aLatLng);
+            marker = new MapboxRealMarker(mv, proxy.getTitle(), proxy.getSubtitle(), proxy.getPosition());
         }
         else {
-            marker.setTitle(aTitle);
-            marker.setDescription(aDescription);
-            marker.setPoint(aLatLng);
+            marker.setTitle(proxy.getTitle());
+            marker.setDescription(proxy.getSubtitle());
+            marker.setPoint(proxy.getPosition());
         }
-        
+        Bitmap bitmap = getImage();
+        if (bitmap != null) {
+            marker.setImage(new BitmapDrawable(mapView.getResources(), bitmap));
+        }
+        else {
+            BitmapDrawable drawable = getColorImage();
+            if (drawable != null) {
+                marker.setImage(drawable);
+            }
+        }
+        Object value = proxy.getProperty(AkylasMapModule.PROPERTY_ANCHOR);
+        if (value != null) {
+            marker.setAnchor(TiConvert.toPointF(value));
+        }
+        marker.setDraggable(proxy.getDraggable());
         return marker;
     }
     
-    Marker getMarker(MapView mv, MarkerOptions options) {
-       return getMarker(mv, options.getTitle(), 
-               options.getSnippet(), 
-              AkylasMapModule.googleToMapbox(options.getPosition()));
+    Marker getMarker(MapView mv) {
+       return getMarker(mv, proxy);
     }
     
     public Marker getMarker() {
@@ -101,7 +171,7 @@ public class MapboxMarker extends AkylasMarker{
     @Override
     void hideInfoWindow() {
         if (marker!= null) {
-            marker.closeToolTip();
+            marker.closeInfoWindow();
         }
     }
 

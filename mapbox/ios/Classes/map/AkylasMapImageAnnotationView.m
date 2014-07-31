@@ -40,7 +40,7 @@
 
 - (UIView *)hitTest:(CGPoint) point withEvent:(UIEvent *)event 
 {
-    UIView * result = [super hitTest:point withEvent:event];
+    UIView * result = [self.calloutView hitTest:[self.calloutView convertPoint:point fromView:self] withEvent:event];
 	
 	if (result==nil)
 	{

@@ -39,10 +39,12 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -71,6 +73,13 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
 	{
 		super(proxy);
 		googlePlayServicesAvailable = ((MapViewProxy)proxy).googlePlayServicesAvailable();
+		if (googlePlayServicesAvailable) {
+		    try {
+	            MapsInitializer.initialize(activity);
+            } catch (Exception e) {
+            }
+		}
+		
 		TiCompositeLayout container = new TiCompositeLayout(activity, this)
         {
             @Override
@@ -490,6 +499,13 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
 	public void onMarkerDrag(Marker marker)
 	{
 		Log.d(TAG, "The annotation is dragged.", Log.DEBUG_MODE);
+		AnnotationProxy annoProxy = getProxyByMarker(marker);
+        if (annoProxy != null) {
+//            LatLng position = marker.getPosition();
+//            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.longitude);
+//            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.latitude);
+            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_DRAGGING);
+        }
 	}
 
 	@Override
@@ -533,7 +549,7 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
 	{
 		AnnotationProxy annoProxy = getProxyByMarker(marker);
 		if (annoProxy != null) {
-			return annoProxy.getOrCreateMapInfoWindow();
+			return annoProxy.getOrCreateMapInfoView();
 		}
 		return null;
 	}
@@ -555,7 +571,10 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
 			updateCamera(getProxy().getProperties(), false);
 		} else if (proxy != null) {
 			LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
-			proxy.fireEvent(TiC.EVENT_REGION_CHANGED, AkylasMapModule.regionToDict(bounds));
+			KrollDict result = new KrollDict();
+            result.put(TiC.PROPERTY_REGION, AkylasMapModule.regionToDict(bounds));
+            result.put(AkylasMapModule.PROPERTY_ZOOM, position.zoom);
+			proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result);
 		}
 
 	}
@@ -564,13 +583,14 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
 	protected boolean interceptTouchEvent(MotionEvent ev)
 	{
 		if (ev.getAction() == MotionEvent.ACTION_UP && selectedAnnotation != null) {
-			AkylasMapInfoWindow infoWindow = selectedAnnotation.getMapInfoWindow();
+			AkylasMapInfoView infoWindow = selectedAnnotation.getMapInfoWindow();
 			AkylasMarker timarker = selectedAnnotation.getMarker();
 			if (infoWindow != null && timarker != null) {
-				Marker marker = ((GoogleMapMarker) timarker).getMarker();
+			    GoogleMapMarker gmarker = ((GoogleMapMarker) timarker);
+				Marker marker = gmarker.getMarker();
 				if (marker != null && marker.isInfoWindowShown()) {
 					Point markerPoint = map.getProjection().toScreenLocation(marker.getPosition());
-					infoWindow.analyzeTouchEvent( ev, markerPoint, selectedAnnotation.getIconImageHeight());
+					infoWindow.analyzeTouchEvent( ev, markerPoint, gmarker.getIconImageHeight());
 				}
 			}
 		}
@@ -732,16 +752,17 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
             //already in
             removeAnnotation(marker);
         }
-        else {
-            Marker googlemarker = map.addMarker(annotation.getMarkerOptions());
-            annotation.setMarker(new GoogleMapMarker(googlemarker, annotation));
-            timarkers.add(annotation.getMarker());
-        }
+        GoogleMapMarker gMarker = new GoogleMapMarker(annotation);
+        Marker googlemarker = map.addMarker(gMarker.getMarkerOptions());
+        gMarker.setMarker(googlemarker);
+        annotation.setMarker(gMarker);
+        timarkers.add(annotation.getMarker());
     }
 
     @Override
     void handleRemoveMarker(AkylasMarker marker) {
         ((GoogleMapMarker) marker).removeFromMap();
+        timarkers.remove(marker);
         AnnotationProxy proxy = marker.getProxy();
         if (proxy != null) {
             proxy.setMarker(null);

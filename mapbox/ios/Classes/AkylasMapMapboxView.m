@@ -10,6 +10,7 @@
 #import "AkylasTileSource.h"
 #import "AkylasMapAnnotationProxy.h"
 #import "AkylasMapModule.h"
+#import <Mapbox/SMCalloutView.h>
 
 @implementation AkylasMapMapboxView
 {
@@ -62,7 +63,7 @@
         map = [[RMMapView alloc] initWithFrame:[TiUtils appFrame]];
         map.decelerationMode = RMMapDecelerationFast;
         CLLocationCoordinate2D coord = map.centerCoordinate;
-        //        map.adjustTilesForRetinaDisplay = [[UIScreen mainScreen] scale] > 1.0;
+//        map.adjustTilesForRetinaDisplay = [[UIScreen mainScreen] scale] > 1.0;
         [map setShowsUserLocation:YES];
         map.delegate = self;
         map.tileCache.backgroundCacheDelegate = self;
@@ -88,13 +89,18 @@
 }
 
 
-//-(void)setBounds:(CGRect)bounds
-//{
-//    BOOL animating = [self animating];
-//    //if we are animating it means we want to keep the zoom for sure...
-//    [[self map] setFrame:bounds keepZoom:animating animated:animating];
-//	[super setBounds:bounds];
-//}
+
+-(void)setBounds:(CGRect)bounds
+{
+    //TIMOB-13102.
+    //When the bounds change the mapview fires the regionDidChangeAnimated delegate method
+    //Here we update the region property which is not what we want.
+    //Instead we set a forceRender flag and render in frameSizeChanged and capture updated
+    //region there.
+    ignoreRegionChanged = YES;
+    [super setBounds:bounds];
+    ignoreRegionChanged = NO;
+}
 
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
@@ -102,12 +108,35 @@
     
     
     //if we are animating it means we want to keep the zoom for sure...
-    [[self map] setFrame:bounds keepZoom:animating animated:animating];
+    [[self map] setFrame:bounds animated:animating];
     [super frameSizeChanged:frame bounds:bounds];
     if (_needsRegionUpdate) {
         _needsRegionUpdate = NO;
         [map zoomWithLatitudeLongitudeBoundsSouthWest:region.southWest northEast:region.northEast regionFit:regionFits animated:NO];
     }
+}
+
+-(void)configurationStart
+{
+    ignoreRegionChanged = YES;
+    [super configurationStart];
+}
+
+-(void)configurationSet
+{
+    ignoreRegionChanged = NO;
+	[super configurationSet];
+}
+
+- (NSArray *)customAnnotations
+{
+    NSMutableArray* result = [NSMutableArray array];
+    for (RMAnnotation* annot in self.map.annotations) {
+        if (annot.userInfo) {
+            [result addObject:annot.userInfo];
+        }
+    }
+    return result;
 }
 
 
@@ -292,16 +321,18 @@
 -(void)setUserLocationEnabled_:(id)value
 {
 	ENSURE_SINGLE_ARG(value,NSObject);
-	[self map].showsUserLocation = [TiUtils boolValue:value];
+    TiThreadPerformOnMainThread(^{
+        [self map].showsUserLocation = [TiUtils boolValue:value];
+    }, NO);
 }
 
 
--(id)userLocationEnabled
+-(id)userLocationEnabled_
 {
     return NUMBOOL([self map].showsUserLocation);
 }
 
--(id)userLocation
+-(id)userLocation_
 {
     return [self dictFromUserLocation:[self map].userLocation];
 }
@@ -310,7 +341,9 @@
 -(void)setUserTrackingMode_:(id)value
 {
 	ENSURE_SINGLE_ARG(value,NSNumber);
-	[self map].userTrackingMode = [TiUtils intValue:value def:RMUserTrackingModeNone];
+    TiThreadPerformOnMainThread(^{
+        [self map].userTrackingMode = [TiUtils intValue:value def:RMUserTrackingModeNone];
+    }, NO);
 }
 
 -(void)setUserLocationRequiredZoom_:(id)value
@@ -319,7 +352,7 @@
 	[self map].userLocationRequiredZoom = [TiUtils floatValue:value def:10];
 }
 
--(id)userTrackingMode
+-(id)userTrackingMode_
 {
     return NUMINT([self map].userTrackingMode);
 }
@@ -366,7 +399,7 @@
     [[self map] setCenterCoordinate:coord animated:[self shouldAnimate]];
 }
 
--(id)centerCoordinate
+-(id)centerCoordinate_
 {
     CLLocationCoordinate2D coord = [self map].centerCoordinate;
     return [AkylasMapModule dictFromLocation2D:coord];
@@ -481,7 +514,7 @@
 
 #pragma mark Delegates
 
-- (RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation
+- (RMMapLayer *)mapView:(RMMapView *)theMap layerForAnnotation:(RMAnnotation *)annotation
 {
     if (annotation.isUserLocationAnnotation)
         return nil;
@@ -490,7 +523,7 @@
     return [proxy shapeLayerForMapView:self];
 }
 
-- (BOOL)mapView:(RMMapView *)mapView shouldDragAnnotation:(RMAnnotation *)annotation;
+- (BOOL)mapView:(RMMapView *)theMap shouldDragAnnotation:(RMAnnotation *)annotation;
 {
     if (annotation.isUserLocationAnnotation)
         return false;
@@ -499,7 +532,7 @@
     return false;
 }
 
-- (void)mapView:(RMMapView *)mapView didUpdateUserLocation:(RMUserLocation *)userLocation
+- (void)mapView:(RMMapView *)theMap didUpdateUserLocation:(RMUserLocation *)userLocation
 {
     if ([self.proxy _hasListeners:@"userlocation"])
 	{
@@ -507,7 +540,7 @@
 	}
 }
 
-- (void)mapView:(RMMapView *)mapView didFailToLocateUserWithError:(NSError *)error
+- (void)mapView:(RMMapView *)theMap didFailToLocateUserWithError:(NSError *)error
 {
     if ([self.proxy _hasListeners:@"userlocation"])
 	{
@@ -515,7 +548,7 @@
 	}
 }
 
-- (void)mapView:(RMMapView *)mapView didChangeUserTrackingMode:(RMUserTrackingMode)mode animated:(BOOL)animated
+- (void)mapView:(RMMapView *)theMap didChangeUserTrackingMode:(RMUserTrackingMode)mode animated:(BOOL)animated
 {
     if ([self.proxy _hasListeners:@"usertracking"])
 	{
@@ -523,64 +556,69 @@
 	}
 }
 
-- (void)mapViewRegionDidChange:(RMMapView *)map
+- (void)mapViewRegionDidChange:(RMMapView *)theMap
 {
 	if (ignoreRegionChanged) {
         return;
     }
 	if ([self.proxy _hasListeners:@"regionchanged"])
 	{
-		[self.proxy fireEvent:@"regionchanged" withObject:[self getRegion] propagate:NO checkForListener:NO];
+		[self.proxy fireEvent:@"regionchanged" withObject:@{
+                                                            @"region":[self getRegion],
+                                                            @"zoom":@(theMap.adjustedZoomForRetinaDisplay)
+                                                            } propagate:NO checkForListener:NO];
 	}
 }
 
 
-- (void)singleTapOnMap:(RMMapView *)mapView recognizer:(UIGestureRecognizer *)recognizer
+- (void)singleTapOnMap:(RMMapView *)theMap recognizer:(UIGestureRecognizer *)recognizer
 {
     BOOL hasClick  = [self.proxy _hasListeners:@"click"];
     BOOL hasTap  = [self.proxy _hasListeners:@"singletap"];
 	if (hasClick) [self fireEventOnMap:@"click" withRecognizer:recognizer];
 	if (hasTap) [self fireEventOnMap:@"singletap" withRecognizer:recognizer];
 }
-- (void)doubleTapOnMap:(RMMapView *)map recognizer:(UIGestureRecognizer *)recognizer
+- (void)doubleTapOnMap:(RMMapView *)theMap recognizer:(UIGestureRecognizer *)recognizer
 {
     [self fireEventOnMap:@"doubleclick" withRecognizer:recognizer];
 }
 
-- (void)singleTapTwoFingersOnMap:(RMMapView *)map recognizer:(UIGestureRecognizer *)recognizer
+- (void)singleTapTwoFingersOnMap:(RMMapView *)theMap recognizer:(UIGestureRecognizer *)recognizer
 {
     [self fireEventOnMap:@"singletap"  withRecognizer:recognizer];
 }
-- (void)longPressOnMap:(RMMapView *)map recognizer:(UIGestureRecognizer *)recognizer
+- (void)longPressOnMap:(RMMapView *)theMap recognizer:(UIGestureRecognizer *)recognizer
 {
     [self fireEventOnMap:@"longpress" withRecognizer:recognizer];
 }
-- (void)tapOnAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map recognizer:(UIGestureRecognizer *)recognizer
+- (void)tapOnAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)theMap recognizer:(UIGestureRecognizer *)recognizer
 {
     [self fireEvent:@"click" onAnnotation:annotation source:@"pin" withRecognizer:recognizer];
 }
 
-- (void)doubleTapOnAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map recognizer:recognizer
+- (void)doubleTapOnAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)theMap recognizer:recognizer
 {
-    [self fireEvent:@"doubleclick" onAnnotation:annotation source:@"pin" withRecognizer:recognizer];
+    if (![self fireEvent:@"doubleclick" onAnnotation:annotation source:@"pin" withRecognizer:recognizer]) {
+        [theMap doubleTapWithGesture:recognizer];
+    }
 }
 
-- (void)longPressOnAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map recognizer:recognizer
+- (void)longPressOnAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)theMap recognizer:recognizer
 {
     [self fireEvent:@"longpress" onAnnotation:annotation source:@"pin" withRecognizer:recognizer];
 }
 
-- (void)tapOnLabelForAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map recognizer:recognizer
+- (void)tapOnLabelForAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)theMap recognizer:recognizer
 {
     [self fireEvent:@"click" onAnnotation:annotation source:@"label" withRecognizer:recognizer];
 }
 
-- (void)doubleTapOnLabelForAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map recognizer:recognizer
+- (void)doubleTapOnLabelForAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)theMap recognizer:recognizer
 {
     [self fireEvent:@"doubleclick" onAnnotation:annotation source:@"label" withRecognizer:recognizer];
 }
 
-- (void)tapOnCalloutAccessoryControl:(UIControl *)control forAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)map recognizer:recognizer
+- (void)tapOnCalloutAccessoryControl:(UIControl *)control forAnnotation:(RMAnnotation *)annotation onMap:(RMMapView *)theMap recognizer:recognizer
 {
     if ([annotation.userInfo isKindOfClass:[AkylasMapAnnotationProxy class]])
 	{
@@ -602,15 +640,50 @@
 }
 
 
-- (void)mapView:(RMMapView *)mapView didSelectAnnotation:(RMAnnotation *)annotation {
+- (void)mapView:(RMMapView *)theMap willShowCallout:(SMCalloutView*)callout forAnnotation:(RMAnnotation *)annotation {
+    
+    AkylasMapAnnotationProxy* proxy = annotation.userInfo;
+    if (PostVersion7)
+        callout.tintColor = self.tintColor;
+    
+    // Apply the desired calloutOffset (from the top-middle of the view)
+    CGPoint calloutOffset = [proxy calloutAnchorPoint];
+    calloutOffset.y +=0.5f;
+    calloutOffset.x *= annotation.layer.frame.size.width;
+    calloutOffset.y *= annotation.layer.frame.size.height;
+    
+    callout.calloutOffset = calloutOffset;
+    
+	if (proxy == nil) {
+        callout.title    = annotation.title;
+        callout.subtitle = annotation.subtitle;
+		return;
+    }
+    callout.title    = [proxy title];
+    callout.subtitle = [proxy subtitle];
+    SMCalloutMaskedBackgroundView* backView = (SMCalloutMaskedBackgroundView*)callout.backgroundView;
+    backView.alpha = [proxy calloutAlpha];
+    callout.leftAccessoryView = [proxy leftViewAccessory];
+    callout.rightAccessoryView = [proxy rightViewAccessory];
+    callout.contentView = [proxy customViewAccessory];
+    
+    callout.padding = [proxy calloutPadding];
+    if (backView && [backView isKindOfClass:[SMCalloutMaskedBackgroundView class]]) {
+        backView.backgroundColor = [proxy calloutBackgroundColor];
+        backView.cornerRadius = [proxy calloutBorderRadius];
+    }
+    callout.permittedArrowDirection = SMCalloutArrowDirectionDown;
+}
+
+- (void)mapView:(RMMapView *)theMap didSelectAnnotation:(RMAnnotation *)annotation {
     [self fireEvent:@"focus" onAnnotation:annotation source:@"pin" withRecognizer:nil];
 }
 
-- (void)mapView:(RMMapView *)mapView didDeselectAnnotation:(RMAnnotation *)annotation{
+- (void)mapView:(RMMapView *)theMap didDeselectAnnotation:(RMAnnotation *)annotation{
     [self fireEvent:@"blur" onAnnotation:annotation source:@"pin" withRecognizer:nil];
 }
 
-- (void)beforeMapZoom:(RMMapView *)map byUser:(BOOL)wasUserAction
+- (void)beforeMapZoom:(RMMapView *)theMap byUser:(BOOL)wasUserAction
 {
     NSString* type = @"willZoom";
     if ([self.proxy _hasListeners:type]) {
@@ -623,10 +696,10 @@
 	}
 }
 
-- (void)afterMapZoom:(RMMapView *)mapView byUser:(BOOL)wasUserAction
+- (void)afterMapZoom:(RMMapView *)theMap byUser:(BOOL)wasUserAction
 {
     NSString* type = @"zoom";
-    _zoom = mapView.zoom;
+    _zoom = theMap.adjustedZoomForRetinaDisplay;
     [self.proxy replaceValue:NUMFLOAT(_zoom) forKey:type notification:NO];
     if ([self.proxy _hasListeners:type]) {
         
@@ -639,7 +712,7 @@
 	}
 }
 
-- (void)beforeMapMove:(RMMapView *)map byUser:(BOOL)wasUserAction;
+- (void)beforeMapMove:(RMMapView *)theMap byUser:(BOOL)wasUserAction;
 {
     NSString* type = @"willMove";
     if ([self.proxy _hasListeners:type]) {
@@ -651,7 +724,7 @@
         [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 	}
 }
-- (void)afterMapMove:(RMMapView *)map byUser:(BOOL)wasUserAction
+- (void)afterMapMove:(RMMapView *)theMap byUser:(BOOL)wasUserAction
 {
     NSString* type = @"move";
     if ([self.proxy _hasListeners:type]) {
@@ -706,6 +779,13 @@
 	if (proxy == nil)
 		return;
     
+    
+    if (newState == RMMapLayerDragStateEnding) {
+        CLLocationCoordinate2D coord = annotation.coordinate;
+        [proxy replaceValue:@(coord.latitude) forKey:@"latitude" notification:YES];
+        [proxy replaceValue:@(coord.longitude) forKey:@"longitude" notification:YES];
+    }
+    
 	TiProxy * ourProxy = [self proxy];
 	BOOL parentWants = [ourProxy _hasListeners:@"pinchangedragstate"];
 	BOOL viewWants = [proxy _hasListeners:@"pinchangedragstate"];
@@ -737,7 +817,7 @@
 
 #pragma mark Event generation
 
-- (void)fireEvent:(NSString*)type onAnnotation:(RMAnnotation *) pinview source:(NSString *)source withRecognizer:(UIGestureRecognizer*)recognizer
+- (BOOL)fireEvent:(NSString*)type onAnnotation:(RMAnnotation *) pinview source:(NSString *)source withRecognizer:(UIGestureRecognizer*)recognizer
 {
 	if (ignoreClicks)
 	{
@@ -747,7 +827,7 @@
 	AkylasMapAnnotationProxy *viewProxy = pinview.userInfo;
 	if (viewProxy == nil)
 	{
-		return;
+		return NO;
 	}
     
 	TiProxy * ourProxy = [self proxy];
@@ -755,7 +835,7 @@
 	BOOL viewWants = [viewProxy _hasListeners:type];
 	if(!parentWants && !viewWants)
 	{
-		return;
+		return NO;
 	}
 	
 	id title = [viewProxy title];
@@ -783,6 +863,7 @@
 		[viewProxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 	}
     [event release];
+    return YES;
 }
 
 - (void)fireEventOnMap:(NSString*)type withRecognizer:(UIGestureRecognizer*)recognizer

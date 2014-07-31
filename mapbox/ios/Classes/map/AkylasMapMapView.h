@@ -8,6 +8,7 @@
 #import "TiBase.h"
 #import "AkylasMapView.h"
 #import "AkylasMKOverlayPathUniversal.h"
+#import <Mapbox/SMCalloutView.h>
 
 @class AkylasMapAnnotationProxy;
 
@@ -17,7 +18,7 @@
 @end
 
 
-@interface AkylasMapMapView : AkylasMapView<MKMapViewDelegate> {
+@interface AkylasMapMapView : AkylasMapView<MKMapViewDelegate, SMCalloutViewDelegate> {
 	MKMapView *map;
     CFMutableDictionaryRef mapLine2View;   // MKPolyline(route line) -> MKPolylineView(route view)
 }
