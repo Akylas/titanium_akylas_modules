@@ -91,13 +91,13 @@ public class AkylasShapesModule extends KrollModule
 	public static void onAppCreate(TiApplication app)
 	{
 	       HashMap<String, String> map = new HashMap();
-	        map.put("AkylasShapes.Arc", "akylas.shapes.ArcProxy");
-	        map.put("AkylasShapes.Circle", "akylas.shapes.CircleProxy");
-	        map.put("AkylasShapes.Line", "akylas.shapes.LineProxy");
-	        map.put("AkylasShapes.PieSlice", "akylas.shapes.PieSliceProxy");
-	        map.put("AkylasShapes.Rect", "akylas.shapes.RectProxy");
-	        map.put("AkylasShapes.RoundedRect", "akylas.shapes.RoundedRectProxy");
-	        map.put("AkylasShapes.View", "akylas.shapes.ShapeViewProxy");
+	        map.put("AkylasShapes.Arc", akylas.shapes.ArcProxy.class.getName());
+	        map.put("AkylasShapes.Circle", akylas.shapes.CircleProxy.class.getName());
+	        map.put("AkylasShapes.Line", akylas.shapes.LineProxy.class.getName());
+	        map.put("AkylasShapes.PieSlice", akylas.shapes.PieSliceProxy.class.getName());
+	        map.put("AkylasShapes.Rect", akylas.shapes.RectProxy.class.getName());
+	        map.put("AkylasShapes.RoundedRect", akylas.shapes.RoundedRectProxy.class.getName());
+	        map.put("AkylasShapes.View", akylas.shapes.ShapeViewProxy.class.getName());
 	        APIMap.addMapping(map);
 	}
 }
