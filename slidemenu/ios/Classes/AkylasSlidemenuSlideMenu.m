@@ -166,6 +166,7 @@
         }
         centerView = [args retain];
         ctlr = [self controllerForViewProxy:centerView withFrame:frame];
+        [ctlr view];
     }
     if ([centerView isKindOfClass:[TiWindowProxy class]]) {
         TiWindowProxy* window = (TiWindowProxy*)centerView;

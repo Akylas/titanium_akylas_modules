@@ -149,6 +149,18 @@
     return self;
 }
 
+-(UIStatusBarStyle)preferredStatusBarStyle;
+{
+    UIViewController* topVC = [[self _controller] centerViewController];
+    if ([topVC isKindOfClass:[TiViewController class]]) {
+        TiViewProxy* theProxy = [(TiViewController*)topVC proxy];
+        if ([theProxy conformsToProtocol:@protocol(TiWindowProtocol)]) {
+            return [(id<TiWindowProtocol>)theProxy preferredStatusBarStyle];
+        }
+    }
+    return [super preferredStatusBarStyle];
+}
+
 -(void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     if ([self viewAttached]) {
