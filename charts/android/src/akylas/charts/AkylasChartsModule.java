@@ -66,13 +66,13 @@ public class AkylasChartsModule extends KrollModule
 		Log.d(TAG, "inside onAppCreate");
 		PixelUtils.init(app.getBaseContext());
 		HashMap<String, String> map = new HashMap();
-        map.put("AkylasCharts.LineChart", "akylas.charts.LineChartProxy");
-        map.put("AkylasCharts.Marker", "akylas.charts.MarkerProxy");
-        map.put("AkylasCharts.PieChart", "akylas.charts.PieChartProxy");
-        map.put("AkylasCharts.PieSegment", "akylas.charts.PieSegmentProxy");
-        map.put("AkylasCharts.PlotBar", "akylas.charts.PlotBarProxy");
-        map.put("AkylasCharts.PlotLine", "akylas.charts.PlotLineProxy");
-        map.put("AkylasCharts.PlotStep", "akylas.charts.PlotSteptProxy");
+        map.put("AkylasCharts.LineChart", akylas.charts.LineChartProxy.class.getName());
+        map.put("AkylasCharts.Marker", akylas.charts.MarkerProxy.class.getName());
+        map.put("AkylasCharts.PieChart", akylas.charts.PieChartProxy.class.getName());
+        map.put("AkylasCharts.PieSegment", akylas.charts.PieSegmentProxy.class.getName());
+        map.put("AkylasCharts.PlotBar", akylas.charts.PlotBarProxy.class.getName());
+        map.put("AkylasCharts.PlotLine", akylas.charts.PlotLineProxy.class.getName());
+        map.put("AkylasCharts.PlotStep", akylas.charts.PlotStepProxy.class.getName());
 		APIMap.addMapping(map);
 		// put module init code that needs to run when the application is created
 	}

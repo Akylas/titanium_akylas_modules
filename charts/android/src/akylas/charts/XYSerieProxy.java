@@ -71,15 +71,14 @@ public class XYSerieProxy extends KrollProxy implements KrollProxyReusableListen
 	@Override
 	public void handleCreationDict(KrollDict options) {
 		Log.d(TAG, "handleCreationDict ");
+		mTitle = options.optString("name", "");
+        series = new SimpleXYSeries(mTitle);
+        series.useImplicitXVals();
+        if (options.containsKey("implicitXVals")) {
+            series.useImplicitXVals();
+        }
 		super.handleCreationDict(options);
         setModelListener(this);
-
-		mTitle = options.optString("name", "");
-		series = new SimpleXYSeries(mTitle);
-		series.useImplicitXVals();
-		if (options.containsKey("implicitXVals")) {
-			series.useImplicitXVals();
-		}
 	}
 
 	@Kroll.method
