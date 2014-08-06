@@ -87,6 +87,7 @@
 -(CGRect)childControllerContainerViewFrame
 {
     return [[self childControllerContainerView] frame];
+//    return self.showsStatusBarBackgroundView?[TiUtils appFrame]:[[self childControllerContainerView] frame];
 }
 
 - (void)didReceiveMemoryWarning
@@ -98,13 +99,13 @@
 -(void)closeDrawerAnimated:(BOOL)animated velocity:(CGFloat)velocity animationOptions:(UIViewAnimationOptions)options completion:(void (^)(BOOL))completion __attribute((objc_requires_super))
 {
     [super closeDrawerAnimated:animated velocity:velocity animationOptions:options completion:completion];
-        if ([_proxy _hasListeners:@"closemenu"])
+        if ([_proxy _hasListeners:@"closemenu" checkParent:NO])
         {
             CGFloat distance = ABS(CGRectGetMinX(self.centerContainerView.frame));
             NSTimeInterval duration = MAX(distance/ABS(velocity),0.15f);
             NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:NUMINT(self.openSide == MMDrawerSideRight?1:0), @"side",
-                                 NUMFLOAT(duration), @"duration",
-                                 NUMBOOL(duration > 0), @"animated", nil];
+                                 @(duration), @"duration",
+                                 @(duration > 0), @"animated", nil];
             [_proxy fireEvent:@"closemenu" withObject:evt propagate:NO checkForListener:NO];
         }
     
@@ -113,13 +114,13 @@
 -(void)openDrawerSide:(MMDrawerSide)drawerSide animated:(BOOL)animated velocity:(CGFloat)velocity animationOptions:(UIViewAnimationOptions)options completion:(void (^)(BOOL))completion __attribute((objc_requires_super))
 {
     [super openDrawerSide:drawerSide animated:animated velocity:velocity animationOptions:options completion:completion];
-    if ([_proxy _hasListeners:@"openmenu"])
+    if ([_proxy _hasListeners:@"openmenu" checkParent:NO])
     {
         CGFloat distance = ABS(CGRectGetMinX(self.centerContainerView.frame));
         NSTimeInterval duration = MAX(distance/ABS(velocity),0.15f);
         NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:NUMINT(self.openSide == MMDrawerSideRight?1:0), @"side",
-                             NUMFLOAT(duration), @"duration",
-                             NUMBOOL(duration > 0), @"animated", nil];
+                             @(duration), @"duration",
+                             @(duration > 0), @"animated", nil];
         [_proxy fireEvent:@"openmenu" withObject:evt propagate:NO checkForListener:NO];
     }
     
