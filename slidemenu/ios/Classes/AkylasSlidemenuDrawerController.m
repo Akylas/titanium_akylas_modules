@@ -220,7 +220,7 @@
             self.startingPanRect = self.centerContainerView.frame;
             if ([(TiViewProxy*)_proxy _hasListeners:@"scrollstart" checkParent:NO])
             {
-                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:NUMFLOAT(0), @"offset", nil];
+                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(0), @"offset", nil];
                 [_proxy fireEvent:@"scrollstart" withObject:evt propagate:NO checkForListener:NO];
             }
         case UIGestureRecognizerStateChanged:{
@@ -231,7 +231,7 @@
             CGFloat xOffset = newFrame.origin.x;
             if ([(TiViewProxy*)_proxy _hasListeners:@"scroll" checkParent:NO])
             {
-                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:NUMFLOAT(xOffset), @"offset", nil];
+                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(xOffset), @"offset", nil];
                 [_proxy fireEvent:@"scroll" withObject:evt propagate:NO checkForListener:NO];
             }
             break;
@@ -246,7 +246,7 @@
             self.startingPanRect = CGRectNull;
             if ([(TiViewProxy*)_proxy _hasListeners:@"scrollend" checkParent:NO])
             {
-                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:NUMFLOAT(xOffset), @"offset", nil];
+                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(xOffset), @"offset", nil];
                 [_proxy fireEvent:@"scrollend" withObject:evt propagate:NO checkForListener:NO];
             }
             break;
