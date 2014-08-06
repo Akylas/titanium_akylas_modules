@@ -45,6 +45,7 @@
         controller = [proxy hostingController];
     }
     [proxy windowWillOpen];
+//    [proxy setParent:(AkylasSlidemenuSlideMenuProxy*)self.proxy];
     [proxy windowDidOpen];
     return controller;
 }
@@ -75,6 +76,8 @@
         [window windowDidClose];
     }
 }
+#define RELEASE_WITH_DETACH_TO_NIL(x) { if (x!=nil) { x.parent = nil; [x detachView]; [x release]; x = nil; } }
+#define RELEASE_WITH_PARENT_TO_NIL(x) { if (x!=nil) { x.parent = nil; [x release]; x = nil; } }
 
 -(void)cleanup
 {
@@ -84,9 +87,9 @@
 //        [self closeWindowProxy:centerView];
 //        [self closeWindowProxy:leftView];
 //        [self closeWindowProxy:rightView];
-        RELEASE_TO_NIL(centerView);
-        RELEASE_TO_NIL(leftView);
-        RELEASE_TO_NIL(rightView);
+        RELEASE_WITH_DETACH_TO_NIL(centerView);
+        RELEASE_WITH_DETACH_TO_NIL(leftView);
+        RELEASE_WITH_DETACH_TO_NIL(rightView);
         RELEASE_TO_NIL(_leftTransition);
         RELEASE_TO_NIL(_rightTransition);
     }, YES);
@@ -137,6 +140,13 @@
 
 //API
 
+-(void)setShowUnderStatusBar_:(id)args
+{
+    ENSURE_UI_THREAD(setShowUnderStatusBar_,args);
+    ENSURE_SINGLE_ARG_OR_NIL(args, NSNumber)
+    [self controller].showsStatusBarBackgroundView = ![TiUtils boolValue:args def:false];
+}
+
 -(void)setCenterView_:(id)args
 {
     __block TiViewProxy* odlCenterView = nil;
@@ -162,7 +172,7 @@
                 [window setIsManaged:NO];
                 [window resignFocus];
             }
-            RELEASE_TO_NIL(centerView);
+            RELEASE_WITH_PARENT_TO_NIL(centerView);
         }
         centerView = [args retain];
         ctlr = [self controllerForViewProxy:centerView withFrame:frame];
@@ -187,7 +197,7 @@
     ENSURE_UI_THREAD(setLeftView_,args);
     ENSURE_TYPE_OR_NIL(args,TiViewProxy);
     
-	RELEASE_TO_NIL(leftView);
+	RELEASE_WITH_PARENT_TO_NIL(leftView);
     if (args != nil) {
         leftView = [args retain];
         CGRect frame = [[self controller] childControllerContainerViewFrame];
@@ -204,7 +214,7 @@
     ENSURE_UI_THREAD(setRightView_,args);
     ENSURE_TYPE_OR_NIL(args,TiViewProxy);
     
-	RELEASE_TO_NIL(rightView);
+	RELEASE_WITH_PARENT_TO_NIL(rightView);
     if (args != nil) {
         rightView = [args retain];
         CGRect frame = [[self controller] childControllerContainerViewFrame];
@@ -216,34 +226,71 @@
     }
 }
 
--(void)setLeftViewWidth_:(id)args
+-(void)setLeftViewWidth_:(id)value withObject:(id)object
 {
-    _leftViewWidth = [TiUtils dimensionValue:args];
-    [self updateLeftViewWidth];
+	BOOL boolValue = [TiUtils boolValue:value];
+	BOOL animated = [TiUtils boolValue:@"animated" properties:object def:NO];
+	//TODO: Value checking and exception generation, if necessary.
+    
+	[self.proxy replaceValue:value forKey:@"leftViewWidth" notification:NO];
+    _leftViewWidth = [TiUtils dimensionValue:value];
+    [self updateLeftViewWidth:animated];
 }
 
--(void)setRightViewWidth_:(id)args
+-(void)setRightViewWidth_:(id)value withObject:(id)object
 {
-    _rightViewWidth = [TiUtils dimensionValue:args];
-    [self updateRightViewWidth];
+	BOOL boolValue = [TiUtils boolValue:value];
+	BOOL animated = [TiUtils boolValue:@"animated" properties:object def:NO];
+	//TODO: Value checking and exception generation, if necessary.
+    
+	[self.proxy replaceValue:value forKey:@"rightViewWidth" notification:NO];
+    _rightViewWidth = [TiUtils dimensionValue:value];
+    [self updateRightViewWidth:animated];
 }
+
 
 -(void)update
 {
     [self updateLeftViewWidth];
-    [self updateRightDisplacement];
+    [self updateRightViewWidth];
 }
+
+-(void)updateLeftViewWidth:(BOOL)animated
+{
+    [[self controller] setMaximumLeftDrawerWidth:TiDimensionCalculateValue(_leftViewWidth, self.bounds.size.width) animated:animated completion:^(BOOL finished) {
+        if ([self.proxy _hasListeners:@"menuwidth" checkParent:NO])
+        {
+            NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(0), @"side",
+                                 @(animated), @"animated", nil];
+            [self.proxy fireEvent:@"menuwidth" withObject:evt propagate:NO checkForListener:NO];
+        }
+    }] ;
+    [self updateLeftDisplacement];
+}
+
 
 -(void)updateLeftViewWidth
 {
-    [self controller].maximumLeftDrawerWidth = TiDimensionCalculateValue(_leftViewWidth, self.bounds.size.width);
-    [self updateLeftDisplacement];
+    [self updateLeftViewWidth:NO];
+}
+
+-(void)updateRightViewWidth:(BOOL)animated
+{
+    [[self controller] setMaximumRightDrawerWidth:TiDimensionCalculateValue(_rightViewWidth, self.bounds.size.width) animated:animated completion:^(BOOL finished) {
+        if ([self.proxy _hasListeners:@"menuwidth" checkParent:NO])
+        {
+            NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(1), @"side",
+                                 @(animated), @"animated", nil];
+            [self.proxy fireEvent:@"menuwidth" withObject:evt propagate:NO checkForListener:NO];
+        }
+    }] ;
+
+    [self updateRightDisplacement];
 }
 
 -(void)updateRightViewWidth
 {
-    [self controller].maximumRightDrawerWidth = TiDimensionCalculateValue(_rightViewWidth, self.bounds.size.width);
-    [self updateRightDisplacement];
+    [self updateRightViewWidth:NO];
 }
 
 -(void)updateLeftDisplacement
