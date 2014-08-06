@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: Akylas Module to track user Location
+author: Akylas
+license: Proprietary
+copyright: Copyright (c) 2013 by Akylas
+
+
+# on ios make sure that moduleid is the name of the project
+name: AkylasLocation
+moduleid: akylas.location
+guid: 9ed69418-fbbc-45a8-aa1b-35185bc3b7b5
+platform: iphone
+minsdk: 3.3.0.AKYLAS
