@@ -153,7 +153,9 @@ public class MapboxViewProxy extends MapDefaultViewProxy {
 //    public void removePreloadTileSource(Object value) {
 //        deletePreloadObject(preloadSources, value);
 //    }
-    
+    //KROLL ACCESSORS
+
+    @Kroll.method
     @Override
     public void addTileSource(Object value, @Kroll.argument(optional = true) final Object indexObj) {
         if (value == null) return;
@@ -168,6 +170,7 @@ public class MapboxViewProxy extends MapDefaultViewProxy {
         }
     }
 
+    @Kroll.method
     @Override
     public void removeTileSource(Object value) {
         if (value == null) return;
@@ -178,10 +181,6 @@ public class MapboxViewProxy extends MapDefaultViewProxy {
 
         }
     }
-    
-    
-    
-    //KROLL ACCESSORS
     
     @Kroll.method
     @Override

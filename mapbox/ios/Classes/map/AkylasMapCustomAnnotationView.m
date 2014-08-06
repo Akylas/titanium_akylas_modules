@@ -29,7 +29,7 @@
         [self initWithProxy:pinView];
     }
     else {
-        TiUIView* theView = [theProxy barButtonViewForSize:CGSizeZero];
+        TiUIView* theView = [theProxy barButtonViewForRect:[TiUtils appFrame]];
         self.frame = wrapperView.frame = [theView bounds];
     }
 }
@@ -37,7 +37,7 @@
 - (void)initWithProxy:(TiViewProxy*)pinView
 {
     theProxy = [pinView retain];
-    TiUIView* theView = [theProxy barButtonViewForSize:CGSizeZero];
+    TiUIView* theView = [theProxy barButtonViewForRect:[TiUtils appFrame]];
     self.frame = wrapperView.frame = [theView bounds];
     [wrapperView addSubview:theView];
 }

@@ -142,6 +142,16 @@
 -(void)selectAnnotation:(id)arg
 {
 	ENSURE_SINGLE_ARG(arg,NSObject);
+    if ([arg isKindOfClass:[NSNumber class]])
+	{
+        int index = [arg intValue];
+		if (index >= 0 && index < [_annotations count]) {
+            arg = [_annotations objectAtIndex:index];
+        }
+        else {
+            return;
+        }
+	}
 	if ([self viewInitialized]) {
 		 TiThreadPerformOnMainThread(^{[(AkylasMapView*)[self view] selectAnnotation:arg];}, YES);
 	}

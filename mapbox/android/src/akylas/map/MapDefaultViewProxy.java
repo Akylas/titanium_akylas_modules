@@ -561,6 +561,12 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
     }
 
     public void selectAnnotation(Object annotation) {
+        if (annotation instanceof Number) {
+            int index = ((Number) annotation).intValue();
+            if (index >= 0 && index < annotations.size()) {
+                annotation = annotations.get(index);
+            }
+        }
         if (!isAnnotationValid(annotation)) {
             return;
         }

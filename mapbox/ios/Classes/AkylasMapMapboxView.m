@@ -197,7 +197,9 @@
 {
     RMAnnotation* an = [annotation getRMAnnotationForMapView:[self map]];
     [map selectAnnotation:[annotation getRMAnnotationForMapView:[self map]] animated:[self shouldAnimate]];
-    map.centerCoordinate = an.coordinate;
+    if (!annotation.marker.canShowCallout) {
+        map.centerCoordinate = an.coordinate;
+    }
 }
 
 -(void)selectAnnotation:(id)args

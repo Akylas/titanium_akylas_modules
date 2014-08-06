@@ -236,18 +236,7 @@
 - (UIView*)leftViewAccessory
 {
 	if (_leftViewProxy == nil) {
-        id value = [self valueForUndefinedKey:@"leftView"];
-        if ([value isKindOfClass:[TiViewProxy class]])
-        {
-            _leftViewProxy = (TiViewProxy*)value;
-        } else if ([value isKindOfClass:[NSDictionary class]]) {
-            id<TiEvaluator> context = self.executionContext;
-            if (context == nil) {
-                context = self.pageContext;
-            }
-            _leftViewProxy = (TiViewProxy*)[[TiViewProxy class] createFromDictionary:value rootProxy:self inContext:context];
-        }
-        [self rememberProxy:_leftViewProxy];
+        _leftViewProxy = [[self createChildFromObject:[self valueForUndefinedKey:@"leftView"]] retain];
     }
     if (_leftViewProxy) {
         [_leftViewProxy setCanBeResizedByFrame:YES];
@@ -265,17 +254,7 @@
 {
     if (_rightViewProxy == nil) {
         id value = [self valueForUndefinedKey:@"rightView"];
-        if ([value isKindOfClass:[TiViewProxy class]])
-        {
-            _rightViewProxy = (TiViewProxy*)value;
-        } else if ([value isKindOfClass:[NSDictionary class]]) {
-            id<TiEvaluator> context = self.executionContext;
-            if (context == nil) {
-                context = self.pageContext;
-            }
-            _rightViewProxy = (TiViewProxy*)[[TiViewProxy class] createFromDictionary:value rootProxy:self inContext:context];
-        }
-        [self rememberProxy:_rightViewProxy];
+        _rightViewProxy = [[self createChildFromObject:[self valueForUndefinedKey:@"rightView"]] retain];
     }
     if (_rightViewProxy) {
         [_rightViewProxy setCanBeResizedByFrame:YES];
@@ -293,17 +272,7 @@
 {
     if (_customViewProxy == nil) {
         id value = [self valueForUndefinedKey:@"customView"];
-        if ([value isKindOfClass:[TiViewProxy class]])
-        {
-            _customViewProxy = (TiViewProxy*)value;
-        } else if ([value isKindOfClass:[NSDictionary class]]) {
-            id<TiEvaluator> context = self.executionContext;
-            if (context == nil) {
-                context = self.pageContext;
-            }
-            _customViewProxy = (TiViewProxy*)[[TiViewProxy class] createFromDictionary:value rootProxy:self inContext:context];
-        }
-        [self rememberProxy:_customViewProxy];
+        _customViewProxy = [[self createChildFromObject:[self valueForUndefinedKey:@"customView"]] retain];
     }
     if (_customViewProxy) {
         [_customViewProxy setCanBeResizedByFrame:YES];
