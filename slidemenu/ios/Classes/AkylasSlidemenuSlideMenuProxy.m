@@ -12,6 +12,11 @@
 #import "TiUtils.h"
 #import "TiApp.h"
 
+@interface AkylasSlidemenuSlideMenu()
+-(void)setLeftViewWidth_:(id)value withObject:(id)object;
+-(void)setRightViewWidth_:(id)value withObject:(id)object;
+@end
+
 @implementation AkylasSlidemenuSlideMenuProxy
 {
 }
@@ -37,6 +42,10 @@
 -(AkylasSlidemenuDrawerController *)_controller {
 	return [(AkylasSlidemenuSlideMenu*)[self view] controller];
 }
+//
+//-(TiViewController *)controller {
+//	return [self _controller];
+//}
 
 -(TiUIView*)newView {
     CGRect frame = [TiUtils appFrame];
@@ -266,6 +275,20 @@
 	if (args != nil)
 		animated = [args boolValue];
     [[self _controller] closeDrawerAnimated:animated completion:nil];
+}
+
+-(void)setLeftViewWidth:(id)value withObject:(id)object
+{
+    TiThreadPerformOnMainThread(^{
+        [(AkylasSlidemenuSlideMenu*)[self view] setLeftViewWidth_:value withObject:object];
+    }, NO);
+}
+
+-(void)setRightViewWidth:(id)value withObject:(id)object
+{
+    TiThreadPerformOnMainThread(^{
+        [(AkylasSlidemenuSlideMenu*)[self view] setRightViewWidth_:value withObject:object];
+    }, NO);
 }
 
 @end
