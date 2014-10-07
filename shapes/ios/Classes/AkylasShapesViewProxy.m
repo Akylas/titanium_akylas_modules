@@ -120,7 +120,7 @@ static NSArray *supportedEvents;
 {
     BOOL handledByChildren = NO;
     for (ShapeProxy* shape in [self shapes]) {
-        handledByChildren |= [shape _hasListeners:type];
+        handledByChildren |= [shape _hasListeners:type checkParent:NO];
     }
 	return [super _hasListeners:type] || handledByChildren;
 }
