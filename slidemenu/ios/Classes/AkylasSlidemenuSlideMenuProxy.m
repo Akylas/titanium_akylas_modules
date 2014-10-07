@@ -212,6 +212,7 @@
 	if (args != nil)
 		animated = [args boolValue];
         
+    [self blur:nil];
     [[self _controller] toggleDrawerSide:MMDrawerSideLeft animated:animated completion:nil];
 }
 -(void)toggleRightView:(id)args
@@ -222,6 +223,7 @@
 	if (args != nil)
 		animated = [args boolValue];
     
+    [self blur:nil];
     [[self _controller] toggleDrawerSide:MMDrawerSideRight animated:animated completion:nil];
 
 }
@@ -233,6 +235,7 @@
     BOOL animated = YES;
 	if (args != nil)
 		animated = [args boolValue];
+    [self blur:nil];
   [[self _controller] openDrawerSide:MMDrawerSideLeft animated:animated completion:nil];
 }
 
@@ -243,6 +246,7 @@
     BOOL animated = YES;
 	if (args != nil)
 		animated = [args boolValue];
+    [self blur:nil];
     [[self _controller] openDrawerSide:MMDrawerSideRight animated:animated completion:nil];
 }
 
@@ -253,6 +257,7 @@
     BOOL animated = YES;
 	if (args != nil)
 		animated = [args boolValue];
+    [self blur:nil];
     [[self _controller] closeDrawerAnimated:animated completion:nil];
 }
 
@@ -263,6 +268,7 @@
     BOOL animated = YES;
 	if (args != nil)
 		animated = [args boolValue];
+    [self blur:nil];
     [[self _controller] closeDrawerAnimated:animated completion:nil];
 }
 
@@ -274,6 +280,7 @@
     BOOL animated = YES;
 	if (args != nil)
 		animated = [args boolValue];
+    [self blur:nil];
     [[self _controller] closeDrawerAnimated:animated completion:nil];
 }
 
