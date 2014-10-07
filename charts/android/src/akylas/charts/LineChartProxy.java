@@ -1047,9 +1047,9 @@ public class LineChartProxy extends ChartProxy {
     }
     
     @Override
-    protected void handleChildRemoved(KrollProxy child) {
+    protected void handleChildRemoved(KrollProxy child, final boolean shouldDetach) {
         if (!(child instanceof XYSerieProxy)) {
-            super.handleChildRemoved(child);
+            super.handleChildRemoved(child, shouldDetach);
             return;
         }
         XYSerieProxy proxy = (XYSerieProxy) child;
