@@ -21,9 +21,10 @@
 	TiViewProxy* _leftViewProxy;
 	TiViewProxy* _rightViewProxy;
 	TiViewProxy* _customViewProxy;
-    CGPoint _anchorPoint;
+    CGPoint _mAnchorPoint;
     CGPoint _calloutAnchorPoint;
     CGFloat _calloutAlpha;
+    id _sortKey;
 }
 
 @synthesize delegate;
@@ -44,19 +45,30 @@
 	static int mapTags = 0;
 	tag = mapTags++;
 	needsRefreshingWithSelection = NO;
-    _anchorPoint = CGPointMake(0.5, 0.5);
+    _mAnchorPoint = CGPointMake(0.5, 0.5);
     _calloutAnchorPoint = CGPointMake(0, -0.5f);
     _size = RMMarkerMapboxImageSizeMedium;
     _calloutAlpha = 1;
     _tintColor = nil;
+    _sortKey = nil;
+    _minZoom = 0.0f;
+    _maxZoom = 22.0f;
 	[super _configure];
 }
+
+
+-(TiProxy *)parentForBubbling
+{
+	return delegate;
+}
+
 
 -(void)dealloc
 {
     RELEASE_TO_NIL(_rmannotation);
     RELEASE_TO_NIL(_marker);
-    RELEASE_TO_NIL(_image);
+    RELEASE_TO_NIL(_internalImage);
+    RELEASE_TO_NIL(_sortKey);
     RELEASE_TO_NIL(_tintColor);
     DETACH_RELEASE_TO_NIL(_leftViewProxy)
     DETACH_RELEASE_TO_NIL(_rightViewProxy)
@@ -212,31 +224,50 @@
     [self setNeedsRefreshingWithSelection:YES];
 }
 
+- (id)sortKey
+{
+	return _sortKey;
+}
+
+-(void)setSortKey:(id)sortKey
+{
+	RELEASE_TO_NIL(_sortKey);
+	[self replaceValue:sortKey forKey:@"sortKey" notification:NO];
+    _sortKey = [sortKey retain];
+    if (_rmannotation) {
+        _rmannotation.sortKey = _sortKey;
+    }
+}
+
 - (BOOL)animatesDrop
 {
 	return [TiUtils boolValue:[self valueForUndefinedKey:@"animate"]];
 }
 
--(UIColor*)calloutBackgroundColor {
+-(UIColor*)nGetCalloutBackgroundColor {
     if ([self valueForUndefinedKey:@"calloutBackgroundColor"])
         return [[TiUtils colorValue:[self valueForUndefinedKey:@"calloutBackgroundColor"]] color];
     return [UIColor whiteColor];
 }
 
--(CGFloat)calloutBorderRadius {
-    return [TiUtils floatValue:[self valueForUndefinedKey:@"animate"] def:DEFAULT_CALLOUT_CORNER_RADIUS];
+-(CGFloat)nGetCalloutBorderRadius {
+    return [TiUtils floatValue:[self valueForUndefinedKey:@"calloutBorderRadius"] def:DEFAULT_CALLOUT_CORNER_RADIUS];
 }
 
--(UIEdgeInsets)calloutPadding {
+-(CGFloat)nGetCalloutArrowHeight {
+    return [TiUtils floatValue:[self valueForUndefinedKey:@"calloutArrowHeight"] def:DEFAULT_CALLOUT_CORNER_RADIUS];
+}
+
+-(UIEdgeInsets)nGetCalloutPadding {
     if ([self valueForUndefinedKey:@"calloutPadding"])
         return [TiUtils insetValue:[self valueForUndefinedKey:@"calloutPadding"]];
     return DEFAULT_CALLOUT_PADDING;
 }
 
-- (UIView*)leftViewAccessory
+- (UIView*)nGetLeftViewAccessory
 {
 	if (_leftViewProxy == nil) {
-        _leftViewProxy = [[self createChildFromObject:[self valueForUndefinedKey:@"leftView"]] retain];
+        _leftViewProxy = (TiViewProxy*)[[self createChildFromObject:[self valueForUndefinedKey:@"leftView"]] retain];
     }
     if (_leftViewProxy) {
         [_leftViewProxy setCanBeResizedByFrame:YES];
@@ -250,11 +281,11 @@
     return nil;
 }
 
-- (UIView*)rightViewAccessory
+- (UIView*)nGetRightViewAccessory
 {
     if (_rightViewProxy == nil) {
         id value = [self valueForUndefinedKey:@"rightView"];
-        _rightViewProxy = [[self createChildFromObject:[self valueForUndefinedKey:@"rightView"]] retain];
+        _rightViewProxy = (TiViewProxy*)[[self createChildFromObject:[self valueForUndefinedKey:@"rightView"]] retain];
     }
     if (_rightViewProxy) {
         [_rightViewProxy setCanBeResizedByFrame:YES];
@@ -268,11 +299,11 @@
 	return nil;
 }
 
-- (UIView*)customViewAccessory
+- (UIView*)nGetCustomViewAccessory
 {
     if (_customViewProxy == nil) {
         id value = [self valueForUndefinedKey:@"customView"];
-        _customViewProxy = [[self createChildFromObject:[self valueForUndefinedKey:@"customView"]] retain];
+        _customViewProxy = (TiViewProxy*)[[self createChildFromObject:[self valueForUndefinedKey:@"customView"]] retain];
     }
     if (_customViewProxy) {
         [_customViewProxy setCanBeResizedByFrame:YES];
@@ -286,7 +317,7 @@
 	id current = [self valueForUndefinedKey:@"leftButton"];
 	[self replaceValue:button forKey:@"leftButton" notification:NO];
 	if (_marker) {
-        _marker.leftCalloutAccessoryView = [self leftViewAccessory];
+        _marker.leftCalloutAccessoryView = [self nGetLeftViewAccessory];
         [self setNeedsRefreshingWithSelection:NO];
     }
 }
@@ -296,7 +327,7 @@
 	id current = [self valueForUndefinedKey:@"rightButton"];
 	[self replaceValue:button forKey:@"rightButton" notification:NO];
 	if (_marker) {
-        _marker.rightCalloutAccessoryView = [self rightViewAccessory];
+        _marker.rightCalloutAccessoryView = [self nGetRightViewAccessory];
     }
     [self setNeedsRefreshingWithSelection:NO];
 }
@@ -306,7 +337,7 @@
     DETACH_RELEASE_TO_NIL(_rightViewProxy)
 	[self replaceValue:rightview forKey:@"rightView" notification:NO];
 	if (_marker) {
-        _marker.rightCalloutAccessoryView = [self rightViewAccessory];
+        _marker.rightCalloutAccessoryView = [self nGetRightViewAccessory];
     }
     [self setNeedsRefreshingWithSelection:NO];
 }
@@ -316,7 +347,7 @@
     DETACH_RELEASE_TO_NIL(_leftViewProxy)
 	[self replaceValue:leftview forKey:@"leftView" notification:NO];
     if (_marker) {
-        _marker.leftCalloutAccessoryView = [self leftViewAccessory];
+        _marker.leftCalloutAccessoryView = [self nGetLeftViewAccessory];
     }
     [self setNeedsRefreshingWithSelection:NO];
 }
@@ -326,7 +357,7 @@
     DETACH_RELEASE_TO_NIL(_customViewProxy)
 	[self replaceValue:leftview forKey:@"customView" notification:NO];
     if (_marker) {
-        _marker.customCalloutAccessoryView = [self customViewAccessory];
+        _marker.customCalloutAccessoryView = [self nGetCustomViewAccessory];
     }
     [self setNeedsRefreshingWithSelection:NO];
 }
@@ -348,16 +379,16 @@
 
 -(void)setAnchorPoint:(id)value
 {
-    _anchorPoint = [TiUtils pointValue:value def:_anchorPoint];
+    _mAnchorPoint = [TiUtils pointValue:value def:_mAnchorPoint];
 	[self replaceValue:value forKey:@"anchorPoint" notification:NO];
     if (_marker) {
-        [_marker replaceUIImage:_image anchorPoint:_anchorPoint];
+        [_marker replaceUIImage:_internalImage anchorPoint:_mAnchorPoint];
     }
 }
 
--(CGPoint)anchorPoint
+-(CGPoint)nGetAnchorPoint
 {
-    return _anchorPoint;
+    return _mAnchorPoint;
 }
 
 -(void)setCalloutAnchorPoint:(id)value
@@ -372,23 +403,23 @@
 	[self replaceValue:value forKey:@"calloutAlpha" notification:NO];
 }
 
--(CGPoint)calloutAnchorPoint
+-(CGPoint)nGetCalloutAnchorPoint
 {
     return _calloutAnchorPoint;
 }
 
--(CGFloat)calloutAlpha
+-(CGFloat)nGetCalloutAlpha
 {
     return _calloutAlpha;
 }
 
 -(void)setImage:(id)image
 {
-    RELEASE_TO_NIL(_image)
-    _image = [[[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:image proxy:self]] retain];
+    RELEASE_TO_NIL(_internalImage)
+    _internalImage = [[[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:image proxy:self]] retain];
 	[self replaceValue:image forKey:@"image" notification:NO];
     if (_marker) {
-        [_marker replaceUIImage:_image anchorPoint:_anchorPoint];
+        [_marker replaceUIImage:_internalImage anchorPoint:_mAnchorPoint];
     }
 }
 
@@ -408,7 +439,9 @@
     if (_rmannotation == nil) {
         _rmannotation = [[RMAnnotation alloc] initWithMapView:mapView coordinate:self.coordinate andTitle:nil];
         _rmannotation.userInfo = self;
-//        _rmannotation.subtitle = [self subtitle];
+        _rmannotation.sortKey = _sortKey;
+        _rmannotation.minZoom = self.minZoom;
+        _rmannotation.maxZoom = self.maxZoom;
     }
     else if (_rmannotation.mapView != mapView) {
         RELEASE_TO_NIL(_rmannotation)
@@ -528,8 +561,8 @@
 -(RMMapLayer*)shapeLayerForMapView:(AkylasMapMapboxView*)mapView
 {
     if (_marker == nil) {
-        if (_image) {
-            _marker = [[RMMarker alloc] initWithUIImage:_image anchorPoint:_anchorPoint];
+        if (_internalImage) {
+            _marker = [[RMMarker alloc] initWithUIImage:_internalImage anchorPoint:_mAnchorPoint];
         }
         else if (mapView.defaultPinImage) {
             _marker = [[RMMarker alloc] initWithUIImage:mapView.defaultPinImage anchorPoint:mapView.defaultPinAnchor];
@@ -539,7 +572,7 @@
             _marker = [[RMMarker alloc] initWithUIImage:[self getMapBoxImage:_mbImage color:_tintColor size:_size] anchorPoint:mapView.defaultPinAnchor];
         }
         if ([self valueForUndefinedKey:@"anchorPoint"]) {
-            _marker.anchorPoint = _anchorPoint;
+            _marker.anchorPoint = _mAnchorPoint;
         }
         else {
             _marker.anchorPoint = mapView.defaultPinAnchor;
@@ -597,6 +630,24 @@
 		button_view.tag = buttonTag;
 	}
 	return button_view;
+}
+
+-(void)setMinZoom:(id)value
+{
+    _minZoom = [TiUtils floatValue:value];
+    [self replaceValue:value forKey:@"minZoom" notification:NO];
+    if (_rmannotation) {
+        _rmannotation.minZoom = _minZoom;
+    }
+}
+
+-(void)setMaxZoom:(id)value
+{
+    _maxZoom = [TiUtils floatValue:value];
+    [self replaceValue:value forKey:@"maxZoom" notification:NO];
+    if (_rmannotation) {
+        _rmannotation.maxZoom = _maxZoom;
+    }
 }
 
 @end

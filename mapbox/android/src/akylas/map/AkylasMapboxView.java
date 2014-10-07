@@ -1,15 +1,16 @@
 package akylas.map;
 
 import java.lang.reflect.Array;
+import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
+import org.appcelerator.titanium.view.TiCompositeLayout;
 
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -22,9 +23,9 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.tileprovider.tilesource.TileLayer;
+import com.mapbox.mapboxsdk.views.InfoWindow;
 import com.mapbox.mapboxsdk.views.MapController;
 import com.mapbox.mapboxsdk.views.MapView;
-import com.mapbox.mapboxsdk.views.util.TilesLoadedListener;
 
 public class AkylasMapboxView extends AkylasMapDefaultView implements MapView.OnCameraChangeListener,
 MapView.OnInfoWindowClickListener, MapView.OnInfoWindowShowListener, MapView.OnMapClickListener,
@@ -34,8 +35,27 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     private static final String TAG = "AkylasMapboxView";
     private MapView map;
     private MapController mapController;
-    // private UserLocationOverlay myLocationOverlay;
+    
+    private boolean _calloutUsesTemplates = false;
+    private String defaultTemplateBinding;
+    private HashMap<String, TiViewTemplate> templatesByBinding;
 
+    private class InfoWindowCache extends SoftCache{
+
+        public InfoWindowCache() {
+            super();
+        }
+
+        @Override
+        public Object runWhenCacheEmpty(String key) {
+            if (key.equals("window")) {
+                return new MabpoxInfoWindow(getProxy().getActivity()); //new view;
+            }
+            return null;
+        }   
+    }
+    InfoWindowCache mInfoWindowCache = new InfoWindowCache();
+    
     public AkylasMapboxView(TiViewProxy proxy) {
         super(proxy);
         if (proxy.hasProperty(AkylasMapModule.PROPERTY_DEBUG))
@@ -62,7 +82,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
                 return interceptTouchEvent(ev) || super.dispatchTouchEvent(ev);
             }
         };
-        
+        map.setDiskCacheEnabled(true);
         map.setOnMarkerClickListener(this);
         map.setOnMapClickListener(this);
         map.setOnCameraChangeListener(this);
@@ -209,6 +229,16 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     @Override
     public void processPreMapProperties(final KrollDict d) {
         super.processPreMapProperties(d);
+        if (d.containsKey(AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES)) {
+            _calloutUsesTemplates = d.optBoolean(AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES, false);
+        } 
+        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE)) {
+            defaultTemplateBinding = d.getString(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE);
+        } 
+        if (d.containsKey(AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES)) {
+            processTemplates((HashMap)d.get(AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES));
+        } 
+        
         if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
             map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(d
                     .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)));
@@ -349,6 +379,10 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     public float getMinZoomLevel() {
         return map.getMinZoomLevel();
     }
+    @Override
+    public float getZoomLevel() {
+        return map.getZoomLevel();
+    }
 
     @Override
     public void updateCenter(Object dict, final boolean animated) {
@@ -404,6 +438,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         if (marker == null) {
             marker = new MapboxMarker(proxy);
             proxy.setMarker(marker);
+            proxy.setMapView(this);
         }
         return ((MapboxMarker) marker).getMarker(map);
     }
@@ -452,14 +487,14 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         } else {
             marker = getOrCreateMapboxMarker(annotation);
         }
-        timarkers.add(annotation.getMarker());
+//        timarkers.add(annotation.getMarker());
         map.addMarker(marker);
     }
 
     @Override
     void handleRemoveMarker(AkylasMarker marker) {
         if (marker instanceof MapboxMarker) {
-            timarkers.remove(marker);
+//            timarkers.remove(marker);
             Marker mapBoxMarker = ((MapboxMarker) marker).getMarker();
             if (mapBoxMarker != null) {
                 map.removeMarker(mapBoxMarker);
@@ -469,6 +504,12 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
                 proxy.setMarker(null);
             }
         }
+    }
+    
+    @Override
+    protected void removeAllAnnotations() {
+        map.clear();
+//        timarkers.clear();
     }
     
     public void fireLongClickEvent(ILatLng point)
@@ -566,6 +607,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     @Override
     public void onInfoWindowHide(Marker marker) {
         selectedAnnotation = null;
+        InfoWindow window = marker.getInfoWindow();
         fireEventOnMarker(TiC.EVENT_BLUR, getAkMarker(marker), AkylasMapModule.PROPERTY_PIN);
     }
 
@@ -584,9 +626,6 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     public void onMarkerDragCancel(Marker marker) {
         AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
         if (annoProxy != null) {
-//            LatLng position = marker.getPosition();
-//            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.longitude);
-//            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.latitude);
             firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_CANCEL);
         }
     }
@@ -596,9 +635,6 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     {
         AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
         if (annoProxy != null) {
-//            LatLng position = marker.getPosition();
-//            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.longitude);
-//            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.latitude);
             firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_DRAGGING);
         }
     }
@@ -623,6 +659,98 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
             firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_START);
         }
     }
+    
+    
+    public MabpoxInfoWindow createInfoWindow(AnnotationProxy annotationProxy) {
+        MabpoxInfoWindow result = (MabpoxInfoWindow) mInfoWindowCache.get("window");
+        result.setProxy(annotationProxy);
+        return result;
+    }
+    
+    protected void processTemplates(HashMap<String,Object> templates) {
+        templatesByBinding = new HashMap<String, TiViewTemplate>();
+        if(templates != null) {
+            for (String key : templates.keySet()) {
+                HashMap templateDict = (HashMap)templates.get(key);
+                if (templateDict != null) {
+                    //Here we bind each template with a key so we can use it to look up later
+                    KrollDict properties = new KrollDict((HashMap)templates.get(key));
+                    TiViewTemplate template = new TiViewTemplate(key, properties);
+                    templatesByBinding.put(key, template);
+                }
+                else {
+                    Log.e(TAG, "null template definition: " + key);
+                }
+            }
+        }
+    }
+    
+    public boolean calloutUseTemplates() {
+        return _calloutUsesTemplates;
+    }
+    
+    public TiViewTemplate getTemplate(String template)
+    {
+        if (template == null) template = defaultTemplateBinding;
+        if (templatesByBinding.containsKey(template))
+        {
+            return templatesByBinding.get(template);
+        }
+        return null;
+    }
+    public CalloutReusableProxy reusableViewFromDict(KrollDict dict, final KrollDict extraData) {
+        TiViewTemplate template = getTemplate(dict.getString("template"));
+        
+        if (template != null) {
+            Object view  = mInfoWindowCache.get(template.getTemplateID());
+            
+            if (view != null && view instanceof ReusableView) {
+                CalloutReusableProxy proxy = (CalloutReusableProxy) ((ReusableView) view).getProxy();
+                proxy.populateViews(dict, (ReusableView) view, template, extraData, true);
+                return proxy;
+            }
+            else {
+                CalloutReusableProxy proxy = (CalloutReusableProxy) template.generateProxy(CalloutReusableProxy.class, dict, this.proxy);
+                proxy.generateContent(dict, template, extraData);
+                return proxy;
+            }
+        }
+        return null;
+    }
+    
 
+    public void infoWindowDidClose(MabpoxInfoWindow mabpoxInfoWindow) {
+        mabpoxInfoWindow.setProxy(null);
+        mabpoxInfoWindow.getBoundMarker().setInfoWindow(null);
+        if (_calloutUsesTemplates) {
+            AkylasMapInfoView infoView = (AkylasMapInfoView) mabpoxInfoWindow.getInfoView();
+            Object view = infoView.getLeftView();
+            if (view != null && view instanceof TiCompositeLayout) {
+                view = ((TiCompositeLayout)view).getView();
+            }
+            if (view instanceof ReusableView) {
+                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
+                infoView.setLeftOrRightPane(null, AkylasMapInfoView.LEFT_PANE);
+            }
+            view = infoView.getRightView();
+            if (view != null && view instanceof TiCompositeLayout) {
+                view = ((TiCompositeLayout)view).getView();
+            }
+            if (view instanceof ReusableView) {
+                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
+                infoView.setLeftOrRightPane(null, AkylasMapInfoView.RIGHT_PANE);
+            }
+            infoView.setCustomView(null);
+        }
+        mInfoWindowCache.put("window", mabpoxInfoWindow);
+    }
 
+    public float getMetersPerPixel() {
+        final float density = getContext().getResources().getDisplayMetrics().density - 1;
+        float result = (float) map.getProjection().groundResolution(0);
+        if (density != 0) {
+            result *= density;
+        }
+        return result;
+    }
 }

@@ -78,17 +78,23 @@ public class AkylasMapModule extends KrollModule
     public static final String PROPERTY_TIMESTAMP = "timestamp";
     public static final String PROPERTY_ROUTES = "routes";
     public static final String PROPERTY_ANNOTATIONS = "annotations";
+    public static final String PROPERTY_ANNOTATION = "annotation";
     public static final String PROPERTY_DEBUG = "debug";
     public static final String PROPERTY_DISK_CACHE = "diskCache";
     public static final String PROPERTY_SHOW_INFO_WINDOW = "showInfoWindow";
     public static final String PROPERTY_ANIMATE_CHANGES = "animateChanges";
     public static final String PROPERTY_ANCHOR = "anchorPoint";
+    public static final String PROPERTY_SORT_KEY = "sortKey";
     
     public static final String PROPERTY_CAN_SHOW_CALLOUT = "canShowCallout";
     public static final String PROPERTY_CALLOUT_BACKGROUND_COLOR = "calloutBackgroundColor";
     public static final String PROPERTY_CALLOUT_BORDER_RADIUS = "calloutBorderRadius";
     public static final String PROPERTY_CALLOUT_PADDING = "calloutPadding";
     public static final String PROPERTY_CALLOUT_ANCHOR = "calloutAnchorPoint";
+    public static final String PROPERTY_CALLOUT_ARROW_HEIGHT = "calloutArrowHeight";
+    public static final String PROPERTY_CALLOUT_TEMPLATES = "calloutTemplates";
+    public static final String PROPERTY_CALLOUT_USE_TEMPLATES = "calloutUseTemplates";
+    public static final String PROPERTY_DEFAULT_CALLOUT_TEMPLATE = "defaultCalloutTemplate";
 
     
     

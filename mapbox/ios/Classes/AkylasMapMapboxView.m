@@ -11,6 +11,130 @@
 #import "AkylasMapAnnotationProxy.h"
 #import "AkylasMapModule.h"
 #import <Mapbox/SMCalloutView.h>
+#import "NetworkModule.h"
+#import "ReusableViewProtocol.h"
+#import "ReusableViewProxy.h"
+
+@interface CalloutReusableView : TiUIView <ReusableViewProtocol>
+@property(nonatomic, readonly, copy) NSString *reuseIdentifier;
+@property (nonatomic, readwrite, retain) NSDictionary *dataItem;
+- (id)initWithFrame:(CGRect)frame reuseIdentifier:(NSString *)reuseIdentifier;
+@end
+
+@implementation CalloutReusableView {
+    NSDictionary *_dataItem;
+}
+@synthesize dataItem = _dataItem;
+
+- (id)initWithFrame:(CGRect)frame reuseIdentifier:(NSString *)reuseIdentifier {
+    if (self = [super initWithFrame:frame]) {
+       _reuseIdentifier = [reuseIdentifier copy];
+        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    }
+    return self;
+}
+
+-(ReusableViewProxy*)reusableProxy
+{
+    return (ReusableViewProxy*)self.proxy;
+}
+
+- (void)dealloc
+{
+	[[self reusableProxy] detachView];
+	[[self reusableProxy] deregisterProxy:[[self reusableProxy] pageContext]];
+	[self reusableProxy].modelDelegate = nil;
+    RELEASE_TO_NIL(_dataItem)
+	[super dealloc];
+}
+
+- (BOOL)canApplyDataItem:(NSDictionary *)otherItem;
+{
+	id template = [_dataItem objectForKey:@"template"];
+	id otherTemplate = [otherItem objectForKey:@"template"];
+	BOOL same = (template == otherTemplate) || [template isEqual:otherTemplate];
+	return same;
+}
+
+- (void)setDataItem:(NSDictionary *)dataItem
+{
+    if (dataItem == (_dataItem)) return;
+    if (_dataItem) {
+        RELEASE_TO_NIL(_dataItem)
+        [(TiViewProxy*)self.proxy dirtyItAll];
+    }
+	_dataItem = [dataItem retain];
+    [[self reusableProxy] setDataItem:_dataItem];
+}
+
+- (void)prepareForReuse
+{
+    [[self reusableProxy] prepareForReuse];
+}
+
+-(void)configurationStart
+{
+    [super configurationStart];
+}
+
+-(void)configurationSet
+{
+    [super configurationSet];
+}
+@end
+
+@interface CalloutViewProxy : ReusableViewProxy
+@property (nonatomic, retain) AkylasMapAnnotationProxy *annotation;
+
+@end
+
+@implementation CalloutViewProxy
+{
+    NSString *_reuseIdentifier;
+}
+
+-(void)dealloc
+{
+    RELEASE_TO_NIL(_reuseIdentifier);
+    [super dealloc];
+}
+
+- (id)initInContext:(id<TiEvaluator>)context reuseIdentifier:(NSString *)reuseIdentifier {
+    if (self = [super initInContext:context]) {
+//        defaultReadyToCreateView = YES;
+        self.canBeResizedByFrame  = YES;
+        
+        _reuseIdentifier = [reuseIdentifier copy];
+//        [self setView:[[CalloutReusableView alloc] initWithFrame:CGRectZero reuseIdentifier:reuseIdentifier]];
+    }
+    return self;
+}
+
+
+-(TiUIView*)newView {
+    return [[CalloutReusableView alloc] initWithFrame:CGRectZero reuseIdentifier:_reuseIdentifier];
+}
+
+-(TiDimension)defaultAutoWidthBehavior:(id)unused
+{
+    return TiDimensionAutoSize;
+}
+-(TiDimension)defaultAutoHeightBehavior:(id)unused
+{
+    return TiDimensionAutoSize;
+}
+
+- (NSDictionary *)overrideEventObject:(NSDictionary *)eventObject forEvent:(NSString *)eventType fromViewProxy:(TiViewProxy *)viewProxy
+{
+	NSMutableDictionary *updatedEventObject = (NSMutableDictionary*)[super overrideEventObject:eventObject forEvent:eventType fromViewProxy:viewProxy];
+    [updatedEventObject setObject:@YES forKey:@"inCallout"];
+    if (_annotation) {
+        [updatedEventObject setObject:_annotation forKey:@"annotation"];
+    }
+	return updatedEventObject;
+}
+
+@end
 
 @implementation AkylasMapMapboxView
 {
@@ -19,13 +143,19 @@
     RMStackTileSource* _tileSourceContainer;
     BOOL _userStackTileSource;
     BOOL _needsRegionUpdate;
+    
+    BOOL _calloutUseTemplates;
+    NSDictionary* _calloutTemplates;
+    id _defaultCalloutTemplate;
+    NSMutableDictionary *_reusableViews;
 }
-
 - (id)init
 {
     if ((self = [super init])) {
         _userStackTileSource = NO;
         _needsRegionUpdate = NO;
+        _calloutUseTemplates = NO;
+        _reusableViews = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
@@ -46,7 +176,11 @@
 	{
 		map.delegate = nil;
 		RELEASE_TO_NIL(map);
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:kTiNetworkChangedNotification object:nil];
 	}
+    RELEASE_TO_NIL(_calloutTemplates)
+    RELEASE_TO_NIL(_defaultCalloutTemplate)
+    RELEASE_TO_NIL(_reusableViews)
     [self clearTileSources];
 	[super dealloc];
 }
@@ -79,6 +213,7 @@
         [self addSubview:map];
         //Initialize loaded state to YES. This will automatically go to NO if the map needs to download new data
         loaded = YES;
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkChanged:) name:kTiNetworkChangedNotification object:nil];
     }
     return map;
 }
@@ -89,6 +224,31 @@
 }
 
 
+-(void)networkChanged:(NSNotification*)note
+{
+    BOOL connected = [[note.userInfo objectForKey:@"online"] boolValue];
+    if (map!=nil)
+	{
+        __block BOOL needsUpdate = NO;
+        [map.tileSources enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([obj isKindOfClass:[RMAbstractWebMapSource class]]) {
+                needsUpdate = needsUpdate || [((RMAbstractWebMapSource*)obj) onNetworkChange:connected];
+            }
+        }];
+        if (needsUpdate) {
+//            [map setTileSources:map.tileSources];
+//            if ([self.proxy valueForUndefinedKey:@"region"]) {
+//                [self setRegion_:[self.proxy valueForUndefinedKey:@"region"]];
+//            }
+//            if ([self.proxy valueForUndefinedKey:@"zoom"]) {
+//                [self setZoom_:[self.proxy valueForUndefinedKey:@"zoom"]];
+//            }
+//            if ([self.proxy valueForUndefinedKey:@"centerCoordinate"]) {
+//                [self setCenterCoordinate_:[self.proxy valueForUndefinedKey:@"centerCoordinate"]];
+//            }
+        }
+    }
+}
 
 -(void)setBounds:(CGRect)bounds
 {
@@ -97,7 +257,7 @@
     //Here we update the region property which is not what we want.
     //Instead we set a forceRender flag and render in frameSizeChanged and capture updated
     //region there.
-    ignoreRegionChanged = YES;
+    ignoreRegionChanged = !_needsRegionUpdate;
     [super setBounds:bounds];
     ignoreRegionChanged = NO;
 }
@@ -192,11 +352,16 @@
     }
 }
 
+-(void)internalRemoveAllAnnotations
+{
+    RMMapView* mapView = [self map];
+    [mapView removeAllAnnotations];
+}
 
 -(void)setSelectedAnnotation:(AkylasMapAnnotationProxy*)annotation
 {
     RMAnnotation* an = [annotation getRMAnnotationForMapView:[self map]];
-    [map selectAnnotation:[annotation getRMAnnotationForMapView:[self map]] animated:[self shouldAnimate]];
+    [map selectAnnotation:an animated:[self shouldAnimate]];
     if (!annotation.marker.canShowCallout) {
         map.centerCoordinate = an.coordinate;
     }
@@ -268,7 +433,7 @@
 }
 
 
--(void)zoom:(id)args
+-(void)zoomTo:(id)args
 {
 	ENSURE_SINGLE_ARG(args,NSObject);
 	ENSURE_UI_THREAD(zoom,args);
@@ -281,6 +446,11 @@
 -(RMSphericalTrapezium) getCurrentRegion
 {
     return [map latitudeLongitudeBoundingBox];
+}
+
+-(id)metersPerPixel_
+{
+    return @([[self map] metersPerPixel]);
 }
 
 
@@ -376,8 +546,11 @@
 
 -(void)setZoom_:(id)zoom
 {
-    CGFloat newValue = [TiUtils floatValue:zoom def:_zoom];
-    if (newValue == _zoom) return;
+    CGFloat newValue = [TiUtils floatValue:zoom def:_internalZoom];
+    if (newValue == _internalZoom) return;
+    float screenScale = [UIScreen mainScreen].scale;
+    if (![self map].adjustTilesForRetinaDisplay && screenScale > 1.0)
+        newValue -= 1.0;
     [[self map] setZoom:newValue animated:[self shouldAnimate]];
 }
 
@@ -512,7 +685,113 @@
     }
 }
 
+#pragma mark Templates
 
+- (void)setDefaultCalloutTemplate_:(id)args
+{
+    ENSURE_TYPE_OR_NIL(args,NSString);
+	[_defaultCalloutTemplate release];
+	_defaultCalloutTemplate = [args copy];
+}
+
+-(void)setCalloutUseTemplates_:(id)value
+{
+    _calloutUseTemplates = [TiUtils boolValue:value];
+}
+
+
+- (void)setCalloutTemplates_:(id)args
+{
+    ENSURE_TYPE_OR_NIL(args,NSDictionary);
+	NSMutableDictionary *templates = [[NSMutableDictionary alloc] initWithCapacity:[args count]];
+	[(NSDictionary *)args enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+		TiProxyTemplate *template = [TiProxyTemplate templateFromViewTemplate:obj];
+		if (template != nil) {
+			[templates setObject:template forKey:key];
+		}
+	}];
+    
+	[_calloutTemplates release];
+	_calloutTemplates = [templates copy];
+	[templates release];
+}
+
+- (NSMutableSet *)reusablePagesWithIdentifier:(NSString *)identifier
+{
+    if (identifier == nil) {
+        return nil;
+    }
+    
+    NSMutableSet *set = [_reusableViews objectForKey:identifier];
+    if (set == nil) {
+        set = [NSMutableSet set];
+        [_reusableViews setObject:set forKey:identifier];
+    }
+    
+    return set;
+}
+
+- (void)queueViewForReuse:(id<ReusableViewProtocol>)view
+{
+    if (view.reuseIdentifier == nil) {
+        return;
+    }
+    
+    [[self reusablePagesWithIdentifier:view.reuseIdentifier] addObject:view];
+}
+
+- (id<ReusableViewProtocol>)dequeueReusableViewWithIdentifer:(NSString *)identifier
+{
+    NSParameterAssert(identifier != nil);
+    
+    NSMutableSet *set = [self reusablePagesWithIdentifier:identifier];
+    id<ReusableViewProtocol> view = [set anyObject];
+    
+    if (view != nil) {
+        [view prepareForReuse];
+        [set removeObject:view];
+        
+        return view;
+    }
+    return nil;
+}
+
+-(CalloutReusableView*) reusableViewForProxy:(AkylasMapAnnotationProxy*)proxy objectKey:(NSString*)key {
+    id item = [proxy valueForUndefinedKey:key];
+    CalloutReusableView* reuseCallout = nil;
+    if ([item isKindOfClass:[NSDictionary class]]) {
+        id templateId = [item objectForKey:@"template"];
+        if (templateId == nil) {
+            templateId = _defaultCalloutTemplate;
+        }
+        
+        reuseCallout = (CalloutReusableView*)[self dequeueReusableViewWithIdentifer:templateId];
+        
+        if (reuseCallout == nil) {
+            id<TiEvaluator> context = self.proxy.executionContext;
+            if (context == nil) {
+                context = self.proxy.pageContext;
+            }
+            CalloutViewProxy *calloutProxy = [[CalloutViewProxy alloc] initInContext:context reuseIdentifier:templateId];
+            [calloutProxy dirtyItAll];
+            [reuseCallout configurationStart];
+            id template = [_calloutTemplates objectForKey:templateId];
+            if (template != nil) {
+                [calloutProxy unarchiveFromTemplate:template withEvents:YES];
+            }
+            [reuseCallout configurationSet];
+            reuseCallout = (CalloutReusableView*)[calloutProxy getAndPrepareViewForOpening:[TiUtils appFrame]];
+            [calloutProxy release];
+            [reuseCallout autorelease];
+        }
+        CalloutViewProxy *calloutProxy = ((CalloutViewProxy *)reuseCallout.proxy);
+        calloutProxy.annotation = proxy;
+        [calloutProxy setParentForBubbling:proxy];
+        reuseCallout.dataItem = item;
+        [calloutProxy refreshViewIfNeeded:YES];
+    }
+    return reuseCallout;
+}
 
 #pragma mark Delegates
 
@@ -566,7 +845,7 @@
 	if ([self.proxy _hasListeners:@"regionchanged"])
 	{
 		[self.proxy fireEvent:@"regionchanged" withObject:@{
-                                                            @"region":[self getRegion],
+                                                            @"region":[self.proxy valueForKey:@"region"],
                                                             @"zoom":@(theMap.adjustedZoomForRetinaDisplay)
                                                             } propagate:NO checkForListener:NO];
 	}
@@ -641,15 +920,15 @@
 	}
 }
 
-
 - (void)mapView:(RMMapView *)theMap willShowCallout:(SMCalloutView*)callout forAnnotation:(RMAnnotation *)annotation {
     
     AkylasMapAnnotationProxy* proxy = annotation.userInfo;
-    if (PostVersion7)
+    if (PostVersion7) {
         callout.tintColor = self.tintColor;
+    }
     
     // Apply the desired calloutOffset (from the top-middle of the view)
-    CGPoint calloutOffset = [proxy calloutAnchorPoint];
+    CGPoint calloutOffset = [proxy nGetCalloutAnchorPoint];
     calloutOffset.y +=0.5f;
     calloutOffset.x *= annotation.layer.frame.size.width;
     calloutOffset.y *= annotation.layer.frame.size.height;
@@ -664,17 +943,43 @@
     callout.title    = [proxy title];
     callout.subtitle = [proxy subtitle];
     SMCalloutMaskedBackgroundView* backView = (SMCalloutMaskedBackgroundView*)callout.backgroundView;
-    backView.alpha = [proxy calloutAlpha];
-    callout.leftAccessoryView = [proxy leftViewAccessory];
-    callout.rightAccessoryView = [proxy rightViewAccessory];
-    callout.contentView = [proxy customViewAccessory];
+    backView.alpha = [proxy nGetCalloutAlpha];
     
-    callout.padding = [proxy calloutPadding];
+    if (_calloutUseTemplates) {
+        callout.leftAccessoryView = [self reusableViewForProxy:proxy objectKey:@"leftView"];
+        callout.rightAccessoryView = [self reusableViewForProxy:proxy objectKey:@"rightView"];
+        callout.contentView = [self reusableViewForProxy:proxy objectKey:@"customView"];
+    }
+    else {
+        callout.leftAccessoryView = [proxy nGetLeftViewAccessory];
+        callout.rightAccessoryView = [proxy nGetRightViewAccessory];
+        callout.contentView = [proxy nGetCustomViewAccessory];
+    }
+
+    callout.arrowHeight = [proxy nGetCalloutArrowHeight];
+    callout.padding = [proxy nGetCalloutPadding];
     if (backView && [backView isKindOfClass:[SMCalloutMaskedBackgroundView class]]) {
-        backView.backgroundColor = [proxy calloutBackgroundColor];
-        backView.cornerRadius = [proxy calloutBorderRadius];
+        backView.backgroundColor = [proxy nGetCalloutBackgroundColor];
+        backView.cornerRadius = [proxy nGetCalloutBorderRadius];
     }
     callout.permittedArrowDirection = SMCalloutArrowDirectionDown;
+}
+
+-(void) reuseIfNecessary:(id)object {
+    if ([object isKindOfClass:[CalloutReusableView class]]) {
+        CalloutViewProxy *calloutProxy = ((CalloutViewProxy *)((CalloutReusableView*)object).proxy);
+        [calloutProxy setParentForBubbling:nil];
+        calloutProxy.annotation = nil;
+        [self queueViewForReuse:(CalloutReusableView*)object];
+    }
+}
+
+- (void)mapView:(RMMapView *)theMap didHideCallout:(SMCalloutView*)callout forAnnotation:(RMAnnotation *)annotation {
+    if (_calloutUseTemplates) {
+        [self reuseIfNecessary:callout.leftAccessoryView];
+        [self reuseIfNecessary:callout.rightAccessoryView];
+        [self reuseIfNecessary:callout.contentView];
+    }
 }
 
 - (void)mapView:(RMMapView *)theMap didSelectAnnotation:(RMAnnotation *)annotation {
@@ -697,17 +1002,16 @@
         [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 	}
 }
-
 - (void)afterMapZoom:(RMMapView *)theMap byUser:(BOOL)wasUserAction
 {
     NSString* type = @"zoom";
-    _zoom = theMap.adjustedZoomForRetinaDisplay;
-    [self.proxy replaceValue:NUMFLOAT(_zoom) forKey:type notification:NO];
+    _internalZoom = theMap.adjustedZoomForRetinaDisplay;
+    [self.proxy replaceValue:NUMFLOAT(_internalZoom) forKey:type notification:NO];
     if ([self.proxy _hasListeners:type]) {
         
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
                                NUMBOOL(wasUserAction),@"userAction",
-                               NUMFLOAT(_zoom), @"zoom",
+                               NUMFLOAT(_internalZoom), @"zoom",
                                nil
                                ];
         [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
@@ -739,35 +1043,35 @@
 	}
 }
 
-- (void)mapViewWillStartLoadingMap:(MKMapView *)mapView
-{
-	loaded = NO;
-	if ([self.proxy _hasListeners:@"loading"])
-	{
-		[self.proxy fireEvent:@"loading" propagate:NO checkForListener:NO];
-	}
-}
+//- (void)mapViewWillStartLoadingMap:(MKMapView *)mapView
+//{
+//	loaded = NO;
+//	if ([self.proxy _hasListeners:@"loading"])
+//	{
+//		[self.proxy fireEvent:@"loading" propagate:NO checkForListener:NO];
+//	}
+//}
+//
+//- (void)mapViewDidFinishLoadingMap:(MKMapView *)mapView
+//{
+//	ignoreClicks = YES;
+//	loaded = YES;
+//	if ([self.proxy _hasListeners:@"complete"])
+//	{
+//		[self.proxy fireEvent:@"complete" propagate:NO checkForListener:NO];
+//	}
+//	ignoreClicks = NO;
+//}
 
-- (void)mapViewDidFinishLoadingMap:(MKMapView *)mapView
-{
-	ignoreClicks = YES;
-	loaded = YES;
-	if ([self.proxy _hasListeners:@"complete"])
-	{
-		[self.proxy fireEvent:@"complete" propagate:NO checkForListener:NO];
-	}
-	ignoreClicks = NO;
-}
-
-- (void)mapViewDidFailLoadingMap:(MKMapView *)mapView withError:(NSError *)error
-{
-	if ([self.proxy _hasListeners:@"error"])
-	{
-		NSString * message = [TiUtils messageFromError:error];
-		NSDictionary *event = [NSDictionary dictionaryWithObject:message forKey:@"message"];
-		[self.proxy fireEvent:@"error" withObject:event errorCode:[error code] message:message];
-	}
-}
+//- (void)mapViewDidFailLoadingMap:(MKMapView *)mapView withError:(NSError *)error
+//{
+//	if ([self.proxy _hasListeners:@"error"])
+//	{
+//		NSString * message = [TiUtils messageFromError:error];
+//		NSDictionary *event = [NSDictionary dictionaryWithObject:message forKey:@"message"];
+//		[self.proxy fireEvent:@"error" withObject:event errorCode:[error code] message:message];
+//	}
+//}
 
 - (void)mapView:(RMMapView *)mapView annotation:(RMAnnotation *)annotation didChangeDragState:(RMMapLayerDragState)newState fromOldState:(RMMapLayerDragState)oldState
 {

@@ -163,4 +163,11 @@ public class GoogleMapMarker extends AkylasMarker {
             markerOptions.position(position);
         }
     }
+
+    @Override
+    void invalidate() {
+        boolean oldVisible = marker.isVisible();
+        marker.setVisible(!oldVisible);
+        marker.setVisible(oldVisible);
+    }
 }

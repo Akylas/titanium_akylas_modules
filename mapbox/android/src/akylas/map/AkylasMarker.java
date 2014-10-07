@@ -1,25 +1,29 @@
 package akylas.map;
 
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.util.TiImageLruCache;
 import org.appcelerator.titanium.view.TiDrawableReference;
+
+import com.squareup.picasso.Cache;
+import com.squareup.picasso.Picasso;
 
 import akylas.map.AnnotationProxy;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 
 abstract class AkylasMarker  {
     protected AnnotationProxy proxy;
-    private TiImageLruCache mMemoryCache = TiImageLruCache.getInstance();
 	
 	public AkylasMarker(final AnnotationProxy p) {
         proxy = p;
     }
 		
-//	private void setProxy(AnnotationProxy proxy) {
-//		this.proxy = proxy;
-//	}
+	public void prepareRemoval() {
+		this.proxy = null;
+	}
 	
 	protected int getColor() {
 	    Object value = proxy.getProperty(TiC.PROPERTY_PINCOLOR);
@@ -35,19 +39,15 @@ abstract class AkylasMarker  {
 	    if (value != null) {
 	        TiDrawableReference imageref = TiDrawableReference.fromUrl(proxy,
                     TiConvert.toString(proxy.getProperty(TiC.PROPERTY_IMAGE)));
-	        int hash = imageref.hashCode();
-	        Bitmap bitmap = mMemoryCache.get(hash);
-            if (bitmap != null) {
-                if (!bitmap.isRecycled()) {
-                    return bitmap;
-                } else { // If the cached image has been recycled, remove it
-                         // from the cache.
-                    mMemoryCache.remove(hash);
+	        Cache cache = TiApplication.getImageMemoryCache();
+            Bitmap bitmap = cache.get(imageref.getUrl());
+            Drawable drawable = null;
+            if (bitmap == null) {
+                drawable = imageref.getDrawable();
+                if (drawable instanceof BitmapDrawable) {
+                    bitmap = ((BitmapDrawable)drawable).getBitmap();
+                    cache.set(imageref.getUrl(), bitmap);
                 }
-            }
-            bitmap = imageref.getBitmap();
-            if (bitmap != null) {
-                mMemoryCache.put(hash, bitmap);
             }
             return bitmap;
 	    }
@@ -57,6 +57,7 @@ abstract class AkylasMarker  {
 	public AnnotationProxy getProxy() {
 		return proxy;
 	}
+    abstract void invalidate();
     
     abstract double getLatitude();
     abstract double getLongitude();

@@ -26,7 +26,7 @@ import android.os.Message;
     AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT,
     AkylasMapModule.PROPERTY_REGION_FIT,
     AkylasMapModule.PROPERTY_CENTER_COORDINATE,
-    AkylasMapModule.PROPERTY_ZOOM,
+//    AkylasMapModule.PROPERTY_ZOOM,
 //    AkylasMapModule.PROPERTY_MINZOOM,
 //    AkylasMapModule.PROPERTY_MAXZOOM,
     AkylasMapModule.PROPERTY_ROUTES,
@@ -276,6 +276,13 @@ public class MapboxViewProxy extends MapDefaultViewProxy {
     @Kroll.method
     @Kroll.getProperty
     @Override
+    public float getZoom() {
+        return super.getZoom();
+    }
+    
+    @Kroll.method
+    @Kroll.getProperty
+    @Override
     public boolean getUserLocationEnabled() {
         return super.getUserLocationEnabled();
     }
@@ -317,5 +324,17 @@ public class MapboxViewProxy extends MapDefaultViewProxy {
     public void zoomOut(@Kroll.argument(optional = true) final Object about) {
         super.zoomOut(about);
     }
+    
 
+    @Kroll.method
+    @Kroll.getProperty
+    public float getMetersPerPixel() {
+        
+        AkylasMapboxView mapView = (AkylasMapboxView) peekView();
+        if (mapView != null) {
+            return mapView.getMetersPerPixel();
+        }
+        return 0;
+    }
+    
 }

@@ -27,15 +27,13 @@
 	BOOL ignoreRegionChanged;
 	BOOL forceRender;
 	RMSphericalTrapezium region;
-    CGFloat _zoom;
-    long _maxAnnotations;
+    CGFloat _internalZoom;
 }
 
 @property (nonatomic, readonly) NSArray *customAnnotations;
 @property (nonatomic, retain) UIImage *defaultPinImage;
 @property (nonatomic, assign) CGPoint defaultPinAnchor;
 @property (nonatomic, assign) CGPoint defaultCalloutAnchor;
-@property (nonatomic, assign) long maxAnnotations;
 
 #pragma mark Private APIs
 -(AkylasMapAnnotationProxy*)annotationFromArg:(id)arg;
@@ -48,19 +46,17 @@
 -(void)setAnnotations_:(id)value;
 -(void)removeAnnotation:(id)args;
 -(void)removeAnnotations:(id)args;
--(void)removeAllAnnotations:(id)args;
+-(void)removeAllAnnotations;
 -(void)selectAnnotation:(id)args;
 -(void)deselectAnnotation:(id)args;
--(void)zoom:(id)args;
+-(void)zoomTo:(id)args;
 -(void)addRoute:(id)args;
 -(void)removeRoute:(id)args;
 
 #pragma mark Framework
 -(void)refreshAnnotation:(AkylasMapAnnotationProxy*)proxy readd:(BOOL)yn;
--(id)centerCoordinate;
 - (void)zoomInAt:(CGPoint)pivot animated:(BOOL)animated;
 - (void)zoomOutAt:(CGPoint)pivot animated:(BOOL)animated;
--(id)getRegion;
 -(void)selectUserAnnotation;
 -(BOOL)viewInitialized;
 @end

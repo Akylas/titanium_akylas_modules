@@ -13,12 +13,11 @@
 @implementation AkylasMapViewProxy
 {
     AkylasMapAnnotationProxy* selectedAnnotation; // Annotation to select on initial display
-	NSMutableArray* annotationsToAdd; // Annotations to add on initial display
-	NSMutableArray* annotationsToRemove; // Annotations to remove on initial display
 	NSMutableArray* routesToAdd;
 	NSMutableArray* routesToRemove;
 	int zoomCount; // Number of times to zoom in/out on initial display
 	NSMutableArray* _annotations;
+    long _maxAnnotations;
 }
 
 #pragma mark Internal
@@ -28,18 +27,26 @@
     return [NSArray arrayWithObjects:
             @"tileSource",
             @"region",
-            @"centerCoordinate",
             @"minZoom",
             @"maxZoom",
             @"zoom",
+            @"centerCoordinate",
             nil];
 }
+
+
+- (id)init
+{
+    if ((self = [super init])) {
+        _maxAnnotations = 0;        
+    }
+    return self;
+}
+
 
 -(void)_destroy
 {
 	RELEASE_TO_NIL(selectedAnnotation);
-	RELEASE_TO_NIL(annotationsToAdd);
-	RELEASE_TO_NIL(annotationsToRemove);
 	RELEASE_TO_NIL(routesToAdd);
 	RELEASE_TO_NIL(routesToRemove);
 	[super _destroy];
@@ -48,12 +55,6 @@
 -(NSString*)apiName
 {
     return @"Akylas.Map.View";
-}
-
--(id) centerCoordinate
-{
-    id result =[(AkylasMapView*)[self getOrCreateView] centerCoordinate];
-	return result;
 }
 
 -(void)viewDidInitialize
@@ -116,13 +117,20 @@
 	return proxy;
 }
 
+
+-(void)setMaxAnnotations:(id)arg{
+    ENSURE_SINGLE_ARG(arg, NSNumber)
+    _maxAnnotations = [arg longValue];
+    [self handleMaxAnnotationsForAboutToAdd:0];
+}
+
 #pragma mark Public API
 
--(void)zoom:(id)arg
+-(void)zoomTo:(id)arg
 {
 	ENSURE_SINGLE_ARG(arg,NSObject);
 	if ([self viewInitialized]) {
-		TiThreadPerformOnMainThread(^{[(AkylasMapView*)[self view] zoom:arg];}, YES);
+		TiThreadPerformOnMainThread(^{[(AkylasMapView*)[self view] zoomTo:arg];}, YES);
 	}
 	else {
 		double v = [TiUtils doubleValue:arg];
@@ -181,6 +189,20 @@
 	}
 }
 
+
+-(void)handleMaxAnnotationsForAboutToAdd:(NSUInteger)newCountAddition
+{
+    if (_maxAnnotations <= 0) return;
+    NSUInteger newCount = [_annotations count] + newCountAddition;
+    if (newCount > _maxAnnotations) {
+        unsigned long length = MIN(newCount - _maxAnnotations, [_annotations count]);
+        NSRange range = NSMakeRange(0, length);
+        NSArray* toRemove = [_annotations subarrayWithRange:range];
+        [self removeAnnotations:@[toRemove]];
+    }
+    
+}
+
 -(void)addAnnotation:(id)arg
 {
 	ENSURE_SINGLE_ARG(arg,NSObject);
@@ -190,6 +212,7 @@
     if (!_annotations) {
         _annotations = [NSMutableArray new];
     }
+    [self handleMaxAnnotationsForAboutToAdd:1];
     [_annotations addObject:annProxy];
     
 	if ([self viewInitialized]) {
@@ -213,6 +236,11 @@
     if (!_annotations) {
         _annotations = [NSMutableArray new];
     }
+    [self handleMaxAnnotationsForAboutToAdd:[newAnnotations count]];
+    NSUInteger toAddCount = [newAnnotations count];
+    if (toAddCount > _maxAnnotations) {
+        newAnnotations = [newAnnotations subarrayWithRange:NSMakeRange(toAddCount - _maxAnnotations, _maxAnnotations)];
+    }
     [_annotations addObjectsFromArray:newAnnotations];
     
 	if ([self viewInitialized]) {
@@ -221,9 +249,8 @@
 }
 
 -(void)setAnnotations:(id)arg{
-    [self removeAnnotations:_annotations];
+    [self removeAllAnnotations:nil];
     [self addAnnotations:@[arg]];
-
 }
 
 -(NSArray*)annotations
@@ -235,13 +262,24 @@
 {
     if (!arg) return;
 	ENSURE_SINGLE_ARG(arg,NSObject);
-    if ([_annotations containsObject:arg]) {
-        [self forgetProxy:arg];
-        [_annotations removeObject:arg];
+    
+    AkylasMapAnnotationProxy* annot = nil;
+    if ([arg isKindOfClass:[AkylasMapAnnotationProxy class]]) {
+        annot = arg;
+    }
+    else if([arg isKindOfClass:[NSNumber class]]) {
+        NSInteger index = [arg integerValue];
+        if (index >= 0 && index < [_annotations count]) {
+            annot = [_annotations objectAtIndex:index];
+        }
+    }
+    if (annot) {
+        [self forgetProxy:annot];
+        [_annotations removeObject:annot];
         if ([self viewInitialized])
         {
             TiThreadPerformOnMainThread(^{
-                [(AkylasMapView*)[self view] removeAnnotation:arg];
+                [(AkylasMapView*)[self view] removeAnnotation:annot];
             }, YES);
         }
     }
@@ -270,9 +308,10 @@
 
 -(void)removeAllAnnotations:(id)unused
 {
-    if (_annotations) {
-        [self removeAnnotations:@[_annotations]];
-    }
+    RELEASE_TO_NIL(_annotations)
+    if ([self viewInitialized]) {
+        [(AkylasMapView*)[self view] removeAllAnnotations];
+	}
 }
 
 -(void)addRoute:(id)arg
@@ -326,12 +365,6 @@
 			[routesToRemove addObject:arg];
 		}
 	}
-}
-
-
--(NSDictionary*)region
-{
-    return [(AkylasMapView*)[self getOrCreateView] getRegion];
 }
 
 -(void)zoomIn:(id)arg{

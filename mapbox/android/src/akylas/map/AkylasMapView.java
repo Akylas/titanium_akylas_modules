@@ -308,6 +308,11 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
 	{
 		return map.getMinZoomLevel();
 	}
+	
+    @Override
+    public float getZoomLevel() {
+        return map.getCameraPosition().zoom;
+    }
 
 	protected void setMapType(int type)
 	{
@@ -549,7 +554,9 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
 	{
 		AnnotationProxy annoProxy = getProxyByMarker(marker);
 		if (annoProxy != null) {
-			return annoProxy.getOrCreateMapInfoView();
+		    AkylasMapInfoView infoView = new AkylasMapInfoView(getContext());
+		    annoProxy.prepareInfoView(infoView);
+			return infoView;
 		}
 		return null;
 	}
@@ -767,5 +774,11 @@ public class AkylasMapView extends AkylasMapDefaultView implements GoogleMap.OnM
         if (proxy != null) {
             proxy.setMarker(null);
         }
+    }
+    
+    
+    @Override
+    protected void removeAllAnnotations() {
+        map.clear();
     }
 }

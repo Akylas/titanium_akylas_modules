@@ -242,6 +242,13 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     }
 }
 
+
+-(void)internalRemoveAllAnnotations
+{
+    MKMapView* mapView = [self map];
+    [mapView removeAnnotations:mapView.annotations];
+}
+
 #pragma mark Public APIs
 
 
@@ -302,7 +309,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     return regionFromMKRegion([[self map] region]);
 }
 
--(void)zoom:(id)args
+-(void)zoomTo:(id)args
 {
 	ENSURE_SINGLE_ARG(args,NSObject);
 	ENSURE_UI_THREAD(zoom,args);
@@ -417,14 +424,14 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 {
 	ENSURE_SINGLE_ARG(zoom,NSNumber);
     _minZoom = [TiUtils floatValue:zoom];
-    [self setZoomInternal:_zoom];
+    [self setZoomInternal:_internalZoom];
 }
 
 -(void)setMaxZoom_:(id)zoom
 {
 	ENSURE_SINGLE_ARG(zoom,NSNumber);
     _minZoom = [TiUtils floatValue:zoom];
-    [self setZoomInternal:_zoom];
+    [self setZoomInternal:_internalZoom];
 }
 
 - (void)zoomInAt:(CGPoint)pivot animated:(BOOL)animated
@@ -586,12 +593,12 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         return;
     }
     region = regionFromMKRegion([mapView region]);
-    _zoom = [mapView getZoomLevel];
+    _internalZoom = [mapView getZoomLevel];
     if ([self.proxy _hasListeners:@"regionchanged"])
 	{
 		[self.proxy fireEvent:@"regionchanged" withObject:@{
                                                             @"region":[AkylasMapModule dictFromRegion:region],
-                                                            @"zoom":@(_zoom)
+                                                            @"zoom":@(_internalZoom)
                                                             } propagate:NO checkForListener:NO];
 	}
 }
@@ -724,7 +731,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         _calloutView.subtitle = annotationView.annotation.subtitle;
         
         // Apply the desired calloutOffset (from the top-middle of the view)
-        CGPoint calloutOffset = [annProxy calloutAnchorPoint];
+        CGPoint calloutOffset = [annProxy nGetCalloutAnchorPoint];
         calloutOffset.y +=0.5f;
         calloutOffset.x *= annotationView.frame.size.width;
         calloutOffset.y *= annotationView.frame.size.height;
@@ -736,18 +743,20 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         _calloutView.calloutOffset = calloutOffset;
         
         SMCalloutMaskedBackgroundView* backView = (SMCalloutMaskedBackgroundView*)_calloutView.backgroundView;
-        backView.alpha = [annProxy calloutAlpha];
-       _calloutView.leftAccessoryView = [annProxy leftViewAccessory];
-        _calloutView.rightAccessoryView = [annProxy rightViewAccessory];
-        _calloutView.contentView = [annProxy customViewAccessory];
+        backView.alpha = [annProxy nGetCalloutAlpha];
+       _calloutView.leftAccessoryView = [annProxy nGetLeftViewAccessory];
+        _calloutView.rightAccessoryView = [annProxy nGetRightViewAccessory];
+        _calloutView.contentView = [annProxy nGetCustomViewAccessory];
         if (annProxy) {
-            _calloutView.padding = [annProxy calloutPadding];
-            backView.backgroundColor = [annProxy calloutBackgroundColor];
-            backView.cornerRadius = [annProxy calloutBorderRadius];
+            _calloutView.padding = [annProxy nGetCalloutPadding];
+            backView.backgroundColor = [annProxy nGetCalloutBackgroundColor];
+            backView.cornerRadius = [annProxy nGetCalloutBorderRadius];
+            backView.arrowHeight = [annProxy nGetCalloutArrowHeight];
         }
         else {
             backView.backgroundColor = [UIColor whiteColor];
             backView.cornerRadius = DEFAULT_CALLOUT_CORNER_RADIUS;
+            backView.arrowHeight = DEFAULT_CALLOUT_ARROW_HEIGHT;
             _calloutView.padding = DEFAULT_CALLOUT_PADDING;
         }
 
@@ -850,7 +859,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         }
         CGPoint currentOffset = annView.centerOffset;
         // Apply the desired calloutOffset (from the top-middle of the view)
-        CGPoint centerOffset = [ann anchorPoint];
+        CGPoint centerOffset = [ann nGetAnchorPoint];
         centerOffset.x = 0.5f - centerOffset.x;
         centerOffset.y = 0.5f - centerOffset.y;
         centerOffset.x *= annView.frame.size.width;

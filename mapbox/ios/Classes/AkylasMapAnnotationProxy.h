@@ -10,14 +10,15 @@
 
 #define DEFAULT_CALLOUT_PADDING UIEdgeInsetsMake(13,13,13,13)
 #define DEFAULT_CALLOUT_CORNER_RADIUS 8
+#define DEFAULT_CALLOUT_ARROW_HEIGHT 13
 
 @class AkylasMapViewProxy;
 @class AkylasMapView;
 @class AkylasMapMapboxView;
-@interface AkylasMapAnnotationProxy : TiViewProxy<MKAnnotation, TiProxyObserver> {
+@interface AkylasMapAnnotationProxy : TiParentingProxy<MKAnnotation, TiProxyObserver> {
 @protected
     
-    UIImage* _image;
+    UIImage* _internalImage;
     NSString* _mbImage;
     UIColor* _tintColor;
 	int tag;
@@ -39,6 +40,8 @@
 @property (nonatomic,readonly)	BOOL needsRefreshingWithSelection;
 @property (nonatomic, readwrite, assign) BOOL placed;
 @property (nonatomic, readwrite, assign) BOOL draggable;
+@property (nonatomic, readwrite, assign) CGFloat minZoom;
+@property (nonatomic, readwrite, assign) CGFloat maxZoom;
 
 // Title and subtitle for use by selection UI.
 - (NSString *)title;
@@ -57,14 +60,15 @@
 - (int)tag;
 - (int)mapPincolor;
 - (BOOL)animatesDrop;
-- (UIView*)leftViewAccessory;
-- (UIView*)rightViewAccessory;
-- (UIView*)customViewAccessory;
--(UIColor*)calloutBackgroundColor;
--(CGFloat)calloutBorderRadius;
--(UIEdgeInsets)calloutPadding;
--(CGPoint)anchorPoint;
--(CGPoint)calloutAnchorPoint;
--(CGFloat)calloutAlpha;
+- (UIView*)nGetLeftViewAccessory;
+- (UIView*)nGetRightViewAccessory;
+- (UIView*)nGetCustomViewAccessory;
+-(UIColor*)nGetCalloutBackgroundColor;
+-(CGFloat)nGetCalloutBorderRadius;
+-(CGFloat)nGetCalloutArrowHeight;
+-(UIEdgeInsets)nGetCalloutPadding;
+-(CGPoint)nGetAnchorPoint;
+-(CGPoint)nGetCalloutAnchorPoint;
+-(CGFloat)nGetCalloutAlpha;
 
 @end

@@ -32,13 +32,13 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
 
     protected boolean animate = false;
     protected boolean preLayout = true;
-    protected ArrayList<AkylasMarker> timarkers;
+//    protected ArrayList<AkylasMarker> timarkers;
     protected AnnotationProxy selectedAnnotation;
     protected boolean regionFit = false;
 
     public AkylasMapDefaultView(final TiViewProxy proxy) {
         super(proxy);
-        timarkers = new ArrayList<AkylasMarker>();
+//        timarkers = new ArrayList<AkylasMarker>();
 
     }
 
@@ -89,7 +89,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     public void processPostMapProperties(final KrollDict d, final boolean animated) {
 
         if (d.containsKey(AkylasMapModule.PROPERTY_ANNOTATIONS)) {
-            ((MapDefaultViewProxy)proxy).setAnnotations(d.get(AkylasMapModule.PROPERTY_ANNOTATIONS));
+            ((MapDefaultViewProxy)proxy).addAnnotations(d.get(AkylasMapModule.PROPERTY_ANNOTATIONS));
         }
         if (d.containsKey(AkylasMapModule.PROPERTY_ROUTES)) {
             Object[] routes = (Object[]) d.get(AkylasMapModule.PROPERTY_ROUTES);
@@ -170,6 +170,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     abstract void setUserTrackingMode(int mode);
     abstract float getMaxZoomLevel();
     abstract float getMinZoomLevel();
+    abstract float getZoomLevel();
     abstract void updateCenter(Object dict, final boolean animated);
     abstract void updateRegion(Object dict, final boolean animated);
     abstract void updateScrollableAreaLimit(Object dict);
@@ -192,16 +193,16 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         }
     }
 
-    public AkylasMarker findMarkerByTitle(String title) {
-        for (int i = 0; i < timarkers.size(); i++) {
-            AkylasMarker timarker = timarkers.get(i);
-            AnnotationProxy annoProxy = timarker.getProxy();
-            if (annoProxy != null && annoProxy.getTitle().equals(title)) {
-                return timarker;
-            }
-        }
-        return null;
-    }
+//    public AkylasMarker findMarkerByTitle(String title) {
+//        for (int i = 0; i < timarkers.size(); i++) {
+//            AkylasMarker timarker = timarkers.get(i);
+//            AnnotationProxy annoProxy = timarker.getProxy();
+//            if (annoProxy != null && annoProxy.getTitle().equals(title)) {
+//                return timarker;
+//            }
+//        }
+//        return null;
+//    }
 
     abstract void handleDeselectMarker(final AkylasMarker marker); 
     abstract void handleSelectMarker(final AkylasMarker marker); 
@@ -225,10 +226,10 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
 //    }
     
     protected void removeAllAnnotations() {
-        for (int i = 0; i < timarkers.size(); i++) {
-            handleRemoveMarker(timarkers.get(i));
-        }
-        timarkers.clear();
+//        for (int i = 0; i < timarkers.size(); i++) {
+//            handleRemoveMarker(timarkers.get(i));
+//        }
+//        timarkers.clear();
     }
     
     protected void removeAnnotation(Object annotation) {
@@ -237,8 +238,8 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
             timarker = (AkylasMarker) annotation;
         } else if (annotation instanceof AnnotationProxy) {
             timarker = ((AnnotationProxy) annotation).getMarker();
-        } else if (annotation instanceof String) {
-            timarker = findMarkerByTitle((String) annotation);
+//        } else if (annotation instanceof String) {
+//            timarker = findMarkerByTitle((String) annotation);
         }
 
         if (timarker != null) {
@@ -253,9 +254,9 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
             marker = proxy.getMarker();
         } else if (annotation instanceof AkylasMarker) {
             marker = (AkylasMarker) annotation;
-        } else if (annotation instanceof String) {
-            String title = (String) annotation;
-            marker = findMarkerByTitle(title);
+//        } else if (annotation instanceof String) {
+//            String title = (String) annotation;
+//            marker = findMarkerByTitle(title);
         }
 
         if (marker != null) {
@@ -271,9 +272,9 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
             marker = proxy.getMarker();
         } else if (annotation instanceof AkylasMarker) {
             marker = (AkylasMarker) annotation;
-        } else if (annotation instanceof String) {
-            String title = (String) annotation;
-            marker = findMarkerByTitle(title);
+//        } else if (annotation instanceof String) {
+//            String title = (String) annotation;
+//            marker = findMarkerByTitle(title);
         }
 
         if (marker != null) {
@@ -307,12 +308,13 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
 
     private AnnotationProxy getProxyByMarker(AkylasMarker m) {
         if (m != null) {
-            for (int i = 0; i < timarkers.size(); i++) {
-                AkylasMarker timarker = timarkers.get(i);
-                if (m.equals(timarker)) {
-                    return timarker.getProxy();
-                }
-            }
+            return m.getProxy();
+//            for (int i = 0; i < timarkers.size(); i++) {
+//                AkylasMarker timarker = timarkers.get(i);
+//                if (m.equals(timarker)) {
+//                    return timarker.getProxy();
+//                }
+//            }
         }
         return null;
     }

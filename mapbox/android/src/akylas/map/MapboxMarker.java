@@ -12,13 +12,12 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
+import com.mapbox.mapboxsdk.util.Utils;
 import com.mapbox.mapboxsdk.views.InfoWindow;
 import com.mapbox.mapboxsdk.views.MapView;
 
@@ -47,11 +46,15 @@ public class MapboxMarker extends AkylasMarker{
         
         @Override
         protected MabpoxInfoWindow createInfoWindow(){
-            return new MabpoxInfoWindow(context, getProxy());
+            return getProxy().createInfoWindow();
         }
         
         public AnnotationProxy getProxy() {
             return proxy;
+        }
+        
+        public boolean hasContent() {
+            return getProxy().hasContent();
         }
         
         public MapboxMarker getAkylasMarker() {
@@ -113,12 +116,12 @@ public class MapboxMarker extends AkylasMarker{
         }
         Bitmap bitmap = getImage();
         if (bitmap != null) {
-            marker.setImage(new BitmapDrawable(mapView.getResources(), bitmap));
+            marker.setMarker(new BitmapDrawable(mapView.getResources(), bitmap));
         }
         else {
             BitmapDrawable drawable = getColorImage();
             if (drawable != null) {
-                marker.setImage(drawable);
+                marker.setMarker(drawable);
             }
         }
         Object value = proxy.getProperty(AkylasMapModule.PROPERTY_ANCHOR);
@@ -126,6 +129,15 @@ public class MapboxMarker extends AkylasMarker{
             marker.setAnchor(TiConvert.toPointF(value));
         }
         marker.setDraggable(proxy.getDraggable());
+        float minZoom = proxy.getMinZoom();
+        if (minZoom >= 0) {
+            marker.setMinZoom(minZoom);
+        }
+        float maxZoom = proxy.getMaxZoom();
+        if (maxZoom >= 0) {
+            marker.setMaxZoom(maxZoom);
+        }
+        marker.setSortkey(proxy.getSortKey());
         return marker;
     }
     
@@ -179,6 +191,13 @@ public class MapboxMarker extends AkylasMarker{
     void setPosition(double latitude, double longitude) {
         if (marker!= null) {
             marker.setPoint(new LatLng(latitude, longitude));
+        }
+    }
+
+    @Override
+    void invalidate() {
+        if (marker!= null) {
+            marker.invalidate();
         }
     }
 }

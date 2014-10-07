@@ -75,6 +75,12 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 
 	public abstract TiUIView createView(Activity activity);
 	
+    @Override
+    public void realizeViews(TiUIView view, boolean enableModelListener, boolean processProperties)
+    {
+        ((AkylasMapboxView)view).addAnnotations(annotations.toArray());
+        super.realizeViews(view, enableModelListener, processProperties);
+    }
 	@Override
 	public boolean handleMessage(Message msg) {
 		AsyncResult result = null;
@@ -169,9 +175,14 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 
 	public void handleRemoveAllAnnotations() {
 	    AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
-        if (mapView != null) {
+	    if (mapView != null) {
             mapView.removeAllAnnotations();
         }
+	    for (AnnotationProxy annotation : annotations) {
+	        annotation.setMarker(null);
+        }
+	    annotations.clear();
+        
 	}
 
 	public boolean isAnnotationValid(Object annotation) {
@@ -186,14 +197,14 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 			return false;
 		}
 
-		if (annotation instanceof String) {
-			AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
-			if (mapView != null) {
-				if (mapView.findMarkerByTitle((String) annotation) == null) {
-					return false;
-				}
-			}
-		}
+//		if (annotation instanceof String) {
+//			AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
+//			if (mapView != null) {
+//				if (mapView.findMarkerByTitle((String) annotation) == null) {
+//					return false;
+//				}
+//			}
+//		}
 
 		return true;
 	}
@@ -298,8 +309,10 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 	
 	private AnnotationProxy annotationFromObject(Object object) {
         if (object instanceof HashMap) {
-            return (AnnotationProxy) KrollProxy.createProxy(AnnotationProxy.class, null,
+            AnnotationProxy result =(AnnotationProxy)  KrollProxy.createProxy(AnnotationProxy.class, null,
                     new Object[] { object }, null);
+            result.updateKrollObjectProperties();
+            return result;
         }
         if (object instanceof AnnotationProxy) {
             return (AnnotationProxy) object;
@@ -307,11 +320,12 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
         return null;
 	}
 	
-    public void handleMaxAnnotations() {
+    public void handleMaxAnnotations(int aboutToAdd) {
         if (maxAnnotations <= 0) return;
-        if (annotations.size() > maxAnnotations) {
-            int length = (int) (annotations.size() - maxAnnotations);
-            List<AnnotationProxy> toRemove = annotations.subList(0, length);;
+        int total = aboutToAdd + annotations.size();
+        if (total > maxAnnotations) {
+            int length = (int) Math.min(total - maxAnnotations, annotations.size());
+            List<AnnotationProxy> toRemove = annotations.subList(0, length);
             handleRemoveAnnotation(toRemove.toArray());
         }
     }
@@ -329,20 +343,31 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
                     toAdd.add(annProxy);
                 }
             }
-            if (toAdd.size() > 0) {
-                mapView.addAnnotations(toAdd.toArray());
+            int addCount = toAdd.size();
+            if (addCount > 0) {
+                handleMaxAnnotations(addCount);
+                if (addCount > maxAnnotations) {
+                    toAdd = toAdd.subList((int) (addCount - maxAnnotations), toAdd.size());
+                }
+                if (mapView != null) {
+                    mapView.addAnnotations(toAdd.toArray());
+                }
                 annotations.addAll(toAdd);
             }
-            handleMaxAnnotations();
         }
         else {
             AnnotationProxy annProxy  = annotationFromObject(annotation);
             if (!annotations.contains(annProxy)) {
-                annotations.add(index, annProxy);
+                handleMaxAnnotations(1);
+                if (index == -1) {
+                    annotations.add(annProxy);
+                }
+                else {
+                    annotations.add(index, annProxy);
+                }
                 if (mapView != null) {
                     mapView.handleAddAnnotation(annProxy);
                 }
-                handleMaxAnnotations();
             }
         }
     }
@@ -366,9 +391,15 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
             Object[] array  = (Object[]) annotation;
             List<AnnotationProxy> toRemove = new ArrayList<AnnotationProxy>();
             for (int i = 0; i < array.length; i++) {
-                AnnotationProxy annProxy  = (AnnotationProxy) array[i] ;
-                if (annProxy != null && annotations.contains(annProxy)) {
-                    toRemove.add(annProxy);
+                Object value  = array[i] ;
+                if (value instanceof AnnotationProxy) {
+                    toRemove.add((AnnotationProxy) value);
+                }
+                else if (value instanceof Number) {
+                    int index = ((Number)value).intValue();
+                    if (index >= 0 && index < annotations.size()) {
+                        toRemove.add(annotations.get(index));
+                    }
                 }
             }
             if (toRemove.size() > 0) {
@@ -377,11 +408,21 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
             }
         }
         else {
-            if (annotations.contains(annotation)) {
-                if (mapView != null) {
-                    mapView.removeAnnotation(annotation);
+            AnnotationProxy toRemove = null;
+            if (annotation instanceof AnnotationProxy) {
+                toRemove = (AnnotationProxy) annotation;
+            }
+            else if (annotation instanceof Number) {
+                int index = ((Number)annotation).intValue();
+                if (index >= 0 && index < annotations.size()) {
+                    toRemove = annotations.get(index);
                 }
-                annotations.remove(annotation);
+            }
+            if (toRemove != null) {;
+                if (mapView != null) {
+                    mapView.removeAnnotation(toRemove);
+                }
+                annotations.remove(toRemove);
             }
             
         }
@@ -587,7 +628,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
     }
     
     public Object getAnnotations() {
-        return annotations;
+        return annotations.toArray();
     }
     
     public void selectUserAnnotation() {
@@ -648,6 +689,15 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 		}
 		return null;
 	}
+	
+    
+    public float getZoom() {
+        AkylasMapDefaultView mapView = (AkylasMapDefaultView) peekView();
+        if (mapView != null) {
+            return mapView.getZoomLevel();
+        }
+        return 0;
+    }
 	
 	public boolean getUserLocationEnabled() {
 	    if (TiApplication.isUIThread()) {

@@ -47,7 +47,8 @@ public class AkylasMapInfoView extends RelativeLayout
 	private TextView title;
 	private TextView snippet;
 	private View[] clicksourceList;
-	private String currentClicksource = null;
+    private String currentClicksource = null;
+    private boolean usesTemplates = false;
 
 	public AkylasMapInfoView(Context context)
 	{
@@ -109,10 +110,19 @@ public class AkylasMapInfoView extends RelativeLayout
 
 		clicksourceList = new View[] { leftPane, title, snippet, rightPane };
 	}
+	
+	public void setUsesTemplates(final boolean value) {
+	    usesTemplates = value;
+	}
+	
+	public boolean usesTemplates() {
+        return usesTemplates;
+    }
 
 	public void setTitle(String title)
 	{
 		if (title != null) {
+	        textLayout.setVisibility(VISIBLE);
 			this.title.setVisibility(VISIBLE);
 			this.title.setText(title);
 		} else {
@@ -131,6 +141,7 @@ public class AkylasMapInfoView extends RelativeLayout
 	public void setSubtitle(String subtitle)
 	{
 		if (subtitle != null) {
+            textLayout.setVisibility(VISIBLE);
 			this.snippet.setVisibility(VISIBLE);
 			this.snippet.setText(subtitle);
 		} else {
@@ -167,9 +178,25 @@ public class AkylasMapInfoView extends RelativeLayout
             } else {
                 Log.w(TAG, "Unable to get the view from the left / right view: " + obj, Log.DEBUG_MODE);
             }
+        } else if (obj instanceof View) {
+            leftPane.addView((View) obj);
         }
     }
-
+	
+	public View getLeftView() {
+	    if (leftPane.getChildCount() > 0) {
+	        return leftPane.getChildAt(0);
+	    }
+	    return null;
+	}
+	
+	public View getRightView() {
+        if (rightPane.getChildCount() > 0) {
+            return rightPane.getChildAt(0);
+        }
+        return null;
+    }
+	
 	public void setLeftOrRightPane(Object obj, int flag)
 	{
 		TiCompositeLayout pane = null;
@@ -201,14 +228,21 @@ public class AkylasMapInfoView extends RelativeLayout
 				Log.w(TAG, "Unable to get the image from the left / right button: " + obj, Log.DEBUG_MODE);
 			}
 		} else if (obj instanceof TiViewProxy) {
-			TiUIView view = ((TiViewProxy) obj).getOrCreateView();
-			if (view != null) {
-				pane.addView(view.getOuterView());
-			} else {
-				Log.w(TAG, "Unable to get the view from the left / right view: " + obj, Log.DEBUG_MODE);
-			}
-		}
+            TiUIView view = ((TiViewProxy) obj).getOrCreateView();
+            if (view != null) {
+                pane.addView(view.getOuterView());
+            } else {
+                Log.w(TAG, "Unable to get the view from the left / right view: " + obj, Log.DEBUG_MODE);
+            }
+        } else if (obj instanceof View) {
+            pane.addView((View) obj);
+        }
 	}
+	
+//	public View getLeftOrRightPane(Object obj, int flag)
+//    {
+//	    
+//    }
 
 	/**
 	 * Analyze the touch event to find out:

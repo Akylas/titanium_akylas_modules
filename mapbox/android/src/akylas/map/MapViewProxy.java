@@ -198,6 +198,13 @@ public class MapViewProxy extends MapDefaultViewProxy
     @Kroll.method
     @Kroll.getProperty
     @Override
+    public float getZoom() {
+        return super.getZoom();
+    }
+    
+    @Kroll.method
+    @Kroll.getProperty
+    @Override
     public KrollDict getRegion() {
         return super.getRegion();
     }

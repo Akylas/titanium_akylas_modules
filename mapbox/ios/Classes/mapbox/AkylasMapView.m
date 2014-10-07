@@ -19,7 +19,6 @@
 @synthesize defaultPinImage;
 @synthesize defaultPinAnchor;
 @synthesize defaultCalloutAnchor;
-@synthesize maxAnnotations = _maxAnnotations;
 
 #pragma mark Internal
 
@@ -28,9 +27,9 @@
     if ((self = [super init])) {
         defaultPinAnchor = CGPointMake(0.5, 0.5);
         defaultCalloutAnchor = CGPointMake(0, -0.5f);
-        _zoom = -1;
-        _maxAnnotations = 0;
+        _internalZoom = -1;
         animate = true;
+
     }
     return self;
 }
@@ -68,26 +67,6 @@
 {
 }
 
--(void)handleMaxAnnotations
-{
-    if (_maxAnnotations <= 0) return;
-    NSArray* currentAnnotations = [self customAnnotations];
-    if ([currentAnnotations count] > _maxAnnotations) {
-        unsigned long length = [currentAnnotations count] - _maxAnnotations;
-        NSRange range = NSMakeRange(0, length);
-        NSMutableArray* toRemove = [NSMutableArray arrayWithCapacity:length];
-        NSArray* subArray = [currentAnnotations subarrayWithRange:NSMakeRange(0, length)];
-        for (id pin in subArray) {
-            if ([pin isKindOfClass:[AkylasMapAnnotationProxy class]]) {
-                [toRemove addObject:pin];
-            } else if ([[pin userInfo] isKindOfClass:[AkylasMapAnnotationProxy class]]) {
-                [toRemove addObject:[pin userInfo]];
-            }
-        }
-        [(AkylasMapViewProxy*)self.proxy removeAnnotations:@[toRemove]];
-    }
-    
-}
 
 -(void)internalAddAnnotations:(id)annotations
 {
@@ -97,24 +76,25 @@
 {
 }
 
+-(void)internalRemoveAllAnnotations
+{
+}
+
 #pragma mark Public APIs
 
 -(void)addAnnotation:(id)args
 {
 	[self internalAddAnnotations:[self annotationFromArg:args]];
-    [self handleMaxAnnotations];
 }
 
 -(void)addAnnotations:(id)args
 {
-
-	[self internalAddAnnotations:[self annotationsFromArgs:args]];
-    [self handleMaxAnnotations];
+    NSArray* toadd = [self annotationsFromArgs:args];
+	[self internalAddAnnotations:toadd];
 }
 
 -(void)removeAnnotation:(id)args
 {
-
 	 [self internalRemoveAnnotations:args];
 }
 
@@ -123,14 +103,9 @@
     [self internalRemoveAnnotations:args];
 }
 
--(void)internalRemoveAllAnnotations
+-(void)removeAllAnnotations
 {
-    [self internalRemoveAnnotations:self.customAnnotations];
-}
-
--(void)removeAllAnnotations:(id)args
-{
-	ENSURE_UI_THREAD(removeAllAnnotations,args);
+	ENSURE_UI_THREAD_0_ARGS;
     [self internalRemoveAllAnnotations];
 }
 
@@ -141,7 +116,6 @@
 	if (value != nil) {
 		[self addAnnotations:value];
 	}
-    [self handleMaxAnnotations];
 }
 
 
@@ -161,7 +135,7 @@
 {
 }
 
--(void)zoom:(id)args
+-(void)zoomTo:(id)args
 {
 }
 
@@ -172,7 +146,13 @@
 
 #pragma mark Public APIs
 
--(id)getRegion
+
+-(id)metersPerPixel_
+{
+    return @(0);
+}
+
+-(id)region_
 {
     return [AkylasMapModule dictFromRegion:[self getCurrentRegion]];
 }
@@ -217,12 +197,6 @@
 -(id)userTrackingMode_
 {
     return NUMINT(0);
-}
-
--(void)setMaxAnnotations_:(id)value
-{
-    _maxAnnotations = [TiUtils intValue:value];
-    [self handleMaxAnnotations];
 }
 
 -(void)setZoom_:(id)zoom
