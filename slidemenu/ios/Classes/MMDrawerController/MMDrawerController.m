@@ -137,7 +137,6 @@ static NSString *MMDrawerOpenSideKey = @"MMDrawerOpenSide";
 
 @implementation MMDrawerController
 {
-    NSMutableArray* _disabledGestures;
 }
 
 #pragma mark - Init
@@ -178,7 +177,6 @@ static NSString *MMDrawerOpenSideKey = @"MMDrawerOpenSide";
 }
 
 -(void)commonSetup{
-    _disabledGestures = [NSMutableArray new];
     [self setMaximumLeftDrawerWidth:MMDrawerDefaultWidth];
     [self setMaximumRightDrawerWidth:MMDrawerDefaultWidth];
     
@@ -1068,11 +1066,6 @@ static NSString *MMDrawerOpenSideKey = @"MMDrawerOpenSide";
         }
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled: {
-            [_disabledGestures enumerateObjectsUsingBlock:^(UIGestureRecognizer* recognizer, NSUInteger idx, BOOL *stop) {
-                recognizer.enabled = YES;
-            }];
-            [_disabledGestures removeAllObjects];
-
             self.startingPanRect = CGRectNull;
             CGPoint velocity = [panGesture velocityInView:self.childControllerContainerView];
             [self finishAnimationForPanGestureWithXVelocity:velocity.x completion:^(BOOL finished) {
@@ -1383,7 +1376,6 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
     }
     CGPoint velocity = [self.panGesture velocityInView:self.panGesture.view];
     BOOL isHorizontalGesture = fabs(velocity.y) < fabs(velocity.x);
-    
     return isHorizontalGesture;
 }
 
@@ -1400,8 +1392,8 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
         if(([self isPointContainedWithinLeftBezelRect:point] && self.leftDrawerViewController) ||
            ([self isPointContainedWithinRightBezelRect:point] && self.rightDrawerViewController)){
             if ([otherGestureRecognizer isKindOfClass:NSClassFromString([NSString stringWithFormat:@"UIScrollView%@", @"PanGestureRecognizer" ])]) {
-                [_disabledGestures addObject:otherGestureRecognizer];
                 otherGestureRecognizer.enabled = NO;
+                otherGestureRecognizer.enabled = YES;
                 return YES;
             }
         }

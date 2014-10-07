@@ -29,6 +29,9 @@
 		AA747D9F0F9514B9006C5449 /* akylas.map_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* akylas.map_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 		D520FD5C1927C687009A2C1B /* Mapbox.bundle in Sources */ = {isa = PBXBuildFile; fileRef = D548DB0F191D510000E78AA1 /* Mapbox.bundle */; };
+		D5354B7419B9EFA300960301 /* ReusableViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5354B7219B9EFA300960301 /* ReusableViewProxy.h */; };
+		D5354B7519B9EFA300960301 /* ReusableViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5354B7319B9EFA300960301 /* ReusableViewProxy.m */; };
+		D5354B7C19B9EFE300960301 /* ReusableViewProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = D5354B7B19B9EFE300960301 /* ReusableViewProtocol.h */; };
 		D548DB14191D511000E78AA1 /* libMapbox.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D548DB0D191D510000E78AA1 /* libMapbox.a */; };
 		D578CAA519234A360019CA5A /* AkylasMapTileSourceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CA9B19234A360019CA5A /* AkylasMapTileSourceProxy.h */; };
 		D578CAA619234A360019CA5A /* AkylasMapTileSourceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CA9C19234A360019CA5A /* AkylasMapTileSourceProxy.m */; };
@@ -135,6 +138,9 @@
 		D2AAC07E0554694100DB518D /* libakylas.map.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.map.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D52DF20F18C77F7E0076FB71 /* module.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = module.xcconfig; path = ../../timap/ios/module.xcconfig; sourceTree = "<group>"; };
 		D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Mapbox.xcodeproj; path = ../../../../../ios/MapBox/MapView/Mapbox.xcodeproj; sourceTree = SOURCE_ROOT; };
+		D5354B7219B9EFA300960301 /* ReusableViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReusableViewProxy.h; path = Classes/ReusableViewProxy.h; sourceTree = "<group>"; };
+		D5354B7319B9EFA300960301 /* ReusableViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ReusableViewProxy.m; path = Classes/ReusableViewProxy.m; sourceTree = "<group>"; };
+		D5354B7B19B9EFE300960301 /* ReusableViewProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReusableViewProtocol.h; sourceTree = "<group>"; };
 		D578CA9B19234A360019CA5A /* AkylasMapTileSourceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapTileSourceProxy.h; path = Classes/mapbox/AkylasMapTileSourceProxy.h; sourceTree = "<group>"; };
 		D578CA9C19234A360019CA5A /* AkylasMapTileSourceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapTileSourceProxy.m; path = Classes/mapbox/AkylasMapTileSourceProxy.m; sourceTree = "<group>"; };
 		D578CA9D19234A360019CA5A /* AkylasMapView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapView.h; path = Classes/mapbox/AkylasMapView.h; sourceTree = "<group>"; };
@@ -241,6 +247,9 @@
 				24DE9E1011C5FE74003F90F6 /* AkylasMapModuleAssets.m */,
 				24DD6CF71134B3F500162E58 /* AkylasMapModule.h */,
 				24DD6CF81134B3F500162E58 /* AkylasMapModule.m */,
+				D5354B7219B9EFA300960301 /* ReusableViewProxy.h */,
+				D5354B7319B9EFA300960301 /* ReusableViewProxy.m */,
+				D5354B7B19B9EFE300960301 /* ReusableViewProtocol.h */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -321,6 +330,8 @@
 				D578CAD019234A430019CA5A /* AkylasMapPinAnnotationView.h in Headers */,
 				D578CAFE1923553E0019CA5A /* AkylasMapMapboxViewProxy.h in Headers */,
 				D578CAC819234A430019CA5A /* AkylasMapCustomAnnotationView.h in Headers */,
+				D5354B7C19B9EFE300960301 /* ReusableViewProtocol.h in Headers */,
+				D5354B7419B9EFA300960301 /* ReusableViewProxy.h in Headers */,
 				D578CAD619234A430019CA5A /* AkylasMapMapViewProxy.h in Headers */,
 				AA747D9F0F9514B9006C5449 /* akylas.map_Prefix.pch in Headers */,
 				D578CAF619234D2B0019CA5A /* AkylasMapModule.h in Headers */,
@@ -463,6 +474,7 @@
 				D578CAC919234A430019CA5A /* AkylasMapCustomAnnotationView.m in Sources */,
 				D578CAF519234D2B0019CA5A /* AkylasMapAnnotationProxy.m in Sources */,
 				D578CAAC19234A360019CA5A /* AkylasTileSource.m in Sources */,
+				D5354B7519B9EFA300960301 /* ReusableViewProxy.m in Sources */,
 				D578CAA619234A360019CA5A /* AkylasMapTileSourceProxy.m in Sources */,
 				D578CAD519234A430019CA5A /* AkylasMapMapView.m in Sources */,
 				D578CACB19234A430019CA5A /* AkylasMapImageAnnotationView.m in Sources */,
