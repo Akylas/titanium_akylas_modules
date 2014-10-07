@@ -143,6 +143,9 @@
             _started = YES;
             
             CLLocationManager *locationManager = [LocationTracker sharedLocationManager];
+            if ([locationManager respondsToSelector:@selector(requestAlwaysAuthorization)]) {
+                [locationManager requestAlwaysAuthorization];
+            }
             locationManager.delegate = self;
             locationManager.desiredAccuracy = _desiredAccuracy;
             locationManager.distanceFilter = _distanceFilter;
