@@ -149,30 +149,35 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 
 	private void handleToggleLeftView(boolean animated)
 	{
+        blur();
 		SlidingMenu menu = slidingMenu.get();
 		menu.toggle(animated);
 	}
 	
 	private void handleToggleRightView(boolean animated)
 	{
+        blur();
 		SlidingMenu menu = slidingMenu.get();
 		menu.toggleSecondary(animated);
 	}
 	
 	private void handleOpenLeftView(boolean animated)
 	{
+        blur();
 		SlidingMenu menu = slidingMenu.get();
 		menu.showMenu(animated);
 	}
 	
 	private void handleOpenRightView(boolean animated)
 	{
+        blur();
 		SlidingMenu menu = slidingMenu.get();
 		menu.showSecondaryMenu(animated);
 	}
 	
 	private void handleCloseLeftView(boolean animated)
 	{
+        blur();
 		SlidingMenu menu = slidingMenu.get();
 		if (menu.isMenuShowing())
 			menu.showContent(animated);
@@ -180,6 +185,7 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	
 	private void handleCloseRightView(boolean animated)
 	{
+        blur();
 		SlidingMenu menu = slidingMenu.get();
 		if (menu.isSecondaryMenuShowing())
 			menu.showContent(animated);
@@ -187,6 +193,7 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	
 	private void handleCloseViews(boolean animated)
 	{
+        blur();
 		SlidingMenu menu = slidingMenu.get();
 		if (menu.isMenuShowing() || menu.isSecondaryMenuShowing())
 			menu.showContent(animated);
