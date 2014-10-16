@@ -392,6 +392,7 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
+				TITANIUM_SDK_VERSION = 3.5.0.AKYLAS;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
@@ -424,6 +425,7 @@
 				PRODUCT_NAME = AkylasCommonjs;
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
+				TITANIUM_SDK_VERSION = 3.5.0.AKYLAS;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;

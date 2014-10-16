@@ -8,18 +8,26 @@
  */
 package akylas.commonjs;
 
+import org.appcelerator.kroll.KrollExceptionHandler;
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.ITiAppInfo;
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.TiExceptionHandler;
 import org.appcelerator.titanium.TiProperties;
 
-import android.media.audiofx.Equalizer;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
+import android.content.Context;
+import android.os.Process;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @Kroll.module(name="AkylasCommonjs", id="akylas.commonjs")
 public class AkylasCommonjsModule extends KrollModule
@@ -71,32 +79,59 @@ public class AkylasCommonjsModule extends KrollModule
 		super();
         Log.d(TAG, "AkylasCommonjsModule", Log.DEBUG_MODE);
 	}
+	public static void showError(final String message) {
+	    (new TiExceptionHandler()).handleException(new KrollExceptionHandler.ExceptionMessage(message, null, null,0,null, 0));
+	    new Timer().schedule(new TimerTask() {
+	        @Override
+	        public void run() {
+	         // Kill Process
+	            ActivityManager am = (ActivityManager) TiApplication.getInstance().getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+	            if (am != null) {
+	                am.killBackgroundProcesses(TiApplication.getInstance().getAppInfo().getId());
+	            }
+                Process.killProcess(Process.myPid());
+	        }
+	    }, 4000);
+	}
 
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app)
 	{
-	    Log.d(TAG, "onAppCreate", Log.DEBUG_MODE);
-	    ITiAppInfo appInfo = app.getAppInfo();
-	    TiProperties appProperties = app.getAppProperties();
-	    String appId = appInfo.getId();
-	    
-	    String commonjsKey = appProperties.getString("akylas.commonjs.key", null);
-	    if (appId.equals("com.akylas.titanium.ks")) {
-	        commonjsKey = "b5500c8406217aa71d38f5db43118dac72049b5d";
-	    }
-	    assert commonjsKey == null : "You need to set the \"akylas.commonjs.key\"";
-	    
-	    String result;
-        try {
-            result = AeSimpleSHA1.SHA1(String.format("%s%s",  appId, AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f")));
-            assert !result.equalsIgnoreCase(commonjsKey) : "wrong \"akylas.commonjs.key\" key!";
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
 	}
 	
-
+	@Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        Log.d(TAG, "onVerifyModule", Log.DEBUG_MODE);
+        ITiAppInfo appInfo = app.getAppInfo();
+        TiProperties appProperties = app.getAppProperties();
+        String appId = appInfo.getId();
+        
+        String commonjsKey = appProperties.getString("akylas.commonjs.key", null);
+        if (appId.equals("com.akylas.titanium.ks")) {
+            commonjsKey = "b5500c8406217aa71d38f5db43118dac72049b5d";
+        }
+        if (commonjsKey == null) {
+            showError("You need to set the \"akylas.commonjs.key\"");
+            return;
+        }
+        
+        String result;
+        try {
+            result = AeSimpleSHA1.SHA1(String.format("%s%s",  appId, AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f")));
+            if (!result.equalsIgnoreCase(commonjsKey)) {
+                showError("wrong \"akylas.commonjs.key\" key!");
+                return;
+            }
+        } catch (Exception e) {
+            commonjsKey = null;
+        }
+        
+        if (commonjsKey == null) {
+            showError("You need to set the \"akylas.commonjs.key\"");
+            return; 
+            
+        }
+    }
 }
 
