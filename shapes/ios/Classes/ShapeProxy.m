@@ -17,8 +17,7 @@
 
 @interface ShapeProxy()
 {
-    AkylasShapesViewProxy* _shapeViewProxy;
-    NSMutableArray* mShapes;
+//    AkylasShapesViewProxy* _shapeViewProxy;
     UIBezierPath* path;
     
     CAShapeLayer* _strokeLayer;
@@ -32,7 +31,7 @@
 
 @end
 @implementation ShapeProxy
-@synthesize shapeViewProxy = _shapeViewProxy, operations = _operations, currentBounds = _currentBounds, transform = _transform, realTransform = _realTransform, currentShapeBounds = _currentShapeBounds,
+@synthesize operations = _operations, currentBounds = _currentBounds, transform = _transform, realTransform = _realTransform, currentShapeBounds = _currentShapeBounds,
 parentBounds = _parentBounds;
 
 
@@ -43,7 +42,6 @@ parentBounds = _parentBounds;
 - (id)init {
     if (self = [super init])
     {
-        mShapes = [[NSMutableArray alloc] init];
         _parentBounds = CGRectZero;
         _currentBounds = CGRectZero;
         _layer = [[[[self class] layerClass] alloc] init];
@@ -104,14 +102,6 @@ parentBounds = _parentBounds;
     [super _configure];
 }
 
-- (void)setShapeViewProxy:(AkylasShapesViewProxy*) proxy {
-    _shapeViewProxy = proxy;
-    
-    for (ShapeProxy* shape in mShapes) {
-        [shape setShapeViewProxy:proxy];
-    }
-}
-
 -(void)updateRealTransform
 {
     _realTransform = [self getRealTransform:_currentShapeBounds parentSize:_parentBounds.size];
@@ -129,10 +119,7 @@ parentBounds = _parentBounds;
 -(CGAffineTransform)prepareTransform:(Ti2DMatrix*)matrix bounds:(CGRect)bounds parentSize:(CGSize)parentSize
 {
     CGSize decale = CGSizeMake(-bounds.origin.x, -bounds.origin.y);
-//    CGPoint center = CGPointMake(parentSize.width/2 - bounds.origin.x - bounds.size.width/2, parentSize.height/2 - bounds.origin.y - bounds.size.height/2);
-//    CGAffineTransform transform = CGAffineTransformMakeTranslation(center.x, center.y);
     CGAffineTransform transform = [matrix matrixInViewSize:bounds.size andParentSize:parentSize decale:decale];
-//    transform = CGAffineTransformTranslate(transform, -center.x, -center.y);
     return transform;
 }
 
@@ -146,24 +133,20 @@ parentBounds = _parentBounds;
 
 - (void) dealloc
 {
-    RELEASE_TO_NIL(mShapes);
     RELEASE_TO_NIL(_transform);
     RELEASE_TO_NIL(_operations);
     RELEASE_TO_NIL(path);
     RELEASE_TO_NIL(_fillLayer);
     RELEASE_TO_NIL(_strokeLayer);
-    [_layer release]; // idont get this yet :s
+//    [_layer release]; // idont get this yet :s
     RELEASE_TO_NIL(_layer);
-    _shapeViewProxy = nil;
 	[super dealloc];
 }
 
 -(void)removeFromSuperLayer
 {
     [self cancelAllAnimations:nil];
-    for (ShapeProxy* proxy in mShapes) {
-        [proxy removeFromSuperLayer];
-    }
+    [self makeChildrenPerformSelector:@selector(removeFromSuperLayer) withObject:nil];
     [_strokeLayer removeFromSuperlayer];
     [_fillLayer removeFromSuperlayer];
     [_layer removeFromSuperlayer];
@@ -439,7 +422,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 
 -(CGFloat*) arrayFromNSArray:(NSArray*)array_
 {
-    int count = [array_ count];
+    NSUInteger count = [array_ count];
     CGFloat* result = (CGFloat *) malloc(sizeof(CGFloat) * count);
     for (int index = 0; index < count; index++) {
         result[index] = [[array_ objectAtIndex: index] floatValue];
@@ -469,10 +452,11 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
     
     if (CGRectEqualToRect(_currentBounds, roundedBounds)) return;
     _currentBounds = roundedBounds;
-    for (int i = 0; i < [mShapes count]; i++) {
-        ShapeProxy* shapeProxy = [mShapes objectAtIndex:i];
-        [shapeProxy boundsChanged:_currentBounds];
-    }
+    [self runBlock:^(TiProxy *proxy) {
+        if (IS_OF_CLASS(proxy, ShapeProxy)) {
+            [(ShapeProxy*)proxy boundsChanged:_currentBounds];
+        }
+    } recursive:NO];
     [self updateRealTransform];
 }
 
@@ -484,12 +468,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
         _strokeLayer.frame = _layer.bounds;
     if (_fillLayer)
         _fillLayer.frame = _layer.bounds;
-    
-//    if (_strokeGradientLayer)
-//        _strokeGradientLayer.frame = _layer.bounds;
-//    if (_fillGradientLayer)
-//        _fillGradientLayer.frame = _layer.bounds;
-    
+
     [self updatePath];
 }
 
@@ -741,32 +720,32 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
     [self update];
 }
 
--(void)add:(id) arg {
-	ShapeProxy * proxy = [ShapeProxy shapeFromArg:arg context:[self executionContext]];
-    if (proxy != nil && [mShapes indexOfObject:proxy] == NSNotFound) {
-        [self rememberProxy:proxy];
-        [mShapes addObject:proxy];
-        [[proxy layer] removeFromSuperlayer];
-        [_layer addSublayer:[proxy layer]];
-        if (_strokeLayer)
-            _strokeLayer.frame = _parentBounds;
-        if (_fillLayer)
-            _fillLayer.frame = _parentBounds;
-        if (_shapeViewProxy != nil) {
-            [proxy setShapeViewProxy:self.shapeViewProxy];
-            [proxy boundsChanged:_currentBounds];
-        }
+-(void)childAdded:(TiProxy*)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
+{
+    if (![child isKindOfClass:[ShapeProxy class]]) {
+        return;
     }
-}
+    ShapeProxy* shape = (ShapeProxy*)child;
+    [[shape layer] removeFromSuperlayer];
+    [_layer addSublayer:[shape layer]];
+    if (_strokeLayer)
+        _strokeLayer.frame = _parentBounds;
+    if (_fillLayer)
+        _fillLayer.frame = _parentBounds;
+//    if (_shapeViewProxy != nil) {
+//        [proxy setShapeViewProxy:self.shapeViewProxy];
+        [shape boundsChanged:_currentBounds];
+//    }
 
--(void)remove:(id) proxy {
-    ENSURE_SINGLE_ARG_OR_NIL(proxy, ShapeProxy)
-    if ([mShapes indexOfObject:proxy] != NSNotFound) {
-        [self forgetProxy:proxy];
-        [mShapes removeObject:proxy];
-        [[proxy layer] removeFromSuperlayer];
-        [proxy setShapeViewProxy:nil];
+}
+-(void)childRemoved:(TiProxy*)child
+{
+    if (![child isKindOfClass:[ShapeProxy class]]) {
+        return;
     }
+    
+    ShapeProxy* shape = (ShapeProxy*)child;
+    [[shape layer] removeFromSuperlayer];
 }
 
 -(CGPathRef)pathForAnimation:(TiAnimation*)animation
@@ -784,12 +763,9 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
     }, YES);
 }
 
--(void)handlePendingAnimation
+-(BOOL)readyToAnimate
 {
-    if (![self.shapeViewProxy view]) {
-        return;
-    }
-    [super handlePendingAnimation];
+    return IS_OF_CLASS(self.parent, TiAnimatableProxy) && [(TiAnimatableProxy*)parent readyToAnimate];
 }
 
 -(void)aboutToBeAnimated
@@ -918,23 +894,23 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 
 -(BOOL)_hasListeners:(NSString *)type_
 {
-    BOOL handledByChildren = NO;
-    for (int i = 0; i < [mShapes count]; i++) {
-        ShapeProxy* shapeProxy = [mShapes objectAtIndex:i];
-        handledByChildren |= [shapeProxy _hasListeners:type_];
-    }
+    __block BOOL handledByChildren = NO;
+    [self runBlock:^(TiProxy *proxy) {
+        handledByChildren |= [proxy _hasListeners:type_];
+    } recursive:NO];
 	return [super _hasListeners:type_] || handledByChildren;
 }
 
 -(BOOL) handleTouchEvent:(NSString*)eventName withObject:(id)data propagate:bubbles point:(CGPoint)point {
     if (CGRectContainsPoint(_currentBounds, point)) {
-        BOOL handledByChildren = NO;
-        if ([mShapes count] > 0) {
+        __block BOOL handledByChildren = NO;
+        if ([self childrenCount] > 0) {
             CGPoint childrenPoint = CGPointMake(point.x - _currentBounds.origin.x, point.y - _currentBounds.origin.y);
-            for (int i = 0; i < [mShapes count]; i++) {
-                ShapeProxy* shapeProxy = [mShapes objectAtIndex:i];
-                handledByChildren |= [shapeProxy handleTouchEvent:eventName withObject:data propagate:bubbles point:childrenPoint];
-            }
+            [self runBlock:^(TiProxy *proxy) {
+                if (IS_OF_CLASS(proxy, ShapeProxy)) {
+                    handledByChildren |= [(ShapeProxy*)proxy handleTouchEvent:eventName withObject:data propagate:bubbles point:childrenPoint];
+                }
+            } recursive:NO];
         }
         if ((!handledByChildren || bubbles) &&  [self _hasListeners:eventName]) {
             [self fireEvent:eventName withObject:data];

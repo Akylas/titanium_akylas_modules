@@ -46,7 +46,7 @@ enum
     CALayer* _layer;
 }
 
-@property(nonatomic,assign) AkylasShapesViewProxy* shapeViewProxy;
+//@property(nonatomic,assign) AkylasShapesViewProxy* shapeViewProxy;
 @property(nonatomic,retain) NSArray* operations;
 @property(nonatomic,retain) Ti2DMatrix* transform;
 @property(nonatomic,readonly) CGRect parentBounds;

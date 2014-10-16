@@ -19,9 +19,9 @@
 
 - (void) dealloc
 {
-    for (ShapeProxy* proxy in [self shapes]) {
-        [proxy setShapeViewProxy:nil];
-    }
+//    for (ShapeProxy* proxy in [self shapes]) {
+//        [proxy setShapeViewProxy:nil];
+//    }
 	[super dealloc];
 }
 
@@ -90,7 +90,7 @@ static NSArray *supportedEvents;
         return;
 	}
     ShapeProxy* shape = (ShapeProxy*)child;
-    [shape setShapeViewProxy:self];
+//    [shape setShapeViewProxy:self];
     if (shouldRelayout && [self viewAttached]) {
         [[self view].layer addSublayer:[shape layer]];
         [shape boundsChanged:self.view.bounds];
@@ -105,7 +105,7 @@ static NSArray *supportedEvents;
 	
     ShapeProxy* shape = (ShapeProxy*)child;
     [[shape layer] removeFromSuperlayer];
-    [shape setShapeViewProxy:nil];
+//    [shape setShapeViewProxy:nil];
     if ([self viewAttached]) {
         [[self view] setNeedsDisplay];
     }

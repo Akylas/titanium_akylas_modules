@@ -17,6 +17,12 @@
 #import "AkylasShapesViewProxy.h"
 #import "AkylasShapesLineProxy.h"
 #import "AkylasShapesPieSliceProxy.h"
+#import "TiUIView+ShapeMask.h"
+
+@interface TiUIView ()
++ (void) swizzleShapeMask;
+
+@end
 
 @implementation AkylasShapesModule
 
@@ -38,6 +44,7 @@
 
 -(void)startup
 {
+    [TiUIView swizzleShapeMask];
     CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.View", [AkylasShapesViewProxy class]);
     CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.RoundedRect", [AkylasShapesRoundedRectProxy class]);
     CFDictionarySetValue([TiProxy classNameLookup], @"AkylasShapes.Rect", [AkylasShapesRectProxy class]);

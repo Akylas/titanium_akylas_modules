@@ -37,7 +37,7 @@
 
 -(void)boundsChanged:(CGRect)bounds
 {
-    BOOL animating = self.shapeViewProxy && [self.shapeViewProxy animating];
+    BOOL animating = IS_OF_CLASS(self.parent, TiAnimatableProxy) && [(TiAnimatableProxy*)self.parent animating];
     if (!animating) {
         [CATransaction begin];
         [CATransaction setDisableActions: YES];
