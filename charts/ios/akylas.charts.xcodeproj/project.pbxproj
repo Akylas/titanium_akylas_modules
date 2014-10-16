@@ -505,7 +505,7 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				TITANIUM_BASE_SDK2 = /Volumes/data/dev/titanium/titanium_mobile/iphone/Classes;
-				TITANIUM_SDK_VERSION = 3.3.0.AKYLAS;
+				TITANIUM_SDK_VERSION = 3.5.0.AKYLAS;
 			};
 			name = Debug;
 		};
@@ -527,7 +527,7 @@
 				PRODUCT_NAME = "$(PROJECT_NAME";
 				SDKROOT = iphoneos;
 				TITANIUM_BASE_SDK2 = /Volumes/data/dev/titanium/titanium_mobile/iphone/Classes;
-				TITANIUM_SDK_VERSION = 3.3.0.AKYLAS;
+				TITANIUM_SDK_VERSION = 3.5.0.AKYLAS;
 			};
 			name = Release;
 		};
