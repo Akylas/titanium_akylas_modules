@@ -55,6 +55,8 @@
 		D53560301860963600F8DEFD /* AkylasShapesView.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560131860963600F8DEFD /* AkylasShapesView.m */; };
 		D53560311860963600F8DEFD /* AkylasShapesViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D53560141860963600F8DEFD /* AkylasShapesViewProxy.h */; };
 		D53560321860963600F8DEFD /* AkylasShapesViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D53560151860963600F8DEFD /* AkylasShapesViewProxy.m */; };
+		D56F98FF19E6E76E0050E727 /* TiUIView+ShapeMask.h in Headers */ = {isa = PBXBuildFile; fileRef = D56F98FD19E6E76E0050E727 /* TiUIView+ShapeMask.h */; };
+		D56F990019E6E76E0050E727 /* TiUIView+ShapeMask.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F98FE19E6E76E0050E727 /* TiUIView+ShapeMask.m */; };
 		D5EE1BAB1860A3B600579573 /* CustomShapeLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5EE1BA91860A3B600579573 /* CustomShapeLayer.h */; };
 		D5EE1BAC1860A3B600579573 /* CustomShapeLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D5EE1BAA1860A3B600579573 /* CustomShapeLayer.m */; };
 		D5EE1BAF1860A3BB00579573 /* UIBezierPath+Additions.h in Headers */ = {isa = PBXBuildFile; fileRef = D5EE1BAD1860A3BB00579573 /* UIBezierPath+Additions.h */; };
@@ -107,6 +109,8 @@
 		D53560131860963600F8DEFD /* AkylasShapesView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesView.m; path = Classes/AkylasShapesView.m; sourceTree = "<group>"; };
 		D53560141860963600F8DEFD /* AkylasShapesViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasShapesViewProxy.h; path = Classes/AkylasShapesViewProxy.h; sourceTree = "<group>"; };
 		D53560151860963600F8DEFD /* AkylasShapesViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasShapesViewProxy.m; path = Classes/AkylasShapesViewProxy.m; sourceTree = "<group>"; };
+		D56F98FD19E6E76E0050E727 /* TiUIView+ShapeMask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "TiUIView+ShapeMask.h"; path = "Classes/TiUIView+ShapeMask.h"; sourceTree = "<group>"; };
+		D56F98FE19E6E76E0050E727 /* TiUIView+ShapeMask.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "TiUIView+ShapeMask.m"; path = "Classes/TiUIView+ShapeMask.m"; sourceTree = "<group>"; };
 		D5EE1BA91860A3B600579573 /* CustomShapeLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomShapeLayer.h; path = Classes/CustomShapeLayer.h; sourceTree = "<group>"; };
 		D5EE1BAA1860A3B600579573 /* CustomShapeLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CustomShapeLayer.m; path = Classes/CustomShapeLayer.m; sourceTree = "<group>"; };
 		D5EE1BAD1860A3BB00579573 /* UIBezierPath+Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIBezierPath+Additions.h"; path = "Classes/UIBezierPath+Additions.h"; sourceTree = "<group>"; };
@@ -190,6 +194,8 @@
 				D53560131860963600F8DEFD /* AkylasShapesView.m */,
 				D53560141860963600F8DEFD /* AkylasShapesViewProxy.h */,
 				D53560151860963600F8DEFD /* AkylasShapesViewProxy.m */,
+				D56F98FD19E6E76E0050E727 /* TiUIView+ShapeMask.h */,
+				D56F98FE19E6E76E0050E727 /* TiUIView+ShapeMask.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -210,6 +216,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D56F98FF19E6E76E0050E727 /* TiUIView+ShapeMask.h in Headers */,
 				D535602B1860963600F8DEFD /* AkylasShapesRectProxy.h in Headers */,
 				D5EE1BAF1860A3BB00579573 /* UIBezierPath+Additions.h in Headers */,
 				D535601E1860963600F8DEFD /* AkylasShapesAnimation+Friend.h in Headers */,
@@ -302,6 +309,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D53560201860963600F8DEFD /* AkylasShapesAnimationStep.m in Sources */,
+				D56F990019E6E76E0050E727 /* TiUIView+ShapeMask.m in Sources */,
 				24DD6CFA1134B3F500162E58 /* AkylasShapesModule.m in Sources */,
 				D53560261860963600F8DEFD /* AkylasShapesEllipseProxy.m in Sources */,
 				D535602C1860963600F8DEFD /* AkylasShapesRectProxy.m in Sources */,
@@ -451,6 +459,7 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
+				TITANIUM_SDK_VERSION = 3.5.0.AKYLAS;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
@@ -488,6 +497,7 @@
 				PRODUCT_NAME = AkylasShapes;
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
+				TITANIUM_SDK_VERSION = 3.5.0.AKYLAS;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;

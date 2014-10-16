@@ -223,9 +223,9 @@ public class ShapeViewProxy extends TiViewProxy {
     }
     
     @Override
-    protected void handleChildRemoved(KrollProxy object) {
+    protected void handleChildRemoved(KrollProxy object, final boolean shouldDetach) {
         if (!(object instanceof ShapeProxy)) {
-            super.handleChildRemoved(object);
+            super.handleChildRemoved(object, shouldDetach);
             return;
         }
         ShapeProxy proxy = (ShapeProxy) object;
