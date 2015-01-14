@@ -30,7 +30,7 @@
 
 -(void)configurePlot:(NSDictionary*)props;
 -(void)initPlot;
--(void)configureHos:(NSDictionary*)propst;
+-(void)configureHost:(NSDictionary*)propst;
 -(void)configureGraph:(NSDictionary*)props;
 -(void)configureChart:(NSDictionary*)props;
 -(void)configureLegend:(NSDictionary*)props;
@@ -47,5 +47,8 @@
 -(void)removeAllMarkers;
 -(void)addMarker:(id)marker;
 -(void)removeMarker:(id)marker;
+
+-(CGPoint)viewPointFromGraphPoint:(CGPoint)point;
+-(void)notifyOfTouchEvent:(NSString*)type atPoint:(CGPoint)viewPoint;
 
 @end

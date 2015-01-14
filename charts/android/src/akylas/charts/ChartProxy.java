@@ -120,8 +120,8 @@ public class ChartProxy extends TiViewProxy {
 
 		protected void updateGradients(Context context, Rect rect) {
 			KrollDict d = proxy.getProperties();
-			if (d.containsKey("plotArea")) {
-				KrollDict plotOptions = d.getKrollDict("plotArea");
+			if (d.containsKey(AkylasChartsModule.PROPERTY_PLOT_AREA)) {
+				KrollDict plotOptions = d.getKrollDict(AkylasChartsModule.PROPERTY_PLOT_AREA);
 				if (plotOptions.containsKey("backgroundGradient")) {
 					KrollDict bgOptions = plotOptions.getKrollDict("backgroundGradient");
 					plotView.getBackgroundPaint().setShader(Utils.styleGradient(bgOptions, context, rect));
@@ -130,29 +130,28 @@ public class ChartProxy extends TiViewProxy {
 		}
 
 		@Override
-		public void processProperties(KrollDict d) {
-			if (d.containsKey("fillColor")) {
+	    protected void handleProperties(KrollDict d, final boolean changed) {
+		    super.handleProperties(d, changed);
+			if (d.containsKey(AkylasChartsModule.PROPERTY_FILL_COLOR)) {
 				// a trick to have fillColor work as a background (for
 				// compatibiity with the ios part)
-				d.put("backgroundColor", d.get("fillColor"));
+				d.put(TiC.PROPERTY_BACKGROUND_COLOR, d.get(AkylasChartsModule.PROPERTY_FILL_COLOR));
 			}
-			if (d.containsKey("fillGradient")) {
+			if (d.containsKey(AkylasChartsModule.PROPERTY_FILL_GRADIENT)) {
 				// a trick to have fillGradient work as a background (for
 				// compatibiity with the ios part)
-				d.put("backgroundGradient", d.get("fillGradient"));
+				d.put(TiC.PROPERTY_BACKGROUND_GRADIENT, d.get(AkylasChartsModule.PROPERTY_FILL_GRADIENT));
 			}
-			if (d.containsKey("fillOpacity")) {
+			if (d.containsKey(AkylasChartsModule.PROPERTY_FILL_OPACITY)) {
 				// a trick to have fillOpacity work as a background (for
 				// compatibiity with the ios part)
-				d.put("backgroundOpacity", d.get("fillOpacity"));
+				d.put(TiC.PROPERTY_BACKGROUND_OPACITY, d.get(AkylasChartsModule.PROPERTY_FILL_OPACITY));
 			}
-			
-			super.processProperties(d);
-			
+						
 			Context context = plotView.getContext();
 
-			if (d.containsKey("title")) {
-				KrollDict titleOptions = d.getKrollDict("title");
+			if (d.containsKey(TiC.PROPERTY_TITLE)) {
+				KrollDict titleOptions = d.getKrollDict(TiC.PROPERTY_TITLE);
 				
 				Utils.styleTextWidget(titleOptions, plotView.getTitleWidget().getLabelPaint(), context);
 
@@ -161,8 +160,8 @@ public class ChartProxy extends TiViewProxy {
 				AnchorPosition anchor = AnchorPosition.TOP_MIDDLE;
 				XLayoutStyle xlayout = XLayoutStyle.ABSOLUTE_FROM_CENTER;
 				YLayoutStyle ylayout = YLayoutStyle.ABSOLUTE_FROM_TOP;
-				if (titleOptions.containsKey("location")) {
-					anchor = AnchorPosition.values()[titleOptions.getInt("location")];
+				if (titleOptions.containsKey(TiC.PROPERTY_LOCATION)) {
+					anchor = AnchorPosition.values()[titleOptions.getInt(TiC.PROPERTY_LOCATION)];
 				}
 				if (anchor == AnchorPosition.BOTTOM_MIDDLE) {
 					xlayout = XLayoutStyle.ABSOLUTE_FROM_CENTER;
@@ -174,10 +173,10 @@ public class ChartProxy extends TiViewProxy {
 					xlayout = XLayoutStyle.ABSOLUTE_FROM_RIGHT;
 					ylayout = YLayoutStyle.ABSOLUTE_FROM_CENTER;
 				}
-				if (titleOptions.containsKey("offset")) {
-					KrollDict offset = titleOptions.getKrollDict("offset");
-					top = Utils.getRawSizeOrZero(offset, "y", context);
-					left = Utils.getRawSizeOrZero(offset, "x", context);
+				if (titleOptions.containsKey(TiC.PROPERTY_OFFSET)) {
+					KrollDict offset = titleOptions.getKrollDict(TiC.PROPERTY_OFFSET);
+					top = Utils.getRawSizeOrZero(offset, TiC.PROPERTY_Y, context);
+					left = Utils.getRawSizeOrZero(offset, TiC.PROPERTY_X, context);
 				}
 
 				plotView.getTitleWidget().position(left, xlayout, top, ylayout, anchor);
@@ -185,22 +184,22 @@ public class ChartProxy extends TiViewProxy {
 			}
 
 
-			if (d.containsKey("plotArea")) {
-				KrollDict plotOptions = d.getKrollDict("plotArea");
-				if (plotOptions.containsKey("borderRadius")) {
-					float radius = Utils.getRawSize(plotOptions, "borderRadius", context);
+			if (d.containsKey(AkylasChartsModule.PROPERTY_PLOT_AREA)) {
+				KrollDict plotOptions = d.getKrollDict(AkylasChartsModule.PROPERTY_PLOT_AREA);
+				if (plotOptions.containsKey(TiC.PROPERTY_BORDER_RADIUS)) {
+					float radius = Utils.getRawSize(plotOptions, TiC.PROPERTY_BORDER_RADIUS, context);
 					plotView.setBorderStyle(XYPlot.BorderStyle.ROUNDED, radius, radius);
 				}
-				if (plotOptions.containsKey("borderColor")) {
-					plotView.getBorderPaint().setColor(plotOptions.optColor("borderColor", Color.BLACK));
+				if (plotOptions.containsKey(TiC.PROPERTY_BORDER_COLOR)) {
+					plotView.getBorderPaint().setColor(plotOptions.optColor(TiC.PROPERTY_BORDER_COLOR, Color.BLACK));
 				}
 
 				Paint paint1 = plotView.getBorderPaint();
-				Utils.styleOpacity(plotOptions, "borderOpacity", paint1);
-				Utils.styleStrokeWidth(plotOptions, "borderWidth", "0", paint1, context);
+				Utils.styleOpacity(plotOptions, AkylasChartsModule.PROPERTY_BORDER_OPACITY, paint1);
+				Utils.styleStrokeWidth(plotOptions, TiC.PROPERTY_BORDER_WIDTH, "0", paint1, context);
 				paint1 = plotView.getBackgroundPaint();
-				Utils.styleOpacity(plotOptions, "backgroundOpacity", paint1);
-				Utils.styleColor(plotOptions, "backgroundColor", Color.TRANSPARENT, paint1);
+				Utils.styleOpacity(plotOptions, TiC.PROPERTY_BACKGROUND_OPACITY, paint1);
+				Utils.styleColor(plotOptions, TiC.PROPERTY_BACKGROUND_COLOR, Color.TRANSPARENT, paint1);
 				
 			}
 			Utils.styleMargins(d, plotView, "setPlotMargins", context);
@@ -246,10 +245,10 @@ public class ChartProxy extends TiViewProxy {
 	public void handleCreationDict(KrollDict options) {
 		super.handleCreationDict(options);
 
-		if (options.containsKey("title")) {
-			KrollDict titleOptions = options.getKrollDict("title");
-			if (titleOptions.containsKey("text")) {
-				mTitle = titleOptions.getString("text");
+		if (options.containsKey(TiC.PROPERTY_TITLE)) {
+			KrollDict titleOptions = options.getKrollDict(TiC.PROPERTY_TITLE);
+			if (titleOptions.containsKey(TiC.PROPERTY_TEXT)) {
+				mTitle = titleOptions.getString(TiC.PROPERTY_TEXT);
 			}
 		}
 	}

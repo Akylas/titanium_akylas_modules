@@ -106,7 +106,7 @@
 -(NSDictionary*)dataPointFromIndex:(id)args
 {
     ENSURE_ARG_COUNT(args,1)
-    int index = [TiUtils intValue:[args objectAtIndex:0] def:0];
+    NSInteger index = [TiUtils intValue:[args objectAtIndex:0] def:0];
 
     double pts[2];
     pts[CPTCoordinateX] = [[self numberForPlot:index forCoordinate:CPTCoordinateX] doubleValue];
@@ -116,11 +116,11 @@
     CGPoint viewPoint = [self viewPointFromGraphPoint:graphPoint];
 
     NSDictionary *result = [NSDictionary dictionaryWithObjectsAndKeys:
-                              NUMINT(index),@"index",
+                              NUMINTEGER(index),@"index",
                               [self numberForPlot:index],@"value",
                               self.plot.identifier,@"name",
-                              NUMINT(viewPoint.x),@"x",
-                              NUMINT(viewPoint.y),@"y",
+                              NUMINTEGER(viewPoint.x),@"x",
+                              NUMINTEGER(viewPoint.y),@"y",
                               nil
                            ];
 

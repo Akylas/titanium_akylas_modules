@@ -356,5 +356,13 @@
 	}
 }
 
+-(CGPoint)viewPointFromGraphPoint:(CGPoint)point
+{
+    return CGPointZero;
+}
 
+-(void)notifyOfTouchEvent:(NSString*)type atPoint:(CGPoint)viewPoint
+{
+
+}
 @end

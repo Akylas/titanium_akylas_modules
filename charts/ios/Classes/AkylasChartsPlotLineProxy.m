@@ -154,7 +154,7 @@ typedef enum AkylasChartsFillDirection {
 
 -(NSNumber*)highlightIndex
 {
-    return NUMINT(highlightSymbolIndex);
+    return NUMUINTEGER(highlightSymbolIndex);
 }
 
 -(void)setHighlightIndex:(id)value
@@ -163,7 +163,7 @@ typedef enum AkylasChartsFillDirection {
     
     // Get new value for the highlighted symbol index. Any negative value will turn off the
     // symbol highlighting
-    int val = [TiUtils intValue:value def:-1];
+    NSInteger val = [TiUtils intValue:value def:-1];
     NSUInteger newValue = (val >= 0) ? (NSUInteger)val : NSUIntegerMax;
     NSUInteger oldValue = highlightSymbolIndex;
     if (newValue != oldValue) {

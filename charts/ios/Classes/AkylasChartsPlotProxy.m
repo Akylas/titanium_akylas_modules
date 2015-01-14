@@ -269,7 +269,7 @@
 	// Validate arguments
 	ENSURE_ARG_COUNT(args, kInsertDataArgCount);
 	
-	int index = [TiUtils intValue:[args objectAtIndex:kInsertDataArgIndex]];
+	NSInteger index = [TiUtils intValue:[args objectAtIndex:kInsertDataArgIndex]];
 	NSArray *values = [args objectAtIndex:kInsertDataArgValues];
 	
 	[self addData:values startingAtIndex:index];
@@ -289,7 +289,7 @@
 	// Validate arguments
 	ENSURE_ARG_COUNT(args, kInsertDataArgCount);
 	
-	int index = [TiUtils intValue:[args objectAtIndex:kInsertDataArgIndex]];
+	NSInteger index = [TiUtils intValue:[args objectAtIndex:kInsertDataArgIndex]];
 	NSArray *values = [args objectAtIndex:kInsertDataArgValues];
 	
 	[self addData:values startingAtIndex:index+1];
@@ -309,8 +309,8 @@
 	// Validate arguments
 	ENSURE_ARG_COUNT(args, kDeleteDataArgCount);
 	
-	int index = [TiUtils intValue:[args objectAtIndex:kDeleteDataArgIndex]];
-	int cnt = [TiUtils intValue:[args objectAtIndex:kDeleteDataArgCount]];
+	NSInteger index = [TiUtils intValue:[args objectAtIndex:kDeleteDataArgIndex]];
+	NSInteger cnt = [TiUtils intValue:[args objectAtIndex:kDeleteDataArgCount]];
 	
 	[dataX removeObjectsInRange:NSMakeRange(index, cnt)];
 	[dataY removeObjectsInRange:NSMakeRange(index, cnt)];
@@ -323,7 +323,7 @@
 {
 	if ([self _hasListeners:@"dataClicked"]) {
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-                               NUMINT(index),@"index",
+                               NUMINTEGER(index),@"index",
                                [self numberForPlot:index],@"value",
                                plot.identifier,@"name",                                
                                nil
@@ -348,11 +348,11 @@
 
 	if ([self _hasListeners:@"dataClicked"]) {
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-								  NUMINT(index),@"index",
+								  NUMINTEGER(index),@"index",
 							      [self numberForPlot:index],@"value",
 							      self.plot.identifier,@"name",
-                                  NUMINT(viewPoint.x),@"x",
-                                  NUMINT(viewPoint.y),@"y",                                 
+                                  NUMINTEGER(viewPoint.x),@"x",
+                                  NUMINTEGER(viewPoint.y),@"y",
 								  nil
 							  ];        
 		[self fireEvent:@"dataClicked" withObject:event];

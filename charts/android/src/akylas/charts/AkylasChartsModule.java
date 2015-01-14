@@ -54,7 +54,59 @@ public class AkylasChartsModule extends KrollModule
 //	@Kroll.constant public static final int STYLE_POINT = PointStyle.POINT;
 //	@Kroll.constant public static final int STYLE_SQUARE = PointStyle.SQUARE;
 //	@Kroll.constant public static final int STYLE_TRIANGLE = PointStyle.TRIANGLE;
-	
+    public static final String PROPERTY_DASH = "dash";
+    public static final String PROPERTY_JOIN = "join";
+    public static final String PROPERTY_CAP = "xap";
+    public static final String PROPERTY_EMBOSS = "emboss";
+    public static final String PROPERTY_SHADOW = "shadow";
+    public static final String PROPERTY_LABEL = "label";
+    public static final String PROPERTY_INTERVAL = "interval";
+    
+    public static final String PROPERTY_LINE_COLOR = "lineColor";
+    public static final String PROPERTY_LINE_GRADIENT = "lineGradient";
+    public static final String PROPERTY_LINE_IMAGE = "lineImage";
+    public static final String PROPERTY_LINE_DASH = "lineDash";
+    public static final String PROPERTY_LINE_WIDTH = "lineWidth";
+    public static final String PROPERTY_LINE_OPACITY = "lineOpacity";
+    public static final String PROPERTY_LINE_JOIN = "lineJoin";
+    public static final String PROPERTY_LINE_CAP = "lineCap";
+    public static final String PROPERTY_LINE_SHADOW = "lineShadow";
+    public static final String PROPERTY_LINE_EMBOSS = "lineEmboss";
+    public static final String PROPERTY_LINE_INVERSED = "lineInversed";
+    public static final String PROPERTY_FILL_COLOR = "fillColor";
+    public static final String PROPERTY_FILL_GRADIENT = "fillGradient";
+    public static final String PROPERTY_FILL_IMAGE = "fillImage";
+    public static final String PROPERTY_FILL_WIDTH = "fillWidth";
+    public static final String PROPERTY_FILL_OPACITY = "fillOpacity";
+    public static final String PROPERTY_FILL_SHADOW = "fillShadow";
+    public static final String PROPERTY_FILL_EMBOSS = "fillEmboss";
+    public static final String PROPERTY_FILL_INVERSED = "fillInversed";
+    public static final String PROPERTY_GRID_LINES = "gridLines";
+    public static final String PROPERTY_MINOR_TICKS = "minorTicks";
+    public static final String PROPERTY_ANGLE = "angle";
+    public static final String PROPERTY_ORIGIN = "origin";
+    public static final String PROPERTY_ALIGN = "align";
+    public static final String PROPERTY_AXIS_Y = "yAxis";
+    public static final String PROPERTY_VISIBLE_RANGE = "visibleRane";
+    public static final String PROPERTY_INTERVAL_PX = "interval_px";
+    public static final String PROPERTY_MAJOR_TICKS = "majorTicks";
+    public static final String PROPERTY_GRID_AREA = "gridArea";
+    public static final String PROPERTY_FORMAT_CALLBACK = "formatCallback";
+    public static final String PROPERTY_LABELS = "labels";
+    public static final String PROPERTY_AXIS_X = "xAxis";
+    public static final String PROPERTY_LEGEND = "legend";
+    public static final String PROPERTY_RANGE_Y = "yRange";
+    public static final String PROPERTY_RANGE_X = "xRange";
+    public static final String PROPERTY_PLOT_SPACE = "plotSpace";
+    public static final String PROPERTY_SCALE_TO_FIT = "scaleToFit";
+    public static final String PROPERTY_LOCATIONS = "locations";
+    public static final String PROPERTY_PLOT_AREA = "plotArea";
+    public static final String PROPERTY_BORDER_OPACITY = "borderOpacity";
+    public static final String PROPERTY_SYMBOL = "symbol";
+    public static final String PROPERTY_FILL_SPACE_PATH = "fillSpacePath";
+    public static final String PROPERTY_FILL_DIRECTION = "fillDirection";
+
+
 	public AkylasChartsModule()
 	{
 		super();

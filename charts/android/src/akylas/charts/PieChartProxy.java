@@ -69,8 +69,8 @@ public class PieChartProxy extends ChartProxy {
 		}
 
 		@Override
-		public void processProperties(KrollDict d) {
-			super.processProperties(d);
+        protected void handleProperties(KrollDict d, final boolean changed) {
+            super.handleProperties(d, changed);
 
 //			Context context = plotView.getContext();
 			PieRenderer render = pieView.getRenderer(PieRenderer.class);
@@ -132,10 +132,10 @@ public class PieChartProxy extends ChartProxy {
 	}
 
 	// Handle creation options
-	@Override
-	public void handleCreationDict(KrollDict options) {
-		super.handleCreationDict(options);
-	}
+//	@Override
+//	public void handleCreationDict(KrollDict options) {
+//		super.handleCreationDict(options);
+//	}
 
 	@Kroll.method
 	public void add(Object segment) {

@@ -5,16 +5,12 @@ import java.util.List;
 import java.util.Random;
 
 import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollPropertyChange;
-import org.appcelerator.kroll.KrollProxy;
-import org.appcelerator.kroll.KrollProxyListener;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
-import org.appcelerator.titanium.proxy.AnimatableProxy;
+import org.appcelerator.titanium.proxy.AnimatableReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.view.KrollProxyReusableListener;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -31,9 +27,10 @@ import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
 
 @Kroll.proxy(creatableInModule = AkylasChartsModule.class, propertyAccessors={
-	TiC.PROPERTY_NAME
+    TiC.PROPERTY_NAME,
+    TiC.PROPERTY_VALUE
 })
-public class PieSegmentProxy extends AnimatableProxy implements KrollProxyReusableListener {
+public class PieSegmentProxy extends AnimatableReusableProxy{
 	// Standard Debugging variables
 	@SuppressWarnings("unused")
 	private static final String TAG = "PieSegmentProxy";
@@ -43,16 +40,13 @@ public class PieSegmentProxy extends AnimatableProxy implements KrollProxyReusab
 	private Number mValue;
 	private Context context;
 	private PieChartProxy pieChartProxy;
-    private KrollDict additionalEventData;
 
 	public PieSegmentProxy() {
 		super();
-		setModelListener(this);
 	}
 	
 	public PieSegmentProxy(TiContext context) {
 		super();
-		setModelListener(this);
 	}
 
 	public void setContext(Context context) {
@@ -70,27 +64,30 @@ public class PieSegmentProxy extends AnimatableProxy implements KrollProxyReusab
 
 	public void updateGradients(Context context, Rect rect) {
 		KrollDict options = getProperties();
-		if (options.containsKey("fillGradient")) {
+		if (options.containsKey(AkylasChartsModule.PROPERTY_FILL_GRADIENT)) {
 			Paint paint = formatter.getFillPaint();
-			KrollDict bgOptions = options.getKrollDict("fillGradient");
+			KrollDict bgOptions = options.getKrollDict(AkylasChartsModule.PROPERTY_FILL_GRADIENT);
 			paint.setShader(
 					Utils.styleGradient(bgOptions, context, rect));
-			Utils.styleOpacity(options, "fillOpacity", paint);
+			Utils.styleOpacity(options, AkylasChartsModule.PROPERTY_FILL_OPACITY, paint);
 		}
-		if (options.containsKey("lineGradient")) {
+		if (options.containsKey(AkylasChartsModule.PROPERTY_LINE_GRADIENT)) {
 			Paint[] paints = {formatter.getInnerEdgePaint(), formatter.getOuterEdgePaint(), formatter.getRadialEdgePaint()};
-			KrollDict bgOptions = options.getKrollDict("lineGradient");
+			KrollDict bgOptions = options.getKrollDict(AkylasChartsModule.PROPERTY_LINE_GRADIENT);
 			Shader shader = Utils.styleGradient(bgOptions, context, rect);
 			for (int i = 0; i < paints.length; i++) {
 				Paint paint = paints[i];
 				paint.setShader(shader);
-				Utils.styleOpacity(options, "lineOpacity", paint);
+				Utils.styleOpacity(options, AkylasChartsModule.PROPERTY_LINE_OPACITY, paint);
 			}
 		}
 
 	}
 
 	public Segment getSegment() {
+	    if (segment == null) {
+	        segment = new Segment(mTitle, mValue);
+	    }
 		return segment;
 	}
 
@@ -103,18 +100,18 @@ public class PieSegmentProxy extends AnimatableProxy implements KrollProxyReusab
 			for (int i = 0; i < paints.length; i++) {
 				paints[i].setAntiAlias(true);
 			}
-			Utils.styleStrokeWidth(options, "lineWidth", "1", paints, context);
-			Utils.styleOpacity(options, "lineOpacity", paints);
-			Utils.styleColor(options, "lineColor", paints);
-			Utils.styleDash(options, "lineDash", paints, context);
+			Utils.styleStrokeWidth(options, AkylasChartsModule.PROPERTY_LINE_WIDTH, "1", paints, context);
+			Utils.styleOpacity(options, AkylasChartsModule.PROPERTY_LINE_OPACITY, paints);
+			Utils.styleColor(options, AkylasChartsModule.PROPERTY_LINE_COLOR, paints);
+			Utils.styleDash(options, AkylasChartsModule.PROPERTY_LINE_DASH, paints);
 
 			Paint paint = formatter.getFillPaint();
 			paint.setAntiAlias(true);
-			Utils.styleOpacity(options, "fillOpacity", paint);
+			Utils.styleOpacity(options, AkylasChartsModule.PROPERTY_FILL_OPACITY, paint);
 			
 			Random rnd = new Random(); 
 			int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));  
-			Utils.styleColor(options, "fillColor", color, paint);
+			Utils.styleColor(options, AkylasChartsModule.PROPERTY_FILL_COLOR, color, paint);
 
 			if (options.containsKey("label")) {
 				KrollDict labelOptions = options.getKrollDict("label");
@@ -145,71 +142,31 @@ public class PieSegmentProxy extends AnimatableProxy implements KrollProxyReusab
 		super.finalize();
 	}
 	
-	@Kroll.getProperty @Kroll.method
-	public int getValue() {
-	        return TiConvert.toInt(getProperty(TiC.PROPERTY_VALUE));
-	}
-	@Kroll.setProperty @Kroll.method
-	public void setValue(int value) {
-		if (value == segment.getValue().intValue()) return;
-		segment.setValue(value);
+	@Override
+	public void didProcessProperties() {
+	    super.didProcessProperties();
 		if (pieChartProxy != null)
 			pieChartProxy.refresh();
 	}
-	
-	@Override
-	public void propertyChanged(String key, Object oldValue, Object newValue,
-			KrollProxy proxy) {
-		if (key.equals(TiC.PROPERTY_VALUE)){
-			
-		} else if (key.equals(TiC.PROPERTY_NAME)){
-			segment.setTitle(TiConvert.toString(newValue));
-		}
-		if (pieChartProxy != null)
-			pieChartProxy.refresh();
-	}
-
-	@Override
-	public void processProperties(KrollDict properties) {
-		mTitle = properties.optString(TiC.PROPERTY_NAME, "");
-		mValue = (Number) properties.get(TiC.PROPERTY_VALUE);
-		segment = new Segment(mTitle, mValue);
-	}
-
-    @Override
-    public void setAdditionalEventData(KrollDict dict) {
-        additionalEventData = dict;
-    }
     
     @Override
-    public KrollDict getAdditionalEventData() {
-        return additionalEventData;
-    }
-
-    @Override
-    public void setReusing(boolean reusing) {
-//        if (reusing == false) {
-//            update();
-//        }
-        
-    }
-
-    @Override
-    public void listenerAdded(String arg0, int arg1, KrollProxy arg2) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void listenerRemoved(String arg0, int arg1, KrollProxy arg2) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void propertiesChanged(List<KrollPropertyChange> arg0,
-            KrollProxy arg1) {
-        // TODO Auto-generated method stub
-        
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+        case TiC.PROPERTY_NAME:
+            mTitle = TiConvert.toString(newValue, "");
+            if (segment != null) {
+                segment.setTitle(mTitle);
+            }
+            break;
+        case TiC.PROPERTY_VALUE:
+            mValue = (Number)newValue;
+            if (segment != null) {
+                segment.setValue(mValue);
+            }
+            break;
+        default:
+            break;
+        }
     }
 }

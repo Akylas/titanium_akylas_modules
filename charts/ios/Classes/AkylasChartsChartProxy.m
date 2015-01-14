@@ -71,7 +71,8 @@
 
 -(void)childAdded:(TiProxy*)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
 {
-    // Make sure that we are getting a plot proxy object
+    [super childAdded:child atIndex:position shouldRelayout:shouldRelayout];
+   // Make sure that we are getting a plot proxy object
     if (![child isKindOfClass:[AkylasChartsPlotProxy class]] && ![child isKindOfClass:[AkylasChartsPieSegmentProxy class]]) {
         return;
     }
@@ -159,30 +160,6 @@ USE_VIEW_FOR_UI_METHOD(refresh);
         }
         [markers removeObject:arg];
     }
-}
-
-+(Class)proxyClassFromString:(NSString*)qualifiedName
-{
-    Class proxyClass = (Class)CFDictionaryGetValue([TiProxy classNameLookup], qualifiedName);
-	if (proxyClass == nil) {
-		NSString *prefix = [NSString stringWithFormat:@"%@%s",@"Ak","ylasCharts."];
-		if ([qualifiedName hasPrefix:prefix]) {
-			qualifiedName = [qualifiedName stringByReplacingOccurrencesOfString:prefix withString:@"AkylasCharts"];
-		}
-        else {
-            return [[TiViewProxy class] proxyClassFromString:qualifiedName];
-        }
-		NSString *className = [[qualifiedName stringByReplacingOccurrencesOfString:@"." withString:@""] stringByAppendingString:@"Proxy"];
-		proxyClass = NSClassFromString(className);
-		if (proxyClass==nil) {
-			DebugLog(@"[WARN] Attempted to load %@: Could not find class definition.", className);
-			@throw [NSException exceptionWithName:@"org.appcelerator.module"
-                                           reason:[NSString stringWithFormat:@"Class not found: %@", qualifiedName]
-                                         userInfo:nil];
-		}
-		CFDictionarySetValue([TiProxy classNameLookup], qualifiedName, proxyClass);
-	}
-    return proxyClass;
 }
 
 @end

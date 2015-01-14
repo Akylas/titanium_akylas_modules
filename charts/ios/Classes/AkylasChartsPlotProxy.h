@@ -10,7 +10,7 @@
 
 @class AkylasChartsChartProxy;
 
-@interface AkylasChartsPlotProxy : TiParentingProxy <TiProxyDelegate, CPTPlotDataSource> {
+@interface AkylasChartsPlotProxy : TiParentingProxy <CPTPlotDataSource> {
 	
 @private
 	CPTPlot				*plot;

@@ -1,6 +1,5 @@
 package akylas.charts;
 
-import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
@@ -14,10 +13,13 @@ import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBaseActivity;
+import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiUIView;
 
+import ti.modules.titanium.ui.UIModule;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -25,6 +27,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextUtils.TruncateAt;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -94,7 +99,8 @@ public class LineChartProxy extends ChartProxy {
 
 		protected void beforeLayoutNativeView() {
 			xyPlotView = (XYPlot) plotView;
-			
+			xyPlotView.setRangeBoundaries(0, 0, BoundaryMode.AUTO);
+            xyPlotView.setDomainBoundaries(0, 0, BoundaryMode.AUTO);
 			xyPlotView.getGraphWidget().setGridPadding(0,0,0,0);
             xyPlotView.getGraphWidget().setMargins(0,0,0,0);
             xyPlotView.getGraphWidget().setClippingEnabled(false);
@@ -102,7 +108,7 @@ public class LineChartProxy extends ChartProxy {
             xyPlotView.getGraphWidget().setDomainLabelWidth(0);
             xyPlotView.getGraphWidget().setDomainOriginLabelOffset(0);
             xyPlotView.getGraphWidget().setRangeOriginLabelOffset(0);
-
+            xyPlotView.getLegendWidget().setVisible(false);
             for (int i = 0; i < mPlots.size(); i++) {
 				addSerie(mPlots.get(i), false);
 			}
@@ -227,476 +233,469 @@ public class LineChartProxy extends ChartProxy {
 			super.updateGradients(context, rect);
 			KrollDict d = proxy.getProperties();
 
-			if (d.containsKey("gridArea")) {
-				KrollDict gridOptions = d.getKrollDict("gridArea");
-				if (gridOptions.containsKey("backgroundGradient")) {
+			if (d.containsKey(AkylasChartsModule.PROPERTY_GRID_AREA)) {
+				KrollDict gridOptions = d.getKrollDict(AkylasChartsModule.PROPERTY_GRID_AREA);
+				if (gridOptions.containsKey(TiC.PROPERTY_BACKGROUND_GRADIENT)) {
 					KrollDict bgOptions = gridOptions
-							.getKrollDict("backgroundGradient");
+							.getKrollDict(TiC.PROPERTY_BACKGROUND_GRADIENT);
 					xyPlotView.getGraphWidget().getOrCreateGridBackgroundPaint()
 							.setShader(Utils.styleGradient(bgOptions, context, rect));
 				}
 			}
 //			if (d.containsKey("plotArea")) {
 //                KrollDict options = d.getKrollDict("plotArea");
-//                if (options.containsKey("backgroundGradient")) {
+//                if (options.containsKey(TiC.PROPERTY_BACKGROUND_GRADIENT)) {
 //                    KrollDict bgOptions = options
-//                            .getKrollDict("backgroundGradient");
+//                            .getKrollDict(TiC.PROPERTY_BACKGROUND_GRADIENT);
 //                    xyPlotView.getGraphWidget().getOrCreateBackgroundPaint()
 //                            .setShader(Utils.styleGradient(bgOptions, context, rect));
 //                }
 //            }
 		}
-
+		
 		@Override
-		public void processProperties(KrollDict d) {
-			super.processProperties(d);
-
-			Context context = plotView.getContext();
-
-			if (d.containsKey("plotSpace")) {
-				KrollDict plotOptions = d.getKrollDict("plotSpace");
-				boolean scaleToFit = plotOptions
-						.optBoolean("scaleToFit", false);
-				if (scaleToFit) {
-					xyPlotView.setRangeBoundaries(0, 0, BoundaryMode.AUTO);
-					xyPlotView.setDomainBoundaries(0, 0, BoundaryMode.AUTO);
-				} else {
-					needsBoundarySet = true;
-					if (plotOptions.containsKey("xRange")) {
-						KrollDict xOptions = plotOptions.getKrollDict("xRange");
-						if (xOptions.containsKey("min")
-								&& xOptions.containsKey("max")) {
-							int min = xOptions.getInt("min");
-							int max = xOptions.getInt("max");
-							xyPlotView.setDomainBoundaries(min, max,
-									BoundaryMode.FIXED);
-							needsBoundarySet = false;
-						} else if (xOptions.containsKey("min")) {
-							int min = xOptions.getInt("min");
-							xyPlotView.setDomainLowerBoundary(min,
-									BoundaryMode.FIXED);
-							needsBoundarySet = false;
-						} else if (xOptions.containsKey("max")) {
-							int max = xOptions.getInt("max");
-							xyPlotView.setDomainUpperBoundary(max,
-									BoundaryMode.FIXED);
-							needsBoundarySet = false;
-						}
-					}
-					if (plotOptions.containsKey("yRange")) {
-						KrollDict yOptions = plotOptions.getKrollDict("yRange");
-						if (yOptions.containsKey("min")
-								&& yOptions.containsKey("max")) {
-							int min = yOptions.getInt("min");
-							int max = yOptions.getInt("max");
-							xyPlotView.setRangeBoundaries(min, max,
-									BoundaryMode.FIXED);
-							needsBoundarySet = false;
-						} else if (yOptions.containsKey("min")) {
-							int min = yOptions.getInt("min");
-							xyPlotView.setRangeLowerBoundary(min,
-									BoundaryMode.FIXED);
-							needsBoundarySet = false;
-						} else if (yOptions.containsKey("max")) {
-							int max = yOptions.getInt("max");
-							xyPlotView.setRangeUpperBoundary(max,
-									BoundaryMode.FIXED);
-							needsBoundarySet = false;
-						}
-					}
-				}
-			} else {
-				xyPlotView.setRangeBoundaries(0, 0, BoundaryMode.AUTO);
-				xyPlotView.setDomainBoundaries(0, 0, BoundaryMode.AUTO);
-			}
-
-			if (d.containsKey("gridArea")) {
-				KrollDict gridOptions = d.getKrollDict("gridArea");
-				Paint paint1 = xyPlotView.getGraphWidget()
-						.getOrCreateGridBackgroundPaint();
-				Utils.styleColor(gridOptions, "backgroundColor",
-						Color.TRANSPARENT, paint1);
-				Utils.styleOpacity(gridOptions, "backgroundOpacity", paint1);
-				Utils.styleMargins(gridOptions, xyPlotView.getGraphWidget(),
-						"setGridPadding", context);
-			}
-
-//			if (d.containsKey("plotArea")) {
-//				KrollDict plotOptions = d.getKrollDict("plotArea");
-//				Utils.styleMargins(plotOptions, xyPlotView.getGraphWidget(),
-//						"setMargins", context);
-//                Paint paint1 = xyPlotView.getGraphWidget()
-//                        .getOrCreateBackgroundPaint();
-//                Utils.styleColor(plotOptions, "backgroundColor",
-//                        Color.TRANSPARENT, paint1);
-//                Utils.styleOpacity(plotOptions, "backgroundOpacity", paint1);
-//			}
-//			Utils.styleMargins(d, plotView, "setPlotMargins", context);
-
-			if (d.containsKey("legend")) {
-				KrollDict legend = d.getKrollDict("legend");
-				if (legend.containsKey("visible"))
-					xyPlotView.getLegendWidget().setVisible(
-							legend.getBoolean("visible"));
-			}
-			if (d.containsKey("xAxis")) {
-			    HashMap currentOptions = (HashMap) getProperty("xAxis");
-				KrollDict axisOptions = d.getKrollDict("xAxis");
-				if (currentOptions != null && d.get("xAxis") != currentOptions) {
-				    axisOptions = KrollDict.merge(currentOptions, axisOptions);
-				}
-				
-				if (axisOptions.containsKey("origin")) {
-					xyPlotView.setUserDomainOrigin((Number) axisOptions
-							.get("origin"));
-				}
-				
-				if (axisOptions.containsKey("align")) {
-					xyPlotView.getGraphWidget().setRangeAxisAlignment(Utils.gravityFromAlignment(axisOptions
-							.getInt("align")));
-				}
-
-				Paint paint = xyPlotView.getGraphWidget()
-						.getOrCreateRangeOriginLinePaint();
-				Utils.styleColor(axisOptions, "lineColor", Color.TRANSPARENT, paint);
-				Utils.styleStrokeWidth(axisOptions, "lineWidth", paint, context);
-
-				if (axisOptions.containsKey("title")) {
-					KrollDict titleOptions = axisOptions.getKrollDict("title");
-					if (titleOptions.containsKey("text")) {
-						xyPlotView.setDomainLabel(titleOptions
-								.getString("text"));
-					}
-
-					Utils.styleTextWidget(titleOptions, xyPlotView
-							.getGraphWidget().getOrCreateDomainOriginLabelPaint(), context);
-					if (titleOptions.containsKey("offset")) {
-						xyPlotView.getGraphWidget().setDomainOriginLabelOffset(Utils.getRawSizeOrZero(titleOptions, "offset", context));
-					}
-					if (titleOptions.containsKey("angle")) {
-						xyPlotView.getGraphWidget().setDomainOriginLabelAngle(Utils.getRawSizeOrZero(titleOptions, "angle", context));
-					}
-				}
-
-				int ticksPerDomain = 1;
-				if (axisOptions.containsKey("minorTicks")) {
-					KrollDict minorOptions = axisOptions
-							.getKrollDict("minorTicks");
-					if (minorOptions.containsKey("count")) {
-						ticksPerDomain = minorOptions.getInt("count");
-					}
-					if (minorOptions.containsKey("gridLines")) {
-						KrollDict gridOptions = minorOptions
-								.getKrollDict("gridLines");
-						Paint paint1 = xyPlotView.getGraphWidget()
-								.getOrCreateDomainSubGridLinePaint();
-						
-						Utils.styleCap(gridOptions, "cap", paint1);
-						Utils.styleJoin(gridOptions, "join", paint1);
-						Utils.styleEmboss(gridOptions, "emboss", paint1);
-						Utils.styleDash(gridOptions, "dash", paint1, context);
-						Utils.styleShadow(gridOptions, "shadow", paint1, context);
-						Utils.styleColor(gridOptions, "color", Color.TRANSPARENT, paint1);
-						Utils.styleStrokeWidth(gridOptions, paint1, context);
-						Utils.styleOpacity(gridOptions, paint1);
-					}
-				}
-				// xyPlotView.setDomainStep(XYStepMode.SUBDIVIDE, 9);
-				// xyPlotView.setRangeStep(XYStepMode.SUBDIVIDE, 9);
-
-				if (axisOptions.containsKey("interval_px")) {
-					double interval = axisOptions.getDouble("interval_px");
-					xyPlotView.setTicksPerDomainLabel((int) interval);
-					xyPlotView.setDomainStep(XYStepMode.INCREMENT_BY_PIXELS,
-							interval / ticksPerDomain);
-				}
-
-				if (axisOptions.containsKey("majorTicks")) {
-					KrollDict majorOptions = axisOptions
-							.getKrollDict("majorTicks");
-
-					if (majorOptions.containsKey("interval")) {
-						double interval = majorOptions.getDouble("interval");
-						xyPlotView.setTicksPerDomainLabel((int) interval);
-						xyPlotView.setDomainStep(XYStepMode.INCREMENT_BY_VAL,
-								interval / ticksPerDomain);
-					}
-
-					if (majorOptions.containsKey("labels")) {
-					    Paint labelPaint = xyPlotView.getGraphWidget()
-                                .getOrCreateDomainLabelPaint();
-						KrollDict labelOptions = majorOptions
-								.getKrollDict("labels");
-						Utils.styleTextWidget(labelOptions, labelPaint, context);
-
-						if (labelOptions.containsKey("formatCallback")) {
-							formatDomainCallback = (KrollFunction) labelOptions
-									.get("formatCallback");
-						} else {
-							formatDomainCallback = null;
-						}
-						if (formatDomainCallback != null) {
-							xyPlotView.getGraphWidget().setDomainValueFormat(
-									new Format() {
-										@Override
-										public StringBuffer format(
-												Object object,
-												StringBuffer buffer,
-												FieldPosition field) {
-											Object result = formatDomainCallback
-													.call(krollObject,
-															new Object[] { (Number) object });
-											buffer.append(TiConvert
-													.toString(result));
-											return buffer;
-										}
-
-										@Override
-										public Object parseObject(
-												String string,
-												ParsePosition position) {
-											return null;
-										}
-									});
-						} else {
-//							xyPlotView.getGraphWidget().setDomainValueFormat(
-//									new DecimalFormat("0.0"));
-							if (labelOptions.containsKey("locations")) {
-								Object[] locations = (Object[]) labelOptions
-										.get("locations");
-								if (locations != null) {
-									for (int i = 0; i < locations.length; i++) {
-										HashMap location = (HashMap) locations[i];
-										String text = (String) location
-												.get("text");
-										Number value = (Number) location
-												.get("value");
-										if (value != null && text != null) {
-											xyPlotView.getGraphWidget()
-													.addDomainValueFormat(
-															value, text);
-										}
-									}
-								}
-							}
-							Utils.styleValueFormat(labelOptions, xyPlotView.getGraphWidget(),
-									"setDomainValueFormat");
-						}
-						if (labelOptions.containsKey("offset")) {
-							xyPlotView.getGraphWidget()
-									.setDomainLabelVerticalOffset(
-											Utils.getRawSize(labelOptions,
-													"offset", context));
-						}
-					}
-
-					if (majorOptions.containsKey("gridLines")) {
-						KrollDict gridOptions = majorOptions
-								.getKrollDict("gridLines");
-						Paint paint1 = xyPlotView.getGraphWidget()
-								.getOrCreateDomainGridLinePaint();
-						Utils.styleCap(gridOptions, "cap", paint1);
-						Utils.styleJoin(gridOptions, "join", paint1);
-						Utils.styleEmboss(gridOptions, "emboss", paint1);
-						Utils.styleDash(gridOptions, "dash", paint1, context);
-						Utils.styleShadow(gridOptions, "shadow", paint1, context);
-						Utils.styleColor(gridOptions, "color", Color.TRANSPARENT, paint1);
-						Utils.styleStrokeWidth(gridOptions, paint1, context);
-						Utils.styleOpacity(gridOptions, paint1);
-					}
-				}
-				if (axisOptions.containsKey("visibleRange")) {
-					KrollDict visibleRangeOptions = axisOptions
-							.getKrollDict("visibleRange");
-					if (visibleRangeOptions.containsKey("min")) {
-						xyPlotView.setDomainLeftMin(visibleRangeOptions
-								.getFloat("min"));
-					}
-					if (visibleRangeOptions.containsKey("max")) {
-						xyPlotView.setDomainRightMax(visibleRangeOptions
-								.getFloat("max"));
-					}
-				}
-
-				xyPlotView.setTicksPerDomainLabel(ticksPerDomain);
-			}
-			if (d.containsKey("yAxis")) {
-			    HashMap currentOptions = (HashMap) getProperty("yAxis");
-                KrollDict axisOptions = d.getKrollDict("yAxis");
-                if (currentOptions != null && d.get("yAxis") != currentOptions) {
+	    public void propertySet(String key, Object newValue, Object oldValue,
+	            boolean changedProperty) {
+	        switch (key) {
+	        case AkylasChartsModule.PROPERTY_PLOT_SPACE:
+	            KrollDict plotOptions = TiConvert.toKrollDict(newValue);
+                boolean scaleToFit = plotOptions
+                        .optBoolean(AkylasChartsModule.PROPERTY_SCALE_TO_FIT, false);
+                if (scaleToFit) {
+                    xyPlotView.setRangeBoundaries(0, 0, BoundaryMode.AUTO);
+                    xyPlotView.setDomainBoundaries(0, 0, BoundaryMode.AUTO);
+                } else {
+                    needsBoundarySet = true;
+                    if (plotOptions.containsKey(AkylasChartsModule.PROPERTY_RANGE_X)) {
+                        KrollDict xOptions = plotOptions.getKrollDict(AkylasChartsModule.PROPERTY_RANGE_X);
+                        if (xOptions.containsKey(TiC.PROPERTY_MIN)
+                                && xOptions.containsKey(TiC.PROPERTY_MAX)) {
+                            int min = xOptions.getInt(TiC.PROPERTY_MIN);
+                            int max = xOptions.getInt(TiC.PROPERTY_MAX);
+                            xyPlotView.setDomainBoundaries(min, max,
+                                    BoundaryMode.FIXED);
+                            needsBoundarySet = false;
+                        } else if (xOptions.containsKey(TiC.PROPERTY_MIN)) {
+                            int min = xOptions.getInt(TiC.PROPERTY_MIN);
+                            xyPlotView.setDomainLowerBoundary(min,
+                                    BoundaryMode.FIXED);
+                            needsBoundarySet = false;
+                        } else if (xOptions.containsKey(TiC.PROPERTY_MAX)) {
+                            int max = xOptions.getInt(TiC.PROPERTY_MAX);
+                            xyPlotView.setDomainUpperBoundary(max,
+                                    BoundaryMode.FIXED);
+                            needsBoundarySet = false;
+                        }
+                    }
+                    if (plotOptions.containsKey(AkylasChartsModule.PROPERTY_RANGE_Y)) {
+                        KrollDict yOptions = plotOptions.getKrollDict(AkylasChartsModule.PROPERTY_RANGE_Y);
+                        if (yOptions.containsKey(TiC.PROPERTY_MIN)
+                                && yOptions.containsKey(TiC.PROPERTY_MAX)) {
+                            int min = yOptions.getInt(TiC.PROPERTY_MIN);
+                            int max = yOptions.getInt(TiC.PROPERTY_MAX);
+                            xyPlotView.setRangeBoundaries(min, max,
+                                    BoundaryMode.FIXED);
+                            needsBoundarySet = false;
+                        } else if (yOptions.containsKey(TiC.PROPERTY_MIN)) {
+                            int min = yOptions.getInt(TiC.PROPERTY_MIN);
+                            xyPlotView.setRangeLowerBoundary(min,
+                                    BoundaryMode.FIXED);
+                            needsBoundarySet = false;
+                        } else if (yOptions.containsKey(TiC.PROPERTY_MAX)) {
+                            int max = yOptions.getInt(TiC.PROPERTY_MAX);
+                            xyPlotView.setRangeUpperBoundary(max,
+                                    BoundaryMode.FIXED);
+                            needsBoundarySet = false;
+                        }
+                    }
+                }
+	            break;
+	        case AkylasChartsModule.PROPERTY_GRID_AREA:
+	        {
+	            KrollDict gridOptions = TiConvert.toKrollDict(newValue);
+                Paint paint1 = xyPlotView.getGraphWidget()
+                        .getOrCreateGridBackgroundPaint();
+                Utils.styleColor(gridOptions, TiC.PROPERTY_BACKGROUND_COLOR,
+                        Color.TRANSPARENT, paint1);
+                Utils.styleOpacity(gridOptions, TiC.PROPERTY_BACKGROUND_OPACITY, paint1);
+                Utils.styleMargins(gridOptions, xyPlotView.getGraphWidget(),
+                        "setGridPadding", plotView.getContext());
+                break;
+	        }
+	        case AkylasChartsModule.PROPERTY_LEGEND:
+	            KrollDict legend = TiConvert.toKrollDict(newValue);
+                if (legend.containsKey(TiC.PROPERTY_VISIBLE))
+                    xyPlotView.getLegendWidget().setVisible(
+                            legend.getBoolean(TiC.PROPERTY_VISIBLE));
+                break;
+	        case AkylasChartsModule.PROPERTY_AXIS_X:
+	        {
+	            HashMap currentOptions = TiConvert.toHashMap(oldValue);
+                KrollDict axisOptions = TiConvert.toKrollDict(newValue);
+                if (currentOptions != null) {
                     axisOptions = KrollDict.merge(currentOptions, axisOptions);
                 }
-				if (axisOptions.containsKey("origin")) {
-					xyPlotView.setUserRangeOrigin((Number) axisOptions
-							.get("origin"));
-				}
-				
-				if (axisOptions.containsKey("align")) {
-					xyPlotView.getGraphWidget().setDomainAxisAlignment(Utils.gravityFromAlignment(axisOptions
-															.getInt("align")));
-				}
-				Paint paint = xyPlotView.getGraphWidget()
-						.getOrCreateDomainOriginLinePaint();
-				Utils.styleColor(axisOptions, "lineColor", Color.TRANSPARENT, paint);
-				Utils.styleStrokeWidth(axisOptions, "lineWidth", paint, context);
+                Context context = plotView.getContext();
+                
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_ORIGIN)) {
+                    xyPlotView.setUserDomainOrigin((Number) axisOptions
+                            .get(AkylasChartsModule.PROPERTY_ORIGIN));
+                }
+                
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_ALIGN)) {
+                    xyPlotView.getGraphWidget().setRangeAxisAlignment(Utils.gravityFromAlignment(axisOptions
+                            .getInt(AkylasChartsModule.PROPERTY_ALIGN)));
+                }
 
-				if (axisOptions.containsKey("title")) {
-					KrollDict titleOptions = axisOptions.getKrollDict("title");
-					if (titleOptions.containsKey("text")) {
-						xyPlotView.setRangeLabel(titleOptions
-								.getString("text"));
-					}
+                Paint paint = xyPlotView.getGraphWidget()
+                        .getOrCreateRangeOriginLinePaint();
+                Utils.styleColor(axisOptions, AkylasChartsModule.PROPERTY_LINE_COLOR, Color.TRANSPARENT, paint);
+                Utils.styleStrokeWidth(axisOptions, AkylasChartsModule.PROPERTY_LINE_WIDTH, paint, context);
 
-					Utils.styleTextWidget(titleOptions, xyPlotView
-							.getGraphWidget().getOrCreateRangeOriginLabelPaint(), context);
-					if (titleOptions.containsKey("offset")) {
-						xyPlotView.getGraphWidget().setRangeOriginLabelOffset(Utils.getRawSizeOrZero(titleOptions, "offset", context));
-					}
-					if (titleOptions.containsKey("angle")) {
-						xyPlotView.getGraphWidget().setRangeOriginLabelAngle(Utils.getRawSizeOrZero(titleOptions, "angle", context));
-					}
-				}
+                if (axisOptions.containsKey(TiC.PROPERTY_TITLE)) {
+                    KrollDict titleOptions = axisOptions.getKrollDict(TiC.PROPERTY_TITLE);
+                    if (titleOptions.containsKey(TiC.PROPERTY_TEXT)) {
+                        xyPlotView.setDomainLabel(titleOptions
+                                .getString(TiC.PROPERTY_TEXT));
+                    }
 
-				int ticksPerRange = 1;
-				if (axisOptions.containsKey("minorTicks")) {
-					KrollDict minorOptions = axisOptions
-							.getKrollDict("minorTicks");
-					if (minorOptions.containsKey("count")) {
-						ticksPerRange = minorOptions.getInt("count");
-					}
-					if (minorOptions.containsKey("gridLines")) {
-						KrollDict gridOptions = minorOptions
-								.getKrollDict("gridLines");
-						Paint paint1 = xyPlotView.getGraphWidget()
-								.getOrCreateRangeSubGridLinePaint();
-						Utils.styleCap(gridOptions, "cap", paint1);
-						Utils.styleJoin(gridOptions, "join", paint1);
-						Utils.styleEmboss(gridOptions, "emboss", paint1);
-						Utils.styleDash(gridOptions, "dash", paint1, context);
-						Utils.styleShadow(gridOptions, "shadow", paint1, context);
-						Utils.styleColor(gridOptions, "color", Color.TRANSPARENT, paint1);
-						Utils.styleStrokeWidth(gridOptions, paint1, context);
-						Utils.styleOpacity(gridOptions, paint1);
-					}
-				}
+                    Utils.styleTextWidget(titleOptions, xyPlotView
+                            .getGraphWidget().getOrCreateDomainOriginLabelPaint(), context);
+                    if (titleOptions.containsKey(TiC.PROPERTY_OFFSET)) {
+                        xyPlotView.getGraphWidget().setDomainOriginLabelOffset(Utils.getRawSizeOrZero(titleOptions, TiC.PROPERTY_OFFSET, context));
+                    }
+                    if (titleOptions.containsKey(AkylasChartsModule.PROPERTY_ANGLE)) {
+                        xyPlotView.getGraphWidget().setDomainOriginLabelAngle(Utils.getRawSizeOrZero(titleOptions, AkylasChartsModule.PROPERTY_ANGLE, context));
+                    }
+                }
 
-				if (axisOptions.containsKey("interval_px")) {
-					xyPlotView.setRangeStep(XYStepMode.INCREMENT_BY_PIXELS,
-							axisOptions.getDouble("interval_px"));
-				}
+                int ticksPerDomain = 1;
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_MINOR_TICKS)) {
+                    KrollDict minorOptions = axisOptions
+                            .getKrollDict(AkylasChartsModule.PROPERTY_MINOR_TICKS);
+                    if (minorOptions.containsKey(TiC.PROPERTY_COUNT)) {
+                        ticksPerDomain = minorOptions.getInt(TiC.PROPERTY_COUNT);
+                    }
+                    if (minorOptions.containsKey(AkylasChartsModule.PROPERTY_GRID_LINES)) {
+                        KrollDict gridOptions = minorOptions
+                                .getKrollDict(AkylasChartsModule.PROPERTY_GRID_LINES);
+                        Paint paint1 = xyPlotView.getGraphWidget()
+                                .getOrCreateDomainSubGridLinePaint();
+                        
+                        Utils.styleCap(gridOptions, AkylasChartsModule.PROPERTY_CAP, paint1);
+                        Utils.styleJoin(gridOptions, AkylasChartsModule.PROPERTY_JOIN, paint1);
+                        Utils.styleEmboss(gridOptions, AkylasChartsModule.PROPERTY_EMBOSS, paint1);
+                        Utils.styleDash(gridOptions, AkylasChartsModule.PROPERTY_DASH, paint1);
+                        Utils.styleShadow(gridOptions, AkylasChartsModule.PROPERTY_SHADOW, paint1);
+                        Utils.styleColor(gridOptions, TiC.PROPERTY_COLOR, Color.TRANSPARENT, paint1);
+                        Utils.styleStrokeWidth(gridOptions, paint1, context);
+                        Utils.styleOpacity(gridOptions, paint1);
+                    }
+                }
+                // xyPlotView.setDomainStep(XYStepMode.SUBDIVIDE, 9);
+                // xyPlotView.setRangeStep(XYStepMode.SUBDIVIDE, 9);
 
-				if (axisOptions.containsKey("majorTicks")) {
-					KrollDict majorOptions = axisOptions
-							.getKrollDict("majorTicks");
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_INTERVAL_PX)) {
+                    double interval = axisOptions.getDouble(AkylasChartsModule.PROPERTY_INTERVAL_PX);
+                    xyPlotView.setTicksPerDomainLabel((int) interval);
+                    xyPlotView.setDomainStep(XYStepMode.INCREMENT_BY_PIXELS,
+                            interval / ticksPerDomain);
+                }
 
-					if (majorOptions.containsKey("interval")) {
-						double interval = majorOptions.getDouble("interval");
-						xyPlotView.setTicksPerRangeLabel((int) interval);
-						xyPlotView.setRangeStep(XYStepMode.INCREMENT_BY_VAL,
-								interval / ticksPerRange);
-					}
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_MAJOR_TICKS)) {
+                    KrollDict majorOptions = axisOptions
+                            .getKrollDict(AkylasChartsModule.PROPERTY_MAJOR_TICKS);
 
-					if (majorOptions.containsKey("labels")) {
-						Paint labelPaint = xyPlotView.getGraphWidget()
-	                                .getOrCreateRangeLabelPaint();
+                    if (majorOptions.containsKey(AkylasChartsModule.PROPERTY_INTERVAL)) {
+                        double interval = majorOptions.getDouble(AkylasChartsModule.PROPERTY_INTERVAL);
+                        xyPlotView.setTicksPerDomainLabel((int) interval);
+                        xyPlotView.setDomainStep(XYStepMode.INCREMENT_BY_VAL,
+                                interval / ticksPerDomain);
+                    }
+
+                    if (majorOptions.containsKey(AkylasChartsModule.PROPERTY_LABELS)) {
+                        Paint labelPaint = xyPlotView.getGraphWidget()
+                                .getOrCreateDomainLabelPaint();
                         KrollDict labelOptions = majorOptions
-                                .getKrollDict("labels");
+                                .getKrollDict(AkylasChartsModule.PROPERTY_LABELS);
                         Utils.styleTextWidget(labelOptions, labelPaint, context);
 
-						if (labelOptions.containsKey("formatCallback")) {
-							formatRangeCallback = (KrollFunction) labelOptions
-									.get("formatCallback");
-						} else {
-							formatRangeCallback = null;
-						}
-						if (formatRangeCallback != null) {
-							xyPlotView.getGraphWidget().setRangeValueFormat(
-									new Format() {
-										@Override
-										public StringBuffer format(
-												Object object,
-												StringBuffer buffer,
-												FieldPosition field) {
-											Object result = formatRangeCallback
-													.call(krollObject,
-															new Object[] { (Number) object });
-											buffer.append(TiConvert
-													.toString(result));
-											return buffer;
-										}
+                        if (labelOptions.containsKey(AkylasChartsModule.PROPERTY_FORMAT_CALLBACK)) {
+                            formatDomainCallback = (KrollFunction) labelOptions
+                                    .get(AkylasChartsModule.PROPERTY_FORMAT_CALLBACK);
+                        } else {
+                            formatDomainCallback = null;
+                        }
+                        if (formatDomainCallback != null) {
+                            xyPlotView.getGraphWidget().setDomainValueFormat(
+                                    new Format() {
+                                        @Override
+                                        public StringBuffer format(
+                                                Object object,
+                                                StringBuffer buffer,
+                                                FieldPosition field) {
+                                            Object result = formatDomainCallback
+                                                    .call(krollObject,
+                                                            new Object[] { (Number) object });
+                                            buffer.append(TiConvert
+                                                    .toString(result));
+                                            return buffer;
+                                        }
 
-										@Override
-										public Object parseObject(
-												String string,
-												ParsePosition position) {
-											return null;
-										}
-									});
-						} else {
-//							xyPlotView.getGraphWidget().setRangeValueFormat(
-//									new DecimalFormat("0.0"));
-							if (labelOptions.containsKey("locations")) {
-								Object[] locations = (Object[]) labelOptions
-										.get("locations");
-								if (locations != null) {
-									for (int i = 0; i < locations.length; i++) {
-										HashMap location = (HashMap) locations[i];
-										String text = (String) location
-												.get("text");
-										Number value = (Number) location
-												.get("value");
-										if (value != null && text != null) {
-											xyPlotView.getGraphWidget()
-													.addRangeValueFormat(value,
-															text);
-										}
-									}
-								}
-							}
-							Utils.styleValueFormat(labelOptions, xyPlotView.getGraphWidget(),
-									"setRangeValueFormat");
-						}
+                                        @Override
+                                        public Object parseObject(
+                                                String string,
+                                                ParsePosition position) {
+                                            return null;
+                                        }
+                                    });
+                        } else {
+//                          xyPlotView.getGraphWidget().setDomainValueFormat(
+//                                  new DecimalFormat("0.0"));
+                            if (labelOptions.containsKey(AkylasChartsModule.PROPERTY_LOCATIONS)) {
+                                Object[] locations = (Object[]) labelOptions
+                                        .get(AkylasChartsModule.PROPERTY_LOCATIONS);
+                                if (locations != null) {
+                                    for (int i = 0; i < locations.length; i++) {
+                                        HashMap location = (HashMap) locations[i];
+                                        String text = (String) location
+                                                .get(TiC.PROPERTY_TEXT);
+                                        Number value = (Number) location
+                                                .get(TiC.PROPERTY_VALUE);
+                                        if (value != null && text != null) {
+                                            xyPlotView.getGraphWidget()
+                                                    .addDomainValueFormat(
+                                                            value, text);
+                                        }
+                                    }
+                                }
+                            }
+                            Utils.styleValueFormat(labelOptions, xyPlotView.getGraphWidget(),
+                                    "setDomainValueFormat");
+                        }
+                        if (labelOptions.containsKey(TiC.PROPERTY_OFFSET)) {
+                            xyPlotView.getGraphWidget()
+                                    .setDomainLabelVerticalOffset(
+                                            Utils.getRawSize(labelOptions,
+                                                    TiC.PROPERTY_OFFSET, context));
+                        }
+                    }
 
-						if (labelOptions.containsKey("offset")) {
-							xyPlotView.getGraphWidget()
-									.setRangeLabelHorizontalOffset(
-											Utils.getRawSize(labelOptions,
-													"offset", context));
-						}
-					}
+                    if (majorOptions.containsKey(AkylasChartsModule.PROPERTY_GRID_LINES)) {
+                        KrollDict gridOptions = majorOptions
+                                .getKrollDict(AkylasChartsModule.PROPERTY_GRID_LINES);
+                        Paint paint1 = xyPlotView.getGraphWidget()
+                                .getOrCreateDomainGridLinePaint();
+                        Utils.styleCap(gridOptions, AkylasChartsModule.PROPERTY_CAP, paint1);
+                        Utils.styleJoin(gridOptions, AkylasChartsModule.PROPERTY_JOIN, paint1);
+                        Utils.styleEmboss(gridOptions, AkylasChartsModule.PROPERTY_EMBOSS, paint1);
+                        Utils.styleDash(gridOptions, AkylasChartsModule.PROPERTY_DASH, paint1);
+                        Utils.styleShadow(gridOptions, AkylasChartsModule.PROPERTY_SHADOW, paint1);
+                        Utils.styleColor(gridOptions, TiC.PROPERTY_COLOR, Color.TRANSPARENT, paint1);
+                        Utils.styleStrokeWidth(gridOptions, paint1, context);
+                        Utils.styleOpacity(gridOptions, paint1);
+                    }
+                }
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_VISIBLE_RANGE)) {
+                    KrollDict visibleRangeOptions = axisOptions
+                            .getKrollDict(AkylasChartsModule.PROPERTY_VISIBLE_RANGE);
+                    if (visibleRangeOptions.containsKey(TiC.PROPERTY_MIN)) {
+                        xyPlotView.setDomainLeftMin(visibleRangeOptions
+                                .getFloat(TiC.PROPERTY_MIN));
+                    }
+                    if (visibleRangeOptions.containsKey(TiC.PROPERTY_MAX)) {
+                        xyPlotView.setDomainRightMax(visibleRangeOptions
+                                .getFloat(TiC.PROPERTY_MAX));
+                    }
+                }
 
-					if (majorOptions.containsKey("gridLines")) {
-						KrollDict gridOptions = majorOptions
-								.getKrollDict("gridLines");
-						Paint paint1 = xyPlotView.getGraphWidget()
-								.getOrCreateRangeGridLinePaint();
-						Utils.styleCap(gridOptions, "cap", paint1);
-						Utils.styleJoin(gridOptions, "join", paint1);
-						Utils.styleEmboss(gridOptions, "emboss", paint1);
-						Utils.styleDash(gridOptions, "dash", paint1, context);
-						Utils.styleShadow(gridOptions, "shadow", paint1, context);
-						Utils.styleColor(gridOptions, "color", Color.TRANSPARENT, paint1);
-						Utils.styleStrokeWidth(gridOptions, paint1, context);
-						Utils.styleOpacity(gridOptions, paint1);
-					}
-				}
-				if (axisOptions.containsKey("visibleRange")) {
-					KrollDict visibleRangeOptions = axisOptions
-							.getKrollDict("visibleRange");
-					if (visibleRangeOptions.containsKey("min")) {
-						xyPlotView.setRangeBottomMin(visibleRangeOptions
-								.getFloat("min"));
-					}
-					if (visibleRangeOptions.containsKey("max")) {
-						xyPlotView.setRangeTopMax(visibleRangeOptions
-								.getFloat("max"));
-					}
-				}
+                xyPlotView.setTicksPerDomainLabel(ticksPerDomain);
+                break;
+	        }
+	        case AkylasChartsModule.PROPERTY_AXIS_Y:
+	        {
+	            HashMap currentOptions = TiConvert.toHashMap(oldValue);
+                KrollDict axisOptions = TiConvert.toKrollDict(newValue);
+                if (currentOptions != null) {
+                    axisOptions = KrollDict.merge(currentOptions, axisOptions);
+                }
+                Context context = plotView.getContext();
+                
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_ORIGIN)) {
+                    xyPlotView.setUserRangeOrigin((Number) axisOptions
+                            .get(AkylasChartsModule.PROPERTY_ORIGIN));
+                }
+                
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_ALIGN)) {
+                    xyPlotView.getGraphWidget().setDomainAxisAlignment(Utils.gravityFromAlignment(axisOptions
+                                                            .getInt(AkylasChartsModule.PROPERTY_ALIGN)));
+                }
+                Paint paint = xyPlotView.getGraphWidget()
+                        .getOrCreateDomainOriginLinePaint();
+                Utils.styleColor(axisOptions, AkylasChartsModule.PROPERTY_LINE_COLOR, Color.TRANSPARENT, paint);
+                Utils.styleStrokeWidth(axisOptions, AkylasChartsModule.PROPERTY_LINE_WIDTH, paint, context);
 
-				xyPlotView.setTicksPerRangeLabel(ticksPerRange);
-			}
+                if (axisOptions.containsKey(TiC.PROPERTY_TITLE)) {
+                    KrollDict titleOptions = axisOptions.getKrollDict(TiC.PROPERTY_TITLE);
+                    if (titleOptions.containsKey(TiC.PROPERTY_TEXT)) {
+                        xyPlotView.setRangeLabel(titleOptions
+                                .getString(TiC.PROPERTY_TEXT));
+                    }
 
-		}
+                    Utils.styleTextWidget(titleOptions, xyPlotView
+                            .getGraphWidget().getOrCreateRangeOriginLabelPaint(), context);
+                    if (titleOptions.containsKey(TiC.PROPERTY_OFFSET)) {
+                        xyPlotView.getGraphWidget().setRangeOriginLabelOffset(Utils.getRawSizeOrZero(titleOptions, TiC.PROPERTY_OFFSET, context));
+                    }
+                    if (titleOptions.containsKey(AkylasChartsModule.PROPERTY_ANGLE)) {
+                        xyPlotView.getGraphWidget().setRangeOriginLabelAngle(Utils.getRawSizeOrZero(titleOptions, AkylasChartsModule.PROPERTY_ANGLE, context));
+                    }
+                }
+
+                int ticksPerRange = 1;
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_MINOR_TICKS)) {
+                    KrollDict minorOptions = axisOptions
+                            .getKrollDict(AkylasChartsModule.PROPERTY_MINOR_TICKS);
+                    if (minorOptions.containsKey(TiC.PROPERTY_COUNT)) {
+                        ticksPerRange = minorOptions.getInt(TiC.PROPERTY_COUNT);
+                    }
+                    if (minorOptions.containsKey(AkylasChartsModule.PROPERTY_GRID_LINES)) {
+                        KrollDict gridOptions = minorOptions
+                                .getKrollDict(AkylasChartsModule.PROPERTY_GRID_LINES);
+                        Paint paint1 = xyPlotView.getGraphWidget()
+                                .getOrCreateRangeSubGridLinePaint();
+                        Utils.styleCap(gridOptions, AkylasChartsModule.PROPERTY_CAP, paint1);
+                        Utils.styleJoin(gridOptions, AkylasChartsModule.PROPERTY_JOIN, paint1);
+                        Utils.styleEmboss(gridOptions, AkylasChartsModule.PROPERTY_EMBOSS, paint1);
+                        Utils.styleDash(gridOptions, AkylasChartsModule.PROPERTY_DASH, paint1);
+                        Utils.styleShadow(gridOptions, AkylasChartsModule.PROPERTY_SHADOW, paint1);
+                        Utils.styleColor(gridOptions, TiC.PROPERTY_COLOR, Color.TRANSPARENT, paint1);
+                        Utils.styleStrokeWidth(gridOptions, paint1, context);
+                        Utils.styleOpacity(gridOptions, paint1);
+                    }
+                }
+
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_INTERVAL_PX)) {
+                    xyPlotView.setRangeStep(XYStepMode.INCREMENT_BY_PIXELS,
+                            axisOptions.getDouble(AkylasChartsModule.PROPERTY_INTERVAL_PX));
+                }
+
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_MAJOR_TICKS)) {
+                    KrollDict majorOptions = axisOptions
+                            .getKrollDict(AkylasChartsModule.PROPERTY_MAJOR_TICKS);
+
+                    if (majorOptions.containsKey(AkylasChartsModule.PROPERTY_INTERVAL)) {
+                        double interval = majorOptions.getDouble(AkylasChartsModule.PROPERTY_INTERVAL);
+                        xyPlotView.setTicksPerRangeLabel((int) interval);
+                        xyPlotView.setRangeStep(XYStepMode.INCREMENT_BY_VAL,
+                                interval / ticksPerRange);
+                    }
+
+                    if (majorOptions.containsKey(AkylasChartsModule.PROPERTY_LABELS)) {
+                        Paint labelPaint = xyPlotView.getGraphWidget()
+                                    .getOrCreateRangeLabelPaint();
+                        KrollDict labelOptions = majorOptions
+                                .getKrollDict(AkylasChartsModule.PROPERTY_LABELS);
+                        Utils.styleTextWidget(labelOptions, labelPaint, context);
+
+                        if (labelOptions.containsKey(AkylasChartsModule.PROPERTY_FORMAT_CALLBACK)) {
+                            formatRangeCallback = (KrollFunction) labelOptions
+                                    .get(AkylasChartsModule.PROPERTY_FORMAT_CALLBACK);
+                        } else {
+                            formatRangeCallback = null;
+                        }
+                        if (formatRangeCallback != null) {
+                            xyPlotView.getGraphWidget().setRangeValueFormat(
+                                    new Format() {
+                                        @Override
+                                        public StringBuffer format(
+                                                Object object,
+                                                StringBuffer buffer,
+                                                FieldPosition field) {
+                                            Object result = formatRangeCallback
+                                                    .call(krollObject,
+                                                            new Object[] { (Number) object });
+                                            buffer.append(TiConvert
+                                                    .toString(result));
+                                            return buffer;
+                                        }
+
+                                        @Override
+                                        public Object parseObject(
+                                                String string,
+                                                ParsePosition position) {
+                                            return null;
+                                        }
+                                    });
+                        } else {
+//                          xyPlotView.getGraphWidget().setRangeValueFormat(
+//                                  new DecimalFormat("0.0"));
+                            if (labelOptions.containsKey(AkylasChartsModule.PROPERTY_LOCATIONS)) {
+                                Object[] locations = (Object[]) labelOptions
+                                        .get(AkylasChartsModule.PROPERTY_LOCATIONS);
+                                if (locations != null) {
+                                    for (int i = 0; i < locations.length; i++) {
+                                        HashMap location = (HashMap) locations[i];
+                                        String text = (String) location
+                                                .get(TiC.PROPERTY_TEXT);
+                                        Number value = (Number) location
+                                                .get(TiC.PROPERTY_VALUE);
+                                        if (value != null && text != null) {
+                                            xyPlotView.getGraphWidget()
+                                                    .addRangeValueFormat(value,
+                                                            text);
+                                        }
+                                    }
+                                }
+                            }
+                            Utils.styleValueFormat(labelOptions, xyPlotView.getGraphWidget(),
+                                    "setRangeValueFormat");
+                        }
+
+                        if (labelOptions.containsKey(TiC.PROPERTY_OFFSET)) {
+                            xyPlotView.getGraphWidget()
+                                    .setRangeLabelHorizontalOffset(
+                                            Utils.getRawSize(labelOptions,
+                                                    TiC.PROPERTY_OFFSET, context));
+                        }
+                    }
+
+                    if (majorOptions.containsKey(AkylasChartsModule.PROPERTY_GRID_LINES)) {
+                        KrollDict gridOptions = majorOptions
+                                .getKrollDict(AkylasChartsModule.PROPERTY_GRID_LINES);
+                        Paint paint1 = xyPlotView.getGraphWidget()
+                                .getOrCreateRangeGridLinePaint();
+                        Utils.styleCap(gridOptions, AkylasChartsModule.PROPERTY_CAP, paint1);
+                        Utils.styleJoin(gridOptions, AkylasChartsModule.PROPERTY_JOIN, paint1);
+                        Utils.styleEmboss(gridOptions, AkylasChartsModule.PROPERTY_EMBOSS, paint1);
+                        Utils.styleDash(gridOptions, AkylasChartsModule.PROPERTY_DASH, paint1);
+                        Utils.styleShadow(gridOptions, AkylasChartsModule.PROPERTY_SHADOW, paint1);
+                        Utils.styleColor(gridOptions, TiC.PROPERTY_COLOR, Color.TRANSPARENT, paint1);
+                        Utils.styleStrokeWidth(gridOptions, paint1, context);
+                        Utils.styleOpacity(gridOptions, paint1);
+                    }
+                }
+                if (axisOptions.containsKey(AkylasChartsModule.PROPERTY_VISIBLE_RANGE)) {
+                    KrollDict visibleRangeOptions = axisOptions
+                            .getKrollDict(AkylasChartsModule.PROPERTY_VISIBLE_RANGE);
+                    if (visibleRangeOptions.containsKey(TiC.PROPERTY_MIN)) {
+                        xyPlotView.setRangeBottomMin(visibleRangeOptions
+                                .getFloat(TiC.PROPERTY_MIN));
+                    }
+                    if (visibleRangeOptions.containsKey(TiC.PROPERTY_MAX)) {
+                        xyPlotView.setRangeTopMax(visibleRangeOptions
+                                .getFloat(TiC.PROPERTY_MAX));
+                    }
+                }
+
+                xyPlotView.setTicksPerRangeLabel(ticksPerRange);
+                break;
+	        }
+            default:
+	            super.propertySet(key, newValue, oldValue, changedProperty);
+	            break;
+	        }
+	    }
 
 		@Override
 		public void release() {

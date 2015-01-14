@@ -199,8 +199,12 @@
 	
 	lineStyle.lineColor = [AkylasChartsParsers parseColor:color andOpacity:opacity def:[def lineColor]];
     
-    if (gradient != nil)
-        lineStyle.lineFill = [CPTFill fillWithGradient:[AkylasChartsParsers parseGradient:gradient andOpacity:opacity def:[def lineFill]]];
+    if (gradient != nil) {
+        CPTGradient* cptgradient = [AkylasChartsParsers parseGradient:gradient andOpacity:opacity def:nil];
+        if (cptgradient) {
+            lineStyle.lineFill = [CPTFill fillWithGradient:cptgradient];
+        }
+    }
 		
 	lineStyle.lineWidth = [TiUtils floatValue:width def:[def lineWidth]];
 		
@@ -278,12 +282,12 @@
     property = [AkylasChartsParsers lowerCamelize:@"cap" WithPrefix:prefix];
     props = [object objectForKey:property];
     if (props)
-        lineStyle.lineCap = [TiUtils intValue:props def:kCGLineCapSquare];
+        lineStyle.lineCap = (int)[TiUtils intValue:props def:kCGLineCapSquare];
 
     property = [AkylasChartsParsers lowerCamelize:@"join" WithPrefix:prefix];
     props = [object objectForKey:property];
     if (props)
-        lineStyle.lineJoin = [TiUtils intValue:props def:kCGLineJoinMiter];
+        lineStyle.lineJoin = (int)[TiUtils intValue:props def:kCGLineJoinMiter];
     
     property = [AkylasChartsParsers lowerCamelize:@"dash" WithPrefix:prefix];
     NSDictionary* dict = [object objectForKey:property];
@@ -291,7 +295,7 @@
         lineStyle.dashPattern = [dict objectForKey:@"pattern"];
         lineStyle.patternPhase = [TiUtils floatValue:@"phase" properties:dict def:0.0f];
     }
-    lineStyle.lineCap = [TiUtils intValue:props def:kCGLineCapSquare];
+    lineStyle.lineCap = (int)[TiUtils intValue:props def:kCGLineCapSquare];
     
 	return lineStyle;
 }
@@ -491,7 +495,7 @@
                     // this is done with the '#' and '0' characters (e.g. "###0.00"). Optionally, prefix and suffix strings can
                     // be specified. See http://unicode.org/reports/tr35/tr35-6.html#Number_Format_Patterns for details.
                     if (axis.labelFormatter) {
-                        NSNumberFormatter* formatter = axis.labelFormatter;
+                        NSNumberFormatter* formatter = [[NSNumberFormatter alloc] init];
                         formatter.positiveFormat = [TiUtils stringValue:@"numberFormatPositive" properties:labelProps
                                                                     def:[TiUtils stringValue:@"numberFormat" properties:labelProps def:formatter.positiveFormat]];
                         formatter.negativeFormat = [TiUtils stringValue:@"numberFormatNegative" properties:labelProps
@@ -504,6 +508,8 @@
                                                                     def:[TiUtils stringValue:@"numberSuffix" properties:labelProps def:formatter.positiveSuffix]];
                         formatter.negativeSuffix = [TiUtils stringValue:@"numberSuffixNegative" properties:labelProps
                                                                     def:[TiUtils stringValue:@"numberSuffix" properties:labelProps def:formatter.negativeSuffix]];
+                        axis.labelFormatter = formatter;
+                        [formatter release];
                     }
                 }
 

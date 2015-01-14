@@ -7,10 +7,12 @@ import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
+import org.appcelerator.titanium.util.TiUIHelper.FontDesc;
 import org.appcelerator.titanium.view.TiGradientDrawable.GradientType;
 
 import android.content.Context;
@@ -48,6 +50,12 @@ public class Utils {
 			Context context) {
 		return getRawSize(dict, property, null, context);
 	}
+	
+	public static float getRawSize(Object value,
+            String defaultValue) {
+        return TiUIHelper.getRawSize(TiConvert.toString(value, defaultValue),
+                null);
+    }
 
 	public static float getRawSizeOrZero(KrollDict dict, String property,
 			Context context) {
@@ -58,12 +66,12 @@ public class Utils {
 	}
 	
 	public static float[] getRawSizeArray(KrollDict dict, String property,
-			float[] defaultValue, Context context) {
+			float[] defaultValue) {
 		if (dict.containsKey(property)) {
 			Object[] array = (Object[])dict.get(property);
 			float[] result = new float[array.length];
 			for (int i = 0; i < array.length; i++) {
-				result[i] = TiUIHelper.getRawSize(TiConvert.toString(array[i]), context);
+				result[i] = TiUIHelper.getRawSize(TiConvert.toString(array[i]), null);
 			}
 			return result;
 		}
@@ -72,21 +80,25 @@ public class Utils {
 		}
 	}
 
-	public static float[] getRawSizeArray(KrollDict dict, String property,
-			Context context) {
-		return getRawSizeArray(dict, property, null, context);
+	public static float[] getRawSizeArray(KrollDict dict, String property) {
+		return getRawSizeArray(dict, property, null);
 	}
 
 	public static void styleOpacity(KrollDict dict, String property,
 			Paint[] paints) {
 		if (dict.containsKey(property)) {
-			int alpha  = (int) (dict.getFloat(property) * 255);
-			for (int i = 0; i < paints.length; i++) {
-				Paint paint = paints[i];
-				paint.setAlpha(alpha);
-			}
+		    styleOpacity(dict.getFloat(property), paints);
 		}
 	}
+	
+	public static void styleOpacity(float value,
+            Paint[] paints) {
+        int alpha  = (int) (value * 255);
+        for (int i = 0; i < paints.length; i++) {
+            Paint paint = paints[i];
+            paint.setAlpha(alpha);
+        }
+    }
 
 	public static void styleOpacity(KrollDict dict, String property, Paint paint) {
 		styleOpacity(dict, property, new Paint[] { paint });
@@ -96,6 +108,10 @@ public class Utils {
 	public static void styleOpacity(KrollDict dict, Paint paint) {
 		styleOpacity(dict, "opacity", new Paint[] { paint });
 	}
+	
+	public static void styleOpacity(float value, Paint paint) {
+        styleOpacity(value, new Paint[] { paint });
+    }
 	
 	public static void styleOpacity(KrollDict dict, Paint[] paints) {
 		styleOpacity(dict, "opacity", paints);
@@ -110,7 +126,11 @@ public class Utils {
 			paint.setStrokeWidth(width);
 		}
 	}
-
+	
+	public static void styleStrokeWidth(KrollDict dict, String property,
+            String defaultValue, Paint paint) {
+        styleStrokeWidth(dict, property, defaultValue, paint, null);
+    }
 	public static void styleStrokeWidth(KrollDict dict, String property,
 			String defaultValue, Paint paint, Context context) {
 		styleStrokeWidth(dict, property, defaultValue, new Paint[] { paint },
@@ -132,11 +152,31 @@ public class Utils {
 			Paint paint, Context context) {
 		styleStrokeWidth(dict, property, new Paint[] { paint }, context);
 	}
+	
+	public static void styleStrokeWidth(KrollDict dict, String property,
+            Paint paint) {
+        styleStrokeWidth(dict, property, paint, null);
+    }
+
 
 	public static void styleStrokeWidth(KrollDict dict, Paint paint,
 			Context context) {
 		styleStrokeWidth(dict, "width", paint, context);
 	}
+	
+	public static void styleStrokeWidth(Object value,
+            String defaultValue, Paint paint) {
+        styleStrokeWidth(value, defaultValue, new Paint[] { paint });
+    }
+	
+	public static void styleStrokeWidth(Object value,
+            String defaultValue, Paint[] paints) {
+        float width = getRawSize(value, defaultValue);
+        for (int i = 0; i < paints.length; i++) {
+            Paint paint = paints[i];
+            paint.setStrokeWidth(width);
+        }
+    }
 
 	// Cap
 	public static void styleCap(KrollDict dict, String property,
@@ -144,11 +184,14 @@ public class Utils {
 		Cap cap = Cap.values()[dict.optInt(property, defaultValue)];
 		paint.setStrokeCap(cap);
 	}
-
+	
+	public static void styleCap(int value, Paint paint) {
+        Cap cap = Cap.values()[value];
+        paint.setStrokeCap(cap);
+    }
 	public static void styleCap(KrollDict dict, String property, Paint paint) {
 		if (dict.containsKey(property)) {
-			Cap cap = Cap.values()[dict.getInt(property)];
-			paint.setStrokeCap(cap);
+		    styleCap(dict.getInt(property), paint);
 		}
 	}
 
@@ -162,11 +205,14 @@ public class Utils {
 		Join join = Join.values()[dict.optInt(property, defaultValue)];
 		paint.setStrokeJoin(join);
 	}
-
+	
+	public static void styleJoin(int value,  Paint paint) {
+        Join join = Join.values()[value];
+        paint.setStrokeJoin(join);
+    }
 	public static void styleJoin(KrollDict dict, String property, Paint paint) {
 		if (dict.containsKey(property)) {
-			Join join = Join.values()[dict.getInt(property)];
-			paint.setStrokeJoin(join);
+		    styleJoin(dict.getInt(property), paint);
 		}
 	}
 
@@ -205,6 +251,10 @@ public class Utils {
 			}
 		}
 	}
+	
+    public static void styleColor(int color, Paint paint) {
+        paint.setColor(color);
+    }
 
 	public static void styleColor(KrollDict dict, Paint paint) {
 		styleColor(dict, "color", paint);
@@ -241,36 +291,29 @@ public class Utils {
 	// Text Widget
 	public static void styleTextWidget(KrollDict dict, Paint[] paints,
 			Context context) {
-		if (dict.containsKey("color")) {
-			int color = dict.getColor("color");
+		if (dict.containsKey(TiC.PROPERTY_COLOR)) {
+			int color = dict.getColor(TiC.PROPERTY_COLOR);
 			for (int i = 0; i < paints.length; i++) {
 				Paint paint = paints[i];
 				paint.setColor(color);
 			}
 		}
-		styleShadow(dict, "shadow", paints, context);
-		Align align = Align.values()[dict.optInt("textAlign", 1)];
+		styleShadow(dict, AkylasChartsModule.PROPERTY_SHADOW, paints);
+		Align align = Align.values()[dict.optInt(TiC.PROPERTY_TEXT_ALIGN, 1)];
 		
-		if (dict.containsKey("font")) {
-			KrollDict fontOptions = dict.getKrollDict("font");
-
-			String fontWeight = fontOptions.optString("fontWeight", null);
-			String fontFamily = fontOptions.optString("fontFamily", null);
-			String fontStyle = fontOptions.optString("fontStyle", null);
-			float size = getRawSize(fontOptions, "fontSize", "12", context);
-
-			Typeface typeface = Typeface.create(
-					TiUIHelper.toTypeface(context, fontFamily),
-					TiUIHelper.toTypefaceStyle(fontWeight, fontStyle));
+		if (dict.containsKey(TiC.PROPERTY_FONT)) {
+		    FontDesc desc = TiUIHelper.getFontStyle(context, dict.getHashMap(TiC.PROPERTY_FONT));
+            float fontSize = TiUIHelper.getRawSize(desc.sizeUnit, desc.size, context);
 			for (int i = 0; i < paints.length; i++) {
+			    
 				Paint paint = paints[i];
-				paint.setTextSize(size);
-                paint.setTypeface(typeface);
+				paint.setTextSize(fontSize);
+                paint.setTypeface(desc.typeface);
                 paint.setTextAlign(align);
 			}
 		}
 		else {
-		    float defaultSize = TiUIHelper.getRawSize(null, null);
+		    float defaultSize = TiUIHelper.getRawSize(null, context);
 		    for (int i = 0; i < paints.length; i++) {
                 Paint paint = paints[i];
                 paint.setTextSize(defaultSize);
@@ -409,16 +452,16 @@ public class Utils {
 		float[] offsets = loadColors((Object[]) colors, resultColors);
 
 		if (gradientType == GradientType.LINEAR_GRADIENT) {
-			float x0 = rect.left + startPoint.getX().getAsPixels(context, width, height);
-			float y0 = rect.top + startPoint.getY().getAsPixels(context, width, height);
-			float x1 = rect.left + endPoint.getX().getAsPixels(context, width, height);
-			float y1 = rect.top + endPoint.getY().getAsPixels(context, width, height);
+			float x0 = rect.left + startPoint.getX().getAsPixels(width, height);
+			float y0 = rect.top + startPoint.getY().getAsPixels(width, height);
+			float x1 = rect.left + endPoint.getX().getAsPixels(width, height);
+			float y1 = rect.top + endPoint.getY().getAsPixels(width, height);
 			return new LinearGradient(x0, y0, x1, y1, resultColors, offsets,
 					TileMode.CLAMP);
 		} else {
-			float x0 = rect.left + startPoint.getX().getAsPixels(context, width, height);
-			float y0 = rect.top + startPoint.getY().getAsPixels(context, width, height);
-			float radius0 = startRadius.getAsPixels(context, width, height);
+			float x0 = rect.left + startPoint.getX().getAsPixels(width, height);
+			float y0 = rect.top + startPoint.getY().getAsPixels(width, height);
+			float radius0 = startRadius.getAsPixels(width, height);
 			if (radius0 <= 0) return null; 
 			return new RadialGradient(x0, y0, radius0, resultColors, offsets, TileMode.CLAMP);
 		}
@@ -460,10 +503,10 @@ public class Utils {
 	}
 	
 	// Dash
-	public static DashPathEffect styleDash(KrollDict dict, String property, Context context) {
+	public static DashPathEffect styleDash(KrollDict dict, String property) {
 		if (dict.containsKey(property)) {
 			KrollDict dash = dict.getKrollDict(property);
-			float[] pattern = getRawSizeArray(dash, "pattern", new float[]{10,20}, context);
+			float[] pattern = getRawSizeArray(dash, "pattern", new float[]{10,20});
 			float phase = dash.optFloat("phase", 0.0f);
 			DashPathEffect effect = new DashPathEffect(pattern, phase);
 	        return effect;
@@ -471,53 +514,52 @@ public class Utils {
 		return null;
 	}
 	
-	public static void styleDash(KrollDict dict, String property, Paint[] paints, Context context) {
-		DashPathEffect effect = styleDash(dict, property, context);
+	public static void styleDash(KrollDict dict, String property, Paint[] paints) {
+		DashPathEffect effect = styleDash(dict, property);
 		for (int i = 0; i < paints.length; i++) {
 			Paint paint = paints[i];
 			paint.setPathEffect(effect);
 		}
 	}
 	
-	public static void styleDash(KrollDict dict, String property, Paint paint, Context context) {
-		paint.setPathEffect(styleDash(dict, property, context));
+	public static void styleDash(KrollDict dict, String property, Paint paint) {
+		paint.setPathEffect(styleDash(dict, property));
 	}
 	
-	public static void styleDash(KrollDict dict, Paint paint, Context context) {
-		styleDash(dict, "dash", paint, context);
-	}
-	
-	public static void styleShadow(KrollDict dict, String property, Paint[] paints, Context context) {
-		if (dict.containsKey(property)) {
-			KrollDict shadowOptions = dict.getKrollDict(property);
-			float offsetx = 0.0f;
-			float offsety = 0.0f;
-			KrollDict offset = shadowOptions.getKrollDict("offset");
-			
-			if (offset != null) {
-				offsetx = Utils.getRawSizeOrZero(offset, "y", context);
-				offsety = Utils.getRawSizeOrZero(offset, "x", context);
-			}
-			float blurRadius = Utils.getRawSizeOrZero(shadowOptions, "radius", context);
-			int color = shadowOptions.optColor("color", Color.BLACK);	
-			for (int i = 0; i < paints.length; i++) {
-				Paint paint = paints[i];
-				paint.setShadowLayer(blurRadius, offsetx, offsety, color);
-			}
-		}
+	public static void styleDash(KrollDict dict, Paint paint) {
+		styleDash(dict, "dash", paint);
 	}
 	
 	public static void styleShadow(KrollDict dict, String property, Paint[] paints) {
-		styleShadow(dict, property, paints, null);
+		if (dict.containsKey(property)) {
+			styleShadow(dict.getKrollDict(property), paints);
+		}
 	}
 	
-	public static void styleShadow(KrollDict dict, String property, Paint paint, Context context) {
-		styleShadow(dict, property, new Paint[]{paint}, context);
-	}
+	public static void styleShadow(KrollDict shadowOptions, Paint[] paints) {
+        float offsetx = 0.0f;
+        float offsety = 0.0f;
+        KrollDict offset = (shadowOptions != null)?shadowOptions.getKrollDict(TiC.PROPERTY_OFFSET):null;
+        
+        if (offset != null) {
+            offsetx = TiUIHelper.getInPixels(offset, TiC.PROPERTY_X);
+            offsety = TiUIHelper.getInPixels(offset, TiC.PROPERTY_Y);
+        }
+        float blurRadius = TiUIHelper.getInPixels(shadowOptions, "radius");
+        int color = shadowOptions.optColor(TiC.PROPERTY_COLOR, Color.BLACK);
+        for (int i = 0; i < paints.length; i++) {
+            Paint paint = paints[i];
+            paint.setShadowLayer(blurRadius, offsetx, offsety, color);
+        }
+    }
 	
 	public static void styleShadow(KrollDict dict, String property, Paint paint) {
-		styleShadow(dict, property, new Paint[]{paint}, null);
+		styleShadow(dict, property, new Paint[]{paint});
 	}
+	
+	public static void styleShadow(KrollDict shadowOptions, Paint paint) {
+        styleShadow(shadowOptions, new Paint[]{paint});
+    }
 	
 	public static int gravityFromAlignment(int alignment) {
 		switch (alignment) {

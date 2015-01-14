@@ -47,28 +47,28 @@
     [graph addPlot:pieChart];
 }
 
--(void)configureChart
+-(void)configureChart:(NSDictionary*)props
 {
-    [super configureChart];
+    [super configureChart:props];
 
     pieChart.identifier = graph.title;
     pieChart.shadow = [AkylasChartsParsers parseShadow:@"shadow" inProperties:self.proxy def:nil];
     
-    float startDegrees = 90 + [TiUtils floatValue:[self.proxy valueForKey:@"startAngle"] def:0.0f];
-    float endDegrees = 90 + [TiUtils floatValue:[self.proxy valueForKey:@"endAngle"] def:360.0f];
+    float startDegrees = 90 + [TiUtils floatValue:[props objectForKey:@"startAngle"] def:0.0f];
+    float endDegrees = 90 + [TiUtils floatValue:[props objectForKey:@"endAngle"] def:360.0f];
     pieChart.startAngle = fmod(startDegrees, 360.0f) * M_PI / 180 ;
     pieChart.endAngle = fmod(endDegrees, 360.0f) * M_PI / 180 ;
 
     pieChart.sliceDirection = CPTPieDirectionClockwise;
     
-    pieChart.overlayFill = [AkylasChartsParsers parseFillColor:[self.proxy valueForKey:@"overlayColor"]
-                                              withGradient:[self.proxy valueForKey:@"overlayGradient"]
-                                                andOpacity:[self.proxy valueForKey:@"overlayOpacity"]
+    pieChart.overlayFill = [AkylasChartsParsers parseFillColor:[props objectForKey:@"overlayColor"]
+                                              withGradient:[props objectForKey:@"overlayGradient"]
+                                                andOpacity:[props objectForKey:@"overlayOpacity"]
                                                        def:nil];
-	pieChart.borderLineStyle = [AkylasChartsParsers parseLineColor:[self.proxy valueForKey:@"borderColor"]
-                                                     withWidth:[self.proxy valueForKey:@"borderWidth"]
-                                                  withGradient:[self.proxy valueForKey:@"borderGradient"]
-                                                    andOpacity:[self.proxy valueForKey:@"borderOpacity"]
+	pieChart.borderLineStyle = [AkylasChartsParsers parseLineColor:[props objectForKey:@"borderColor"]
+                                                     withWidth:[props objectForKey:@"borderWidth"]
+                                                  withGradient:[props objectForKey:@"borderGradient"]
+                                                    andOpacity:[props objectForKey:@"borderOpacity"]
                                                            def:nil];
 }
 

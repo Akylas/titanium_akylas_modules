@@ -3,17 +3,17 @@ package akylas.charts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
-import org.appcelerator.kroll.KrollPropertyChange;
-import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
+import org.appcelerator.titanium.proxy.ReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.view.KrollProxyReusableListener;
+import org.appcelerator.titanium.util.TiUIHelper;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -29,7 +29,7 @@ import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 
 @Kroll.proxy
-public class XYSerieProxy extends KrollProxy implements KrollProxyReusableListener {
+public class XYSerieProxy extends ReusableProxy {
 	// Standard Debugging variables
 	private static final String TAG = "PlotStepProxy";
 	protected SimpleXYSeries series;
@@ -40,18 +40,17 @@ public class XYSerieProxy extends KrollProxy implements KrollProxyReusableListen
 	protected PointLabelFormatter labelformatter;
 	protected KrollFunction labelFormatCallback;
 	protected boolean mFillSpacePath = true;
-    private KrollDict additionalEventData;
     
     private KrollDict fillGradientProps;
     private KrollDict lineGradientProps;
     
 	// Constructor
 	public XYSerieProxy(TiContext tiContext) {
-		super(tiContext);
+		super();
 	}
 
 	public XYSerieProxy() {
-		super();
+		this(null);
 	}
 
 	public void setContext(Context context) {
@@ -78,7 +77,6 @@ public class XYSerieProxy extends KrollProxy implements KrollProxyReusableListen
             series.useImplicitXVals();
         }
 		super.handleCreationDict(options);
-        setModelListener(this);
 	}
 
 	@Kroll.method
@@ -174,59 +172,106 @@ public class XYSerieProxy extends KrollProxy implements KrollProxyReusableListen
     protected LineAndPointFormatter createFormatter() {
         return null;
     }
-    
-    protected void styleFormatter(KrollDict options) {
-        Paint paint = formatter.getLinePaint();
-        Utils.styleStrokeWidth(options, "lineWidth", "1", paint, context);
-        Utils.styleOpacity(options, "lineOpacity", paint);
-        Utils.styleColor(options, "lineColor", paint);
-        Utils.styleCap(options, "lineCap", paint);
-        Utils.styleJoin(options, "lineJoin", paint);
-        Utils.styleEmboss(options, "lineEmboss", paint);
-        Utils.styleDash(options, "lineDash", paint, context);
-        Utils.styleShadow(options, "shadow", paint, context);
 
-        paint = formatter.getFillPaint();
-        Utils.styleColor(options, "fillColor", paint);
-        Utils.styleOpacity(options, "fillOpacity", paint);
-        if (options.containsKey("fillDirection")) {
-            String value = TiConvert.toString(options, "fillDirection",
-                    TiC.PROPERTY_BOTTOM);
-            FillDirection direction = FillDirection.BOTTOM;
-            if (value == TiC.PROPERTY_TOP) {
-                direction = FillDirection.TOP;
-            } else if (value == "origin") {
-                direction = FillDirection.RANGE_ORIGIN;
+    public LineAndPointFormatter getFormatter() {
+        if (formatter == null) {
+//            KrollDict options = getProperties();
+
+            labelformatter = null;
+            formatter = createFormatter();
+            if (formatter != null) {
+                formatter.setVertexPaint(null);
             }
-            formatter.setFillDirection(direction);
         }
-        mFillSpacePath = TiConvert.toBoolean(options, "fillSpacePath",  false);
+        return formatter;
+    }
+    
+    @Override
+    protected void didProcessProperties() {
+        super.didProcessProperties();
+        if (!mFillSpacePath) updateGradients();
+    }
+   
+    @Override
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+        case "data":
+            setData(newValue);
+            break;
 
-        if (options.containsKey("labels")) {
-            labelformatter = new PointLabelFormatter(Color.BLACK);
+        case AkylasChartsModule.PROPERTY_LINE_WIDTH:
+            Utils.styleStrokeWidth(newValue, "1", getFormatter().getLinePaint());
+            break;
+        case AkylasChartsModule.PROPERTY_LINE_OPACITY:
+            Utils.styleOpacity(TiConvert.toFloat(newValue, 1.0f), getFormatter().getLinePaint());
+            break;
+        case AkylasChartsModule.PROPERTY_LINE_COLOR:
+            Utils.styleColor(TiConvert.toColor(newValue), getFormatter().getLinePaint());
+            break;
+        case AkylasChartsModule.PROPERTY_LINE_CAP:
+            Utils.styleCap(TiConvert.toInt(newValue), getFormatter().getLinePaint());
+            break;
+        case AkylasChartsModule.PROPERTY_LINE_JOIN:
+            Utils.styleJoin(TiConvert.toInt(newValue), getFormatter().getLinePaint());
+            break;
+        case AkylasChartsModule.PROPERTY_LINE_EMBOSS:
+            Utils.styleEmboss(TiConvert.toKrollDict(newValue), getFormatter().getLinePaint());
+            break;
+        case AkylasChartsModule.PROPERTY_LINE_DASH:
+            Utils.styleDash(TiConvert.toKrollDict(newValue), getFormatter().getLinePaint());
+            break;
+        case AkylasChartsModule.PROPERTY_SHADOW:
+            Utils.styleShadow(TiConvert.toKrollDict(newValue), "shadow", getFormatter().getLinePaint());
+            break;
+        case AkylasChartsModule.PROPERTY_FILL_OPACITY:
+            Utils.styleOpacity(TiConvert.toFloat(newValue, 1.0f), getFormatter().getFillPaint());
+            break;
+        case AkylasChartsModule.PROPERTY_FILL_COLOR:
+            Utils.styleColor(TiConvert.toColor(newValue), getFormatter().getFillPaint());
+            break;
+        case AkylasChartsModule.PROPERTY_SYMBOL:
+            KrollDict symbolsOptions = TiConvert.toKrollDict(newValue);
+            Paint paint1 = formatter.getVertexPaint();
+            Utils.styleStrokeWidth(symbolsOptions, TiC.PROPERTY_WIDTH, "1", paint1,
+                    context);
+            Utils.styleColor(symbolsOptions, AkylasChartsModule.PROPERTY_FILL_COLOR, paint1);
+            Utils.styleOpacity(symbolsOptions, AkylasChartsModule.PROPERTY_FILL_OPACITY, paint1);
+            break;
+        case AkylasChartsModule.PROPERTY_FILL_SPACE_PATH:
+            mFillSpacePath = TiConvert.toBoolean(newValue,  false);
+            break;
+        case AkylasChartsModule.PROPERTY_LINE_GRADIENT:
+            lineGradientProps = TiConvert.toKrollDict(newValue);
+            break;
+        case AkylasChartsModule.PROPERTY_FILL_GRADIENT:
+            fillGradientProps = TiConvert.toKrollDict(newValue);
+            break;
+        case AkylasChartsModule.PROPERTY_LABELS:
+            if (labelformatter == null) {
+                labelformatter = new PointLabelFormatter(Color.BLACK);
+            }
             labelformatter.getTextPaint().clearShadowLayer();
-            KrollDict labelOptions = options.getKrollDict("labels");
+            KrollDict labelOptions = TiConvert.toKrollDict(newValue);
 
             Utils.styleTextWidget(labelOptions, labelformatter.getTextPaint(),
                     context);
 
-            if (labelOptions.containsKey("offset")) {
-                KrollDict offset = labelOptions.getKrollDict("offset");
-                labelformatter.vOffset += Utils.getRawSizeOrZero(offset, "y",
-                        context);
-                labelformatter.hOffset += Utils.getRawSizeOrZero(offset, "x",
-                        context);
+            if (labelOptions.containsKey(TiC.PROPERTY_OFFSET)) {
+                KrollDict offset = labelOptions.getKrollDict(TiC.PROPERTY_OFFSET);
+                labelformatter.vOffset += TiUIHelper.getInPixels(offset, TiC.PROPERTY_X);
+                labelformatter.hOffset += TiUIHelper.getInPixels(offset, TiC.PROPERTY_X);
             }
             formatter.setPointLabelFormatter(labelformatter);
 
-            if (labelOptions.containsKey("formatCallback")) {
+            if (labelOptions.containsKey(AkylasChartsModule.PROPERTY_FORMAT_CALLBACK)) {
                 labelFormatCallback = (KrollFunction) labelOptions
-                        .get("formatCallback");
+                        .get(AkylasChartsModule.PROPERTY_FORMAT_CALLBACK);
             } else {
                 labelFormatCallback = null;
             }
             if (labelFormatCallback != null) {
-                formatter.setPointLabeler(new PointLabeler() {
+                getFormatter().setPointLabeler(new PointLabeler() {
                     @Override
                     public String getLabel(XYSeries series, int index) {
                         Object result = labelFormatCallback.call(
@@ -237,91 +282,22 @@ public class XYSerieProxy extends KrollProxy implements KrollProxyReusableListen
                         return TiConvert.toString(result);
                     }
                 });
+            } else {
+                getFormatter().setPointLabeler(null);
             }
-        }
-        if (options.containsKey("symbol")) {
-            KrollDict symbolsOptions = options.getKrollDict("symbol");
-            Paint paint1 = formatter.getVertexPaint();
-            Utils.styleStrokeWidth(symbolsOptions, "width", "1", paint1,
-                    context);
-            Utils.styleColor(symbolsOptions, "fillColor", paint1);
-            Utils.styleOpacity(symbolsOptions, "fillOpacity", paint);
-        } else {
-            formatter.setVertexPaint(null);
-        }
-        
-        if (options.containsKey("lineGradient")) {
-            lineGradientProps = options.getKrollDict("lineGradient");
-        }
-        if (options.containsKey("fillGradient")) {
-            fillGradientProps = options.getKrollDict("fillGradient");
-        }
-        if (!mFillSpacePath) updateGradients();
-    }
-
-    public LineAndPointFormatter getFormatter() {
-        if (formatter == null) {
-//            KrollDict options = getProperties();
-
-            labelformatter = null;
-            formatter = createFormatter();
-//            styleFormatter(options);
-        }
-        return formatter;
-    }
-    
-
-    @Override
-    public void setAdditionalEventData(KrollDict dict) {
-        additionalEventData = dict;
-    }
-    
-    @Override
-    public KrollDict getAdditionalEventData() {
-        return additionalEventData;
-    }
-
-    @Override
-    public void setReusing(boolean reusing) {
-//        if (reusing == false) {
-//            update();
-//        }
-        
-    }
-
-    @Override
-    public void listenerAdded(String arg0, int arg1, KrollProxy arg2) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void listenerRemoved(String arg0, int arg1, KrollProxy arg2) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void processProperties(KrollDict d) {
-        getFormatter();
-        styleFormatter(d);
-        if (d.containsKey("data")) {
-            setData((Object[]) d.get("data"));
-        }
-    }
-
-    @Override
-    public void propertiesChanged(List<KrollPropertyChange> arg0,
-            KrollProxy arg1) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void propertyChanged(String key, Object oldValue, Object newValue,
-            KrollProxy arg3) {
-        if (key.equals("data")) {
-            setData(newValue);
+            break;
+        case AkylasChartsModule.PROPERTY_FILL_DIRECTION:
+            String value = TiConvert.toString(newValue, TiC.PROPERTY_BOTTOM);
+            FillDirection direction = FillDirection.BOTTOM;
+            if (value == TiC.PROPERTY_TOP) {
+                direction = FillDirection.TOP;
+            } else if (value == "origin") {
+                direction = FillDirection.RANGE_ORIGIN;
+            }
+            getFormatter().setFillDirection(direction);
+            break;
+        default:
+            break;
         }
     }
 }
