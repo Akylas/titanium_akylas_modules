@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -22,9 +22,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		24DD6CF91134B3F500162E58 /* AkylasMapModule.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DD6CF71134B3F500162E58 /* AkylasMapModule.h */; };
 		24DD6CFA1134B3F500162E58 /* AkylasMapModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DD6CF81134B3F500162E58 /* AkylasMapModule.m */; };
-		24DE9E1111C5FE74003F90F6 /* AkylasMapModuleAssets.h in Headers */ = {isa = PBXBuildFile; fileRef = 24DE9E0F11C5FE74003F90F6 /* AkylasMapModuleAssets.h */; };
 		24DE9E1211C5FE74003F90F6 /* AkylasMapModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* AkylasMapModuleAssets.m */; };
 		AA747D9F0F9514B9006C5449 /* akylas.map_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* akylas.map_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
@@ -64,9 +62,7 @@
 		D578CAF419234D2B0019CA5A /* AkylasMapAnnotationProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAEC19234D2B0019CA5A /* AkylasMapAnnotationProxy.h */; };
 		D578CAF519234D2B0019CA5A /* AkylasMapAnnotationProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAED19234D2B0019CA5A /* AkylasMapAnnotationProxy.m */; };
 		D578CAF619234D2B0019CA5A /* AkylasMapModule.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAEE19234D2B0019CA5A /* AkylasMapModule.h */; };
-		D578CAF719234D2B0019CA5A /* AkylasMapModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAEF19234D2B0019CA5A /* AkylasMapModule.m */; };
 		D578CAF819234D2B0019CA5A /* AkylasMapModuleAssets.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAF019234D2B0019CA5A /* AkylasMapModuleAssets.h */; };
-		D578CAF919234D2B0019CA5A /* AkylasMapModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAF119234D2B0019CA5A /* AkylasMapModuleAssets.m */; };
 		D578CAFA19234D2B0019CA5A /* AkylasMapRouteProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAF219234D2B0019CA5A /* AkylasMapRouteProxy.h */; };
 		D578CAFB19234D2B0019CA5A /* AkylasMapRouteProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAF319234D2B0019CA5A /* AkylasMapRouteProxy.m */; };
 		D578CAFE1923553E0019CA5A /* AkylasMapMapboxViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAFC1923553E0019CA5A /* AkylasMapMapboxViewProxy.h */; };
@@ -335,12 +331,10 @@
 				D578CAD619234A430019CA5A /* AkylasMapMapViewProxy.h in Headers */,
 				AA747D9F0F9514B9006C5449 /* akylas.map_Prefix.pch in Headers */,
 				D578CAF619234D2B0019CA5A /* AkylasMapModule.h in Headers */,
-				24DD6CF91134B3F500162E58 /* AkylasMapModule.h in Headers */,
 				D578CAD419234A430019CA5A /* AkylasMapMapView.h in Headers */,
 				D578CAA719234A360019CA5A /* AkylasMapView.h in Headers */,
 				D578CACC19234A430019CA5A /* AkylasMapMapIOS7View.h in Headers */,
 				D578CB02192358920019CA5A /* AkylasMapMapboxView.h in Headers */,
-				24DE9E1111C5FE74003F90F6 /* AkylasMapModuleAssets.h in Headers */,
 				D578CAC619234A430019CA5A /* AkylasMapCameraProxy.h in Headers */,
 				D578CACA19234A430019CA5A /* AkylasMapImageAnnotationView.h in Headers */,
 				D578CAAD19234A360019CA5A /* RMMapView+BundlePath.h in Headers */,
@@ -379,9 +373,10 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.map" */;
-			compatibilityVersion = "Xcode 3.1";
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -467,7 +462,6 @@
 				D578CACD19234A430019CA5A /* AkylasMapMapIOS7View.m in Sources */,
 				24DD6CFA1134B3F500162E58 /* AkylasMapModule.m in Sources */,
 				D578CAAE19234A360019CA5A /* RMMapView+BundlePath.m in Sources */,
-				D578CAF719234D2B0019CA5A /* AkylasMapModule.m in Sources */,
 				D578CAA819234A360019CA5A /* AkylasMapView.m in Sources */,
 				D578CB03192358920019CA5A /* AkylasMapMapboxView.m in Sources */,
 				D578CAC719234A430019CA5A /* AkylasMapCameraProxy.m in Sources */,
@@ -479,7 +473,6 @@
 				D578CAD519234A430019CA5A /* AkylasMapMapView.m in Sources */,
 				D578CACB19234A430019CA5A /* AkylasMapImageAnnotationView.m in Sources */,
 				24DE9E1211C5FE74003F90F6 /* AkylasMapModuleAssets.m in Sources */,
-				D578CAF919234D2B0019CA5A /* AkylasMapModuleAssets.m in Sources */,
 				D578CAD119234A430019CA5A /* AkylasMapPinAnnotationView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -559,6 +552,7 @@
 					"$(BUILT_PRODUCTS_DIR)/include/MapBox",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-DDEBUG",
 					"-DTI_POST_1_2",
@@ -569,7 +563,6 @@
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				TITANIUM_SDK_VERSION = 3.5.0.AKYLAS;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
@@ -582,7 +575,6 @@
 				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
 				FRAMEWORK_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)";
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${PROJECT_NAME}_Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
@@ -606,7 +598,6 @@
 				PRODUCT_NAME = "${PROJECT_NAME}";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				TITANIUM_SDK_VERSION = 3.5.0.AKYLAS;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
