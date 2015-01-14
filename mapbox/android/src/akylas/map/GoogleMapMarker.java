@@ -7,8 +7,10 @@ import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.util.TiConvert;
 
 import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.view.View;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -92,12 +94,21 @@ public class GoogleMapMarker extends AkylasMarker {
                     .getPinColor()));
         }
         KrollDict dict = proxy.getProperties();
+        
+        if (dict.containsKey(AkylasMapModule.PROPERTY_ANCHOR)) {
+            PointF anchor = TiConvert.toPointF(dict.get(AkylasMapModule.PROPERTY_ANCHOR));
+            markerOptions.anchor(anchor.x, anchor.y);
+        }
+        
         // customView, image and pincolor must be defined before adding to
         // mapview. Once added, their values are final.
-        if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
-            handleCustomView(dict.get(AkylasMapModule.PROPERTY_CUSTOM_VIEW));
-        } else if (dict.containsKey(TiC.PROPERTY_IMAGE)) {
+//        if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
+//            handleCustomView(dict.get(AkylasMapModule.PROPERTY_CUSTOM_VIEW));
+//        } else 
+            if (dict.containsKey(TiC.PROPERTY_IMAGE)) {
             handleImage(dict.get(TiC.PROPERTY_IMAGE));
+        } else {
+            setIconImageHeight(-1);
         }
         return markerOptions;
     }

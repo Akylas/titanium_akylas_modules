@@ -49,6 +49,7 @@ public class AkylasMapInfoView extends RelativeLayout
 	private View[] clicksourceList;
     private String currentClicksource = null;
     private boolean usesTemplates = false;
+    private Rect tempHitRect = new Rect();
 
 	public AkylasMapInfoView(Context context)
 	{
@@ -277,23 +278,22 @@ public class AkylasMapInfoView extends RelativeLayout
 			int x = (int) evCopy.getX();
 			int y = (int) evCopy.getY();
 
-			Rect hitRect = new Rect();
 
 			int count = clicksourceList.length;
 			for (int i = 0; i < count; i++) {
 				View v = clicksourceList[i];
 				String tag = (String) v.getTag();
 				if (v.getVisibility() == View.VISIBLE && tag != null) {
-					v.getHitRect(hitRect);
+					v.getHitRect(tempHitRect);
 
 					// The title and subtitle are the children of a relative layout which is the child of this.
 					if (tag == TiC.PROPERTY_TITLE || tag == TiC.PROPERTY_SUBTITLE) {
 						Rect textLayoutRect = new Rect();
 						((ViewGroup) (v.getParent())).getHitRect(textLayoutRect);
-						hitRect.offset(textLayoutRect.left, textLayoutRect.top);
+						tempHitRect.offset(textLayoutRect.left, textLayoutRect.top);
 					}
 
-					if (hitRect.contains(x, y)) {
+					if (tempHitRect.contains(x, y)) {
 						setClickSource(tag);
 						return;
 					}
@@ -301,6 +301,58 @@ public class AkylasMapInfoView extends RelativeLayout
 			}
 			setClickSource(null);
 		}
+	}
+	
+    public boolean dispatchMapTouchEvent(MotionEvent ev, Point markerPoint, int iconImageHeight) {
+        int evX = (int) ev.getX();
+        int evY = (int) ev.getY();
+        ViewParent p = this.getParent();
+        int infoWindowHalfWidth;
+        int infoWindowHeight;
+        if (p instanceof View) {
+            View infoWindowParent = (View) p;
+            infoWindowHalfWidth = infoWindowParent.getWidth() / 2;
+            infoWindowHeight = infoWindowParent.getHeight();
+        } else {
+            infoWindowHalfWidth = this.getWidth() / 2;
+            infoWindowHeight = this.getHeight();
+        }
+        if (evX > markerPoint.x - infoWindowHalfWidth && evX < markerPoint.x + infoWindowHalfWidth
+            && evY > markerPoint.y - infoWindowHeight - iconImageHeight && evY < markerPoint.y - iconImageHeight) {
+            MotionEvent evCopy = MotionEvent.obtain(ev);
+            evCopy.offsetLocation(-markerPoint.x + infoWindowHalfWidth, -markerPoint.y + infoWindowHeight + iconImageHeight);
+
+            if (ev.getAction() == MotionEvent.ACTION_UP) {
+
+                int x = (int) evCopy.getX();
+                int y = (int) evCopy.getY();
+
+                int count = clicksourceList.length;
+                for (int i = 0; i < count; i++) {
+                    View v = clicksourceList[i];
+                    String tag = (String) v.getTag();
+                    if (v.getVisibility() == View.VISIBLE && tag != null) {
+                        v.getHitRect(tempHitRect);
+
+                        // The title and subtitle are the children of a relative layout which is the child of this.
+                        if (tag == TiC.PROPERTY_TITLE || tag == TiC.PROPERTY_SUBTITLE) {
+                            Rect textLayoutRect = new Rect();
+                            ((ViewGroup) (v.getParent())).getHitRect(textLayoutRect);
+                            tempHitRect.offset(textLayoutRect.left, textLayoutRect.top);
+                        }
+
+                        if (tempHitRect.contains(x, y)) {
+                            setClickSource(tag);
+                            v.performClick();
+                            break;
+                        }
+                    }
+                }
+                setClickSource(null);
+            }
+            return super.dispatchTouchEvent(evCopy);
+       }
+        return false;
 	}
 
 	public String getClicksource()

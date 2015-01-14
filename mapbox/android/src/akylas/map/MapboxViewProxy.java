@@ -102,6 +102,13 @@ public class MapboxViewProxy extends MapDefaultViewProxy {
         return view;
     }
     
+    @Override
+    public void realizeViews(TiUIView view, boolean enableModelListener, boolean processProperties)
+    {
+        super.realizeViews(view, enableModelListener, processProperties);
+        ((AkylasMapDefaultView)view).addAnnotations(getAnnotations() );
+    }
+    
 //    private MapView getMap() {
 //        AkylasMapboxView mapView = (AkylasMapboxView) peekView();
 //        if (mapView != null) {
@@ -230,7 +237,7 @@ public class MapboxViewProxy extends MapDefaultViewProxy {
     @Kroll.method
     @Kroll.getProperty
     @Override
-    public Object getAnnotations() {
+    public Object[] getAnnotations() {
         return super.getAnnotations();
     }
     

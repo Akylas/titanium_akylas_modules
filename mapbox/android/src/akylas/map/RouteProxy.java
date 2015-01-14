@@ -159,9 +159,10 @@ public class RouteProxy extends KrollProxy
  	
 	public void addLocation(Object loc) {
 		LatLng point = AkylasMapModule.latlongFromObject(loc);
-		if (point != null) {
-			mPoints.add(point);
+		if (point == null) {
+		    return;
 		}
+		mPoints.add(point);
 		if (mPath != null) {
 			mPath.addPoint(point);
 		}

@@ -80,17 +80,17 @@
 
 -(NSNumber*)minZoom
 {
-    return NUMFLOAT([[self RMTileSource] minZoom]);
+    return @([[self RMTileSource] minZoom]);
 }
 
 -(NSNumber*)maxZoom
 {
-    return NUMFLOAT([[self RMTileSource] maxZoom]);
+    return @([[self RMTileSource] maxZoom]);
 }
 
 -(NSDictionary*)centerCoordinate
 {
-    RMSphericalTrapezium box = [[self tileSource] latitudeLongitudeBoundingBox];
+    RMSphericalTrapezium box = [[self RMTileSource] latitudeLongitudeBoundingBox];
     
     return [AkylasMapModule dictFromLocation2D:RMSphericalTrapeziumCenter(box)];
 }
@@ -109,19 +109,19 @@
     [[self tileCache] beginBackgroundCacheForTileSource:source southWest:region.southWest northEast:region.northEast minZoom:minZoom maxZoom:maxZoom];
 }
 
-- (void)tileCache:(RMTileCache *)tileCache didBeginBackgroundCacheWithCount:(int)tileCount forTileSource:(id <RMTileSource>)tileSource
+- (void)tileCache:(RMTileCache *)tileCache didBeginBackgroundCacheWithCount:(NSUInteger)tileCount forTileSource:(id <RMTileSource>)tileSource
 {
     if ([self _hasListeners:@"cachebegin"])
 	{
-		[self fireEvent:@"cachebegin" withObject:@{@"tileCount":NUMINT(tileCount)} propagate:NO checkForListener:NO];
+		[self fireEvent:@"cachebegin" withObject:@{@"tileCount":@(tileCount)} propagate:NO checkForListener:NO];
 	}
 }
 
-- (void)tileCache:(RMTileCache *)tileCache didBackgroundCacheTile:(RMTile)tile withIndex:(int)tileIndex ofTotalTileCount:(int)totalTileCount;
+- (void)tileCache:(RMTileCache *)tileCache didBackgroundCacheTile:(RMTile)tile withIndex:(NSUInteger)tileIndex ofTotalTileCount:(NSUInteger)totalTileCount;
 {
     if ([self _hasListeners:@"cachedtile"])
 	{
-		[self fireEvent:@"cachedtile" withObject:@{@"tileIndex":NUMINT(tileIndex), @"totalTileCount":NUMINT(totalTileCount)} propagate:NO checkForListener:NO];
+		[self fireEvent:@"cachedtile" withObject:@{@"tileIndex":@(tileIndex), @"totalTileCount":@(totalTileCount)} propagate:NO checkForListener:NO];
 	}
 }
 

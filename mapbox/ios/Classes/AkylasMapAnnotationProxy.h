@@ -70,5 +70,6 @@
 -(CGPoint)nGetAnchorPoint;
 -(CGPoint)nGetCalloutAnchorPoint;
 -(CGFloat)nGetCalloutAlpha;
+-(UIImage*)nGetInternalImage;
 
 @end

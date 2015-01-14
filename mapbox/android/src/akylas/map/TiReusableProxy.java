@@ -12,6 +12,7 @@ import org.appcelerator.kroll.KrollProxyListener;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.TiViewEventOverrideDelegate;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.KrollProxyReusableListener;
@@ -21,7 +22,7 @@ import org.appcelerator.titanium.view.TiUIView;
 import android.app.Activity;
 
 @Kroll.proxy
-public class TiReusableProxy extends TiViewProxy implements KrollProxy.SetPropertyChangeListener
+public class TiReusableProxy extends TiViewProxy implements KrollProxy.SetPropertyChangeListener, TiViewEventOverrideDelegate
 {
     private static final String TAG = "TiReusableProxy";
     public class ReusableProxyItem {
@@ -192,7 +193,8 @@ public class TiReusableProxy extends TiViewProxy implements KrollProxy.SetProper
         }
 
         // update extra event data for list item
-        appendExtraEventData(cellContent,  TiC.PROPERTY_PROPERTIES, itemId, extraData);
+//        appendExtraEventData(cellContent,  TiC.PROPERTY_PROPERTIES, itemId, extraData);
+        this.setEventOverrideDelegate(this);
 
         HashMap<String, ReusableProxyItem> views = getBindings();
         // Loop through all our views and apply default properties
@@ -207,8 +209,7 @@ public class TiReusableProxy extends TiViewProxy implements KrollProxy.SetProper
                 ((TiUIView)modelListener).setTouchDelegate((TiTouchDelegate) cellContent);
             }
             proxy.setSetPropertyListener(this);
-            // update extra event data for views
-            appendExtraEventData((KrollProxyReusableListener) modelListener, binding, itemId, extraData);
+            proxy.setEventOverrideDelegate(this);
             // if binding is contain in data given to us, process that data,
             // otherwise
             // apply default properties.
@@ -247,7 +248,7 @@ public class TiReusableProxy extends TiViewProxy implements KrollProxy.SetProper
                 if (modelListener instanceof TiUIView && cellContent instanceof TiTouchDelegate) {
                     ((TiUIView)modelListener).setTouchDelegate((TiTouchDelegate) cellContent);
                 }
-                appendExtraEventData((KrollProxyReusableListener) modelListener, null, itemId, extraData);
+                theProxy.setEventOverrideDelegate(this);
             }
         }
 
@@ -274,28 +275,29 @@ public class TiReusableProxy extends TiViewProxy implements KrollProxy.SetProper
         }
     }
 
-    public void appendExtraEventData(KrollProxyReusableListener listener, String bindId, String itemId, final KrollDict extraData) {
-        KrollDict existingData = listener.getAdditionalEventData();
-        if (existingData == null) {
-            existingData = new KrollDict();
-            listener.setAdditionalEventData(existingData);
+    @Override
+    public Object overrideEvent(Object data, String type, KrollProxy proxy) {
+        if (data != null && !(data instanceof KrollDict)) {
+            return data;
         }
-        
-        if (extraData != null ) {
-            existingData.putAll(extraData);
+        KrollDict dict = (KrollDict) data;
+        if (dict == null) {
+            dict = new KrollDict();
         }
-
-        if (bindId != null && !bindId.equals(TiC.PROPERTY_PROPERTIES)) {
-            existingData.put(TiC.PROPERTY_BIND_ID, bindId);
-        } else if (existingData.containsKey(TiC.PROPERTY_BIND_ID)) {
-            existingData.remove(TiC.PROPERTY_BIND_ID);
+        else if (dict.containsKey(TiC.PROPERTY_SECTION)) {
+            return data; //already done
         }
 
+        String bindId = TiConvert.toString(
+                proxy.getProperty(TiC.PROPERTY_BIND_ID), null);
+        if (bindId != null) {
+            dict.put(TiC.PROPERTY_BIND_ID, bindId);
+        }
+        String itemId = TiConvert.toString(
+                proxy.getProperty(TiC.PROPERTY_ITEM_ID), null);
         if (itemId != null) {
-            existingData.put(TiC.PROPERTY_ITEM_ID, itemId);
-        } else if (existingData.containsKey(TiC.PROPERTY_ITEM_ID)) {
-            existingData.remove(TiC.PROPERTY_ITEM_ID);
+            dict.put(TiC.PROPERTY_ITEM_ID, itemId);
         }
-
+        return dict;
     }
 }

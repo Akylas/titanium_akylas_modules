@@ -56,7 +56,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
     
     
     protected long maxAnnotations = 0;
-    private ArrayList<AnnotationProxy> annotations = new ArrayList<AnnotationProxy>();
+    protected ArrayList<AnnotationProxy> annotations = new ArrayList<AnnotationProxy>();
     
     
 
@@ -78,7 +78,6 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
     @Override
     public void realizeViews(TiUIView view, boolean enableModelListener, boolean processProperties)
     {
-        ((AkylasMapboxView)view).addAnnotations(annotations.toArray());
         super.realizeViews(view, enableModelListener, processProperties);
     }
 	@Override
@@ -346,7 +345,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
             int addCount = toAdd.size();
             if (addCount > 0) {
                 handleMaxAnnotations(addCount);
-                if (addCount > maxAnnotations) {
+                if (maxAnnotations > 0 && addCount > maxAnnotations) {
                     toAdd = toAdd.subList((int) (addCount - maxAnnotations), toAdd.size());
                 }
                 if (mapView != null) {
@@ -627,7 +626,7 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
         addAnnotations(annos);
     }
     
-    public Object getAnnotations() {
+    public Object[] getAnnotations() {
         return annotations.toArray();
     }
     

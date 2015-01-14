@@ -52,12 +52,8 @@ public class MapViewProxy extends MapDefaultViewProxy
 	public MapViewProxy() {
 		super();
 		
-		try {
-	        googlePlayServicesState = AkylasMapModule.googlePlayServicesAvailable();
-        } catch (Exception e) {
-            googlePlayServicesState = -1;
-            e.printStackTrace();
-        }
+	    googlePlayServicesState = TiApplication.getGooglePlayServicesState();
+        
         googlePlayServicesAvailable = googlePlayServicesState == 0;
         if (!googlePlayServicesAvailable) {
             Log.e(TAG, "Google Play Services not available: Error " + AkylasMapModule.getGoogleServiceStateMessage(googlePlayServicesState));
@@ -159,7 +155,7 @@ public class MapViewProxy extends MapDefaultViewProxy
     @Kroll.method
     @Kroll.getProperty
     @Override
-    public Object getAnnotations() {
+    public Object[] getAnnotations() {
         return super.getAnnotations();
     }
     

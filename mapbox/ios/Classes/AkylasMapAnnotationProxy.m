@@ -413,6 +413,11 @@
     return _calloutAlpha;
 }
 
+-(UIImage*)nGetInternalImage
+{
+    return _internalImage;
+}
+
 -(void)setImage:(id)image
 {
     RELEASE_TO_NIL(_internalImage)
@@ -609,7 +614,7 @@
 	if ([button isKindOfClass:[NSNumber class]])
 	{
 		// this is button type constant
-		int type = [TiUtils intValue:button];
+		NSInteger type = [TiUtils intValue:button];
 		button_view = [TiButtonUtil buttonWithType:type];
 	}
 	else
@@ -632,19 +637,19 @@
 	return button_view;
 }
 
--(void)setMinZoom:(id)value
+-(void)setMinZoom:(CGFloat)value
 {
-    _minZoom = [TiUtils floatValue:value];
-    [self replaceValue:value forKey:@"minZoom" notification:NO];
+    _minZoom = value;
+    [self replaceValue:@(value) forKey:@"minZoom" notification:NO];
     if (_rmannotation) {
         _rmannotation.minZoom = _minZoom;
     }
 }
 
--(void)setMaxZoom:(id)value
+-(void)setMaxZoom:(CGFloat)value
 {
-    _maxZoom = [TiUtils floatValue:value];
-    [self replaceValue:value forKey:@"maxZoom" notification:NO];
+    _maxZoom = value;
+    [self replaceValue:@(value) forKey:@"maxZoom" notification:NO];
     if (_rmannotation) {
         _rmannotation.maxZoom = _maxZoom;
     }

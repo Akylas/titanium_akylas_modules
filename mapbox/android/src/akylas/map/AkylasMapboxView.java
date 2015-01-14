@@ -1,16 +1,13 @@
 package akylas.map;
 
 import java.lang.reflect.Array;
-import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
-import org.appcelerator.titanium.view.TiCompositeLayout;
 
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -35,26 +32,9 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     private static final String TAG = "AkylasMapboxView";
     private MapView map;
     private MapController mapController;
-    
-    private boolean _calloutUsesTemplates = false;
-    private String defaultTemplateBinding;
-    private HashMap<String, TiViewTemplate> templatesByBinding;
 
-    private class InfoWindowCache extends SoftCache{
 
-        public InfoWindowCache() {
-            super();
-        }
 
-        @Override
-        public Object runWhenCacheEmpty(String key) {
-            if (key.equals("window")) {
-                return new MabpoxInfoWindow(getProxy().getActivity()); //new view;
-            }
-            return null;
-        }   
-    }
-    InfoWindowCache mInfoWindowCache = new InfoWindowCache();
     
     public AkylasMapboxView(TiViewProxy proxy) {
         super(proxy);
@@ -229,15 +209,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     @Override
     public void processPreMapProperties(final KrollDict d) {
         super.processPreMapProperties(d);
-        if (d.containsKey(AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES)) {
-            _calloutUsesTemplates = d.optBoolean(AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES, false);
-        } 
-        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE)) {
-            defaultTemplateBinding = d.getString(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE);
-        } 
-        if (d.containsKey(AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES)) {
-            processTemplates((HashMap)d.get(AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES));
-        } 
+         
         
         if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
             map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(d
@@ -661,89 +633,6 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     }
     
     
-    public MabpoxInfoWindow createInfoWindow(AnnotationProxy annotationProxy) {
-        MabpoxInfoWindow result = (MabpoxInfoWindow) mInfoWindowCache.get("window");
-        result.setProxy(annotationProxy);
-        return result;
-    }
-    
-    protected void processTemplates(HashMap<String,Object> templates) {
-        templatesByBinding = new HashMap<String, TiViewTemplate>();
-        if(templates != null) {
-            for (String key : templates.keySet()) {
-                HashMap templateDict = (HashMap)templates.get(key);
-                if (templateDict != null) {
-                    //Here we bind each template with a key so we can use it to look up later
-                    KrollDict properties = new KrollDict((HashMap)templates.get(key));
-                    TiViewTemplate template = new TiViewTemplate(key, properties);
-                    templatesByBinding.put(key, template);
-                }
-                else {
-                    Log.e(TAG, "null template definition: " + key);
-                }
-            }
-        }
-    }
-    
-    public boolean calloutUseTemplates() {
-        return _calloutUsesTemplates;
-    }
-    
-    public TiViewTemplate getTemplate(String template)
-    {
-        if (template == null) template = defaultTemplateBinding;
-        if (templatesByBinding.containsKey(template))
-        {
-            return templatesByBinding.get(template);
-        }
-        return null;
-    }
-    public CalloutReusableProxy reusableViewFromDict(KrollDict dict, final KrollDict extraData) {
-        TiViewTemplate template = getTemplate(dict.getString("template"));
-        
-        if (template != null) {
-            Object view  = mInfoWindowCache.get(template.getTemplateID());
-            
-            if (view != null && view instanceof ReusableView) {
-                CalloutReusableProxy proxy = (CalloutReusableProxy) ((ReusableView) view).getProxy();
-                proxy.populateViews(dict, (ReusableView) view, template, extraData, true);
-                return proxy;
-            }
-            else {
-                CalloutReusableProxy proxy = (CalloutReusableProxy) template.generateProxy(CalloutReusableProxy.class, dict, this.proxy);
-                proxy.generateContent(dict, template, extraData);
-                return proxy;
-            }
-        }
-        return null;
-    }
-    
-
-    public void infoWindowDidClose(MabpoxInfoWindow mabpoxInfoWindow) {
-        mabpoxInfoWindow.setProxy(null);
-        mabpoxInfoWindow.getBoundMarker().setInfoWindow(null);
-        if (_calloutUsesTemplates) {
-            AkylasMapInfoView infoView = (AkylasMapInfoView) mabpoxInfoWindow.getInfoView();
-            Object view = infoView.getLeftView();
-            if (view != null && view instanceof TiCompositeLayout) {
-                view = ((TiCompositeLayout)view).getView();
-            }
-            if (view instanceof ReusableView) {
-                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
-                infoView.setLeftOrRightPane(null, AkylasMapInfoView.LEFT_PANE);
-            }
-            view = infoView.getRightView();
-            if (view != null && view instanceof TiCompositeLayout) {
-                view = ((TiCompositeLayout)view).getView();
-            }
-            if (view instanceof ReusableView) {
-                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
-                infoView.setLeftOrRightPane(null, AkylasMapInfoView.RIGHT_PANE);
-            }
-            infoView.setCustomView(null);
-        }
-        mInfoWindowCache.put("window", mabpoxInfoWindow);
-    }
 
     public float getMetersPerPixel() {
         final float density = getContext().getResources().getDisplayMetrics().density - 1;

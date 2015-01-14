@@ -744,9 +744,16 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         
         SMCalloutMaskedBackgroundView* backView = (SMCalloutMaskedBackgroundView*)_calloutView.backgroundView;
         backView.alpha = [annProxy nGetCalloutAlpha];
-       _calloutView.leftAccessoryView = [annProxy nGetLeftViewAccessory];
-        _calloutView.rightAccessoryView = [annProxy nGetRightViewAccessory];
-        _calloutView.contentView = [annProxy nGetCustomViewAccessory];
+        if (_calloutUseTemplates) {
+            _calloutView.leftAccessoryView = [self reusableViewForProxy:annProxy objectKey:@"leftView"];
+            _calloutView.rightAccessoryView = [self reusableViewForProxy:annProxy objectKey:@"rightView"];
+            _calloutView.contentView = [self reusableViewForProxy:annProxy objectKey:@"customView"];
+        }
+        else {
+            _calloutView.leftAccessoryView = [annProxy nGetLeftViewAccessory];
+            _calloutView.rightAccessoryView = [annProxy nGetRightViewAccessory];
+            _calloutView.contentView = [annProxy nGetCustomViewAccessory];
+        }
         if (annProxy) {
             _calloutView.padding = [annProxy nGetCalloutPadding];
             backView.backgroundColor = [annProxy nGetCalloutBackgroundColor];
@@ -821,8 +828,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         NSString *identifier = nil;
         UIImage* image = nil;
         if (pinView == nil) {
-            id imagePath = [ann valueForUndefinedKey:@"image"];
-            image = [TiUtils image:imagePath proxy:ann];
+            image = [ann nGetInternalImage];
             identifier = (image!=nil) ? @"timap-image":@"timap-pin";
         }
         else {
@@ -870,12 +876,12 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         
         annView.canShowCallout = NO; //SMCalloutView
         annView.enabled = YES;
-        annView.backgroundColor = [UIColor greenColor];
+//        annView.backgroundColor = [UIColor greenColor];
 //        annView.centerOffset = CGPointMake(-8, 0);
 
         BOOL draggable = [TiUtils boolValue: [ann valueForUndefinedKey:@"draggable"]];
-        if (draggable && [[MKAnnotationView class] instancesRespondToSelector:NSSelectorFromString(@"isDraggable")])
-            [annView performSelector:NSSelectorFromString(@"setDraggable:") withObject:[NSNumber numberWithBool:YES]];
+        if (draggable && [[MKAnnotationView class] instancesRespondToSelector:@selector(setDraggable:)])
+            [annView performSelector:@selector(setDraggable:) withObject:[NSNumber numberWithBool:YES]];
 
         annView.userInteractionEnabled = YES;
         annView.tag = [ann tag];

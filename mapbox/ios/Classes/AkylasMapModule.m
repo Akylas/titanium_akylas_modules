@@ -13,7 +13,7 @@
 #import "TiBase.h"
 #import "TiHost.h"
 #import "TiUtils.h"
-#if defined(USE_TI_FILESYSTEM) || defined(USE_TI_DATABASE) || defined(USE_TI_MEDIA)
+#if defined(USE_TI_FILESYSTEM)
 #import "TiFilesystemFileProxy.h"
 #endif
 #import <Mapbox/RMOpenStreetMapSource.h>
@@ -83,7 +83,7 @@
 
 #pragma mark Listener Notifications
 
--(void)_listenerAdded:(NSString *)type count:(int)count
+-(void)_listenerAdded:(NSString *)type count:(NSInteger)count
 {
 	if (count == 1 && [type isEqualToString:@"my_event"])
 	{
@@ -92,7 +92,7 @@
 	}
 }
 
--(void)_listenerRemoved:(NSString *)type count:(int)count
+-(void)_listenerRemoved:(NSString *)type count:(NSInteger)count
 {
 	if (count == 0 && [type isEqualToString:@"my_event"])
 	{
@@ -249,7 +249,7 @@ MAKE_IOS7_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
     if ([value isKindOfClass:[NSString class]]) {
         type = value;
     }
-#if defined(USE_TI_FILESYSTEM) || defined(USE_TI_DATABASE) || defined(USE_TI_MEDIA)
+#if defined(USE_TI_FILESYSTEM)
     else if ([value isKindOfClass:[TiFilesystemFileProxy class]]) {
         type = [(TiFilesystemFileProxy*)value nativePath];
     }

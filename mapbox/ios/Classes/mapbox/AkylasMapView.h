@@ -7,12 +7,27 @@
  
 #import "TiBase.h"
 #import "TiUIView.h"
+#import "ReusableViewProxy.h"
+#import "ReusableViewProtocol.h"
 
 #define REGION_VALID(region) (region.northEast.latitude > region.southWest.latitude && region.northEast.longitude > region.southWest.longitude && !isnan(region.northEast.latitude) && !isnan(region.northEast.longitude) && !isnan(region.southWest.latitude) && !isnan(region.southWest.longitude))
 #define PostVersion7 (floor(NSFoundationVersionNumber) >  NSFoundationVersionNumber_iOS_6_1)
 
 @class AkylasMapAnnotationProxy;
 @class AkylasMapTileSourceProxy;
+
+@interface CalloutReusableView : TiUIView <ReusableViewProtocol>
+@property(nonatomic, readonly, copy) NSString *reuseIdentifier;
+@property (nonatomic, readwrite, retain) NSDictionary *dataItem;
+- (id)initWithFrame:(CGRect)frame reuseIdentifier:(NSString *)reuseIdentifier;
+@end
+
+@interface CalloutViewProxy : ReusableViewProxy
+@property (nonatomic, retain) AkylasMapAnnotationProxy *annotation;
+
+@end
+
+
 @protocol AkylasMapboxAnnotation
 @required
 -(NSString *)lastHitName;
@@ -20,6 +35,7 @@
 
 
 @interface AkylasMapView : TiUIView {
+    BOOL _calloutUseTemplates;
 	BOOL regionFits;
 	BOOL animate;
 	BOOL loaded;
@@ -59,6 +75,9 @@
 - (void)zoomOutAt:(CGPoint)pivot animated:(BOOL)animated;
 -(void)selectUserAnnotation;
 -(BOOL)viewInitialized;
+-(void) reuseIfNecessary:(id)object;
+-(CalloutReusableView*) reusableViewForProxy:(AkylasMapAnnotationProxy*)proxy objectKey:(NSString*)key;
+
 @end
 
 

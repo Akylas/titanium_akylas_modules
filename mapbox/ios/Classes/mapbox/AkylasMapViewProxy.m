@@ -15,7 +15,7 @@
     AkylasMapAnnotationProxy* selectedAnnotation; // Annotation to select on initial display
 	NSMutableArray* routesToAdd;
 	NSMutableArray* routesToRemove;
-	int zoomCount; // Number of times to zoom in/out on initial display
+//	int zoomCount; // Number of times to zoom in/out on initial display
 	NSMutableArray* _annotations;
     long _maxAnnotations;
 }
@@ -77,16 +77,16 @@
     }
     
 	[ourView selectAnnotation:selectedAnnotation];
-	if (zoomCount > 0) {
-		for (int i=0; i < zoomCount; i++) {
-			[ourView zoom:[NSNumber numberWithDouble:1.0]];
-		}
-	}
-	else {
-		for (int i=zoomCount;i < 0;i++) {
-			[ourView zoom:[NSNumber numberWithDouble:-1.0]];
-		}
-	}
+//	if (zoomCount > 0) {
+//		for (int i=0; i < zoomCount; i++) {
+//			[ourView zoom:[NSNumber numberWithDouble:1.0]];
+//		}
+//	}
+//	else {
+//		for (int i=zoomCount;i < 0;i++) {
+//			[ourView zoom:[NSNumber numberWithDouble:-1.0]];
+//		}
+//	}
 	
 	RELEASE_TO_NIL(selectedAnnotation);
 	RELEASE_TO_NIL(routesToAdd);
@@ -132,19 +132,19 @@
 	if ([self viewInitialized]) {
 		TiThreadPerformOnMainThread(^{[(AkylasMapView*)[self view] zoomTo:arg];}, YES);
 	}
-	else {
-		double v = [TiUtils doubleValue:arg];
-		// TODO: Find good delta tolerance value to deal with floating point goofs
-		if (v == 0.0) {
-			return;
-		}
-		if (v > 0) {
-			zoomCount++;
-		}
-		else {
-			zoomCount--;
-		}
-	}
+//	else {
+//		double v = [TiUtils doubleValue:arg];
+//		// TODO: Find good delta tolerance value to deal with floating point goofs
+//		if (v == 0.0) {
+//			return;
+//		}
+//		if (v > 0) {
+//			zoomCount++;
+//		}
+//		else {
+//			zoomCount--;
+//		}
+//	}
 }
 
 -(void)selectAnnotation:(id)arg
@@ -236,9 +236,10 @@
     if (!_annotations) {
         _annotations = [NSMutableArray new];
     }
-    [self handleMaxAnnotationsForAboutToAdd:[newAnnotations count]];
     NSUInteger toAddCount = [newAnnotations count];
-    if (toAddCount > _maxAnnotations) {
+    [self handleMaxAnnotationsForAboutToAdd:toAddCount];
+    if (_maxAnnotations > 0 && toAddCount > _maxAnnotations) {
+        //handle the case where we already add more than we can chew
         newAnnotations = [newAnnotations subarrayWithRange:NSMakeRange(toAddCount - _maxAnnotations, _maxAnnotations)];
     }
     [_annotations addObjectsFromArray:newAnnotations];

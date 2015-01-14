@@ -15,8 +15,11 @@ import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
+import org.appcelerator.titanium.proxy.ParentingProxy;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
+
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import akylas.map.AkylasMarker;
 import android.graphics.RectF;
@@ -41,7 +44,7 @@ import android.os.Message;
 //        AkylasMapModule.PROPERTY_MINZOOM,
 //        AkylasMapModule.PROPERTY_MAXZOOM
 })
-public class AnnotationProxy extends KrollProxy {
+public class AnnotationProxy extends ParentingProxy {
     private static final String TAG = "AnnotationProxy";
 
     private AkylasMarker marker;
@@ -49,7 +52,8 @@ public class AnnotationProxy extends KrollProxy {
 
     private String annoTitle;
     private String annoSubtitle;
-    private boolean draggable;
+    private boolean draggable = false;
+    private boolean flat = false;
     private float pinColor;
     private com.mapbox.mapboxsdk.geometry.LatLng latLong;
     private float mMinZoom = -1;
@@ -61,14 +65,15 @@ public class AnnotationProxy extends KrollProxy {
     private TiViewProxy _rightViewProxy;
     private TiViewProxy _customViewProxy;
 
-    AkylasMapboxView mMbView;
+    AkylasMapDefaultView mapView;
 
     private static final int MSG_FIRST_ID = KrollProxy.MSG_LAST_ID + 1;
 
     private static final int MSG_SET_LON = MSG_FIRST_ID + 300;
     private static final int MSG_SET_LAT = MSG_FIRST_ID + 301;
     private static final int MSG_SET_DRAGGABLE = MSG_FIRST_ID + 302;
-    private static final int MSG_UPDATE_INFO_WINDOW = MSG_FIRST_ID + 303;
+    private static final int MSG_SET_FLAT = MSG_FIRST_ID + 303;
+    private static final int MSG_UPDATE_INFO_WINDOW = MSG_FIRST_ID + 304;
 
     public AnnotationProxy() {
         super();
@@ -88,8 +93,8 @@ public class AnnotationProxy extends KrollProxy {
     @Override
     public KrollProxy getParentForBubbling()
     {
-        if (mMbView != null) {
-            return mMbView.getProxy();
+        if (mapView != null) {
+            return mapView.getProxy();
         }
         return null;
     }
@@ -166,6 +171,15 @@ public class AnnotationProxy extends KrollProxy {
             result.setResult(null);
             return true;
         }
+        case MSG_SET_FLAT: {
+            result = (AsyncResult) msg.obj;
+            if (marker instanceof GoogleMapMarker) {
+                ((GoogleMapMarker) marker).getMarker().setFlat(
+                        (Boolean) result.getArg());
+            }
+            result.setResult(null);
+            return true;
+        }
 
         case MSG_UPDATE_INFO_WINDOW: {
             updateInfoWindow();
@@ -200,12 +214,12 @@ public class AnnotationProxy extends KrollProxy {
                     (int) paddingRect.right, (int) paddingRect.bottom);
         }
         
-        if (mMbView.calloutUseTemplates()) {
+        if (mapView.calloutUseTemplates()) {
             KrollDict extraData = new KrollDict();
             extraData.put(AkylasMapModule.PROPERTY_ANNOTATION, (KrollProxy)this);
             extraData.put("inCallout", true);
             if (dict.containsKey(TiC.PROPERTY_LEFT_VIEW)) {
-                CalloutReusableProxy proxy = mMbView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_LEFT_VIEW), extraData);
+                CalloutReusableProxy proxy = mapView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_LEFT_VIEW), extraData);
                 if (proxy != null) {
                     proxy.setParentProxy(this);
                     infoView.setLeftOrRightPane(proxy,
@@ -213,7 +227,7 @@ public class AnnotationProxy extends KrollProxy {
                 }
             }
             if (dict.containsKey(TiC.PROPERTY_RIGHT_VIEW)) {
-                CalloutReusableProxy proxy = mMbView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_RIGHT_VIEW), extraData);
+                CalloutReusableProxy proxy = mapView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_RIGHT_VIEW), extraData);
                 if (proxy != null) {
                     proxy.setParentProxy(this);
                     infoView.setLeftOrRightPane(proxy,
@@ -221,7 +235,7 @@ public class AnnotationProxy extends KrollProxy {
                 }
             }
             if (dict.containsKey(TiC.PROPERTY_CUSTOM_VIEW)) {
-                CalloutReusableProxy proxy = mMbView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_CUSTOM_VIEW), extraData);
+                CalloutReusableProxy proxy = mapView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_CUSTOM_VIEW), extraData);
                 if (proxy != null) {
                     proxy.setParentProxy(this);
                     infoView.setCustomView(proxy);
@@ -323,6 +337,10 @@ public class AnnotationProxy extends KrollProxy {
             draggable = dict.optBoolean(AkylasMapModule.PROPERTY_DRAGGABLE,
                     false);
         }
+        if (dict.containsKey(AkylasMapModule.PROPERTY_FLAT)) {
+            flat = dict.optBoolean(AkylasMapModule.PROPERTY_FLAT,
+                    false);
+        }
         
         if (dict.containsKey(AkylasMapModule.PROPERTY_MINZOOM)) {
             mMinZoom = TiConvert.toFloat(dict, AkylasMapModule.PROPERTY_MINZOOM);
@@ -337,6 +355,10 @@ public class AnnotationProxy extends KrollProxy {
                 sortKey = (Comparable) value;
             }
         }
+        if (dict.containsKey(TiC.PROPERTY_PINCOLOR)) {
+            pinColor = dict.optInt(TiC.PROPERTY_PINCOLOR, -1);
+        }
+        
     }
 
     public void setMarker(AkylasMarker m) {
@@ -346,16 +368,16 @@ public class AnnotationProxy extends KrollProxy {
         marker = m;
     }
 
-    public void setMapView(AkylasMapboxView mbView) {
-        mMbView = mbView;
+    public void setMapView(AkylasMapDefaultView mbView) {
+        mapView = mbView;
     }
 
     public AkylasMarker getMarker() {
         return marker;
     }
 
-    public AkylasMapboxView getMapView() {
-        return mMbView;
+    public AkylasMapDefaultView getMapView() {
+        return mapView;
     }
 
     public Comparable getSortKey() {
@@ -400,8 +422,7 @@ public class AnnotationProxy extends KrollProxy {
     }
 
     @Override
-    public void onPropertyChanged(String name, Object value) {
-
+    public void onPropertyChanged(String name, Object value, Object oldValue) {
         if (name.equals(TiC.PROPERTY_LONGITUDE)) {
             TiMessenger.sendBlockingMainMessage(
                     getMainHandler().obtainMessage(MSG_SET_LON),
@@ -479,6 +500,10 @@ public class AnnotationProxy extends KrollProxy {
                 TiMessenger.sendBlockingMainMessage(getMainHandler()
                         .obtainMessage(MSG_SET_DRAGGABLE), TiConvert
                         .toBoolean(value));
+            } else if (name.equals(AkylasMapModule.PROPERTY_FLAT)) {
+                TiMessenger.sendBlockingMainMessage(getMainHandler()
+                        .obtainMessage(MSG_SET_FLAT), TiConvert
+                        .toBoolean(value));
             } else if (name.equals(AkylasMapModule.PROPERTY_SORT_KEY)) {
                 if (value instanceof Comparable) {
                     sortKey = (Comparable) value;
@@ -486,7 +511,7 @@ public class AnnotationProxy extends KrollProxy {
                 }
             }
         }
-        super.onPropertyChanged(name, value);
+        super.onPropertyChanged(name, value, oldValue);
 
     }
     
@@ -525,12 +550,12 @@ public class AnnotationProxy extends KrollProxy {
     }
 
     public MabpoxInfoWindow createInfoWindow() {
-        return mMbView.createInfoWindow(this);
+        return mapView.createInfoWindow(this);
     }
 
     public void infoWindowDidClose(MabpoxInfoWindow mabpoxInfoWindow) {
         infoView = null;
-        mMbView.infoWindowDidClose(mabpoxInfoWindow);
+        mapView.infoWindowDidClose(mabpoxInfoWindow);
     }
 
     public void prepareInfoView(AkylasMapInfoView infoView) {

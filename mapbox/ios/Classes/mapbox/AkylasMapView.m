@@ -13,8 +13,123 @@
 #import "AkylasMapRouteProxy.h"
 #import "ImageLoader.h"
 
+
+@implementation CalloutReusableView {
+    NSDictionary *_dataItem;
+}
+@synthesize dataItem = _dataItem;
+
+- (id)initWithFrame:(CGRect)frame reuseIdentifier:(NSString *)reuseIdentifier {
+    if (self = [super initWithFrame:frame]) {
+        _reuseIdentifier = [reuseIdentifier copy];
+        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    }
+    return self;
+}
+
+-(ReusableViewProxy*)reusableProxy
+{
+    return (ReusableViewProxy*)self.proxy;
+}
+
+- (void)dealloc
+{
+    [[self reusableProxy] detachView];
+    [[self reusableProxy] deregisterProxy:[[self reusableProxy] pageContext]];
+    [self reusableProxy].modelDelegate = nil;
+    RELEASE_TO_NIL(_dataItem)
+    [super dealloc];
+}
+
+- (BOOL)canApplyDataItem:(NSDictionary *)otherItem;
+{
+    id template = [_dataItem objectForKey:@"template"];
+    id otherTemplate = [otherItem objectForKey:@"template"];
+    BOOL same = (template == otherTemplate) || [template isEqual:otherTemplate];
+    return same;
+}
+
+- (void)setDataItem:(NSDictionary *)dataItem
+{
+    if (dataItem == (_dataItem)) return;
+    if (_dataItem) {
+        RELEASE_TO_NIL(_dataItem)
+        [(TiViewProxy*)self.proxy dirtyItAll];
+    }
+    _dataItem = [dataItem retain];
+    [[self reusableProxy] setDataItem:_dataItem];
+}
+
+- (void)prepareForReuse
+{
+    [[self reusableProxy] prepareForReuse];
+}
+
+-(void)configurationStart
+{
+    [super configurationStart];
+}
+
+-(void)configurationSet
+{
+    [super configurationSet];
+}
+@end
+
+
+@implementation CalloutViewProxy
+{
+    NSString *_reuseIdentifier;
+}
+
+-(void)dealloc
+{
+    RELEASE_TO_NIL(_reuseIdentifier);
+    [super dealloc];
+}
+
+- (id)initInContext:(id<TiEvaluator>)context reuseIdentifier:(NSString *)reuseIdentifier {
+    if (self = [super initInContext:context]) {
+        //        defaultReadyToCreateView = YES;
+        self.canBeResizedByFrame  = YES;
+        
+        _reuseIdentifier = [reuseIdentifier copy];
+        //        [self setView:[[CalloutReusableView alloc] initWithFrame:CGRectZero reuseIdentifier:reuseIdentifier]];
+    }
+    return self;
+}
+
+
+-(TiUIView*)newView {
+    return [[CalloutReusableView alloc] initWithFrame:CGRectZero reuseIdentifier:_reuseIdentifier];
+}
+
+-(TiDimension)defaultAutoWidthBehavior:(id)unused
+{
+    return TiDimensionAutoSize;
+}
+-(TiDimension)defaultAutoHeightBehavior:(id)unused
+{
+    return TiDimensionAutoSize;
+}
+
+- (NSDictionary *)overrideEventObject:(NSDictionary *)eventObject forEvent:(NSString *)eventType fromViewProxy:(TiViewProxy *)viewProxy
+{
+    NSMutableDictionary *updatedEventObject = (NSMutableDictionary*)[super overrideEventObject:eventObject forEvent:eventType fromViewProxy:viewProxy];
+    [updatedEventObject setObject:@YES forKey:@"inCallout"];
+    if (_annotation) {
+        [updatedEventObject setObject:_annotation forKey:@"annotation"];
+    }
+    return updatedEventObject;
+}
+
+@end
+
 @implementation AkylasMapView
 {
+    NSDictionary* _calloutTemplates;
+    id _defaultCalloutTemplate;
+    NSMutableDictionary *_reusableViews;
 }
 @synthesize defaultPinImage;
 @synthesize defaultPinAnchor;
@@ -29,13 +144,17 @@
         defaultCalloutAnchor = CGPointMake(0, -0.5f);
         _internalZoom = -1;
         animate = true;
-
+        _calloutUseTemplates = NO;
+        _reusableViews = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
 
 -(void)dealloc
 {
+    RELEASE_TO_NIL(_calloutTemplates)
+    RELEASE_TO_NIL(_defaultCalloutTemplate)
+    RELEASE_TO_NIL(_reusableViews)
 	[super dealloc];
 }
 
@@ -253,5 +372,122 @@
 -(void)setDefaultCalloutAnchor_:(id)anchor
 {
     self.defaultCalloutAnchor = [TiUtils pointValue:anchor];
+}
+
+
+#pragma mark Templates
+
+- (void)setDefaultCalloutTemplate_:(id)args
+{
+    ENSURE_TYPE_OR_NIL(args,NSString);
+    [_defaultCalloutTemplate release];
+    _defaultCalloutTemplate = [args copy];
+}
+
+-(void)setCalloutUseTemplates_:(id)value
+{
+    _calloutUseTemplates = [TiUtils boolValue:value];
+}
+
+
+- (void)setCalloutTemplates_:(id)args
+{
+    ENSURE_TYPE_OR_NIL(args,NSDictionary);
+    NSMutableDictionary *templates = [[NSMutableDictionary alloc] initWithCapacity:[args count]];
+    [(NSDictionary *)args enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+        TiProxyTemplate *template = [TiProxyTemplate templateFromViewTemplate:obj];
+        if (template != nil) {
+            [templates setObject:template forKey:key];
+        }
+    }];
+    
+    [_calloutTemplates release];
+    _calloutTemplates = [templates copy];
+    [templates release];
+}
+
+- (NSMutableSet *)reusableViewsWithIdentifier:(NSString *)identifier
+{
+    if (identifier == nil) {
+        return nil;
+    }
+    
+    NSMutableSet *set = [_reusableViews objectForKey:identifier];
+    if (set == nil) {
+        set = [NSMutableSet set];
+        [_reusableViews setObject:set forKey:identifier];
+    }
+    
+    return set;
+}
+
+- (void)queueViewForReuse:(id<ReusableViewProtocol>)view
+{
+    if (view.reuseIdentifier == nil) {
+        return;
+    }
+    
+    [[self reusableViewsWithIdentifier:view.reuseIdentifier] addObject:view];
+}
+
+- (id<ReusableViewProtocol>)dequeueReusableViewWithIdentifer:(NSString *)identifier
+{
+    NSParameterAssert(identifier != nil);
+    
+    NSMutableSet *set = [self reusableViewsWithIdentifier:identifier];
+    id<ReusableViewProtocol> view = [set anyObject];
+    
+    if (view != nil) {
+        [view prepareForReuse];
+        [set removeObject:view];
+        
+        return view;
+    }
+    return nil;
+}
+
+-(CalloutReusableView*) reusableViewForProxy:(AkylasMapAnnotationProxy*)proxy objectKey:(NSString*)key {
+    id item = [proxy valueForUndefinedKey:key];
+    CalloutReusableView* reuseCallout = nil;
+    if ([item isKindOfClass:[NSDictionary class]]) {
+        id templateId = [item objectForKey:@"template"];
+        if (templateId == nil) {
+            templateId = _defaultCalloutTemplate;
+        }
+        
+        reuseCallout = (CalloutReusableView*)[self dequeueReusableViewWithIdentifer:templateId];
+        
+        if (reuseCallout == nil) {
+            id<TiEvaluator> context = self.proxy.executionContext;
+            if (context == nil) {
+                context = self.proxy.pageContext;
+            }
+            CalloutViewProxy *calloutProxy = [[CalloutViewProxy alloc] initInContext:context reuseIdentifier:templateId];
+            [calloutProxy dirtyItAll];
+            [reuseCallout configurationStart];
+            id template = [_calloutTemplates objectForKey:templateId];
+            if (template != nil) {
+                [calloutProxy unarchiveFromTemplate:template withEvents:YES];
+            }
+            [reuseCallout configurationSet];
+            reuseCallout = (CalloutReusableView*)[calloutProxy getAndPrepareViewForOpening:[TiUtils appFrame]];
+            [calloutProxy release];
+            [reuseCallout autorelease];
+        }
+        CalloutViewProxy *calloutProxy = ((CalloutViewProxy *)reuseCallout.proxy);
+        calloutProxy.annotation = proxy;
+        [calloutProxy setParentForBubbling:proxy];
+        reuseCallout.dataItem = item;
+        [calloutProxy refreshViewIfNeeded:YES];
+    }
+    return reuseCallout;
+}
+-(void) reuseIfNecessary:(id)object {
+    if ([object isKindOfClass:[CalloutReusableView class]]) {
+        CalloutViewProxy *calloutProxy = ((CalloutViewProxy *)((CalloutReusableView*)object).proxy);
+        [calloutProxy setParentForBubbling:nil];
+        calloutProxy.annotation = nil;
+        [self queueViewForReuse:(CalloutReusableView*)object];
+    }
 }
 @end

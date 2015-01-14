@@ -8,13 +8,13 @@
 
 #import "TiProxy.h"
 
-@class AkylasMapboxTileSource;
+@class AkylasTileSource;
 @interface AkylasMapTileSourceProxy : TiProxy<RMTileCacheBackgroundDelegate>
 @property (nonatomic, readonly) BOOL caching;
 @property (nonatomic, readonly) NSDictionary* region;
 @property (nonatomic, readonly) NSNumber* minZoom;
 @property (nonatomic, readonly) NSNumber* maxZoom;
--(AkylasMapboxTileSource*)tileSource;
+-(AkylasTileSource*)tileSource;
 -(id)initWithSource:(NSString*)source;
 
 @end

@@ -22,7 +22,6 @@
 -(void)removeAllAnnotations:(id)args;
 -(void)selectAnnotation:(id)args;
 -(void)deselectAnnotation:(id)args;
--(void)zoom:(id)args;
 -(void)addRoute:(id)args;
 -(void)removeRoute:(id)args;
 

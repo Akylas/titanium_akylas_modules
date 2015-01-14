@@ -19,7 +19,6 @@ import android.annotation.SuppressLint;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -34,14 +33,13 @@ import com.mapbox.mapboxsdk.tileprovider.tilesource.WebSourceTileLayer;
 @Kroll.module(name="AkylasMap", id="akylas.map")
 public class AkylasMapModule extends KrollModule
 {
+    
+    public enum TrackingMode {
+        NONE, FOLLOW, FOLLOW_BEARING
+    }
 
-	public static final String PROPERTY_ALTITUDE = "altitude";
-	public static final String PROPERTY_LATITUDE = "latitude";
-	public static final String PROPERTY_LONGITUDE = "longitude";
 	public static final String PROPERTY_SW = "sw";
 	public static final String PROPERTY_NE = "ne";
-	public static final String PROPERTY_LATITUDE_DELTA = "latitudeDelta";
-	public static final String PROPERTY_LONGITUDE_DELTA = "longitudeDelta";
 	public static final String PROPERTY_DRAGGABLE = "draggable";
 	public static final String PROPERTY_POINTS = "points";
 	public static final String PROPERTY_TILE_SOURCE = "tileSource";
@@ -55,7 +53,6 @@ public class AkylasMapModule extends KrollModule
 	public static final String PROPERTY_LEFT_PANE = "leftPane";
 	public static final String PROPERTY_RIGHT_PANE = "rightPane";
 	public static final String PROPERTY_TILT = "tilt";
-	public static final String PROPERTY_BEARING = "bearing";
 	public static final String PROPERTY_ZOOM = "zoom";
 	public static final String PROPERTY_MINZOOM = "minZoom";
     public static final String PROPERTY_MAXZOOM = "maxZoom";
@@ -95,6 +92,7 @@ public class AkylasMapModule extends KrollModule
     public static final String PROPERTY_CALLOUT_TEMPLATES = "calloutTemplates";
     public static final String PROPERTY_CALLOUT_USE_TEMPLATES = "calloutUseTemplates";
     public static final String PROPERTY_DEFAULT_CALLOUT_TEMPLATE = "defaultCalloutTemplate";
+    public static final String PROPERTY_FLAT = "flat";
 
     
     
@@ -175,9 +173,9 @@ public class AkylasMapModule extends KrollModule
 	public static LatLng latlongFromDict(KrollDict dict)
 	{
 		if (dict == null) return null;
-		if (dict.containsKey(PROPERTY_LATITUDE) && dict.containsKey(PROPERTY_LONGITUDE))
+		if (dict.containsKey(TiC.PROPERTY_LATITUDE) && dict.containsKey(TiC.PROPERTY_LONGITUDE))
 		{
-			return new LatLng(dict.optDouble(PROPERTY_LATITUDE, 0.0), dict.optDouble(PROPERTY_LONGITUDE, 0.0), dict.optDouble(PROPERTY_ALTITUDE, 0.0));
+			return new LatLng(dict.optDouble(TiC.PROPERTY_LATITUDE, 0.0), dict.optDouble(TiC.PROPERTY_LONGITUDE, 0.0), dict.optDouble(TiC.PROPERTY_ALTITUDE, 0.0));
 		}
 		return null;
 	}
@@ -203,8 +201,8 @@ public class AkylasMapModule extends KrollModule
 		{
 			LatLng center = latlongFromDict(dict);
 			if (center != null) {
-				float latitudeDelta_2 = dict.optFloat(PROPERTY_LATITUDE_DELTA, 0)/2;
-				float longitudeDelta_2 = dict.optFloat(PROPERTY_LONGITUDE_DELTA, 0)/2;
+				float latitudeDelta_2 = dict.optFloat(TiC.PROPERTY_LATITUDE_DELTA, 0)/2;
+				float longitudeDelta_2 = dict.optFloat(TiC.PROPERTY_LONGITUDE_DELTA, 0)/2;
 				return new BoundingBox(center.getLatitude() + latitudeDelta_2, 
 						center.getLongitude() + longitudeDelta_2, 
 						center.getLatitude() - latitudeDelta_2, 
@@ -219,9 +217,9 @@ public class AkylasMapModule extends KrollModule
 	{
 		if (point == null) return null;
 		KrollDict result = new KrollDict();
-		result.put(PROPERTY_LATITUDE, point.getLatitude());
-        result.put(PROPERTY_LONGITUDE, point.getLongitude());
-        result.put(PROPERTY_ALTITUDE, point.getAltitude());
+		result.put(TiC.PROPERTY_LATITUDE, point.getLatitude());
+        result.put(TiC.PROPERTY_LONGITUDE, point.getLongitude());
+        result.put(TiC.PROPERTY_ALTITUDE, point.getAltitude());
 		return result;
 	}
 	
@@ -229,12 +227,12 @@ public class AkylasMapModule extends KrollModule
     {
         if (location == null) return null;
         KrollDict result = new KrollDict();
-        result.put(PROPERTY_LATITUDE, location.getLatitude());
-        result.put(PROPERTY_LONGITUDE, location.getLongitude());
-        result.put(PROPERTY_ALTITUDE, location.getAltitude());
-        result.put(PROPERTY_BEARING, location.getBearing());
-        result.put(PROPERTY_SPEED, location.getSpeed());
-        result.put(PROPERTY_TIMESTAMP, location.getTime());
+        result.put(TiC.PROPERTY_LATITUDE, location.getLatitude());
+        result.put(TiC.PROPERTY_LONGITUDE, location.getLongitude());
+        result.put(TiC.PROPERTY_ALTITUDE, location.getAltitude());
+        result.put(TiC.PROPERTY_BEARING, location.getBearing());
+        result.put(TiC.PROPERTY_SPEED, location.getSpeed());
+        result.put(TiC.PROPERTY_TIMESTAMP, location.getTime());
         return result;
     }
 	
@@ -244,10 +242,10 @@ public class AkylasMapModule extends KrollModule
 		KrollDict result = new KrollDict();
 		KrollDict ne = new KrollDict();
 		KrollDict sw = new KrollDict();
-		ne.put(PROPERTY_LATITUDE, box.getLatNorth());
-		ne.put(PROPERTY_LONGITUDE, box.getLonEast());
-		sw.put(PROPERTY_LATITUDE, box.getLatSouth());
-		sw.put(PROPERTY_LONGITUDE, box.getLonWest());
+		ne.put(TiC.PROPERTY_LATITUDE, box.getLatNorth());
+		ne.put(TiC.PROPERTY_LONGITUDE, box.getLonEast());
+		sw.put(TiC.PROPERTY_LATITUDE, box.getLatSouth());
+		sw.put(TiC.PROPERTY_LONGITUDE, box.getLonWest());
 		result.put(PROPERTY_NE, ne);
 		result.put(PROPERTY_SW, sw);
 		return result;
@@ -259,10 +257,10 @@ public class AkylasMapModule extends KrollModule
         KrollDict result = new KrollDict();
         KrollDict ne = new KrollDict();
         KrollDict sw = new KrollDict();
-        ne.put(PROPERTY_LATITUDE, box.northeast.latitude);
-        ne.put(PROPERTY_LONGITUDE, box.northeast.longitude);
-        sw.put(PROPERTY_LATITUDE, box.southwest.latitude);
-        sw.put(PROPERTY_LONGITUDE, box.southwest.longitude);
+        ne.put(TiC.PROPERTY_LATITUDE, box.northeast.latitude);
+        ne.put(TiC.PROPERTY_LONGITUDE, box.northeast.longitude);
+        sw.put(TiC.PROPERTY_LATITUDE, box.southwest.latitude);
+        sw.put(TiC.PROPERTY_LONGITUDE, box.southwest.longitude);
         result.put(PROPERTY_NE, ne);
         result.put(PROPERTY_SW, sw);
         return result;
@@ -383,16 +381,7 @@ public class AkylasMapModule extends KrollModule
 		}
 		return null;
 	}
-	
-	static public int googlePlayServicesAvailable() {
-        return GooglePlayServicesUtil.isGooglePlayServicesAvailable(TiApplication.getAppRootOrCurrentActivity());
-	}
-	
-	@Kroll.method
-    public int isGooglePlayServicesAvailable() {
-        return googlePlayServicesAvailable();
-    }
-	
+
 	static public final String getGoogleServiceStateMessage(final int state) {
 	    switch (state) {
 	    
