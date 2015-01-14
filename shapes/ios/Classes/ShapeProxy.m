@@ -163,7 +163,7 @@ parentBounds = _parentBounds;
     self.currentBounds = self.currentShapeBounds = [path bounds];
 }
 
--(CGPoint) computePoint:(TiPoint*)center_ withAnchor:(int)anchor_ inSize:(CGSize)size_ decale:(CGSize)decale_
+-(CGPoint) computePoint:(TiPoint*)center_ withAnchor:(NSInteger)anchor_ inSize:(CGSize)size_ decale:(CGSize)decale_
 {
     CGFloat width = size_.width;
     CGFloat height = size_.height;
@@ -279,12 +279,12 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
     return radius;
 }
 
--(void)applyOperation:(int)operation toPath:(UIBezierPath*)path_ withProperties:(NSDictionary*)properties
+-(void)applyOperation:(NSInteger)operation toPath:(UIBezierPath*)path_ withProperties:(NSDictionary*)properties
 {
     CGSize size = _parentBounds.size;
     
 
-    int anchor = [TiUtils intValue:@"anchor" properties:properties def:ShapeAnchorCenter];
+    NSInteger anchor = [TiUtils intValue:@"anchor" properties:properties def:ShapeAnchorCenter];
     BOOL clockwise = [TiUtils intValue:@"clockwise" properties:properties def:NO];
     CGSize radius = [self getRadius:size inProperties:properties];
     TiPoint* center = [self tiPointValue:@"center" properties:properties def:[self defaultCenter]];
@@ -372,7 +372,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 {
     [ops enumerateObjectsUsingBlock:^(NSDictionary* op, NSUInteger index, BOOL *stop) {
         id obj = [op valueForKey:@"type"];
-        int opType = -1;
+        NSInteger opType = -1;
         if ([obj isKindOfClass:[NSString class]]) {
             opType = [self opFromString:[TiUtils stringValue:obj]];
         }
@@ -552,7 +552,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 //    return _fillGradientLayer;
 //}
 
--(NSString*)lineCapToString:(int)value
+-(NSString*)lineCapToString:(NSInteger)value
 {
     switch (value) {
         case kCGLineCapRound:
@@ -565,7 +565,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
     }
 }
 
--(NSString*)lineJoinToString:(int)value
+-(NSString*)lineJoinToString:(NSInteger)value
 {
     switch (value) {
         case kCGLineJoinBevel:
@@ -722,6 +722,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 
 -(void)childAdded:(TiProxy*)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
 {
+    [super childAdded:child atIndex:position shouldRelayout:shouldRelayout];
     if (![child isKindOfClass:[ShapeProxy class]]) {
         return;
     }

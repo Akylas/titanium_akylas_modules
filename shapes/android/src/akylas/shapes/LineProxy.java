@@ -94,24 +94,20 @@ public class LineProxy extends ArcProxy{
 		}
 		return result;
 	}
-
-	@Override
-	public void processProperties(KrollDict properties) {
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_POINTS)) {
-			setPointsFromObject((Object[]) properties.get(AkylasShapesModule.PROPERTY_POINTS));
-		}
-        super.processProperties(properties);
-	}
 	
 	@Override
-	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-		if (key.equals(AkylasShapesModule.PROPERTY_POINTS)) {
-			setPointsFromObject((Object[]) newValue);
-		}
-		else super.propertyChanged(key, oldValue, newValue, proxy);
-		redraw();
-	}
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+            case AkylasShapesModule.PROPERTY_POINTS:
+                setPointsFromObject((Object[]) newValue);
+        break;
 
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+        break;
+        }
+    }
 	
 	public class BezierPointsEvaluator implements TypeEvaluator<ArrayList<BezierPoint>> {
 		

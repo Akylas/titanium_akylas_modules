@@ -7,9 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollPropertyChange;
 import org.appcelerator.kroll.KrollProxy;
-import org.appcelerator.kroll.KrollProxyListener;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBlob;
@@ -18,11 +16,10 @@ import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.animation.TiAnimator;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
-import org.appcelerator.titanium.proxy.AnimatableProxy;
+import org.appcelerator.titanium.proxy.AnimatableReusableProxy;
 import org.appcelerator.titanium.util.AffineTransform;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
-import org.appcelerator.titanium.view.KrollProxyReusableListener;
 import org.appcelerator.titanium.view.Ti2DMatrix;
 
 import com.nineoldandroids.animation.Animator;
@@ -54,13 +51,15 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.os.Build;
+import android.view.View;
+import android.view.ViewParent;
 import android.view.animation.LinearInterpolator;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @Kroll.proxy(creatableInModule = AkylasShapesModule.class, propertyAccessors={
 	TiC.PROPERTY_NAME
 })
-public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableListener {
+public class ShapeProxy extends AnimatableReusableProxy {
 	// Standard Debugging variables
 	private static final String TAG = "PathProxy";
 	
@@ -120,7 +119,6 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 
 	public final TiPoint DEFAULT_CENTER = new TiPoint(0, 0);
 
-    private KrollDict additionalEventData;
 	public TiPoint getDefaultCenter() {
 		return DEFAULT_CENTER;
 	}
@@ -130,37 +128,37 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 		Point result = new Point(0,0);
 		if (point_ == null){point_ = getDefaultCenter();};
 		if (anchor_ == AnchorPosition.CENTER) {
-			result.x = point_.getX().getAsPixels(context, width, height) + width/2;
-			result.y = point_.getY().getAsPixels(context, width, height) + height/2;
+			result.x = point_.getX().getAsPixels(width, height) + width/2;
+			result.y = point_.getY().getAsPixels(width, height) + height/2;
 			return result;
 		}
 		else if (anchor_ == AnchorPosition.RIGHT_TOP ||
 				anchor_ == AnchorPosition.RIGHT_MIDDLE || 
 						anchor_ == AnchorPosition.RIGHT_BOTTOM) {
-			result.x  = point_.getX().getAsPixels(context, width - 2*decale.x, height);
+			result.x  = point_.getX().getAsPixels(width - 2*decale.x, height);
 			result.x  = width - result.x - decale.x;
 		}
 		else if (anchor_ == AnchorPosition.BOTTOM_MIDDLE ||
 				anchor_ == AnchorPosition.TOP_MIDDLE) {
-			result.x  = point_.getX().getAsPixels(context, width/2 - decale.x, height) + width/2;
+            result.x = point_.getX().getAsPixels(width/2 - decale.x, height) + width/2;
 		}
 		else {
-			result.x = point_.getX().getAsPixels(context, width - 2*decale.x, height);
+			result.x = point_.getX().getAsPixels(width - 2*decale.x, height);
 			result.x += decale.x;
 		}
 		
 		if (anchor_ == AnchorPosition.LEFT_BOTTOM ||
 				anchor_ == AnchorPosition.BOTTOM_MIDDLE || 
 						anchor_ == AnchorPosition.RIGHT_BOTTOM) {
-			result.y = point_.getY().getAsPixels(context, width, height - 2*decale.y);
+			result.y = point_.getY().getAsPixels(width, height - 2*decale.y);
 			result.y = height - result.y - decale.y;
 		}
 		else if (anchor_ == AnchorPosition.LEFT_MIDDLE ||
 				anchor_ == AnchorPosition.RIGHT_MIDDLE) {
-			result.y  = point_.getY().getAsPixels(context, width, height/2 - decale.y) + height/2;
+			result.y  = point_.getY().getAsPixels(width, height/2 - decale.y) + height/2;
 		}
 		else {
-			result.y = point_.getY().getAsPixels(context, width, height - 2*decale.y);
+			result.y = point_.getY().getAsPixels(width, height - 2*decale.y);
 			result.y += decale.y;
 		}
 		return result;
@@ -190,12 +188,12 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 			needsMin = true;
 		}
 		if (!radius.getX().isUnitUndefined() && !radius.getY().isUnitUndefined()) {
-			result.x  = radius.getX().getAsPixels(context, width, height);
-			result.y  = radius.getY().getAsPixels(context, width, height);
+			result.x  = radius.getX().getAsPixels(width, height);
+			result.y  = radius.getY().getAsPixels(width, height);
 	    } else if(!radius.getX().isUnitUndefined()) {
-	    	result.x  = result.y  = radius.getX().getAsPixels(context, needsMin?Math.min(width, height):width, height);
+	    	result.x  = result.y  = radius.getX().getAsPixels(needsMin?Math.min(width, height):width, height);
 	    } else if(!radius.getY().isUnitUndefined()) {
-	    	result.x  = result.y  = radius.getY().getAsPixels(context, width, height);
+	    	result.x  = result.y  = radius.getY().getAsPixels(width, height);
 	    }
 		return result;
 	}
@@ -755,8 +753,8 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 			int height = proxy.currentBounds.height();
 			int parentWidth = proxy.parentBounds.width();
 			int parentHeight = proxy.parentBounds.height();
-			AffineTransform a = (startValue != null)?startValue.getAffineTransform(context, width, height, parentWidth, parentHeight):(new AffineTransform());
-			AffineTransform b = endValue.getAffineTransform(context, width, height, parentWidth, parentHeight);
+			AffineTransform a = (startValue != null)?startValue.getAffineTransform(width, height, parentWidth, parentHeight):(new AffineTransform());
+			AffineTransform b = endValue.getAffineTransform(width, height, parentWidth, parentHeight);
 			b.blend(a, fraction);
 			return new Ti2DMatrix(b);
 		}
@@ -866,7 +864,27 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 		super.finalize();
 	} 
 	
-	protected boolean handleTouchEvent(String eventName, Object data, boolean bubbles, int x, int y) {
+    @Override
+    public boolean hasListeners(String eventName, boolean checkParent) {
+        if (ShapeViewProxy.supportedEvents.contains(eventName) &&  children != null && children.size() > 0) {
+            boolean handledByChildren = false;
+            for (int i = 0; i < mShapes.size(); i++) {
+                ShapeProxy shapeProxy = mShapes.get(i);
+                if (shapeProxy instanceof ShapeProxy) {
+                    handledByChildren |= ((ShapeProxy) shapeProxy)
+                            .hasListeners(eventName, false);
+
+                }
+            }
+            if (!handledByChildren) {
+                handledByChildren = super.hasListeners(eventName, checkParent);
+            }
+            return handledByChildren;
+        }
+        return super.hasListeners(eventName, checkParent);
+    }
+	
+	protected boolean handleTouchEvent(String eventName, Object data, boolean bubbles, boolean checkListeners, int x, int y) {
 		if (context != null) {
 			if (currentBounds.contains(x, y)) {
 				boolean handledByChildren = false;
@@ -875,14 +893,14 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 					int childrenY = y - currentBounds.top;
 					for (int i = 0; i < mShapes.size(); i++) {
 						ShapeProxy shapeProxy = mShapes.get(i);
-						handledByChildren |= shapeProxy.handleTouchEvent(eventName, data, bubbles, childrenX, childrenY);
+						handledByChildren |= shapeProxy.handleTouchEvent(eventName, data, bubbles, checkListeners, childrenX, childrenY);
 					}
 				}
-				if ((!handledByChildren || bubbles) && hasListeners(eventName)) {
+				if ((!handledByChildren || bubbles) && (!checkListeners || hasListeners(eventName))) {
 					if (data instanceof HashMap) {
 						((HashMap)data).put(TiC.EVENT_PROPERTY_SOURCE, this);
 					}
-					fireEvent(eventName, data);
+					fireEvent(eventName, data, bubbles, false);
 					return true;
 				}
 			}
@@ -893,6 +911,7 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 	private void addShape(ShapeProxy proxy) {
 		if (!mShapes.contains(proxy)) {
 			mShapes.add(proxy);
+			proxy.setParentForBubbling(this);
 			if (shapeViewProxy != null) {
 				proxy.setShapeViewProxy(shapeViewProxy);
 				if (currentBounds != null) {
@@ -907,6 +926,7 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 		if (!mShapes.contains(proxy))
 			return;
 		mShapes.remove(proxy);
+        proxy.setParentForBubbling(null);
 		proxy.setShapeViewProxy(null);
 		if (shapeViewProxy != null) {
 			shapeViewProxy.redraw();
@@ -1083,8 +1103,7 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 			}
 			else {
 				matrix = new Matrix();
-				matrix = transform.getMatrix(context,
-						currentBounds.width(), currentBounds.height(),
+				matrix = transform.getMatrix(currentBounds.width(), currentBounds.height(),
 						parentBounds.width(), parentBounds.height());
 			}
 			
@@ -1132,174 +1151,96 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 	
 
 	@Override
-	public void handleCreationDict(KrollDict properties) {
-		super.handleCreationDict(properties);
-		setModelListener(this);
-	}
-	
-	@Override
-	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-		if (key.equals(AkylasShapesModule.PROPERTY_LINE_EMBOSS)) {
-			Utils.styleEmboss(properties, AkylasShapesModule.PROPERTY_LINE_EMBOSS, getOrCreateLinePaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_WIDTH)) {
-			Utils.styleStrokeWidth(properties, AkylasShapesModule.PROPERTY_LINE_WIDTH, "1", getOrCreateLinePaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_OPACITY)) {
+	public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+	    switch (key) {
+            case AkylasShapesModule.PROPERTY_LINE_EMBOSS:
+			Utils.styleEmboss(TiConvert.toKrollDict(newValue), getOrCreateLinePaint());
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_WIDTH:
+			Utils.styleStrokeWidth(newValue, "1", getOrCreateLinePaint());
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_OPACITY:
 			lineOpacity = TiConvert.toFloat(newValue, 1.0f);
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_JOIN)) {
-			Utils.styleJoin(properties, AkylasShapesModule.PROPERTY_LINE_JOIN, getOrCreateLinePaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_COLOR)) {
-			Utils.styleColor(properties, AkylasShapesModule.PROPERTY_LINE_COLOR, getOrCreateLinePaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_CAP)) {
-			Utils.styleCap(properties, AkylasShapesModule.PROPERTY_LINE_CAP, getOrCreateLinePaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_SHADOW)) {
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_JOIN:
+			Utils.styleJoin(TiConvert.toInt(newValue), getOrCreateLinePaint());
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_COLOR:
+			Utils.styleColor(TiConvert.toColor(newValue), getOrCreateLinePaint());
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_CAP:
+			Utils.styleCap(TiConvert.toInt(newValue), getOrCreateLinePaint());
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_SHADOW:
 //			Utils.styleShadow(properties, ShapeModule.PROPERTY_LINE_SHADOW, getOrCreateLinePaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_DASH)) {
-			Utils.styleDash(properties, AkylasShapesModule.PROPERTY_LINE_DASH, getOrCreateLinePaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_FILL_OPACITY)) {
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_DASH:
+			Utils.styleDash(TiConvert.toKrollDict(newValue), getOrCreateLinePaint());
+		break;
+        case AkylasShapesModule.PROPERTY_FILL_OPACITY:
 			fillOpacity = TiConvert.toFloat(newValue, 1.0f);
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_IMAGE)) {
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_IMAGE:
 			setPaintImageDrawable(newValue, getOrCreateLinePaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_FILL_IMAGE)) {
+		break;
+        case AkylasShapesModule.PROPERTY_FILL_IMAGE:
 			setPaintImageDrawable(newValue, getOrCreateFillPaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_GRADIENT)) {
-			 lineGradient = TiUIHelper.buildGradientDrawable(properties.getKrollDict(AkylasShapesModule.PROPERTY_LINE_GRADIENT));
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_FILL_GRADIENT)) {
-			 fillGradient = TiUIHelper.buildGradientDrawable(properties.getKrollDict(AkylasShapesModule.PROPERTY_FILL_GRADIENT));
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_FILL_COLOR)) {
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_GRADIENT:
+			 lineGradient = TiUIHelper.buildGradientDrawable(TiConvert.toKrollDict(newValue));
+		break;
+        case AkylasShapesModule.PROPERTY_FILL_GRADIENT:
+			 fillGradient = TiUIHelper.buildGradientDrawable(TiConvert.toKrollDict(newValue));
+		break;
+        case AkylasShapesModule.PROPERTY_FILL_COLOR:
 			Utils.styleColor(properties, AkylasShapesModule.PROPERTY_FILL_COLOR, getOrCreateFillPaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_FILL_SHADOW)) {
+		break;
+        case AkylasShapesModule.PROPERTY_FILL_SHADOW:
 //			Utils.styleShadow(properties, ShapeModule.PROPERTY_FILL_SHADOW, getOrCreateFillPaint());
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_FILL_EMBOSS)) {
-			Utils.styleEmboss(properties, AkylasShapesModule.PROPERTY_FILL_EMBOSS, getOrCreateFillPaint());
-		}
-		else if (key.equals(TiC.PROPERTY_CENTER)) {
+		break;
+        case AkylasShapesModule.PROPERTY_FILL_EMBOSS:
+			Utils.styleEmboss(TiConvert.toKrollDict(newValue), getOrCreateFillPaint());
+		break;
+        case TiC.PROPERTY_CENTER:
 			this.center = TiConvert.toPoint(newValue);
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_RADIUS)) {
+		break;
+        case AkylasShapesModule.PROPERTY_RADIUS:
 			this.radius = newValue;
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_ANCHOR)) {
+		break;
+        case AkylasShapesModule.PROPERTY_ANCHOR:
 			this.anchor = AnchorPosition.values()[TiConvert.toInt(newValue)];
-		}
-		else if (key.equals(TiC.PROPERTY_TRANSFORM)) {
-		    this.transform = TiConvert.toMatrix(key);
+		break;
+        case TiC.PROPERTY_TRANSFORM:
+		    this.transform = TiConvert.toMatrix(newValue);
 			this.matrix = null;
-			needsMatrix = true;
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_FILL_INVERSED)) {
+            needsMatrix = (this.transform != null);
+		break;
+        case AkylasShapesModule.PROPERTY_FILL_INVERSED:
 			this.fillInversed = TiConvert.toBoolean(newValue);
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_INVERSED)) {
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_INVERSED:
 			this.lineInversed = TiConvert.toBoolean(newValue);
-		}
-		else if (key.equals(AkylasShapesModule.PROPERTY_LINE_CLIPPED)) {
+		break;
+        case AkylasShapesModule.PROPERTY_LINE_CLIPPED:
 			this.lineClipped = TiConvert.toBoolean(newValue);
-		}
-		else if (key.equals(TiC.PROPERTY_ANCHOR_POINT)) {
+		break;
+        case TiC.PROPERTY_ANCHOR_POINT:
 			applyAnchorPoint(newValue);
 			needsMatrix = true;
-		} else return;
-		
-		redraw();
-	}
-
-	@Override
-	public void processProperties(KrollDict properties) {
-		if (properties == null) return;
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_EMBOSS)) {
-			Utils.styleEmboss(properties, AkylasShapesModule.PROPERTY_LINE_EMBOSS, getOrCreateLinePaint());
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_WIDTH)) {
-			Utils.styleStrokeWidth(properties, AkylasShapesModule.PROPERTY_LINE_WIDTH, "1", getOrCreateLinePaint());
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_OPACITY)) {
-			lineOpacity = properties.optFloat(AkylasShapesModule.PROPERTY_LINE_OPACITY, 1.0f);
-		}
-		
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_JOIN)) {
-			Utils.styleJoin(properties, AkylasShapesModule.PROPERTY_LINE_JOIN, getOrCreateLinePaint());
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_COLOR)) {
-			Utils.styleColor(properties, AkylasShapesModule.PROPERTY_LINE_COLOR, getOrCreateLinePaint());
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_CAP)) {
-			Utils.styleCap(properties, AkylasShapesModule.PROPERTY_LINE_CAP, getOrCreateLinePaint());
-		}
-//		if (properties.containsKey(ShapeModule.PROPERTY_LINE_SHADOW)) {
-//			Utils.styleShadow(properties, ShapeModule.PROPERTY_LINE_SHADOW, getOrCreateLinePaint());
-//		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_DASH)) {
-			Utils.styleDash(properties, AkylasShapesModule.PROPERTY_LINE_DASH, getOrCreateLinePaint());
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_FILL_OPACITY)) {
-			fillOpacity = properties.optFloat(AkylasShapesModule.PROPERTY_FILL_OPACITY, 1.0f);
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_IMAGE)) {
-			setPaintImageDrawable(properties.get(AkylasShapesModule.PROPERTY_LINE_IMAGE), getOrCreateLinePaint());
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_FILL_IMAGE)) {
-			setPaintImageDrawable(properties.get(AkylasShapesModule.PROPERTY_FILL_IMAGE), getOrCreateFillPaint());
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_GRADIENT)) {
-			 lineGradient = TiUIHelper.buildGradientDrawable(properties.getKrollDict(AkylasShapesModule.PROPERTY_LINE_GRADIENT));
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_FILL_GRADIENT)) {
-			 fillGradient = TiUIHelper.buildGradientDrawable(properties.getKrollDict(AkylasShapesModule.PROPERTY_FILL_GRADIENT));
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_FILL_COLOR)) {
-			Utils.styleColor(properties, AkylasShapesModule.PROPERTY_FILL_COLOR, getOrCreateFillPaint());
-		}
-//		if (properties.containsKey(ShapeModule.PROPERTY_FILL_SHADOW)) {
-//			Utils.styleShadow(properties, ShapeModule.PROPERTY_FILL_SHADOW, getOrCreateFillPaint());
-//		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_FILL_EMBOSS)) {
-			Utils.styleEmboss(properties, AkylasShapesModule.PROPERTY_FILL_EMBOSS, getOrCreateFillPaint());
-		}
-		if (properties.containsKey(TiC.PROPERTY_CENTER)) {
-			
-			this.center = TiConvert.toPoint(properties.get(TiC.PROPERTY_CENTER));
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_RADIUS)) {
-			this.radius = properties.get(AkylasShapesModule.PROPERTY_RADIUS);
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_ANCHOR)) {
-			this.anchor = AnchorPosition.values()[properties.getInt(AkylasShapesModule.PROPERTY_ANCHOR)];
-		}
-		if (properties.containsKey(TiC.PROPERTY_ANCHOR_POINT)) {
-			applyAnchorPoint(properties.get(TiC.PROPERTY_ANCHOR_POINT));
-		}
-		if (properties.containsKey(TiC.PROPERTY_TRANSFORM)) {
-			this.transform = TiConvert.toMatrix(properties, TiC.PROPERTY_TRANSFORM);
-			this.matrix = null;
-			needsMatrix = (this.transform != null);
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_FILL_INVERSED)) {
-			this.fillInversed = properties.getBoolean(AkylasShapesModule.PROPERTY_FILL_INVERSED);
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_INVERSED)) {
-			this.lineInversed = properties.getBoolean(AkylasShapesModule.PROPERTY_LINE_INVERSED);
-		}
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_LINE_CLIPPED)) {
-			this.lineClipped = properties.getBoolean(AkylasShapesModule.PROPERTY_LINE_CLIPPED);
-		}
-		redraw();
+		break;
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+        break;
+        }
 	}
 	
+    @Override
+    protected void didProcessProperties() {
+        super.didProcessProperties();
+        redraw();
+    }
+
 	@Override
 	public void animationFinished(TiAnimator animation) {
 		super.animationFinished(animation);
@@ -1319,31 +1260,5 @@ public class ShapeProxy extends AnimatableProxy implements KrollProxyReusableLis
 			shapeProxy.recursiveCancelAllAnimations();
 		}
 	}
-	
-	@Override
-	public void propertiesChanged(List<KrollPropertyChange> changes,KrollProxy proxy) {}
 
-	@Override
-	public void listenerAdded(String type, int count, KrollProxy proxy) {}
-
-	@Override
-	public void listenerRemoved(String type, int count, KrollProxy proxy) {}
-
-    @Override
-    public void setAdditionalEventData(KrollDict dict) {
-        additionalEventData = dict;
-    }
-    
-    @Override
-    public KrollDict getAdditionalEventData() {
-        return additionalEventData;
-    }
-
-    @Override
-    public void setReusing(boolean reusing) {
-//        if (reusing == false) {
-//            update();
-//        }
-        
-    }
 }

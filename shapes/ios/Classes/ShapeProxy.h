@@ -56,7 +56,7 @@ enum
 //@property(nonatomic,readonly) CALayer* layer;
 
 -(void)boundsChanged:(CGRect)bounds;
--(CGPoint) computePoint:(TiPoint*)center withAnchor:(int)anchor inSize:(CGSize)size decale:(CGSize)decale;
+-(CGPoint) computePoint:(TiPoint*)center withAnchor:(NSInteger)anchor inSize:(CGSize)size decale:(CGSize)decale;
 -(CGFloat*) arrayFromNSArray:(NSArray*)array;
 -(TiPoint *)defaultCenter;
 -(TiPoint *)defaultRadius;

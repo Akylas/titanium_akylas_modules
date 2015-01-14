@@ -87,7 +87,7 @@
 
 #pragma mark Listener Notifications
 
--(void)_listenerAdded:(NSString *)type count:(int)count
+-(void)_listenerAdded:(NSString *)type count:(NSInteger)count
 {
 	if (count == 1 && [type isEqualToString:@"my_event"])
 	{
@@ -96,7 +96,7 @@
 	}
 }
 
--(void)_listenerRemoved:(NSString *)type count:(int)count
+-(void)_listenerRemoved:(NSString *)type count:(NSInteger)count
 {
 	if (count == 0 && [type isEqualToString:@"my_event"])
 	{

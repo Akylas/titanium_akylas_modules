@@ -86,6 +86,7 @@ static NSArray *supportedEvents;
 
 -(void)childAdded:(TiProxy*)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
 {
+    [super childAdded:child atIndex:position shouldRelayout:shouldRelayout];
     if (![child isKindOfClass:[ShapeProxy class]]) {
         return;
 	}
@@ -125,7 +126,7 @@ static NSArray *supportedEvents;
 	return [super _hasListeners:type] || handledByChildren;
 }
 
--(void)fireEvent:(NSString*)type withObject:(id)obj propagate:(BOOL)propagate reportSuccess:(BOOL)report errorCode:(int)code message:(NSString*)message checkForListener:(BOOL)checkForListener
+-(void)fireEvent:(NSString*)type withObject:(id)obj propagate:(BOOL)propagate reportSuccess:(BOOL)report errorCode:(NSInteger)code message:(NSString*)message checkForListener:(BOOL)checkForListener
 {
 	if ([[AkylasShapesViewProxy supportedEvents] indexOfObject:type] != NSNotFound && childrenCount > 0) {
         CGPoint point  = CGPointMake(-1, -1);
@@ -143,31 +144,6 @@ static NSArray *supportedEvents;
         }
     }
     return [super fireEvent:type withObject:obj propagate:propagate reportSuccess:report errorCode:code message:message checkForListener:checkForListener];
-}
-
-
-+(Class)proxyClassFromString:(NSString*)qualifiedName
-{
-    Class proxyClass = (Class)CFDictionaryGetValue([TiProxy classNameLookup], qualifiedName);
-	if (proxyClass == nil) {
-		NSString *prefix = [NSString stringWithFormat:@"%@%s",@"Ak","ylasShapes."];
-		if ([qualifiedName hasPrefix:prefix]) {
-			qualifiedName = [qualifiedName stringByReplacingOccurrencesOfString:prefix withString:@"AkylasShapes"];
-		}
-        else {
-            return [[TiViewProxy class] proxyClassFromString:qualifiedName];
-        }
-		NSString *className = [[qualifiedName stringByReplacingOccurrencesOfString:@"." withString:@""] stringByAppendingString:@"Proxy"];
-		proxyClass = NSClassFromString(className);
-		if (proxyClass==nil) {
-			DebugLog(@"[WARN] Attempted to load %@: Could not find class definition.", className);
-			@throw [NSException exceptionWithName:@"org.appcelerator.module"
-                                           reason:[NSString stringWithFormat:@"Class not found: %@", qualifiedName]
-                                         userInfo:nil];
-		}
-		CFDictionarySetValue([TiProxy classNameLookup], qualifiedName, proxyClass);
-	}
-    return proxyClass;
 }
 
 @end

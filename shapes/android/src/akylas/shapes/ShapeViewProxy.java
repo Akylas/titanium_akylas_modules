@@ -19,6 +19,7 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
@@ -45,7 +46,7 @@ public class ShapeViewProxy extends TiViewProxy {
 	// Standard Debugging variables
 	private static final String TAG = "ShapeViewProxy";
 
-	private static final List<String> supportedEvents = Arrays.asList(
+	public static final List<String> supportedEvents = Arrays.asList(
 			TiC.EVENT_CLICK, TiC.EVENT_DOUBLE_CLICK, TiC.EVENT_DOUBLE_TAP,
 			TiC.EVENT_SINGLE_TAP, TiC.EVENT_LONGPRESS, TiC.EVENT_TOUCH_CANCEL, TiC.EVENT_TOUCH_END,
 			TiC.EVENT_TOUCH_MOVE, TiC.EVENT_TOUCH_START);
@@ -137,15 +138,38 @@ public class ShapeViewProxy extends TiViewProxy {
 	public ShapeViewProxy() {
 		super();
 	}
-
+	
 	@Override
-	public boolean fireEvent(String eventName, Object data, boolean bubbles) {
-		if (supportedEvents.contains(eventName) && children.size() > 0) {
+    public boolean hasListeners(String eventName, boolean checkParent) {
+        if (supportedEvents.contains(eventName) &&  children != null && children.size() > 0) {
+            boolean handledByChildren = false;
+            KrollProxy[] children = ShapeViewProxy.this.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                KrollProxy childProxy = children[i];
+                if (childProxy instanceof ShapeProxy) {
+                    handledByChildren |= ((ShapeProxy) childProxy).hasListeners(eventName, false);
+
+                }
+            }
+            if (!handledByChildren) {
+                handledByChildren = super.hasListeners(eventName, checkParent);
+            }
+            return handledByChildren;
+        }
+        return super.hasListeners(eventName, checkParent);
+    }
+	private boolean canFire = true;
+	@Override
+	public boolean fireEvent(String eventName, Object data, boolean bubbles,
+            boolean checkListeners) {
+		if (canFire && supportedEvents.contains(eventName) &&  children != null && children.size() > 0) {
+		    canFire = false;
 			int x = -1;
 			int y = -1;
 			if (data instanceof HashMap) {
-				x = TiConvert.toInt((HashMap)data, TiC.PROPERTY_X);
-				y = TiConvert.toInt((HashMap)data, TiC.PROPERTY_Y);
+	            double density = TiApplication.getAppDensity();
+				x = (int) (TiConvert.toInt((HashMap)data, TiC.PROPERTY_X) * density);
+				y = (int) (TiConvert.toInt((HashMap)data, TiC.PROPERTY_Y) * density);
 			}
 			boolean handledByChildren = false;
 			boolean result = false;
@@ -153,7 +177,7 @@ public class ShapeViewProxy extends TiViewProxy {
             for (int i = 0; i < children.length; i++) {
                 KrollProxy childProxy = children[i];
                 if (childProxy instanceof ShapeProxy) {
-                    handledByChildren |= ((ShapeProxy) childProxy).handleTouchEvent(eventName, data, bubbles, x, y);
+                    handledByChildren |= ((ShapeProxy) childProxy).handleTouchEvent(eventName, data, bubbles, checkListeners, x, y);
 
                 }
 			}
@@ -161,7 +185,8 @@ public class ShapeViewProxy extends TiViewProxy {
 				return true;
 			}
 		}
-		return super.fireEvent(eventName, data, bubbles);
+        canFire = true;
+		return super.fireEvent(eventName, data, bubbles, checkListeners);
 	}
 
 	@Override

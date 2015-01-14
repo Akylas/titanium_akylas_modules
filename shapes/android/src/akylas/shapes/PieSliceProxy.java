@@ -37,23 +37,20 @@ public class PieSliceProxy extends ArcProxy{
 		((PieSlice) pathable).innerRadius = computeRadius(this.innerRadius, width, height);
 		super.updatePath();
 	}
-
-	@Override
-	public void processProperties(KrollDict properties) {
-		if (properties.containsKey(AkylasShapesModule.PROPERTY_INNERRADIUS)) {
-			this.innerRadius = properties.get(AkylasShapesModule.PROPERTY_INNERRADIUS);
-		}
-        super.processProperties(properties);
-	}
 	
 	@Override
-	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-		if (key.equals(AkylasShapesModule.PROPERTY_INNERRADIUS)) {
-			this.innerRadius = newValue;
-		}
-		else super.propertyChanged(key, oldValue, newValue, proxy);
-		redraw();
-	}
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+            case AkylasShapesModule.PROPERTY_INNERRADIUS:
+                this.innerRadius = properties.get(newValue);
+        break;
+
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+        break;
+        }
+    }
 	
 	@Override
 	protected void preparePropertiesSet(TiAnimatorSet tiSet,

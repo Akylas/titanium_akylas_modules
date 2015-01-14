@@ -24,11 +24,22 @@ public class Utils {
 	private static final String TAG = "ShapeUtils";
 
 
-	public static float getRawSize(KrollDict dict, String property,
+	public static float getRawSize(Object value,
 			String defaultValue, Context context) {
-		return TiUIHelper.getRawSize(dict.optString(property, defaultValue),
+		return TiUIHelper.getRawSize(TiConvert.toString(value, defaultValue),
 				context);
 	}
+	
+	public static float getRawSize(Object value,
+            String defaultValue) {
+        return TiUIHelper.getRawSize(TiConvert.toString(value, defaultValue),
+                null);
+    }
+	public static float getRawSize(KrollDict dict, String property,
+            String defaultValue, Context context) {
+        return TiUIHelper.getRawSize(dict.optString(property, defaultValue),
+                context);
+    }
 	public static float getRawSize(KrollDict dict, String property, String defaultValue) {
 		return getRawSize(dict, property, defaultValue, null);
 	}
@@ -37,6 +48,15 @@ public class Utils {
 			Context context) {
 		return getRawSize(dict, property, null, context);
 	}
+	
+	public static float getRawSize(Object value,
+            Context context) {
+        return getRawSize(TiConvert.toString(value), null, context);
+    }
+	
+	public static float getRawSize(Object value) {
+        return getRawSize(value, (String)null);
+    }
 	
 	public static float getRawSize(KrollDict dict, String property) {
 		return getRawSize(dict, property, null, null);
@@ -121,6 +141,15 @@ public class Utils {
 			paint.setStrokeWidth(width);
 		}
 	}
+	
+	public static void styleStrokeWidth(Object value,
+            String defaultValue, Paint[] paints) {
+        float width = getRawSize(value, defaultValue);
+        for (int i = 0; i < paints.length; i++) {
+            Paint paint = paints[i];
+            paint.setStrokeWidth(width);
+        }
+    }
 
 	public static void styleStrokeWidth(KrollDict dict, String property,
 			String defaultValue, Paint paint, Context context) {
@@ -132,6 +161,11 @@ public class Utils {
 			String defaultValue, Paint paint) {
 		styleStrokeWidth(dict, property, defaultValue, new Paint[] { paint });
 	}
+	
+	public static void styleStrokeWidth(Object value,
+            String defaultValue, Paint paint) {
+        styleStrokeWidth(value, defaultValue, new Paint[] { paint });
+    }
 
 	public static void styleStrokeWidth(KrollDict dict, String property,
 			Paint[] paints, Context context) {
@@ -143,6 +177,15 @@ public class Utils {
 			}
 		}
 	}
+	
+	public static void styleStrokeWidth(Object value,
+            Paint[] paints, Context context) {
+        float width = getRawSize(value, context);
+        for (int i = 0; i < paints.length; i++) {
+            Paint paint = paints[i];
+            paint.setStrokeWidth(width);
+        }
+    }
 
 	public static void styleStrokeWidth(KrollDict dict, String property,
 			Paint paint, Context context) {
@@ -170,14 +213,18 @@ public class Utils {
 	}
 
 	public static void styleCap(KrollDict dict, String property, Paint paint) {
-		if (dict.containsKey(property)) {
-			Cap cap = Cap.values()[dict.getInt(property)];
-			paint.setStrokeCap(cap);
-		}
-	}
+        if (dict.containsKey(property)) {
+            Cap cap = Cap.values()[dict.getInt(property)];
+            paint.setStrokeCap(cap);
+        }
+    }
+	public static void styleCap(int value, Paint paint) {
+        Cap cap = Cap.values()[value];
+        paint.setStrokeCap(cap);
+    }
 
 	public static void styleJoin(KrollDict dict, Paint paint) {
-		styleCap(dict, "join", paint);
+		styleJoin(dict, "join", paint);
 	}
 
 	// Cap
@@ -193,6 +240,11 @@ public class Utils {
 			paint.setStrokeJoin(join);
 		}
 	}
+	
+	public static void styleJoin(int value, Paint paint) {
+        Join join = Join.values()[value];
+        paint.setStrokeJoin(join);
+    }
 
 	public static void styleCap(KrollDict dict, Paint paint) {
 		styleCap(dict, "cap", paint);
@@ -215,10 +267,13 @@ public class Utils {
 
 	public static void styleColor(KrollDict dict, String property, Paint paint) {
 		if (dict.containsKey(property)) {
-			int color = dict.getColor(property);
-			setColorForPaint(color, paint);
+			styleColor(dict.getColor(property), paint);
 		}
 	}
+	
+	public static void styleColor(int color, Paint paint) {
+	    setColorForPaint(color, paint);
+    }
 
 	public static void setColorForPaint(int color, Paint paint) {
 		paint.setColor(color);
@@ -231,13 +286,17 @@ public class Utils {
 	public static void styleColor(KrollDict dict, String property,
 			Paint[] paints) {
 		if (dict.containsKey(property)) {
-			int color = dict.getColor(property);
-			for (int i = 0; i < paints.length; i++) {
-				Paint paint = paints[i];
-				setColorForPaint(color, paint);
-			}
+			styleColor(dict.getColor(property), paints);
 		}
 	}
+	
+	public static void styleColor(int color,
+            Paint[] paints) {
+        for (int i = 0; i < paints.length; i++) {
+            Paint paint = paints[i];
+            setColorForPaint(color, paint);
+        }
+    }
 
 	public static void styleColor(KrollDict dict, Paint paint) {
 		styleColor(dict, "color", paint);
@@ -362,20 +421,24 @@ public class Utils {
 	// Emboss
 	public static EmbossMaskFilter styleEmboss(KrollDict dict, String property) {
 		if (dict.containsKey(property)) {
-			KrollDict emboss = dict.getKrollDict(property);
-			float[] direction = emboss.optFloatArray("direction", new float[]{1, 1, 1});
-			float ambient = emboss.optFloat("ambient", 0.4f);
-			float specular = emboss.optFloat("specular", 10);
-			float blurRadius = emboss.optFloat("radius", 8.2f);
-	        EmbossMaskFilter emf = new EmbossMaskFilter(direction, ambient, specular, blurRadius);
-	        return emf;
+	        return styleEmboss(dict.getKrollDict(property));
 		}
 		return null;
 	}
 	
-	public static EmbossMaskFilter styleEmboss(KrollDict dict) {
-		return styleEmboss(dict, "emboss");
-	}
+	public static EmbossMaskFilter styleEmboss(KrollDict emboss) {
+	    if (emboss == null) return null;
+        float[] direction = emboss.optFloatArray("direction", new float[]{1, 1, 1});
+        float ambient = emboss.optFloat("ambient", 0.4f);
+        float specular = emboss.optFloat("specular", 10);
+        float blurRadius = emboss.optFloat("radius", 8.2f);
+        EmbossMaskFilter emf = new EmbossMaskFilter(direction, ambient, specular, blurRadius);
+        return emf;
+    }
+	
+//	public static EmbossMaskFilter styleEmboss(KrollDict dict) {
+//		return styleEmboss(dict, "emboss");
+//	}
 	
 	public static void styleEmboss(KrollDict dict, String property, Paint paint) {
         EmbossMaskFilter emf = styleEmboss(dict, property);
@@ -383,20 +446,24 @@ public class Utils {
 	}
 	
 	public static void styleEmboss(KrollDict dict, Paint paint) {
-		styleEmboss(dict, "emboss", paint);
+	    EmbossMaskFilter emf = styleEmboss(dict);
+        paint.setMaskFilter(emf);
 	}
 	
 	// Dash
 	public static DashPathEffect getDashEffect(KrollDict dict, String property, Context context) {
 		if (dict.containsKey(property)) {
-			KrollDict dash = dict.getKrollDict(property);
-			float[] pattern = getRawSizeArray(dash, "pattern", new float[]{10,20}, context);
-			float phase = dash.optFloat("phase", 0.0f);
-			DashPathEffect effect = new DashPathEffect(pattern, phase);
-	        return effect;
+	        return getDashEffect(dict.getKrollDict(property), context);
 		}
 		return null;
 	}
+	public static DashPathEffect getDashEffect(KrollDict dash, Context context) {
+        if (dash == null) return null;
+        float[] pattern = getRawSizeArray(dash, "pattern", new float[]{10,20}, context);
+        float phase = dash.optFloat("phase", 0.0f);
+        DashPathEffect effect = new DashPathEffect(pattern, phase);
+        return effect;
+    }
 	public static DashPathEffect styleDash(KrollDict dict, String property) {
 		return getDashEffect(dict, property, null);
 	}
@@ -413,13 +480,22 @@ public class Utils {
 		paint.setPathEffect(getDashEffect(dict, property, context));
 	}
 	public static void styleDash(KrollDict dict, String property, Paint paint) {
-		styleDash(dict, property, null);
+		styleDash(dict, property, paint, null);
 	}
 	
-	public static void styleDash(KrollDict dict, Paint paint, Context context) {
-		styleDash(dict, "dash", paint, context);
-	}
+//	public static void styleDash(KrollDict dict, Paint paint, Context context) {
+//		styleDash(dict, "dash", paint, context);
+//	}
 	
+	 public static void styleDash(KrollDict dict, Paint paint, Context context) {
+	        DashPathEffect effect = getDashEffect(dict, context);
+            paint.setPathEffect(effect);
+    }
+	 
+	 public static void styleDash(KrollDict dict, Paint paint) {
+	     styleDash(dict, paint, null);
+ }
+
 	
 	public static void styleShadow(KrollDict shadowOptions, Paint[] paints, Context context) {
 		float offsetx = 0.0f;

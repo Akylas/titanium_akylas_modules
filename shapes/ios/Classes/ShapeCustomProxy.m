@@ -147,27 +147,27 @@
 
 -(void)setLineJoin:(id)arg
 {
-    int result;
+    NSInteger result;
     if ([arg isKindOfClass:[NSString class]]) {
         result = [self lineJoinFromString:[TiUtils stringValue:arg]];
     }
     else {
         result = [TiUtils intValue:arg def:kCGLineJoinMiter];
     }
-    [self setLayerValue:[NSNumber numberWithInt:result] forKey:kAnimLineJoin];
+    [self setLayerValue:NUMINTEGER(result) forKey:kAnimLineJoin];
 	[self replaceValue:arg forKey:kAnimLineJoin notification:NO];
 }
 
 -(void)setLineCap:(id)arg
 {
-    int result;
+    NSInteger result;
     if ([arg isKindOfClass:[NSString class]]) {
         result = [self lineCapFromString:[TiUtils stringValue:arg]];
     }
     else {
         result = [TiUtils intValue:arg def:kCGLineCapButt];
     }
-    [self setLayerValue:[NSNumber numberWithInt:result] forKey:kAnimLineCap];
+    [self setLayerValue:NUMINTEGER(result) forKey:kAnimLineCap];
 	[self replaceValue:arg forKey:kAnimLineCap notification:NO];
 }
 
