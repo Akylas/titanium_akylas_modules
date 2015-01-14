@@ -1338,8 +1338,8 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
     }
     CGPoint velocity = [self.panGesture velocityInView:self.panGesture.view];
     BOOL isHorizontalGesture = fabs(velocity.y) < fabs(velocity.x);
-    
-    if ([otherGestureRecognizer.view isKindOfClass:[UITableView class]]) {
+    UIView* view = otherGestureRecognizer.view;
+    if ([view isKindOfClass:[UITableView class]]) {
         if (isHorizontalGesture) {
             BOOL directionIsLeft = velocity.x < 0;
             if (directionIsLeft) {
@@ -1350,7 +1350,7 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
                 }
             } else {
                 //if direction is to right
-                UITableView *tableView = (UITableView *)otherGestureRecognizer.view;
+                UITableView *tableView = (UITableView *)view;
                 CGPoint point = [otherGestureRecognizer locationInView:tableView];
                 NSIndexPath *indexPath = [tableView indexPathForRowAtPoint:point];
                 UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
@@ -1361,7 +1361,8 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
                 }
             }
         }
-    } else if ([otherGestureRecognizer.view isKindOfClass:NSClassFromString(@"UITableViewCellScrollView")]) {
+    } else if ([view isKindOfClass:NSClassFromString(@"UITableViewCellScrollView")] ||
+               [view isKindOfClass:[UITableViewCell class]]) {
         return YES;
     }
     
@@ -1391,11 +1392,13 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
         CGPoint point = [gestureRecognizer locationInView:gestureRecognizer.view];
         if(([self isPointContainedWithinLeftBezelRect:point] && self.leftDrawerViewController) ||
            ([self isPointContainedWithinRightBezelRect:point] && self.rightDrawerViewController)){
-            if ([otherGestureRecognizer isKindOfClass:NSClassFromString([NSString stringWithFormat:@"UIScrollView%@", @"PanGestureRecognizer" ])]) {
-                otherGestureRecognizer.enabled = NO;
-                otherGestureRecognizer.enabled = YES;
-                return YES;
-            }
+//            if ([otherGestureRecognizer isKindOfClass:NSClassFromString([NSString stringWithFormat:@"UIScrollView%@", @"PanGestureRecognizer" ])]) {
+//                otherGestureRecognizer.enabled = NO;
+//                otherGestureRecognizer.enabled = YES;
+//            }
+            otherGestureRecognizer.enabled = NO;
+            otherGestureRecognizer.enabled = YES;
+            return YES;
         }
     }
     return NO;

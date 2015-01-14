@@ -117,7 +117,7 @@
 	if (_controller==nil)
 	{
         _controller = [[AkylasSlidemenuDrawerController alloc] initWithNibName:nil bundle:nil];
-        _controller.proxy = self.proxy;
+        _controller.proxy = [self viewProxy];
         
         UIView * controllerView = [_controller view];
         [controllerView setFrame:[self bounds]];
@@ -258,7 +258,7 @@
 -(void)updateLeftViewWidth:(BOOL)animated
 {
     [[self controller] setMaximumLeftDrawerWidth:TiDimensionCalculateValue(_leftViewWidth, self.bounds.size.width) animated:animated completion:^(BOOL finished) {
-        if ([self.proxy _hasListeners:@"menuwidth" checkParent:NO])
+        if ([[self viewProxy] _hasListeners:@"menuwidth" checkParent:NO])
         {
             NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(0), @"side",
                                  @(animated), @"animated", nil];
@@ -277,7 +277,7 @@
 -(void)updateRightViewWidth:(BOOL)animated
 {
     [[self controller] setMaximumRightDrawerWidth:TiDimensionCalculateValue(_rightViewWidth, self.bounds.size.width) animated:animated completion:^(BOOL finished) {
-        if ([self.proxy _hasListeners:@"menuwidth" checkParent:NO])
+        if ([[self viewProxy] _hasListeners:@"menuwidth" checkParent:NO])
         {
             NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(1), @"side",
                                  @(animated), @"animated", nil];
@@ -336,7 +336,7 @@
 {
     ENSURE_UI_THREAD(setPanningMode_,args);
     if(args !=nil){
-        int num = [TiUtils intValue:args];
+        NSInteger num = [TiUtils intValue:args];
         [self controller].openDrawerGestureModeMask = [TiUtils intValue:args];
     }
 }

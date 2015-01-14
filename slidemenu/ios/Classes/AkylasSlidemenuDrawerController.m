@@ -7,8 +7,14 @@
 //
 
 #import "AkylasSlidemenuDrawerController.h"
-#import "TiProxy.h"
+#import "TiViewProxy.h"
 #import "TiApp.h"
+
+
+@interface MMDrawerController ()
+
+-(UIView*)childControllerContainerView;
+@end
 
 @interface AkylasSlidemenuDrawerController ()
 {
@@ -18,9 +24,7 @@
     UIView* _rightViewFadingView;
 //    CGFloat _fadeDegree; //between 0.0f and 1.0f
 }
--(UIView*)childControllerContainerView;
 @property (nonatomic, assign) CGRect startingPanRect;
-
 @end
 
 @implementation AkylasSlidemenuDrawerController

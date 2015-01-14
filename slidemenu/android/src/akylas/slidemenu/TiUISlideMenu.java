@@ -210,13 +210,13 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		if (leftMenuWidth < 0) {
 			leftMenuWidth += slidingMenu.getWidth();
 		}
-		if (leftMenuWidth > 0) slidingMenu.setBehindScrollScale(leftViewDisplacement.getAsPixels(slidingMenu.getContext(), leftMenuWidth, leftMenuWidth)/(float)leftMenuWidth);
+		if (leftMenuWidth > 0) slidingMenu.setBehindScrollScale(leftViewDisplacement.getAsPixels(leftMenuWidth, leftMenuWidth)/(float)leftMenuWidth);
 
 		int myRightMenuWidth = realRightMenuWidth;
 		if (myRightMenuWidth < 0) {
 			myRightMenuWidth += slidingMenu.getWidth();
 		}
-		if (myRightMenuWidth > 0) slidingMenu.setBehindSecondaryScrollScale(rightViewDisplacement.getAsPixels(slidingMenu.getContext(), myRightMenuWidth, myRightMenuWidth)/(float)myRightMenuWidth);
+		if (myRightMenuWidth > 0) slidingMenu.setBehindSecondaryScrollScale(rightViewDisplacement.getAsPixels(myRightMenuWidth, myRightMenuWidth)/(float)myRightMenuWidth);
 	}
 	
 	public int getLeftMenuWidth()
@@ -405,7 +405,7 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 //			updateAnimationMode(TiConvert.toInt(d.get(AkylasSlidemenuModule.PROPERTY_ANIMATION_RIGHT)), true);
 //		}
 		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_TRANSITION_LEFT)) {
-			Transition transition = TransitionHelper.transitionFromObject((HashMap) d.get(AkylasSlidemenuModule.PROPERTY_TRANSITION_LEFT), null, null);
+			Transition transition = TransitionHelper.transitionFromObject(d.get(AkylasSlidemenuModule.PROPERTY_TRANSITION_LEFT), null, null);
 			updateAnimationMode(transition, false);
 			//			mPager.updatePageTransformer();
 		}
@@ -484,14 +484,14 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 				newProxy.setActivity(activity);
 				newProxy.setParent(this.proxy);
 				if (isCenterView) {
+				    if (newProxy instanceof TiWindowProxy) {
+                        ((TiWindowProxy) newProxy).setWindowManager((TiWindowManager) this.proxy);
+                        activity.setWindowProxy((TiWindowProxy) newProxy);
+                    }
 					TiCompositeLayout.LayoutParams params = new TiCompositeLayout.LayoutParams();
 					params.autoFillsHeight = true;
 					params.autoFillsWidth = true;
 					content.addView(newProxy.getOrCreateView().getOuterView(), index, params);
-					if (newProxy instanceof TiWindowProxy) {
-						((TiWindowProxy) newProxy).setWindowManager((TiWindowManager) this.proxy);
-						activity.setWindowProxy((TiWindowProxy) newProxy);
-					}
 				}
 				if (newProxy instanceof TiWindowProxy) {
 					((TiWindowProxy)newProxy).onWindowActivityCreated();
