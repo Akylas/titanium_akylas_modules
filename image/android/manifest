@@ -6,8 +6,9 @@ version: 1.0
 apiversion: 2
 description: a module to manipulate images
 author: Martin Guillon
-license: Specify your license
-copyright: Copyright (c) 2013 by Your Company
+license: Proprietary
+copyright: Copyright (c) 2013-2015 by Akylas
+debug_project_subpath: image/android
 
 
 # these should not be edited

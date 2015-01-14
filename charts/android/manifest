@@ -2,12 +2,13 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 1.0
+version: 2.0
 apiversion: 2
 description: A module to draw charts
 author: Martin Guillon
-license: Specify your license
-copyright: Copyright (c) 2013 by Your Company
+license: Proprietary
+copyright: Copyright (c) 2013-2015 by Akylas
+debug_project_subpath: charts/android
 
 
 # these should not be edited
@@ -15,4 +16,4 @@ name: akylas-charts
 moduleid: akylas.charts
 guid: 0d2264a8-c671-4e15-881e-e528a24d0450
 platform: android
-minsdk: 3.2.0
+minsdk: 3.6.0.AKYLAS

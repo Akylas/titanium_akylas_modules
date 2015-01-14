@@ -2,12 +2,13 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 1.0
+version: 2.0
 apiversion: 2
 description: Akylas MapBox module
 author: Martin Guillon
-license: Specify your license
-copyright: Akylas
+license: Proprietary
+copyright: Copyright (c) 2014-2015 by Akylas
+debug_project_subpath: mapbox/android
 
 
 # these should not be edited

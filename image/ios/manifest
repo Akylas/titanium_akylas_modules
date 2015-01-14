@@ -6,8 +6,8 @@ version: 1.0
 apiversion: 2
 description: A module for image manipulations
 author: Martin Guillon
-license: Specify your license
-copyright: Copyright (c) 2013 by Akylas
+license: Proprietary
+copyright: Copyright (c) 2013-2015 by Akylas
 
 
 # these should not be edited

@@ -2,12 +2,12 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 1.0
+version: 2.0
 apiversion: 2
 description: A module do draw charts
 author: Martin Guillon
-license: Specify your license
-copyright: Copyright (c) 2013 by Your Company
+license: Proprietary
+copyright: Copyright (c) 2013-2015 by Akylas
 
 
 # on ios make sure that moduleid is the name of the project
