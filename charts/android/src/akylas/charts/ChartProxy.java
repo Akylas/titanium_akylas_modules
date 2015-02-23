@@ -71,7 +71,7 @@ public class ChartProxy extends TiViewProxy {
 				return;
 			}
 //			plotView.setShouldSupportHwAcceleration(false);
-			if (Build.VERSION.SDK_INT >= TiC.API_LEVEL_HONEYCOMB) {
+			if (TiC.HONEYCOMB_OR_GREATER) {
 				plotView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 			}
 			float defaultSize = TiUIHelper.getRawSize(null, plotView.getContext());
