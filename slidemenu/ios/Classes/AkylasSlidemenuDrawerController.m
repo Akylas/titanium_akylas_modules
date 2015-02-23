@@ -219,44 +219,47 @@
 -(void)panGestureCallback:(UIPanGestureRecognizer *)panGesture __attribute((objc_requires_super))
 {
     [super panGestureCallback:panGesture];
+    [self updateOffset:panGesture];
+}
+
+-(void)updateOffset:(UIPanGestureRecognizer *)panGesture {
+    NSString* event = nil;
+    BOOL ending = false;
     switch (panGesture.state) {
         case UIGestureRecognizerStateBegan:
             self.startingPanRect = self.centerContainerView.frame;
-            if ([(TiViewProxy*)_proxy _hasListeners:@"scrollstart" checkParent:NO])
-            {
-                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(0), @"offset", nil];
-                [_proxy fireEvent:@"scrollstart" withObject:evt propagate:NO checkForListener:NO];
-            }
+            event = @"scrollstart";
         case UIGestureRecognizerStateChanged:{
-            CGRect newFrame = self.startingPanRect;
-            CGPoint translatedPoint = [panGesture translationInView:self.centerContainerView];
-            newFrame.origin.x = [self roundedOriginXForDrawerConstriants:CGRectGetMinX(self.startingPanRect)+translatedPoint.x];
-            newFrame = CGRectIntegral(newFrame);
-            CGFloat xOffset = newFrame.origin.x;
-            if ([(TiViewProxy*)_proxy _hasListeners:@"scroll" checkParent:NO])
-            {
-                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(xOffset), @"offset", nil];
-                [_proxy fireEvent:@"scroll" withObject:evt propagate:NO checkForListener:NO];
-            }
+            event = @"scroll";
             break;
         }
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateEnded:{
+            event = @"scrollend";
             CGRect newFrame = self.startingPanRect;
-            CGPoint translatedPoint = [panGesture translationInView:self.centerContainerView];
-            newFrame.origin.x = [self roundedOriginXForDrawerConstriants:CGRectGetMinX(self.startingPanRect)+translatedPoint.x];
-            newFrame = CGRectIntegral(newFrame);
-            CGFloat xOffset = newFrame.origin.x;
-            self.startingPanRect = CGRectNull;
-            if ([(TiViewProxy*)_proxy _hasListeners:@"scrollend" checkParent:NO])
-            {
-                NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:@(xOffset), @"offset", nil];
-                [_proxy fireEvent:@"scrollend" withObject:evt propagate:NO checkForListener:NO];
-            }
+            ending = true;
             break;
         }
         default:
             break;
+    }
+    if (event && [(TiViewProxy*)_proxy _hasListeners:event checkParent:NO])
+    {
+        CGRect newFrame = self.startingPanRect;
+        CGPoint translatedPoint = [panGesture translationInView:self.centerContainerView];
+        newFrame.origin.x = [self roundedOriginXForDrawerConstriants:CGRectGetMinX(self.startingPanRect)+translatedPoint.x];
+        newFrame = CGRectIntegral(newFrame);
+        CGFloat xOffset = newFrame.origin.x;
+        BOOL right = self.openSide == MMDrawerSideRight;
+
+        [_proxy fireEvent:event withObject:@{
+                                             @"side":NUMINTEGER(right?1:0),
+                                             @"offset":@(xOffset),
+                                             @"percent":@(xOffset / (right?self.maximumRightDrawerWidth:self.maximumLeftDrawerWidth))
+                                             } propagate:NO checkForListener:NO];
+    }
+    if (ending) {
+        self.startingPanRect = CGRectNull;
     }
 }
 
