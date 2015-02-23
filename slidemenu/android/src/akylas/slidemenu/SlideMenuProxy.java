@@ -36,6 +36,8 @@ import android.os.Message;
 	AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_WIDTH,
 	AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_WIDTH,
 	AkylasSlidemenuModule.PROPERTY_FADING,
+	AkylasSlidemenuModule.PROPERTY_TRANSITION_LEFT,
+	AkylasSlidemenuModule.PROPERTY_TRANSITION_RIGHT,
 	AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_DISPLACEMENT,
 	AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_DISPLACEMENT,
 	TiC.PROPERTY_SHADOW_WIDTH
@@ -61,6 +63,7 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	public SlideMenuProxy()
 	{
 		super();
+        defaultValues.put(AkylasSlidemenuModule.PROPERTY_PANNING_MODE, AkylasSlidemenuModule.MENU_PANNING_CENTER_VIEW);
 	}
 
 	public SlideMenuProxy(TiContext tiContext)
@@ -109,12 +112,36 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	@Override
 	public TiUIView createView(Activity activity)
 	{
-//		slideMenuActivity = new WeakReference<Activity>(activity);
 		TiUISlideMenu v = new TiUISlideMenu(this, (TiBaseActivity) activity);
 		slidingMenu = new WeakReference<SlidingMenu>((v).getSlidingMenu());
-		setView(v);
 		return v;
 	}
+	
+//	@Override
+//    public void setActivity(Activity activity)
+//    {
+//        TiBaseActivity oldActivity = (TiBaseActivity) getActivity();
+//        TiBaseActivity newActivity = (TiBaseActivity) activity;
+//        Log.d(TAG, "setActivity :" + newActivity);
+//        if (newActivity == oldActivity) return;
+//        super.setActivity(activity);
+//        
+//        if (oldActivity != null) {
+//            oldActivity.removeInterceptOnHomePressedEventListener(this);
+//        }
+//        
+//        if (newActivity != null) {
+//            newActivity.addInterceptOnHomePressedEventListener(this);
+//        }
+//    }
+
+	
+	@Override
+    public void onWindowActivityCreated()
+    {
+        super.onWindowActivityCreated();
+        ((TiUISlideMenu)peekView()).onWindowActivityCreated();
+    }
 
 	@Override
 	public void releaseViews(boolean activityFinishing)
@@ -146,6 +173,14 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
         }
         else super.onWindowFocusChange(focused);
     }
+    
+//    @Override
+//    protected void addToDecorView() {
+//        int style = getProperties().optInt(TiC.PROPERTY_STYLE, SlidingMenu.SLIDING_CONTENT);
+//        if (style == SlidingMenu.SLIDING_CONTENT) {
+//            super.addToDecorView();
+//        }
+//    }
 
 	private void handleToggleLeftView(boolean animated)
 	{
@@ -374,4 +409,12 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	public KrollProxy getParentForBubbling(TiWindowProxy proxy) {
 		return this;
 	}
+
+//    @Override
+//    public boolean interceptOnHomePressed() {
+//        blur();
+//        SlidingMenu menu = slidingMenu.get();
+//        menu.toggle(true);
+//        return true;
+//    }
 }

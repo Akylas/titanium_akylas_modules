@@ -65,5 +65,10 @@ public class AkylasSlidemenuModule extends KrollModule
 	@Kroll.constant public static final String PROPERTY_CENTER_VIEW = "centerView";
 	@Kroll.constant public static final String PROPERTY_FADING = "fading";
 	
+	public static String PROPERTY_SIDE = "sude";
+	
+	public static String EVENT_OPEN_MENU = "openmenu";
+	public static String EVENT_CLOSE_MENU = "closemenu";
+	
 }
 

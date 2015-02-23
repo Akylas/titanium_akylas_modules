@@ -1,16 +1,12 @@
 package akylas.slidemenu;
 
-import java.util.HashMap;
-
 import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBaseActivity.ConfigurationChangedListener;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.TiWindowManager;
-import org.appcelerator.titanium.proxy.ActivityProxy;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.proxy.TiWindowProxy;
 import org.appcelerator.titanium.transition.Transition;
@@ -22,7 +18,6 @@ import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUIView;
 
 import ti.modules.titanium.ui.widget.TiUIScrollableView.TiViewPagerLayout;
-
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -30,7 +25,6 @@ import android.graphics.drawable.GradientDrawable.Orientation;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
-import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 
@@ -55,6 +49,10 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 	private TiDimension rightViewDisplacement =  defaultDisplacement;
 	private TiCompositeLayout parentViewForChildren;
 	private int style = SlidingMenu.SLIDING_CONTENT;
+//	private MaterialMenuIconToolbar materialMenu;
+    protected static final int TIFLAG_NEEDS_MENU               = 0x00000001;
+    protected static final int TIFLAG_NEEDS_MENU_WIDTH         = 0x00000002;
+    protected static final int TIFLAG_NEEDS_MENU_DISPLACEMENT  = 0x00000003;
 	
 	public TiUISlideMenu(final SlideMenuProxy proxy, TiBaseActivity activity)
 	{
@@ -62,6 +60,13 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		this.activity = activity;
 		activity.addConfigurationChangedListener(this);
         // configure the SlidingMenu
+//		materialMenu = new MaterialMenuIconToolbar(activity, Color.WHITE, Stroke.THIN) {
+//	        @Override public int getToolbarViewId() {
+//	            Context context = TiUISlideMenu.this.activity;
+//	            return context.getResources().getIdentifier("toolbar", "id", context.getPackageName());
+//	        }
+//	    };
+//	    materialMenu.setNeverDrawTouch(true);
 		slidingMenu = new SlidingMenu(activity) {
 			@Override
 			protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -88,62 +93,49 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		slidingMenu.setOnCloseListener(new SlidingMenu.OnCloseListener() {
 			@Override
 			public void onClose(int leftOrRight, boolean animated, int duration) {
-				if (proxy.hasListeners("closemenu"))
+//                materialMenu.setState(MaterialMenuDrawable.IconState.BURGER);
+				if (proxy.hasListeners(AkylasSlidemenuModule.EVENT_CLOSE_MENU, false))
 				{
 					KrollDict options = new KrollDict();
-					options.put("side", (leftOrRight == 1)?AkylasSlidemenuModule.RIGHT_VIEW:AkylasSlidemenuModule.LEFT_VIEW);
-					options.put("animated", animated);
-					options.put("duration", duration);
-					proxy.fireEvent("closemenu", options, false, false);
+					options.put(AkylasSlidemenuModule.PROPERTY_SIDE, (leftOrRight == 1)?AkylasSlidemenuModule.RIGHT_VIEW:AkylasSlidemenuModule.LEFT_VIEW);
+					options.put(TiC.PROPERTY_ANIMATED, animated);
+					options.put(TiC.PROPERTY_DURATION, duration);
+					proxy.fireEvent(AkylasSlidemenuModule.EVENT_CLOSE_MENU, options, false, false);
 				}
 			}
 		});
 		slidingMenu.setOnOpenListener(new SlidingMenu.OnOpenListener() {
 			@Override
 			public void onOpen(int leftOrRight, boolean animated, int duration) {
-				if (proxy.hasListeners("openmenu"))
+//			    materialMenu.setState(MaterialMenuDrawable.IconState.ARROW);
+				if (proxy.hasListeners(AkylasSlidemenuModule.EVENT_OPEN_MENU, false))
 				{
 					KrollDict options = new KrollDict();
-					options.put("side", (leftOrRight == 1)?AkylasSlidemenuModule.RIGHT_VIEW:AkylasSlidemenuModule.LEFT_VIEW);
-					options.put("animated", animated);
-					options.put("duration", duration);
-					proxy.fireEvent("openmenu", options, false, false);
+					options.put(AkylasSlidemenuModule.PROPERTY_SIDE, (leftOrRight == 1)?AkylasSlidemenuModule.RIGHT_VIEW:AkylasSlidemenuModule.LEFT_VIEW);
+					options.put(TiC.PROPERTY_ANIMATED, animated);
+					options.put(TiC.PROPERTY_DURATION, duration);
+					proxy.fireEvent(AkylasSlidemenuModule.EVENT_OPEN_MENU, options, false, false);
 				}
 			}
 		});
 		slidingMenu.setOnScrolledListener(new SlidingMenu.OnScrolledListener() {
 			
 			@Override
-			public void onScrolled(int scroll) {
-				if (proxy.hasListeners("scroll"))
-				{
-					KrollDict options = new KrollDict();
-					options.put("offset", scroll);
-					proxy.fireEvent("scroll", options, false, false);
-				}
-				
+			public void onScrolled(int position, float positionOffset,
+	                int positionOffsetPixels) {
+                updateOffset(positionOffsetPixels, 1);
 			}
 
 			@Override
-			public void onScrolledEnded(int scroll) {
-				// TODO Auto-generated method stub
-				if (proxy.hasListeners("scrollend"))
-				{
-					KrollDict options = new KrollDict();
-					options.put("offset", scroll);
-					proxy.fireEvent("scrollend", options, false, false);
-				}
+			public void onScrolledEnded(int position, float positionOffset,
+	                int positionOffsetPixels) {
+                updateOffset(positionOffsetPixels, 2);
 			}
 
 			@Override
-			public void onScrolledStarted(int scroll) {
-				// TODO Auto-generated method stub
-				if (proxy.hasListeners("scrollstart"))
-				{
-					KrollDict options = new KrollDict();
-					options.put("offset", scroll);
-					proxy.fireEvent("scrollstart", options, false, false);
-				}
+			public void onScrolledStarted(int position, float positionOffset,
+	                int positionOffsetPixels) {			    
+                updateOffset(positionOffsetPixels, 0);
 			}
 		});
 		
@@ -164,9 +156,9 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 			slidingMenu.addView(layout);
 			slidingMenu.setContent(new TiCompositeLayout(activity));
 		}
-		else {
-			slidingMenu.attachToActivity(activity, style);
-		}
+//		else {
+//			slidingMenu.attachToActivity(activity, style);
+//		}
 		
 		int[] colors1 = {Color.argb(0, 0, 0, 0), Color.argb(128, 0, 0, 0)};
 		GradientDrawable shadow = new GradientDrawable(Orientation.LEFT_RIGHT, colors1);
@@ -175,6 +167,27 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		slidingMenu.setSecondaryShadowDrawable(shadowR);
 
 		setNativeView(slidingMenu);
+	}
+	
+	
+	private void updateOffset(final int positionOffsetPixels, int state) {
+	    final String event = (state == 0)?TiC.EVENT_SCROLLSTART: ((state == 1)?TiC.EVENT_SCROLL:TiC.EVENT_SCROLLEND);
+        if (proxy.hasListeners(event, false))
+        {
+            boolean rightMenu = positionOffsetPixels > 0;
+            int offset = Math.abs(positionOffsetPixels);
+            float percent = (float)offset / (rightMenu ? slidingMenu.getSecondaryBehindWidth(): slidingMenu.getBehindWidth());
+            
+            KrollDict options = new KrollDict();
+            options.put(AkylasSlidemenuModule.PROPERTY_SIDE, rightMenu?AkylasSlidemenuModule.RIGHT_VIEW:AkylasSlidemenuModule.LEFT_VIEW);
+            options.put("offset", -positionOffsetPixels);
+            options.put("percent", percent);
+            proxy.fireEvent(event, options, false, false);
+        }
+//        materialMenu.setTransformationOffset(
+//                MaterialMenuDrawable.AnimationState.BURGER_ARROW,
+//                percent
+//            );
 	}
 	
 
@@ -352,120 +365,94 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 			slidingMenu.setSecondaryMenu(null);
 		}
 	}
-
-	@Override
-	public void processProperties(KrollDict d)
-	{
-		if (d.containsKey(TiC.PROPERTY_ACTIVITY)) {
-			Object activityObject = d.get(TiC.PROPERTY_ACTIVITY);
-			ActivityProxy activityProxy = getProxy().getActivityProxy();
-			if (activityObject instanceof HashMap<?, ?> && activityProxy != null) {
-				@SuppressWarnings("unchecked")
-				KrollDict options = new KrollDict((HashMap<String, Object>) activityObject);
-				activityProxy.handleCreationDict(options);
-			}
-		}
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW)) {
-			setProxy((TiViewProxy) d.get(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW), 1);
-		}
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW)) {
-			setProxy((TiViewProxy) d.get(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW), 2);
-		}
-		
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW)) {
-			setProxy((TiViewProxy) d.get(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW), 0);
-		}
-		
-		updateMenus();	
-		
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_PANNING_MODE)) {
-			updatePanningMode(TiConvert.toInt(d.get(AkylasSlidemenuModule.PROPERTY_PANNING_MODE), AkylasSlidemenuModule.MENU_PANNING_CENTER_VIEW));
-		}
-
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_WIDTH)) {
-			menuWidth = TiConvert.toTiDimension(d, AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_WIDTH, TiDimension.TYPE_WIDTH);
-		}
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_WIDTH)) {
-			rightMenuWidth = TiConvert.toTiDimension(d, AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_WIDTH, TiDimension.TYPE_WIDTH);
-		}
-		
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_FADING)) {
-			slidingMenu.setFadeDegree(d.getDouble(AkylasSlidemenuModule.PROPERTY_FADING).floatValue());
-		}
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_DISPLACEMENT)) {
-			leftViewDisplacement = TiConvert.toTiDimension(d, AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_DISPLACEMENT, TiDimension.TYPE_WIDTH);
-		}
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_DISPLACEMENT)) {
-			rightViewDisplacement = TiConvert.toTiDimension(d, AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_DISPLACEMENT, TiDimension.TYPE_WIDTH);
-		}
-//		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_ANIMATION_LEFT)) {
-//			updateAnimationMode(TiConvert.toInt(d.get(AkylasSlidemenuModule.PROPERTY_ANIMATION_LEFT)), false);
-//		}
-//		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_ANIMATION_RIGHT)) {
-//			updateAnimationMode(TiConvert.toInt(d.get(AkylasSlidemenuModule.PROPERTY_ANIMATION_RIGHT)), true);
-//		}
-		if (d.containsKey(AkylasSlidemenuModule.PROPERTY_TRANSITION_LEFT)) {
-			Transition transition = TransitionHelper.transitionFromObject(d.get(AkylasSlidemenuModule.PROPERTY_TRANSITION_LEFT), null, null);
-			updateAnimationMode(transition, false);
-			//			mPager.updatePageTransformer();
-		}
-		if (d.containsKey(TiC.PROPERTY_SHADOW_WIDTH)) {
-			slidingMenu.setShadowWidth(d.getInt(TiC.PROPERTY_SHADOW_WIDTH));
-		}
-		if (d.containsKey(TiC.PROPERTY_ENABLED)) {
-			slidingMenu.setSlidingEnabled(d.getBoolean(TiC.PROPERTY_ENABLED));
-		}
-		updateMenuWidth();
-		super.processProperties(d);
-	}
 	
-	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy)
-	{
-		Log.d(TAG, "Property: " + key + " old: " + oldValue + " new: " + newValue, Log.DEBUG_MODE);
-
-		if (key.equals(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW)) {
-			setProxy((TiViewProxy) newValue, 1);
-			updateMenus();	
-		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW)) {
-			setProxy((TiViewProxy) newValue, 2);
-			updateMenus();	
-		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_CENTER_VIEW)) {
-			setProxy((TiViewProxy) newValue, 0);
-			slidingMenu.showContent(true);
-		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_PANNING_MODE)) {
-			updatePanningMode(TiConvert.toInt(newValue, AkylasSlidemenuModule.MENU_PANNING_CENTER_VIEW));
-		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_WIDTH)) {
-			menuWidth = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
-			updateMenuWidth();
-		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_WIDTH)) {
-			rightMenuWidth = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
-			updateMenuWidth();
-		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_FADING)) {
-			slidingMenu.setFadeDegree(TiConvert.toFloat(newValue));
-//		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_ANIMATION_LEFT)) {
-//			updateAnimationMode(TiConvert.toInt(newValue), false);
-//		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_ANIMATION_RIGHT)) {
-//			updateAnimationMode(TiConvert.toInt(newValue), true);
-		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_DISPLACEMENT)) {
-			leftViewDisplacement = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
-			updateDisplacements();
-		} else if (key.equals(AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_DISPLACEMENT)) {
-			rightViewDisplacement = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
-			updateDisplacements();
-		} else if (key.equals(TiC.PROPERTY_SHADOW_WIDTH)) {
-			slidingMenu.setShadowWidth(TiConvert.toInt(newValue));
-		} else if (key.equals(TiC.PROPERTY_ENABLED)) {
-				slidingMenu.setSlidingEnabled(TiConvert.toBoolean(newValue));
-		} else {
-			super.propertyChanged(key, oldValue, newValue, proxy);
-		}
-	}
+	@Override
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+        case AkylasSlidemenuModule.PROPERTY_TRANSITION_LEFT:
+            updateAnimationMode(TransitionHelper.transitionFromObject(newValue, null, null), false);
+            break;
+        case AkylasSlidemenuModule.PROPERTY_TRANSITION_RIGHT:
+            updateAnimationMode(TransitionHelper.transitionFromObject(newValue, null, null), true);
+            break;
+        case AkylasSlidemenuModule.PROPERTY_LEFT_VIEW:
+            setProxy((TiViewProxy) newValue, 1);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_MENU;
+            break;
+        case AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW:
+            setProxy((TiViewProxy) newValue, 2);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_MENU;
+            break;
+        case AkylasSlidemenuModule.PROPERTY_CENTER_VIEW:
+            setProxy((TiViewProxy) newValue, 0);
+            if (changedProperty) {
+                slidingMenu.showContent(true);
+            }
+            break;
+        case AkylasSlidemenuModule.PROPERTY_PANNING_MODE:
+            updatePanningMode(TiConvert.toInt(newValue, AkylasSlidemenuModule.MENU_PANNING_CENTER_VIEW));
+            break;
+        case AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_WIDTH:
+            menuWidth = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_MENU_WIDTH;
+            break;
+        case AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_WIDTH:
+            rightMenuWidth = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_MENU_WIDTH;
+            break;
+        case AkylasSlidemenuModule.PROPERTY_FADING:
+            slidingMenu.setFadeDegree(TiConvert.toFloat(newValue));
+            break;
+        case AkylasSlidemenuModule.PROPERTY_LEFT_VIEW_DISPLACEMENT:
+            leftViewDisplacement = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_MENU_DISPLACEMENT;
+            break;
+        case AkylasSlidemenuModule.PROPERTY_RIGHT_VIEW_DISPLACEMENT:
+            rightViewDisplacement = TiConvert.toTiDimension(newValue, TiDimension.TYPE_WIDTH);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_MENU_DISPLACEMENT;
+            break;
+        case TiC.PROPERTY_SHADOW_WIDTH:
+            slidingMenu.setShadowWidth(TiConvert.toInt(newValue));
+            break;
+        case TiC.PROPERTY_ENABLED:
+            slidingMenu.setSlidingEnabled(TiConvert.toBoolean(newValue));
+            break;
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+            break;
+        }
+    }
+    
+    @Override
+    protected void didProcessProperties() {
+        super.didProcessProperties();
+        if ((mProcessUpdateFlags & TIFLAG_NEEDS_MENU) != 0) {
+            updateMenus();
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_MENU;
+        }
+        if ((mProcessUpdateFlags & TIFLAG_NEEDS_MENU_WIDTH) != 0) {
+            updateMenuWidth();
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_MENU_WIDTH;
+        }
+        if ((mProcessUpdateFlags & TIFLAG_NEEDS_MENU_DISPLACEMENT) != 0) {
+            updateDisplacements();
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_MENU_DISPLACEMENT;
+        }
+    }
 
 	@Override
 	public void onConfigurationChanged(TiBaseActivity activity,
 			Configuration newConfig) {
 		updateMenuWidth();
 	}
+	
+    public void onWindowActivityCreated()
+    {
+        if (style == SlidingMenu.SLIDING_WINDOW) {
+            slidingMenu.attachToActivity(activity, style);
+        }
+    }
 	
 	private void setProxy(TiViewProxy newProxy, int forSlideView)//0center,1left,2right
 	{
