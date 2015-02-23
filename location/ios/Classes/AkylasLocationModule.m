@@ -177,7 +177,7 @@ MAKE_SYSTEM_STR(APP_PROPERTY_LAST_LOCATION, @"akylas.location.lastLocation");
              @"altitude":NUMDOUBLE(location.altitude),
              @"horizontalAccuracy":NUMDOUBLE(location.horizontalAccuracy),
              @"verticalAccuracy":NUMDOUBLE(location.verticalAccuracy),
-             @"course":NUMDOUBLE(location.course),
+             @"heading":NUMDOUBLE(location.course),
              @"speed":NUMDOUBLE(location.speed),
              @"timestamp":NUMDOUBLE([location.timestamp timeIntervalSince1970]*1000),
              };

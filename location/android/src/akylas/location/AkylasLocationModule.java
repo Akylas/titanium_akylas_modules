@@ -42,7 +42,7 @@ public class AkylasLocationModule extends KrollModule
     
     private static final String TAG = "AkylasLocationModule";
     
-    public static final String PROPERTY_BEARING = "bearing";
+    public static final String PROPERTY_HEADING = "heading";
     public static final String PROPERTY_ALTITUDE = "altitude";
     public static final String PROPERTY_LATITUDE = "latitude";
     public static final String PROPERTY_LONGITUDE = "longitude";
@@ -57,7 +57,7 @@ public class AkylasLocationModule extends KrollModule
         result.put(PROPERTY_LATITUDE, location.getLatitude());
         result.put(PROPERTY_LONGITUDE, location.getLongitude());
         result.put(PROPERTY_ALTITUDE, location.getAltitude());
-        result.put(PROPERTY_BEARING, location.getBearing());
+        result.put(PROPERTY_HEADING, location.getBearing());
         result.put(PROPERTY_SPEED, location.getSpeed());
         result.put(PROPERTY_TIMESTAMP, location.getTime());
         return result;
