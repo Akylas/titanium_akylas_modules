@@ -11,40 +11,26 @@ import java.util.HashMap;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.kroll.common.AsyncResult;
-import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
-import org.appcelerator.titanium.proxy.ParentingProxy;
-import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.proxy.AnimatableReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
 
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-
 import akylas.map.AkylasMarker;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Message;
 
 @SuppressWarnings("rawtypes")
 @Kroll.proxy(creatableInModule = AkylasMapModule.class, propertyAccessors = {
-        TiC.PROPERTY_SUBTITLE, 
-        TiC.PROPERTY_SUBTITLEID, 
-        TiC.PROPERTY_TITLE,
-        TiC.PROPERTY_TITLEID, 
-       TiC.PROPERTY_LATITUDE, 
-       TiC.PROPERTY_LONGITUDE,
-        AkylasMapModule.PROPERTY_DRAGGABLE,
-        TiC.PROPERTY_IMAGE,
-        TiC.PROPERTY_PINCOLOR, 
-        AkylasMapModule.PROPERTY_CUSTOM_VIEW,
-        TiC.PROPERTY_LEFT_BUTTON,
-        TiC.PROPERTY_LEFT_VIEW,
-        TiC.PROPERTY_RIGHT_BUTTON, 
-        TiC.PROPERTY_RIGHT_VIEW,
-//        AkylasMapModule.PROPERTY_MINZOOM,
-//        AkylasMapModule.PROPERTY_MAXZOOM
-})
-public class AnnotationProxy extends ParentingProxy {
+        TiC.PROPERTY_SUBTITLE, TiC.PROPERTY_SUBTITLEID, TiC.PROPERTY_TITLE,
+        TiC.PROPERTY_TITLEID, TiC.PROPERTY_LATITUDE, TiC.PROPERTY_LONGITUDE,
+        AkylasMapModule.PROPERTY_DRAGGABLE, AkylasMapModule.PROPERTY_FLAT,
+        TiC.PROPERTY_IMAGE, TiC.PROPERTY_PINCOLOR,
+        AkylasMapModule.PROPERTY_CUSTOM_VIEW, TiC.PROPERTY_LEFT_BUTTON,
+        TiC.PROPERTY_LEFT_VIEW, TiC.PROPERTY_RIGHT_BUTTON,
+        TiC.PROPERTY_RIGHT_VIEW })
+public class AnnotationProxy extends AnimatableReusableProxy {
     private static final String TAG = "AnnotationProxy";
 
     private AkylasMarker marker;
@@ -52,27 +38,31 @@ public class AnnotationProxy extends ParentingProxy {
 
     private String annoTitle;
     private String annoSubtitle;
+    private RectF calloutPadding = null;
+    private PointF anchor = null;
+    private PointF calloutAnchor = null;
     private boolean draggable = false;
     private boolean flat = false;
+    private boolean showInfoWindow = true;
     private float pinColor;
     private com.mapbox.mapboxsdk.geometry.LatLng latLong;
     private float mMinZoom = -1;
     private float mMaxZoom = -1;
-    
+    private double longitude = 0;
+    private double latitude = 0;
+    public float heading = 0;
+    public boolean visible = true;
+    private boolean imageWithShadow = false;
 
     private Comparable sortKey;
-    private TiViewProxy _leftViewProxy;
-    private TiViewProxy _rightViewProxy;
-    private TiViewProxy _customViewProxy;
+    
+    protected int mProcessUpdateFlags = 0;
+    protected static final int TIFLAG_NEEDS_LOCATION   = 0x00000001;
 
     AkylasMapDefaultView mapView;
 
     private static final int MSG_FIRST_ID = KrollProxy.MSG_LAST_ID + 1;
 
-    private static final int MSG_SET_LON = MSG_FIRST_ID + 300;
-    private static final int MSG_SET_LAT = MSG_FIRST_ID + 301;
-    private static final int MSG_SET_DRAGGABLE = MSG_FIRST_ID + 302;
-    private static final int MSG_SET_FLAT = MSG_FIRST_ID + 303;
     private static final int MSG_UPDATE_INFO_WINDOW = MSG_FIRST_ID + 304;
 
     public AnnotationProxy() {
@@ -89,19 +79,9 @@ public class AnnotationProxy extends ParentingProxy {
     // public MarkerOptions getMarkerOptions() {
     // return markerOptions;
     // }
-    
+
     @Override
-    public KrollProxy getParentForBubbling()
-    {
-        if (mapView != null) {
-            return mapView.getProxy();
-        }
-        return null;
-    }
-    
-    @Override
-    public String getApiName()
-    {
+    public String getApiName() {
         return "AkylasMap.Annotation";
     }
 
@@ -124,11 +104,20 @@ public class AnnotationProxy extends ParentingProxy {
     public boolean getDraggable() {
         return draggable;
     }
+    
+
+    public boolean canShowInfoWindow() {
+        return showInfoWindow;
+    }
+
+    public boolean getFlat() {
+        return flat;
+    }
 
     public float getPinColor() {
         return pinColor;
     }
-    
+
     public float getMinZoom() {
         return mMinZoom;
     }
@@ -136,51 +125,30 @@ public class AnnotationProxy extends ParentingProxy {
     public float getMaxZoom() {
         return mMaxZoom;
     }
+
+    public PointF getAnchor() {
+        return anchor;
+    }
+    public PointF getCalloutAnchor() {
+        return calloutAnchor;
+    }
     
+
+    public boolean getImageWithShadow() {
+        return imageWithShadow;
+    }
+
     public com.mapbox.mapboxsdk.geometry.LatLng getPosition() {
+        if (latLong == null) {
+            latLong = new com.mapbox.mapboxsdk.geometry.LatLng(latitude, longitude);
+        }
         return latLong;
     }
 
     @Override
     public boolean handleMessage(Message msg) {
-        AsyncResult result = null;
+        // AsyncResult result = null;
         switch (msg.what) {
-
-        case MSG_SET_LON: {
-            result = (AsyncResult) msg.obj;
-            setPosition(TiConvert.toDouble(getProperty(TiC.PROPERTY_LATITUDE)),
-                    (Double) result.getArg());
-            result.setResult(null);
-            return true;
-        }
-
-        case MSG_SET_LAT: {
-            result = (AsyncResult) msg.obj;
-            setPosition((Double) result.getArg(),
-                    TiConvert.toDouble(getProperty(TiC.PROPERTY_LONGITUDE)));
-            result.setResult(null);
-            return true;
-        }
-
-        case MSG_SET_DRAGGABLE: {
-            result = (AsyncResult) msg.obj;
-            if (marker instanceof GoogleMapMarker) {
-                ((GoogleMapMarker) marker).getMarker().setDraggable(
-                        (Boolean) result.getArg());
-            }
-            result.setResult(null);
-            return true;
-        }
-        case MSG_SET_FLAT: {
-            result = (AsyncResult) msg.obj;
-            if (marker instanceof GoogleMapMarker) {
-                ((GoogleMapMarker) marker).getMarker().setFlat(
-                        (Boolean) result.getArg());
-            }
-            result.setResult(null);
-            return true;
-        }
-
         case MSG_UPDATE_INFO_WINDOW: {
             updateInfoWindow();
             return true;
@@ -198,6 +166,43 @@ public class AnnotationProxy extends ParentingProxy {
             marker.setPosition(latitude, longitude);
         }
     }
+    
+    private void setView(Object value, final String key, final int side) {
+        if (mapView == null || infoView == null) {
+          //will be handled later
+            return;
+        }
+        KrollProxy proxy = null;
+        //infoView is supposed NOT to be null
+        if (value instanceof HashMap && mapView.calloutUseTemplates()) {
+            proxy = mapView.reusableViewFromDict(TiConvert.toKrollDict(value), extraData());
+            addProxyToHold(proxy, key);
+        } else {
+            proxy = getHoldedProxy(key);
+            if (proxy == null) {
+                proxy = addProxyToHold(value, key);
+            }
+        }
+        if (side == AkylasMapInfoView.CUSTOM_VIEW) {
+            if (proxy != null) {
+                infoView.setCustomView(proxy);
+            }
+        } else {
+            infoView.setLeftOrRightPane(proxy, side);
+        }
+        
+    }
+    
+    private KrollDict mExtraDict = null;
+    public KrollDict extraData() {
+        if (mExtraDict == null) {
+            mExtraDict = new KrollDict();
+            mExtraDict.put(AkylasMapModule.PROPERTY_ANNOTATION,
+                    (KrollProxy) this);
+            mExtraDict.put("inCallout", true);
+        }
+        return mExtraDict;
+    }
 
     public void prepareInfoView(AkylasMapInfoView infoView, KrollDict dict) {
         this.infoView = infoView;
@@ -206,159 +211,33 @@ public class AnnotationProxy extends ParentingProxy {
 
         infoView.setTitle(annoTitle);
         infoView.setSubtitle(annoSubtitle);
-        
-        if (dict.containsKey(AkylasMapModule.PROPERTY_CALLOUT_PADDING)) {
-            RectF paddingRect = TiConvert.toPaddingRect(dict,
-                    AkylasMapModule.PROPERTY_CALLOUT_PADDING);
-            infoView.setPadding((int) paddingRect.left, (int) paddingRect.top,
-                    (int) paddingRect.right, (int) paddingRect.bottom);
-        }
-        
-        if (mapView.calloutUseTemplates()) {
-            KrollDict extraData = new KrollDict();
-            extraData.put(AkylasMapModule.PROPERTY_ANNOTATION, (KrollProxy)this);
-            extraData.put("inCallout", true);
-            if (dict.containsKey(TiC.PROPERTY_LEFT_VIEW)) {
-                CalloutReusableProxy proxy = mapView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_LEFT_VIEW), extraData);
-                if (proxy != null) {
-                    proxy.setParentProxy(this);
-                    infoView.setLeftOrRightPane(proxy,
-                            AkylasMapInfoView.LEFT_PANE);
-                }
-            }
-            if (dict.containsKey(TiC.PROPERTY_RIGHT_VIEW)) {
-                CalloutReusableProxy proxy = mapView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_RIGHT_VIEW), extraData);
-                if (proxy != null) {
-                    proxy.setParentProxy(this);
-                    infoView.setLeftOrRightPane(proxy,
-                            AkylasMapInfoView.RIGHT_PANE);
-                }
-            }
-            if (dict.containsKey(TiC.PROPERTY_CUSTOM_VIEW)) {
-                CalloutReusableProxy proxy = mapView.reusableViewFromDict(dict.getKrollDict(TiC.PROPERTY_CUSTOM_VIEW), extraData);
-                if (proxy != null) {
-                    proxy.setParentProxy(this);
-                    infoView.setCustomView(proxy);
-                }
-            }
-            return;
+
+        if (calloutPadding != null) {
+            infoView.setPadding((int) calloutPadding.left,
+                    (int) calloutPadding.top,
+                    (int) calloutPadding.right,
+                    (int) calloutPadding.bottom);
         }
 
-        if (_leftViewProxy == null) {
-            if (dict.containsKey(TiC.PROPERTY_LEFT_VIEW)) {
-                Object value = dict.get(TiC.PROPERTY_LEFT_VIEW);
-                if (value instanceof HashMap) {
-                    _leftViewProxy = (TiViewProxy) createProxyFromTemplate(
-                            (HashMap) value, this, true);
-                    if (_leftViewProxy != null) {
-                        _leftViewProxy.updateKrollObjectProperties();
-                    }
-                } else if (value instanceof TiViewProxy) {
-                    _leftViewProxy = (TiViewProxy) value;
-                }
-            }
-        }
-        if (_leftViewProxy != null) {
-            infoView.setLeftOrRightPane(_leftViewProxy,
-                    AkylasMapInfoView.LEFT_PANE);
-        } else {
+        setView(dict.get(TiC.PROPERTY_LEFT_VIEW), TiC.PROPERTY_LEFT_VIEW, AkylasMapInfoView.LEFT_PANE);
+        KrollProxy proxy = getHoldedProxy(TiC.PROPERTY_LEFT_VIEW);
+        if (proxy == null) {
             infoView.setLeftOrRightPane(dict.get(TiC.PROPERTY_LEFT_BUTTON),
                     AkylasMapInfoView.LEFT_PANE);
         }
-
-        if (_rightViewProxy == null) {
-            if (dict.containsKey(TiC.PROPERTY_RIGHT_VIEW)) {
-                Object value = dict.get(TiC.PROPERTY_RIGHT_VIEW);
-                if (value instanceof HashMap) {
-                    _rightViewProxy = (TiViewProxy) createProxyFromTemplate(
-                            (HashMap) value, this, true);
-                    if (_rightViewProxy != null) {
-                        _rightViewProxy.updateKrollObjectProperties();
-                    }
-                } else if (value instanceof TiViewProxy) {
-                    _rightViewProxy = (TiViewProxy) value;
-                }
-            }
-        }
-        if (_rightViewProxy != null) {
-            infoView.setLeftOrRightPane(_rightViewProxy,
-                    AkylasMapInfoView.RIGHT_PANE);
-        } else {
+        setView(dict.get(TiC.PROPERTY_RIGHT_VIEW), TiC.PROPERTY_RIGHT_VIEW, AkylasMapInfoView.RIGHT_PANE);
+        proxy = getHoldedProxy(TiC.PROPERTY_RIGHT_VIEW);
+        if (proxy == null) {
             infoView.setLeftOrRightPane(dict.get(TiC.PROPERTY_RIGHT_BUTTON),
                     AkylasMapInfoView.RIGHT_PANE);
         }
-
-        // has to done last
-        if (_customViewProxy == null) {
-            if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
-                Object value = dict.get(AkylasMapModule.PROPERTY_CUSTOM_VIEW);
-                if (value instanceof HashMap) {
-                    _customViewProxy = (TiViewProxy) createProxyFromTemplate(
-                            (HashMap) value, this, true);
-                    if (_customViewProxy != null) {
-                        _customViewProxy.updateKrollObjectProperties();
-                    }
-                } else if (value instanceof TiViewProxy) {
-                    _customViewProxy = (TiViewProxy) value;
-                }
-            }
-        }
-        if (_customViewProxy != null) {
-            infoView.setCustomView(_customViewProxy);
-        }
-
+        setView(dict.get(TiC.PROPERTY_CUSTOM_VIEW), TiC.PROPERTY_CUSTOM_VIEW, AkylasMapInfoView.CUSTOM_VIEW);
     }
-
-    @Override
-    public void handleCreationDict(KrollDict dict) {
-
-        super.handleCreationDict(dict);
-        double longitude = 0;
-        double latitude = 0;
-
-        if (dict.containsKey(TiC.PROPERTY_LONGITUDE)) {
-            longitude = TiConvert.toDouble(dict, TiC.PROPERTY_LONGITUDE);
-        }
-        if (dict.containsKey(TiC.PROPERTY_LATITUDE)) {
-            latitude = TiConvert.toDouble(dict, TiC.PROPERTY_LATITUDE);
-        }
-        setPosition(latitude, longitude);
-
-        if (dict.containsKey(TiC.PROPERTY_TITLE)) {
-            String title = TiConvert.toString(dict, TiC.PROPERTY_TITLE);
-            annoTitle = title;
-        }
-        if (dict.containsKey(TiC.PROPERTY_SUBTITLE)) {
-            String subtitle = TiConvert.toString(dict, TiC.PROPERTY_SUBTITLE);
-            annoSubtitle = subtitle;
-        }
-
-        if (dict.containsKey(AkylasMapModule.PROPERTY_DRAGGABLE)) {
-            draggable = dict.optBoolean(AkylasMapModule.PROPERTY_DRAGGABLE,
-                    false);
-        }
-        if (dict.containsKey(AkylasMapModule.PROPERTY_FLAT)) {
-            flat = dict.optBoolean(AkylasMapModule.PROPERTY_FLAT,
-                    false);
-        }
-        
-        if (dict.containsKey(AkylasMapModule.PROPERTY_MINZOOM)) {
-            mMinZoom = TiConvert.toFloat(dict, AkylasMapModule.PROPERTY_MINZOOM);
-        }
-        if (dict.containsKey(AkylasMapModule.PROPERTY_MAXZOOM)) {
-            mMaxZoom = TiConvert.toFloat(dict, AkylasMapModule.PROPERTY_MAXZOOM);
-        }
-
-        if (dict.containsKey(AkylasMapModule.PROPERTY_SORT_KEY)) {
-            Object value = dict.get(AkylasMapModule.PROPERTY_SORT_KEY);
-            if (value instanceof Comparable) {
-                sortKey = (Comparable) value;
-            }
-        }
-        if (dict.containsKey(TiC.PROPERTY_PINCOLOR)) {
-            pinColor = dict.optInt(TiC.PROPERTY_PINCOLOR, -1);
-        }
-        
+    
+    public void wasRemoved() {
+        setMarker(null);
+        setMapView(null);
+        setParentForBubbling(null);
     }
 
     public void setMarker(AkylasMarker m) {
@@ -402,138 +281,188 @@ public class AnnotationProxy extends ParentingProxy {
     public AkylasMapInfoView getMapInfoWindow() {
         return infoView;
     }
-    
-    @Kroll.method @Kroll.setProperty
-    public void setMinZoom(Object value)
-    {
+
+    @Kroll.method
+    @Kroll.setProperty
+    public void setMinZoom(Object value) {
         mMinZoom = TiConvert.toFloat(value, -1);
         if (marker != null) {
-            ((MapboxMarker)marker).getMarker().setMinZoom(mMinZoom);
+            ((MapboxMarker) marker).getMarker().setMinZoom(mMinZoom);
         }
     }
-    
-    @Kroll.method @Kroll.setProperty
-    public void setMaxZoom(Object value)
-    {
+
+    @Kroll.method
+    @Kroll.setProperty
+    public void setMaxZoom(Object value) {
         mMaxZoom = TiConvert.toFloat(value, -1);
         if (marker != null) {
-            ((MapboxMarker)marker).getMarker().setMaxZoom(mMaxZoom);
+            ((MapboxMarker) marker).getMarker().setMaxZoom(mMaxZoom);
         }
     }
 
     @Override
-    public void onPropertyChanged(String name, Object value, Object oldValue) {
-        if (name.equals(TiC.PROPERTY_LONGITUDE)) {
-            TiMessenger.sendBlockingMainMessage(
-                    getMainHandler().obtainMessage(MSG_SET_LON),
-                    TiConvert.toDouble(value));
-        } else if (name.equals(TiC.PROPERTY_LATITUDE)) {
-            TiMessenger.sendBlockingMainMessage(
-                    getMainHandler().obtainMessage(MSG_SET_LAT),
-                    TiConvert.toDouble(value));
-        } else if (name.equals(TiC.PROPERTY_TITLE)) {
-            annoTitle = TiConvert.toString(value);
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+        case TiC.PROPERTY_LONGITUDE:
+            longitude = TiConvert.toDouble(newValue, 0.0);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_LOCATION;
+            break;
+        case TiC.PROPERTY_LATITUDE:
+            latitude = TiConvert.toDouble(newValue, 0.0);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_LOCATION;
+            break;
+        case TiC.PROPERTY_HEADING:
+            heading = TiConvert.toFloat(newValue, 0.0f);
+            if (marker != null) {
+                marker.setHeading(heading);
+            }
+            break;
+        case TiC.PROPERTY_VISIBLE:
+            visible = TiConvert.toBoolean(newValue, true);
+            if (marker != null) {
+                marker.setVisible(visible);
+            }
+            break;
+        case AkylasMapModule.PROPERTY_IMAGE_WITH_SHADOW:
+            imageWithShadow = TiConvert.toBoolean(newValue, false);
+            if (marker instanceof MapboxMarker) {
+                ((MapboxMarker)marker).setImageWithShadow(imageWithShadow);
+            }
+            break;
+        case AkylasMapModule.PROPERTY_MINZOOM:
+            mMinZoom = TiConvert.toFloat(newValue);
+            break;
+        case AkylasMapModule.PROPERTY_MAXZOOM:
+            mMaxZoom = TiConvert.toFloat(newValue);
+            break;
+        case AkylasMapModule.PROPERTY_CALLOUT_PADDING:
+            calloutPadding = TiConvert.toPaddingRect(newValue);
+            if (infoView != null) {
+                if (calloutPadding != null) {
+                    infoView.setPadding((int) calloutPadding.left,
+                            (int) calloutPadding.top,
+                            (int) calloutPadding.right,
+                            (int) calloutPadding.bottom);
+                } else {
+                    infoView.setPadding(0, 0, 0, 0);
+                }
+            }
+            break;
+        case AkylasMapModule.PROPERTY_CALLOUT_ANCHOR:
+            calloutAnchor = TiConvert.toPointF(newValue);
+            if (marker != null) {
+                marker.setWindowAnchor(calloutAnchor);
+            }
+            break;
+        case AkylasMapModule.PROPERTY_ANCHOR:
+            anchor = TiConvert.toPointF(newValue);
+            if (marker != null) {
+                marker.setAnchor(anchor);
+            }
+            break;
+        case TiC.PROPERTY_PINCOLOR:
+            pinColor = TiConvert.toInt(newValue, -1);
+            break;
+        case TiC.PROPERTY_TITLE:
+            annoTitle = TiConvert.toString(newValue);
             if (infoView != null) {
                 infoView.setTitle(annoTitle);
                 updateInfoWindow();
             }
-        } else if (name.equals(TiC.PROPERTY_SUBTITLE)) {
-            annoSubtitle = TiConvert.toString(value);
+            break;
+        case TiC.PROPERTY_SUBTITLE:
+            annoSubtitle = TiConvert.toString(newValue);
             if (infoView != null) {
                 infoView.setSubtitle(annoSubtitle);
                 updateInfoWindow();
             }
-        } else if (infoView != null) {
-            if (name.equals(TiC.PROPERTY_LEFT_BUTTON)) {
-                if (infoView != null) {
-                    infoView.setLeftOrRightPane(value, AkylasMapInfoView.LEFT_PANE);
-                }
-                if (value == null) {
-                    Object leftView = getProperty(TiC.PROPERTY_LEFT_VIEW);
-                    if (leftView != null) {
-                        infoView.setLeftOrRightPane(leftView,
-                                AkylasMapInfoView.LEFT_PANE);
-                    }
-                }
-            } else if (name.equals(TiC.PROPERTY_LEFT_VIEW)) {
-                if (_leftViewProxy != null) {
-                    _leftViewProxy.releaseViews(true);
-                    _leftViewProxy.setParent(null);
-                    _leftViewProxy = null;
-                }
-                if (infoView != null) {
-                    infoView.setLeftOrRightPane(value, AkylasMapInfoView.LEFT_PANE);
-                }
-            } else if (name.equals(TiC.PROPERTY_RIGHT_BUTTON)) {
-                if (infoView != null) {
-                    infoView.setLeftOrRightPane(value,
-                            AkylasMapInfoView.RIGHT_PANE);
-                }
-                if (value == null) {
-                    Object rightView = getProperty(TiC.PROPERTY_RIGHT_VIEW);
-                    if (rightView != null) {
-                        if (infoView != null) {
-                            infoView.setLeftOrRightPane(rightView,
-                                AkylasMapInfoView.LEFT_PANE);
-                        }
-                    }
-                }
-            } else if (name.equals(TiC.PROPERTY_RIGHT_VIEW)) {
-                if (_rightViewProxy != null) {
-                    _rightViewProxy.releaseViews(true);
-                    _rightViewProxy.setParent(null);
-                    _rightViewProxy = null;
-                }
-                if (infoView != null) {
-                    infoView.setLeftOrRightPane(value, AkylasMapInfoView.RIGHT_PANE);
-                }
-            } else if (name.equals(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
-                if (_customViewProxy != null) {
-                    _customViewProxy.releaseViews(true);
-                    _customViewProxy.setParent(null);
-                    _customViewProxy = null;
-                }
-                if (infoView != null) {
-                    infoView.setCustomView(value);
-                }
-            } else if (name.equals(AkylasMapModule.PROPERTY_DRAGGABLE)) {
-                TiMessenger.sendBlockingMainMessage(getMainHandler()
-                        .obtainMessage(MSG_SET_DRAGGABLE), TiConvert
-                        .toBoolean(value));
-            } else if (name.equals(AkylasMapModule.PROPERTY_FLAT)) {
-                TiMessenger.sendBlockingMainMessage(getMainHandler()
-                        .obtainMessage(MSG_SET_FLAT), TiConvert
-                        .toBoolean(value));
-            } else if (name.equals(AkylasMapModule.PROPERTY_SORT_KEY)) {
-                if (value instanceof Comparable) {
-                    sortKey = (Comparable) value;
-                    invalidate();
-                }
+            break;
+        case AkylasMapModule.PROPERTY_DRAGGABLE:
+            draggable = TiConvert.toBoolean(newValue);
+            if (marker != null) {
+                marker.setDraggable(draggable);
             }
+            break;
+        case AkylasMapModule.PROPERTY_FLAT:
+            flat = TiConvert.toBoolean(newValue);
+            if (marker != null) {
+                marker.setFlat(flat);
+            }
+            break;
+        case AkylasMapModule.PROPERTY_SHOW_INFO_WINDOW:
+            showInfoWindow = TiConvert.toBoolean(newValue);
+            if (!showInfoWindow) {
+                hideInfo();
+            }
+            break;
+        case TiC.PROPERTY_LEFT_BUTTON:
+            removeHoldedProxy(TiC.PROPERTY_LEFT_VIEW);
+            if (infoView != null) {
+                infoView.setLeftOrRightPane(newValue,
+                        AkylasMapInfoView.LEFT_PANE);
+            }
+            break;
+        case TiC.PROPERTY_LEFT_VIEW: {
+            setView(newValue, TiC.PROPERTY_LEFT_VIEW, AkylasMapInfoView.LEFT_PANE);
         }
-        super.onPropertyChanged(name, value, oldValue);
-
+        case TiC.PROPERTY_RIGHT_BUTTON:
+            removeHoldedProxy(TiC.PROPERTY_RIGHT_VIEW);
+            if (infoView != null) {
+                infoView.setLeftOrRightPane(newValue,
+                        AkylasMapInfoView.RIGHT_PANE);
+            }
+            break;
+        case TiC.PROPERTY_RIGHT_VIEW: {
+            setView(newValue, TiC.PROPERTY_RIGHT_VIEW, AkylasMapInfoView.RIGHT_PANE);
+            break;
+        }
+        case TiC.PROPERTY_CUSTOM_VIEW: {
+            setView(newValue, TiC.PROPERTY_CUSTOM_VIEW, AkylasMapInfoView.CUSTOM_VIEW);
+            break;
+        }
+        case AkylasMapModule.PROPERTY_SORT_KEY: {
+            if (newValue instanceof Comparable) {
+                sortKey = (Comparable) newValue;
+                invalidate();
+            }
+            break;
+        }
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+            break;
+        }
     }
-    
+
+    @Override
+    protected void didProcessProperties() {
+        if ((mProcessUpdateFlags & TIFLAG_NEEDS_LOCATION) != 0) {
+            setPosition(latitude, longitude);
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_LOCATION;
+        }
+        super.didProcessProperties();
+    }
+
     private void invalidate() {
         if (marker != null) {
             marker.invalidate();
         }
     }
 
-//    public AkylasMapInfoView createAndPrepareInfoWindow() {
-//        AkylasMapInfoView infoView = new AkylasMapInfoView(TiApplication.getInstance()
-//                .getApplicationContext());
-//        prepareInfoView(null);
-//        return infoView;
-//    }
-//
-//    AkylasMapInfoView getOrCreateMapInfoView() {
-//        if (infoView == null) {
-//            createAndPrepareInfoWindow();
-//        }
-//        return infoView;
-//    }
+    // public AkylasMapInfoView createAndPrepareInfoWindow() {
+    // AkylasMapInfoView infoView = new
+    // AkylasMapInfoView(TiApplication.getInstance()
+    // .getApplicationContext());
+    // prepareInfoView(null);
+    // return infoView;
+    // }
+    //
+    // AkylasMapInfoView getOrCreateMapInfoView() {
+    // if (infoView == null) {
+    // createAndPrepareInfoWindow();
+    // }
+    // return infoView;
+    // }
 
     private void updateInfoWindow() {
         if (marker == null) {
@@ -550,12 +479,17 @@ public class AnnotationProxy extends ParentingProxy {
     }
 
     public MabpoxInfoWindow createInfoWindow() {
-        return mapView.createInfoWindow(this);
+        return ((AkylasMapboxView)mapView).createInfoWindow(this);
     }
 
-    public void infoWindowDidClose(MabpoxInfoWindow mabpoxInfoWindow) {
+    public void mapbBoxInfoWindowDidClose(MabpoxInfoWindow mabpoxInfoWindow) {
         infoView = null;
-        mapView.infoWindowDidClose(mabpoxInfoWindow);
+        ((AkylasMapboxView)mapView).infoWindowDidClose(mabpoxInfoWindow);
+    }
+    
+    public void googleInfoWindowDidClose() {
+        ((AkylasMapView)mapView).infoWindowDidClose(infoView);
+        infoView = null;
     }
 
     public void prepareInfoView(AkylasMapInfoView infoView) {
@@ -563,10 +497,9 @@ public class AnnotationProxy extends ParentingProxy {
     }
 
     public boolean hasContent() {
-        return  annoTitle != null || 
-                annoSubtitle != null || 
-                hasProperty(AkylasMapModule.PROPERTY_CUSTOM_VIEW) ||
-                hasProperty(TiC.PROPERTY_LEFT_VIEW) || 
-                hasProperty(TiC.PROPERTY_RIGHT_VIEW);
+        return annoTitle != null || annoSubtitle != null
+                || getHoldedProxy(TiC.PROPERTY_CUSTOM_VIEW) != null
+                || getHoldedProxy(TiC.PROPERTY_LEFT_VIEW) != null
+                || getHoldedProxy(TiC.PROPERTY_RIGHT_VIEW) != null;
     }
 }

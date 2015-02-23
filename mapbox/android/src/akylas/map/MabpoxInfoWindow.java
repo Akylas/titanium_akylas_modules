@@ -65,7 +65,7 @@ public class MabpoxInfoWindow extends InfoWindow {
     public void didClose() {
         //do that before super so that we still have access to the marker
         if (proxy != null) {
-            proxy.infoWindowDidClose(this);
+            proxy.mapbBoxInfoWindowDidClose(this);
         }
         super.didClose();
     }

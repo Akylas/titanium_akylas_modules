@@ -63,7 +63,7 @@
 {
     if (map==nil)
     {
-        map = [[RMMapView alloc] initWithFrame:[TiUtils appFrame]];
+        map = [[RMMapView alloc] initWithFrame:self.bounds];
         map.decelerationMode = RMMapDecelerationFast;
         CLLocationCoordinate2D coord = map.centerCoordinate;
 //        map.adjustTilesForRetinaDisplay = [[UIScreen mainScreen] scale] > 1.0;
@@ -141,7 +141,12 @@
     [super frameSizeChanged:frame bounds:bounds];
     if (_needsRegionUpdate) {
         _needsRegionUpdate = NO;
-        [map zoomWithLatitudeLongitudeBoundsSouthWest:region.southWest northEast:region.northEast regionFit:regionFits animated:NO];
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.0 * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            
+            [map zoomWithLatitudeLongitudeBoundsSouthWest:region.southWest northEast:region.northEast regionFit:regionFits animated:NO];
+        });
+        
     }
 }
 

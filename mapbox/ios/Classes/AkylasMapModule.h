@@ -6,19 +6,6 @@
  */
 #import "TiModule.h"
 
-
-
-#define MAKE_IOS7_SYSTEM_PROP(name,map) \
--(NSNumber*)name \
-{\
-if (![TiUtils isIOS7OrGreater]) {\
-const char *propName =  #name;\
-[AkylasMapModule logAddedIniOS7Warning:[NSString stringWithUTF8String:propName]];\
-return nil;\
-}\
-return [NSNumber numberWithInt:map];\
-}\
-
 @interface AkylasMapModule : TiModule
 {
 }

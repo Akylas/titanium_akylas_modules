@@ -1,7 +1,6 @@
 package akylas.map;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
@@ -11,6 +10,7 @@ import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
+import org.appcelerator.titanium.proxy.ReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 
@@ -21,7 +21,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.PathOverlay;
 import com.mapbox.mapboxsdk.tileprovider.constants.TileLayerConstants;
 import com.mapbox.mapboxsdk.views.MapView;
-import com.mapbox.mapboxsdk.views.safecanvas.SafePaint;
 
 import android.content.Context;
 import android.graphics.Paint;
@@ -34,7 +33,7 @@ import android.os.Message;
 	TiC.PROPERTY_COLOR,
 	TiC.PROPERTY_WIDTH
 })
-public class RouteProxy extends KrollProxy
+public class RouteProxy extends ReusableProxy
 {
     private ArrayList<LatLng> mPoints;
     private ArrayList<com.google.android.gms.maps.model.LatLng> mGooglePoints;
@@ -43,8 +42,9 @@ public class RouteProxy extends KrollProxy
 	
 	private static final int MSG_SET_POINTS = MSG_FIRST_ID + 400;
 	private static final int MSG_SET_COLOR = MSG_FIRST_ID + 401;
-	private static final int MSG_SET_WIDTH = MSG_FIRST_ID + 402;
-	private static final int MSG_REFRESH_MAP = MSG_FIRST_ID + 403;
+    private static final int MSG_SET_WIDTH = MSG_FIRST_ID + 402;
+    private static final int MSG_SET_ZINDEX = MSG_FIRST_ID + 403;
+	private static final int MSG_REFRESH_MAP = MSG_FIRST_ID + 404;
     private BoundingBox mBoundingBox = TileLayerConstants.WORLD_BOUNDING_BOX;
     
     private MapView mMapView;
@@ -52,6 +52,7 @@ public class RouteProxy extends KrollProxy
 	
 	private PolylineOptions options = null;
     private Polyline polyline;
+    private int zIndex = 10;
 
 	public RouteProxy() {
 		super();
@@ -94,6 +95,13 @@ public class RouteProxy extends KrollProxy
 				return true;
 			}
 			
+			case MSG_SET_ZINDEX: {
+                result = (AsyncResult) msg.obj;
+                polyline.setZIndex(zIndex);
+                result.setResult(null);
+                return true;
+            }
+			
 			case MSG_REFRESH_MAP: {
 				if (mMapView != null) {
 					mMapView.invalidate();
@@ -106,39 +114,48 @@ public class RouteProxy extends KrollProxy
 		}
 	}
 	
-	public static float getRawSize(KrollDict dict, String property,
-            String defaultValue, Context context) {
-        return TiUIHelper.getRawSize(dict.optString(property, defaultValue),
-                context);
+    @Override
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+        case AkylasMapModule.PROPERTY_POINTS:
+            processPoints(newValue);
+            break;
+        case TiC.PROPERTY_WIDTH:
+            getPathPaint().setStrokeWidth(TiUIHelper.getInPixels(newValue, getPathPaint().getStrokeWidth()));
+            if (polyline != null) {
+                TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SET_WIDTH));
+            }
+            break;
+        case TiC.PROPERTY_COLOR:
+            getPathPaint().setColor(TiConvert.toColor(newValue));
+            if (polyline != null) {
+                TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SET_COLOR));
+            }
+            break;
+        case TiC.PROPERTY_ZINDEX:
+            zIndex = TiConvert.toInt(newValue);
+            if (polyline != null) {
+                TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SET_ZINDEX));
+            }
+            break;
+        case TiC.PROPERTY_VISIBLE:
+            if (polyline != null) {
+                polyline.setVisible(TiConvert.toBoolean(newValue));
+            }
+            break;
+        case AkylasMapModule.PROPERTY_LINE_JOIN:
+            getPathPaint().setStrokeJoin(joinFromString(TiConvert.toString(newValue)));
+            break;
+        case AkylasMapModule.PROPERTY_LINE_CAP:
+            getPathPaint().setStrokeCap(capFromString(TiConvert.toString(newValue)));
+            break;
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+            break;
+        }
     }
-	
-	public static float getRawSize(KrollDict dict, String property, String defaultValue) {
-        return getRawSize(dict, property, defaultValue, null);
-    }
-	
-	public static float getRawSize(KrollDict dict, String property, float defaultValue) {
-        return getRawSize(dict, property, String.valueOf(defaultValue), null);
-    }
-	
-	@Override
-	public void handleCreationDict(KrollDict dict) {
-		super.handleCreationDict(dict);
-		if (dict.containsKey(AkylasMapModule.PROPERTY_POINTS)) {
-			 processPoints(dict.get(AkylasMapModule.PROPERTY_POINTS));
-		}
-		if (dict.containsKey(TiC.PROPERTY_WIDTH)) {
-			getPathPaint().setStrokeWidth(getRawSize(dict, TiC.PROPERTY_WIDTH, getPathPaint().getStrokeWidth()));
-		}
-		if (dict.containsKey(TiC.PROPERTY_COLOR)) {
-			getPathPaint().setColor(TiConvert.toColor(dict, TiC.PROPERTY_COLOR));
-		}
-		if (dict.containsKey(AkylasMapModule.PROPERTY_LINE_JOIN)) {
-			getPathPaint().setStrokeJoin(joinFromString(TiConvert.toString(dict, AkylasMapModule.PROPERTY_LINE_JOIN)));
-		}
-		if (dict.containsKey(AkylasMapModule.PROPERTY_LINE_CAP)) {
-			getPathPaint().setStrokeCap(capFromString(TiConvert.toString(dict, AkylasMapModule.PROPERTY_LINE_CAP)));
-		}
-	}
+
 	
 	public void setMapView(final MapView aMapView) {
 		mMapView = aMapView;
@@ -241,35 +258,6 @@ public class RouteProxy extends KrollProxy
 		return Cap.BUTT;
 	}
 
-	@Override
-	public void onPropertyChanged(String name, Object value) {
-		super.onPropertyChanged(name, value);
-
-		if (name.equals(AkylasMapModule.PROPERTY_POINTS)) {
-			processPoints(value);
-		}
-
-		else if (name.equals(TiC.PROPERTY_COLOR)) {
-			getPathPaint().setColor(TiConvert.toColor(value));
-			if (polyline != null) {
-	            TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SET_COLOR));
-	        }
-		}
-		
-		else if (name.equals(TiC.PROPERTY_WIDTH)) {
-			getPathPaint().setStrokeWidth(TiConvert.toFloat(value));
-			if (polyline != null) {
-	            TiMessenger.sendBlockingMainMessage(getMainHandler().obtainMessage(MSG_SET_WIDTH));
-	        }
-		}
-		else if (name.equals(AkylasMapModule.PROPERTY_LINE_JOIN)) {
-			getPathPaint().setStrokeJoin(joinFromString(TiConvert.toString(value)));
-		}
-		else if (name.equals(AkylasMapModule.PROPERTY_LINE_CAP)) {
-			getPathPaint().setStrokeCap(capFromString(TiConvert.toString(value)));
-		}
-		
-	}
 	@Kroll.method
 	@Kroll.getProperty
 	public KrollDict getRegion() {
@@ -287,10 +275,10 @@ public class RouteProxy extends KrollProxy
 	public PolylineOptions getAndSetOptions() {
         options = new PolylineOptions();
 	    Paint paint = getPathPaint();
-        options.width(paint.getStrokeWidth());
-        options.addAll(mGooglePoints);
-        options.color(paint.getColor());
-        return options;
+        return options.width(paint.getStrokeWidth())
+                .addAll(mGooglePoints)
+                .color(paint.getColor())
+                .zIndex(zIndex);
     }
     
     public void setPolyline(Polyline r) {

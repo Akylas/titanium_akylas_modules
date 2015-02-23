@@ -13,11 +13,11 @@ import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.Bitmap.Config;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
-import com.mapbox.mapboxsdk.util.Utils;
 import com.mapbox.mapboxsdk.views.InfoWindow;
 import com.mapbox.mapboxsdk.views.MapView;
 
@@ -63,9 +63,9 @@ public class MapboxMarker extends AkylasMarker{
         @Override
         public void showInfoWindow(InfoWindow infoWindow, MapView aMapView, boolean panIntoView) {
             
-            Object value = proxy.getProperty(AkylasMapModule.PROPERTY_CALLOUT_ANCHOR);
-            if (value != null) {
-                infoWindow.setAnchor(TiConvert.toPointF(value));
+            PointF anchor = proxy.getCalloutAnchor();
+            if (anchor != null) {
+                infoWindow.setAnchor(anchor);
             }
             super.showInfoWindow(infoWindow, aMapView, panIntoView);
         }
@@ -114,19 +114,22 @@ public class MapboxMarker extends AkylasMarker{
             marker.setDescription(proxy.getSubtitle());
             marker.setPoint(proxy.getPosition());
         }
+        marker.setVisible(proxy.visible);
         Bitmap bitmap = getImage();
         if (bitmap != null) {
             marker.setMarker(new BitmapDrawable(mapView.getResources(), bitmap));
+            marker.setUsingMakiIcon(proxy.getImageWithShadow());
         }
         else {
             BitmapDrawable drawable = getColorImage();
             if (drawable != null) {
                 marker.setMarker(drawable);
+                marker.setUsingMakiIcon(mapView.getDefaultPinIsMaki());
             }
         }
-        Object value = proxy.getProperty(AkylasMapModule.PROPERTY_ANCHOR);
-        if (value != null) {
-            marker.setAnchor(TiConvert.toPointF(value));
+        PointF anchor = proxy.getAnchor();
+        if (anchor != null) {
+            marker.setAnchor(anchor);
         }
         marker.setDraggable(proxy.getDraggable());
         float minZoom = proxy.getMinZoom();
@@ -193,11 +196,56 @@ public class MapboxMarker extends AkylasMarker{
             marker.setPoint(new LatLng(latitude, longitude));
         }
     }
+    
+    @Override
+    public void setDraggable(final boolean draggable) {
+        if (marker != null) {
+            marker.setDraggable(draggable);
+        }
+    }
+    
+    @Override
+    public void setFlat(final boolean flat) {
+    }
+
 
     @Override
     void invalidate() {
         if (marker!= null) {
             marker.invalidate();
+        }
+    }
+
+
+    @Override
+    void setAnchor(PointF anchor) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    void setWindowAnchor(PointF anchor) {
+    }
+
+
+    @Override
+    void setVisible(boolean visible) {
+        if (marker!= null) {
+            marker.setVisible(visible);
+        }
+    }
+
+
+    @Override
+    void setHeading(float heading) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    void setImageWithShadow(boolean imageWithShadow) {
+        if (marker!= null) {
+            marker.setUsingMakiIcon(imageWithShadow);
         }
     }
 }

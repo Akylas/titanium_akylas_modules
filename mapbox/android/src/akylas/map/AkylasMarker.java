@@ -6,11 +6,11 @@ import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiDrawableReference;
 
 import com.squareup.picasso.Cache;
-import com.squareup.picasso.Picasso;
 
 import akylas.map.AnnotationProxy;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
@@ -67,4 +67,10 @@ abstract class AkylasMarker  {
 
     abstract void hideInfoWindow();
     abstract void setPosition(double latitude, double longitude);
+    abstract void setDraggable(final boolean draggable);
+    abstract void setAnchor(final PointF anchor);
+    abstract void setWindowAnchor(final PointF anchor);
+    abstract void setFlat(final boolean flat);
+    abstract void setVisible(final boolean visible);
+    abstract void setHeading(final float heading);
 }

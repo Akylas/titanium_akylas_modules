@@ -34,7 +34,8 @@ public class AkylasMapInfoView extends RelativeLayout
 {
 	private static final String TAG = "TiMapInfoWindow";
 	public static final int LEFT_PANE = 0;
-	public static final int RIGHT_PANE = 1;
+    public static final int RIGHT_PANE = 1;
+    public static final int CUSTOM_VIEW = 2;
 	private static final int leftPaneId = 100;
 	private static final int textLayoutId = 101;
 	private static final int rightPaneId = 102;

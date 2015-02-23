@@ -114,16 +114,12 @@
 
 -(AkylasMapMapViewProxy*)createMapView:(id)args
 {
-    Class mapViewProxyClass = ([TiUtils isIOS7OrGreater]) ? [AkylasMapMapIOS7ViewProxy class] : [AkylasMapMapViewProxy class];
+    Class mapViewProxyClass = [AkylasMapMapIOS7ViewProxy class];
     return [[[mapViewProxyClass alloc] _initWithPageContext:[self pageContext] args:args] autorelease];
 }
 
 -(AkylasMapCameraProxy*)createCamera:(id)args
 {
-    if (![TiUtils isIOS7OrGreater]) {
-        [AkylasMapModule logAddedIniOS7Warning:@"createCamera()"];
-        return nil;
-    }
     return [[[AkylasMapCameraProxy alloc] _initWithPageContext:[self pageContext] args:args] autorelease];
 }
 
@@ -141,8 +137,8 @@ MAKE_SYSTEM_PROP(ANNOTATION_DRAG_STATE_DRAG,MKAnnotationViewDragStateDragging);
 MAKE_SYSTEM_PROP(ANNOTATION_DRAG_STATE_CANCEL,MKAnnotationViewDragStateCanceling);
 MAKE_SYSTEM_PROP(ANNOTATION_DRAG_STATE_END,MKAnnotationViewDragStateEnding);
 
-MAKE_IOS7_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_LABELS,MKOverlayLevelAboveLabels);
-MAKE_IOS7_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
+MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_LABELS,MKOverlayLevelAboveLabels);
+MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
 
 
 +(CLLocationCoordinate2D)locationFromDict:(NSDictionary*)dict
@@ -209,7 +205,7 @@ MAKE_IOS7_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
              @"altitude":NUMDOUBLE(location.altitude),
              @"horizontalAccuracy":NUMDOUBLE(location.horizontalAccuracy),
              @"verticalAccuracy":NUMDOUBLE(location.verticalAccuracy),
-             @"course":NUMDOUBLE(location.course),
+             @"heading":NUMDOUBLE(location.course),
              @"speed":NUMDOUBLE(location.speed),
              @"timestamp":NUMDOUBLE([location.timestamp timeIntervalSince1970]*1000),
              };
@@ -220,7 +216,7 @@ MAKE_IOS7_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
     if (!heading) return @{};
     return @{
              @"magneticHeading":NUMDOUBLE(heading.magneticHeading),
-             @"trueHeading":NUMDOUBLE(heading.trueHeading),
+             @"heading":NUMDOUBLE(heading.trueHeading),
              @"headingAccuracy":NUMDOUBLE(heading.headingAccuracy),
              @"x":NUMDOUBLE(heading.x),
              @"y":NUMDOUBLE(heading.y),

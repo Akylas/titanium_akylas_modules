@@ -14,7 +14,9 @@ public abstract class SoftCache {
     /* implement this to create new object of type T if cache is empty */
     public abstract Object runWhenCacheEmpty(String key);
 
- 
+    public void clear() {
+        multiMap.clear();
+    }
     /*
      * retrieves cached item or return null if cache is empty
      */

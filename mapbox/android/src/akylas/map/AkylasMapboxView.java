@@ -1,13 +1,14 @@
 package akylas.map;
 
-import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollProxy;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
+import org.appcelerator.titanium.view.TiCompositeLayout;
 
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -20,7 +21,6 @@ import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.overlay.Marker;
 import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.tileprovider.tilesource.TileLayer;
-import com.mapbox.mapboxsdk.views.InfoWindow;
 import com.mapbox.mapboxsdk.views.MapController;
 import com.mapbox.mapboxsdk.views.MapView;
 
@@ -111,83 +111,16 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         return super.customInterceptTouchEvent(event);
     }
 
-    // private UserLocationOverlay getOrCreateLocationOverlay() {
-    //     if (myLocationOverlay == null) {
-    //         // Adds an icon that shows location
-    //         try {
-    //             myLocationOverlay = new UserLocationOverlay(
-    //                     new GpsLocationProvider(getContext()),
-    //                     map,
-    //                     TiRHelper
-    //                             .getResource("drawable.direction_arrow", false),
-    //                     TiRHelper.getResource("drawable.person", false));
-    //             myLocationOverlay.setDrawAccuracyEnabled(false);
-    //         } catch (ResourceNotFoundException e) {
-    //         }
-    //     }
-    //     return myLocationOverlay;
-    // }
-
-    // private void addLocationOverlay() {
-    //     getOrCreateLocationOverlay().enableMyLocation();
-    //     map.addOverlay(myLocationOverlay);
-    // }
-
-    // private void removeLocationOverlay() {
-    //     if (myLocationOverlay != null) {
-    //         myLocationOverlay.disableMyLocation();
-    //         if (map.getOverlays().contains(myLocationOverlay)) {
-    //             map.removeOverlay(myLocationOverlay);
-    //         }
-    //     }
-
-    // }
-
     public KrollDict getUserLocation() {
         return AkylasMapModule.latlongToDict(map.getUserLocation());
     }
 
-    // public Location getUserLocationFix() {
-    //     if (myLocationOverlay != null) {
-    //         return myLocationOverlay.getLastFix();
-    //     }
-    //     return null;
-    // }
-
     public boolean getUserLocationEnabled() {
         return map.getUserLocationEnabled();
-        // return (myLocationOverlay != null && map.getOverlays().contains(
-        //         myLocationOverlay));
     }
 
     public int getUserTrackingMode() {
         return map.getUserLocationTrackingMode().ordinal();
-        // return (myLocationOverlay != null && myLocationOverlay
-        //         .isFollowLocationEnabled()) ? 1 : 0;
-    }
-
-    private void setTileSources(Object sources) {
-        Object source = null;
-        if (sources instanceof Object[]) {
-            int length = Array.getLength(sources);
-            source = new TileLayer[length];
-            for (int i = 0; i < length; i++) {
-                ((Object[]) source)[i] = AkylasMapModule.tileSourceFromObject(
-                        this.proxy, ((Object[]) sources)[i]);
-            }
-            map.setTileSource((TileLayer[]) source);
-        } else {
-            source = AkylasMapModule.tileSourceFromObject(this.proxy, sources);
-            map.setTileSource((TileLayer) source);
-        }
-        // if (source != null) {
-        // map.setScrollableAreaLimit(map.getTileProvider().getBoundingBox());
-        // map.setMinZoomLevel(map.getTileProvider().getMinimumZoomLevel());
-        // map.setMaxZoomLevel(map.getTileProvider().getMaximumZoomLevel());
-        // map.setCenter(map.getTileProvider().getCenterCoordinate());
-        // map.setZoom(map.getTileProvider().getCenterZoom());
-        // map.zoomToBoundingBox(map.getTileProvider().getBoundingBox());
-        // }
     }
 
     protected void handleMinZoomLevel(final float level) {
@@ -205,91 +138,165 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
             mapController.setZoom(level);
         }
     }
-
-    @Override
-    public void processPreMapProperties(final KrollDict d) {
-        super.processPreMapProperties(d);
-         
-        
-        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
-            map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(d
-                    .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)));
-        }
-        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
-            map.setDefaultPinAnchor(TiConvert.toPointF(d
-                    .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)));
-        }
-        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
-            map.setDefaultInfoWindowAnchor(TiConvert.toPointF(d
-                    .get(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)));
-        }
-        if (d.containsKey(AkylasMapModule.PROPERTY_DISK_CACHE)) {
-            setDiskCacheEnabled(TiConvert.toBoolean(d, AkylasMapModule.PROPERTY_DISK_CACHE));
-        }
-        super.processPreMapProperties(d);
-        map.setConstraintRegionFit(regionFit);
+    
+    protected static final ArrayList<String> KEY_SEQUENCE;
+    static{
+      ArrayList<String> tmp = AkylasMapDefaultView.KEY_SEQUENCE;
+      tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE);
+      tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR);
+      tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR);
+      tmp.add(0, AkylasMapModule.PROPERTY_DISK_CACHE);
+      tmp.add(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM);
+      KEY_SEQUENCE = tmp;
     }
     
-    @Override 
-    public void processMapPositioningProperties(final KrollDict d, final boolean animated) {
-        super.processMapPositioningProperties(d, animated);
-        if (d.containsKey(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM)) {
-            setUserLocationRequiredZoom(TiConvert.toFloat(d,
-                    AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM, 10));
-        }
-    }
-
     @Override
-    public void processPostMapProperties(final KrollDict d,
-            final boolean animated) {
-        if (d.containsKey(AkylasMapModule.PROPERTY_TILE_SOURCE)) {
-            setTileSources(d.get(AkylasMapModule.PROPERTY_TILE_SOURCE));
-        }
-        super.processPostMapProperties(d, animated);
-    }
-
-    @Override
-    public void propertyChanged(String key, Object oldValue, Object newValue,
-            KrollProxy proxy) {
-
-        if (key.equals(AkylasMapModule.PROPERTY_TILE_SOURCE)) {
-            setTileSources(newValue);
-        } else if (key.equals(AkylasMapModule.PROPERTY_DISK_CACHE)) {
-            setDiskCacheEnabled(TiConvert.toBoolean(newValue));
-        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+        case AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE:
             map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(newValue));
-        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
+            break;
+        case AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR:
             map.setDefaultPinAnchor(TiConvert.toPointF(newValue));
-        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
+            break;
+        case AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR:
             map.setDefaultInfoWindowAnchor(TiConvert.toPointF(newValue));
-        } else if (key.equals(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM)) {
-            setUserLocationRequiredZoom(TiConvert.toFloat(newValue));
-        } else if (key.equals(AkylasMapModule.PROPERTY_REGION_FIT)) {
-            regionFit = TiConvert.toBoolean(newValue, regionFit);
+            break;
+        case AkylasMapModule.PROPERTY_DISK_CACHE:
+            setDiskCacheEnabled(TiConvert.toBoolean(newValue));
+            break;
+        case AkylasMapModule.PROPERTY_REGION_FIT:
+            super.propertySet(key, newValue, oldValue, changedProperty);
             map.setConstraintRegionFit(regionFit);
-        } else {
-            super.propertyChanged(key, oldValue, newValue, proxy);
+            break;
+        case AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM:
+            map.setUserLocationRequiredZoom(TiConvert.toFloat(newValue, 10));
+            break;
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+            break;
         }
     }
+
+//    @Override
+//    public void processPreMapProperties(final KrollDict d) {
+//        super.processPreMapProperties(d);
+//         
+//        
+//        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
+//            map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(d
+//                    .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)));
+//        }
+//        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
+//            map.setDefaultPinAnchor(TiConvert.toPointF(d
+//                    .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)));
+//        }
+//        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
+//            map.setDefaultInfoWindowAnchor(TiConvert.toPointF(d
+//                    .get(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)));
+//        }
+//        if (d.containsKey(AkylasMapModule.PROPERTY_DISK_CACHE)) {
+//            setDiskCacheEnabled(TiConvert.toBoolean(d, AkylasMapModule.PROPERTY_DISK_CACHE));
+//        }
+//        super.processPreMapProperties(d);
+//        map.setConstraintRegionFit(regionFit);
+//    }
+    
+//    @Override 
+//    public void processMapPositioningProperties(final KrollDict d, final boolean animated) {
+//        super.processMapPositioningProperties(d, animated);
+//        if (d.containsKey(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM)) {
+//            setUserLocationRequiredZoom(TiConvert.toFloat(d,
+//                    AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM, 10));
+//        }
+//    }
+
+//    @Override
+//    public void processPostMapProperties(final KrollDict d,
+//            final boolean animated) {
+//        if (d.containsKey(AkylasMapModule.PROPERTY_TILE_SOURCE)) {
+//            setTileSources(d.get(AkylasMapModule.PROPERTY_TILE_SOURCE));
+//        }
+//        super.processPostMapProperties(d, animated);
+//    }
+
+//    @Override
+//    public void propertyChanged(String key, Object oldValue, Object newValue,
+//            KrollProxy proxy) {
+//
+//        if (key.equals(AkylasMapModule.PROPERTY_DISK_CACHE)) {
+//            setDiskCacheEnabled(TiConvert.toBoolean(newValue));
+//        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
+//            map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(newValue));
+//        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
+//            map.setDefaultPinAnchor(TiConvert.toPointF(newValue));
+//        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
+//            map.setDefaultInfoWindowAnchor(TiConvert.toPointF(newValue));
+//        } else if (key.equals(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM)) {
+//            setUserLocationRequiredZoom(TiConvert.toFloat(newValue));
+//        } else if (key.equals(AkylasMapModule.PROPERTY_REGION_FIT)) {
+//            regionFit = TiConvert.toBoolean(newValue, regionFit);
+//            map.setConstraintRegionFit(regionFit);
+//        } else {
+//            super.propertyChanged(key, oldValue, newValue, proxy);
+//        }
+//    }
 
     @Override
     public void zoomIn() {
-        mapController.zoomIn();
+        if (TiApplication.isUIThread()) {
+            mapController.zoomIn();
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mapController.zoomIn();
+                }
+            });
+        }
     }
 
     @Override
     public void zoomIn(final LatLng about, final boolean userAction) {
-        mapController.zoomInAbout(about, userAction);
+        if (TiApplication.isUIThread()) {
+            mapController.zoomInAbout(about, userAction);
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mapController.zoomInAbout(about, userAction);
+                }
+            });
+        }
     }
 
     @Override
     public void zoomOut() {
-        mapController.zoomOut();
+        if (TiApplication.isUIThread()) {
+            mapController.zoomOut();
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mapController.zoomOut();
+                }
+            });
+        }
     }
 
     @Override
     public void zoomOut(final LatLng about, final boolean userAction) {
-        mapController.zoomOutAbout(about, userAction);
+        if (TiApplication.isUIThread()) {
+            mapController.zoomOutAbout(about, userAction);
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mapController.zoomOutAbout(about, userAction);
+                }
+            });
+        }
     }
 
     @Override
@@ -303,11 +310,6 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
 
     @Override
     protected void setUserLocationEnabled(boolean enabled) {
-        // if (enabled) {
-        //     addLocationOverlay();
-        // } else {
-        //     removeLocationOverlay();
-        // }
         map.setUserLocationEnabled(enabled);
     }
 
@@ -318,29 +320,12 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
 
     @Override
     protected void setUserTrackingMode(int mode) {
-        // if (mode == 0) {
-        //     if (myLocationOverlay != null) {
-        //         myLocationOverlay.disableFollowLocation();
-        //     }
-        // } else {
-        //     getOrCreateLocationOverlay().enableFollowLocation();
-        //     addLocationOverlay();
-        // }
         map.setUserLocationTrackingMode(UserLocationOverlay.TrackingMode.values()[mode]);
     }
     
-    protected void setUserLocationRequiredZoom(float zoomLevel) {
-        // if (mode == 0) {
-        //     if (myLocationOverlay != null) {
-        //         myLocationOverlay.disableFollowLocation();
-        //     }
-        // } else {
-        //     getOrCreateLocationOverlay().enableFollowLocation();
-        //     addLocationOverlay();
-        // }
-        map.setUserLocationRequiredZoom(zoomLevel);
-    }
-
+//    protected void setUserLocationRequiredZoom(float zoomLevel) {
+//        map.setUserLocationRequiredZoom(zoomLevel);
+//    }
 
     @Override
     public float getMaxZoomLevel() {
@@ -384,6 +369,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         }
     }
 
+    @Override
     public TileSourceProxy addTileSource(Object object, int index) {
         TileSourceProxy sourceProxy = AkylasMapModule
                 .tileSourceProxyFromObject(object);
@@ -394,16 +380,15 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         return null;
     }
 
+    @Override
     public void removeTileSource(Object object) {
-        if (object instanceof Number) {
-            map.removeTileSource(((Number) object).intValue());
-        }
-        TileLayer layer = AkylasMapModule.tileSourceFromObject(proxy, object);
-        if (layer != null) {
-            map.removeTileSource(layer);
+        if (object instanceof TileSourceProxy) {
+            TileLayer layer = ((TileSourceProxy)object).getLayer();
+            if (layer != null) {
+                map.removeTileSource(layer);
+            }
         }
     }
-
 
     Marker getOrCreateMapboxMarker(AnnotationProxy proxy) {
         AkylasMarker marker = proxy.getMarker();
@@ -411,8 +396,41 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
             marker = new MapboxMarker(proxy);
             proxy.setMarker(marker);
             proxy.setMapView(this);
+            proxy.setParentForBubbling(this.proxy);
         }
         return ((MapboxMarker) marker).getMarker(map);
+    }
+    
+    public MabpoxInfoWindow createInfoWindow(AnnotationProxy annotationProxy) {
+        MabpoxInfoWindow result = (MabpoxInfoWindow) mInfoWindowCache.get("window");
+        result.setProxy(annotationProxy);
+        return result;
+    }
+    
+    public void infoWindowDidClose(MabpoxInfoWindow mabpoxInfoWindow) {
+        mabpoxInfoWindow.setProxy(null);
+        mabpoxInfoWindow.getBoundMarker().setInfoWindow(null);
+        if (_calloutUsesTemplates) {
+            AkylasMapInfoView infoView = (AkylasMapInfoView) mabpoxInfoWindow.getInfoView();
+            Object view = infoView.getLeftView();
+            if (view != null && view instanceof TiCompositeLayout) {
+                view = ((TiCompositeLayout)view).getView();
+            }
+            if (view instanceof ReusableView) {
+                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
+                infoView.setLeftOrRightPane(null, AkylasMapInfoView.LEFT_PANE);
+            }
+            view = infoView.getRightView();
+            if (view != null && view instanceof TiCompositeLayout) {
+                view = ((TiCompositeLayout)view).getView();
+            }
+            if (view instanceof ReusableView) {
+                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
+                infoView.setLeftOrRightPane(null, AkylasMapInfoView.RIGHT_PANE);
+            }
+            infoView.setCustomView(null);
+        }
+        mInfoWindowCache.put("window", mabpoxInfoWindow);
     }
 
     Marker getMapboxMarker(AnnotationProxy proxy) {
@@ -425,28 +443,73 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
 
     @Override
     public void selectUserAnnotation() {
-        map.goToUserLocation(true);
+        if (TiApplication.isUIThread()) {
+            map.goToUserLocation(true);
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    map.goToUserLocation(true);
+                }
+            });
+        }
     }
 
     @Override
     void handleDeselectMarker(AkylasMarker marker) {
-        map.selectMarker(null);
+        if (TiApplication.isUIThread()) {
+            map.selectMarker(null);
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    map.selectMarker(null);
+                }
+            });
+        }
     }
 
     @Override
-    void handleSelectMarker(AkylasMarker marker) {
-        map.selectMarker(((MapboxMarker) marker).getMarker());
+    void handleSelectMarker(final AkylasMarker marker) {
+        if (TiApplication.isUIThread()) {
+            map.selectMarker(((MapboxMarker) marker).getMarker());
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    map.selectMarker(((MapboxMarker) marker).getMarker());
+                }
+            });
+        }
     }
 
     @Override
-    void handleAddRoute(RouteProxy route) {
+    void handleAddRoute(final RouteProxy route) {
         route.setMapView(map);
-        map.addOverlay(route.getPath());
+        if (TiApplication.isUIThread()) {
+            map.addOverlay(route.getPath());
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    map.addOverlay(route.getPath());
+                }
+            });
+        }
     }
 
     @Override
-    void handleRemoveRoute(RouteProxy route) {
-        map.removeOverlay(route.getPath());
+    void handleRemoveRoute(final RouteProxy route) {
+        if (TiApplication.isUIThread()) {
+            map.removeOverlay(route.getPath());
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    map.removeOverlay(route.getPath());
+                }
+            });
+        }
         route.setMapView(null);
     }
 
@@ -459,29 +522,57 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         } else {
             marker = getOrCreateMapboxMarker(annotation);
         }
-//        timarkers.add(annotation.getMarker());
-        map.addMarker(marker);
+        
+        if (TiApplication.isUIThread()) {
+            map.addMarker(marker);
+        } else {
+            final Marker fMarker = marker;
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    map.addMarker(fMarker);
+                }
+            });
+        }
     }
 
     @Override
     void handleRemoveMarker(AkylasMarker marker) {
         if (marker instanceof MapboxMarker) {
-//            timarkers.remove(marker);
-            Marker mapBoxMarker = ((MapboxMarker) marker).getMarker();
+            final Marker mapBoxMarker = ((MapboxMarker) marker).getMarker();
             if (mapBoxMarker != null) {
-                map.removeMarker(mapBoxMarker);
+                if (TiApplication.isUIThread()) {
+                    map.removeMarker(mapBoxMarker);
+                } else {
+                    proxy.getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            map.removeMarker(mapBoxMarker);
+                        }
+                    });
+                }
             }
-            AnnotationProxy proxy = marker.getProxy();
-            if (proxy != null) {
-                proxy.setMarker(null);
+            AnnotationProxy annotation = marker.getProxy();
+            if (annotation != null) {
+                annotation.setMarker(null);
+                annotation.setParentForBubbling(null);
+                annotation.setMapView(null);
             }
         }
     }
     
     @Override
     protected void removeAllAnnotations() {
-        map.clear();
-//        timarkers.clear();
+        if (TiApplication.isUIThread()) {
+            map.clear();
+        } else {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    map.clear();
+                }
+            });
+        }
     }
     
     public void fireLongClickEvent(ILatLng point)
@@ -579,7 +670,6 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     @Override
     public void onInfoWindowHide(Marker marker) {
         selectedAnnotation = null;
-        InfoWindow window = marker.getInfoWindow();
         fireEventOnMarker(TiC.EVENT_BLUR, getAkMarker(marker), AkylasMapModule.PROPERTY_PIN);
     }
 
@@ -632,8 +722,6 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         }
     }
     
-    
-
     public float getMetersPerPixel() {
         final float density = getContext().getResources().getDisplayMetrics().density - 1;
         float result = (float) map.getProjection().groundResolution(0);

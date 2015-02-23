@@ -20,7 +20,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class GoogleMapMarker extends AkylasMarker {
     private static final String TAG = "GoogleMapMarker";
-    private MarkerOptions markerOptions;
+    private MarkerOptions markerOptions = null;
     private Marker marker;
 
     private static final String defaultIconImageHeight = "40dip"; // The height
@@ -84,28 +84,36 @@ public class GoogleMapMarker extends AkylasMarker {
 
     public MarkerOptions getMarkerOptions() {
         if (markerOptions == null) {
-            markerOptions = new MarkerOptions();
-            markerOptions.position(AkylasMapModule.mapBoxToGoogle(proxy
-                    .getPosition()));
-            markerOptions.title(proxy.getTitle());
-            markerOptions.snippet(proxy.getSubtitle());
-            markerOptions.draggable(proxy.getDraggable());
-            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(proxy
+            markerOptions = new MarkerOptions()
+                .position(AkylasMapModule.mapBoxToGoogle(proxy
+                    .getPosition()))
+                .rotation(proxy.heading)
+                .title(proxy.getTitle())
+                .snippet(proxy.getSubtitle())
+                .draggable(proxy.getDraggable())
+                .visible(proxy.visible)
+                .flat(proxy.getFlat())
+                .icon(BitmapDescriptorFactory.defaultMarker(proxy
                     .getPinColor()));
+            
+            if (proxy.getAnchor() != null) {
+                PointF anchor = proxy.getAnchor();
+                markerOptions.anchor(anchor.x, anchor.y);
+            }
+            if (proxy.getCalloutAnchor() != null) {
+                PointF anchor = proxy.getCalloutAnchor();
+                markerOptions.infoWindowAnchor(anchor.x, anchor.y);
+            }
         }
+        
+        
         KrollDict dict = proxy.getProperties();
-        
-        if (dict.containsKey(AkylasMapModule.PROPERTY_ANCHOR)) {
-            PointF anchor = TiConvert.toPointF(dict.get(AkylasMapModule.PROPERTY_ANCHOR));
-            markerOptions.anchor(anchor.x, anchor.y);
-        }
-        
         // customView, image and pincolor must be defined before adding to
         // mapview. Once added, their values are final.
 //        if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
 //            handleCustomView(dict.get(AkylasMapModule.PROPERTY_CUSTOM_VIEW));
 //        } else 
-            if (dict.containsKey(TiC.PROPERTY_IMAGE)) {
+        if (dict.containsKey(TiC.PROPERTY_IMAGE)) {
             handleImage(dict.get(TiC.PROPERTY_IMAGE));
         } else {
             setIconImageHeight(-1);
@@ -161,24 +169,182 @@ public class GoogleMapMarker extends AkylasMarker {
     public void hideInfoWindow() {
         if (marker != null) {
             marker.hideInfoWindow();
+            if (proxy != null) {
+                proxy.googleInfoWindowDidClose();
+            }
         }
     }
 
     @Override
     void setPosition(double latitude, double longitude) {
-        LatLng position = new LatLng(latitude, longitude);
+        final LatLng position = new LatLng(latitude, longitude);
         if (marker != null) {
-            marker.setPosition(position);
+            if (TiApplication.isUIThread()) {
+                marker.setPosition(position);
+            } else {
+                getProxy().getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        marker.setPosition(position);
+                    }
+                });
+            }
         }
         if (markerOptions != null) {
             markerOptions.position(position);
         }
     }
+    
+    @Override
+    void setVisible(final boolean visible) {
+        if (marker != null) {
+            if (TiApplication.isUIThread()) {
+                marker.setVisible(visible);
+            } else {
+                getProxy().getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        marker.setVisible(visible);
+                    }
+                });
+            }
+        }
+        if (markerOptions != null) {
+            markerOptions.visible(visible);
+        }
+    }
+    
+    @Override
+    void setHeading(final float heading) {
+        if (marker != null) {
+            if (TiApplication.isUIThread()) {
+                marker.setRotation(heading);
+            } else {
+                getProxy().getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        marker.setRotation(heading);
+                    }
+                });
+            }
+        }
+        if (markerOptions != null) {
+            markerOptions.rotation(heading);
+        }
+    }
+    
+    @Override
+    public void setDraggable(final boolean draggable) {
+        if (marker != null) {
+//            if (TiApplication.isUIThread()) {
+                marker.setDraggable(draggable);
+//            } else {
+//                getProxy().getActivity().runOnUiThread(new Runnable()
+//                {
+//                    @Override
+//                    public void run()
+//                    {
+//                        marker.setDraggable(draggable);
+//                    }
+//                });
+//            }
+        }
+        if (markerOptions != null) {
+            markerOptions.draggable(draggable);
+        }
+    }
+    
+    @Override
+    public void setFlat(final boolean flat) {
+        if (marker != null) {
+//            if (TiApplication.isUIThread()) {
+                marker.setFlat(flat);
+//            } else {
+//                getProxy().getActivity().runOnUiThread(new Runnable()
+//                {
+//                    @Override
+//                    public void run()
+//                    {
+//                        marker.setFlat(flat);
+//                    }
+//                });
+//            }
+        }
+        if (markerOptions != null) {
+            markerOptions.flat(flat);
+        }
+    }
 
     @Override
     void invalidate() {
-        boolean oldVisible = marker.isVisible();
-        marker.setVisible(!oldVisible);
-        marker.setVisible(oldVisible);
+        if (marker != null) {
+            final boolean oldVisible = marker.isVisible();
+            if (TiApplication.isUIThread()) {
+                marker.setVisible(!oldVisible);
+                marker.setVisible(oldVisible);
+            } else {
+                getProxy().getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        marker.setVisible(!oldVisible);
+                        marker.setVisible(oldVisible);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    void setAnchor(PointF anchor) {
+        final float anchorX = (anchor != null)?anchor.x:0.5f;
+        final float anchorY = (anchor != null)?anchor.y:1.0f;
+        if (marker != null) {
+            if (TiApplication.isUIThread()) {
+                marker.setAnchor(anchorX, anchorY);
+            } else {
+                getProxy().getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        marker.setAnchor(anchorX, anchorY);
+                    }
+                });
+            }
+        }
+        if (markerOptions != null) {
+            markerOptions.anchor(anchorX, anchorY);
+        }
+    }
+
+    @Override
+    void setWindowAnchor(PointF anchor) {
+        final float anchorX = (anchor != null)?anchor.x:0.5f;
+        final float anchorY = (anchor != null)?anchor.y:1.0f;
+        if (marker != null) {
+            if (TiApplication.isUIThread()) {
+                marker.setInfoWindowAnchor(anchorX, anchorY);
+            } else {
+                getProxy().getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        marker.setInfoWindowAnchor(anchorX, anchorY);
+                    }
+                });
+            }
+        }
+        if (markerOptions != null) {
+            markerOptions.infoWindowAnchor(anchorX, anchorY);
+        }
     }
 }

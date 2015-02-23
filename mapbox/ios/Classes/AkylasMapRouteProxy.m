@@ -315,9 +315,6 @@ int lineJoinFromString(NSString* value)
 {
 	[self replaceValue:value forKey:@"level" notification:NO];
     // level is not supported before iOS 7 but it doesn't hurt to capture it.
-    if (![TiUtils isIOS7OrGreater]) {
-        [AkylasMapModule logAddedIniOS7Warning:@"level"];
-    }
     level = [[TiUtils numberFromObject:value] unsignedIntegerValue];
 }
 
@@ -340,7 +337,7 @@ int lineJoinFromString(NSString* value)
 -(id <AkylasMKOverlayPathUniversal>)rendererForMapView:(AkylasMapMapView*)mapView
 {
     if (routeRenderer == nil) {
-        Class rendererClass = ([TiUtils isIOS7OrGreater]) ? [MKPolylineRenderer class] : [MKPolylineView class];
+        Class rendererClass = [MKPolylineRenderer class];
         routeRenderer = [(id <AkylasMKOverlayPathUniversal>)[[rendererClass alloc] initWithPolyline:[self getPolyline]] retain];
         routeRenderer.lineCap = lineCapFromString(_lineCap);
         routeRenderer.lineJoin = lineJoinFromString(_lineJoin);

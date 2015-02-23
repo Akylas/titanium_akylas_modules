@@ -25,11 +25,11 @@
 -(NSArray *)keySequence
 {
     return [NSArray arrayWithObjects:
-            @"tileSource",
-            @"region",
             @"minZoom",
             @"maxZoom",
             @"zoom",
+            @"tileSource",
+            @"region",
             @"centerCoordinate",
             nil];
 }
@@ -327,16 +327,17 @@
 	}
 	else 
 	{
-		if (routesToAdd==nil)
-		{
-			routesToAdd = [[NSMutableArray alloc] init];
-		}
+		
 		if (routesToRemove!=nil && [routesToRemove containsObject:routeProxy])
 		{
 			[routesToRemove removeObject:routeProxy];
 		}
 		else 
 		{
+            if (routesToAdd==nil)
+            {
+                routesToAdd = [[NSMutableArray alloc] init];
+            }
 			[routesToAdd addObject:routeProxy];
 		}
 	}

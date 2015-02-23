@@ -7,6 +7,7 @@ package akylas.map;
  * Please see the LICENSE included with this distribution for details.
  */
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +18,6 @@ import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUINonViewGroupView;
 
 import com.mapbox.mapboxsdk.api.ILatLng;
@@ -32,7 +32,7 @@ import android.view.MotionEvent;
 abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     private static final String TAG = "AkylasMapDefaultView";
     
-    private class InfoWindowCache extends SoftCache{
+    protected class InfoWindowCache extends SoftCache{
 
         public InfoWindowCache() {
             super();
@@ -42,6 +42,8 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         public Object runWhenCacheEmpty(String key) {
             if (key.equals("window")) {
                 return new MabpoxInfoWindow(getProxy().getActivity()); //new view;
+            } else if (key.equals("infoView")) {
+                return new AkylasMapInfoView(getProxy().getActivity()); //new view;
             }
             return null;
         }   
@@ -52,11 +54,13 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
 //    protected ArrayList<AkylasMarker> timarkers;
     protected AnnotationProxy selectedAnnotation;
     protected boolean regionFit = false;
+    protected boolean shouldFollowUserLocation = true;
     
-    private boolean _calloutUsesTemplates = false;
+    protected boolean _calloutUsesTemplates = false;
     private String defaultTemplateBinding;
     private HashMap<String, TiViewTemplate> templatesByBinding;
-    InfoWindowCache mInfoWindowCache = new InfoWindowCache();
+    protected InfoWindowCache mInfoWindowCache = new InfoWindowCache();
+    
 
     public AkylasMapDefaultView(final TiViewProxy proxy) {
         super(proxy);
@@ -70,127 +74,223 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         return false;
     }
 
+//    @Override
+//    public void processProperties(KrollDict d) {
+//        super.processProperties(d);
+//        processMapProperties(d);
+//    }
+    
     @Override
-    public void processProperties(KrollDict d) {
-        super.processProperties(d);
-        processMapProperties(d);
+    public void release() {
+        mInfoWindowCache.clear();
+        super.release();
     }
-
-    public void processPreMapProperties(final KrollDict d) {
-        if (d.containsKey(AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES)) {
-            processTemplates((HashMap)d.get(AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES));
-        } 
-        
-        if (d.containsKey(AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES)) {
-            _calloutUsesTemplates = d.optBoolean(AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES, false);
-        } 
-        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE)) {
-            defaultTemplateBinding = d.getString(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE);
-        }
-        if (d.containsKey(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS)) {
-            ((MapDefaultViewProxy)proxy).maxAnnotations = d.optInt(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS, 0);
-        }
-        if (d.containsKey(AkylasMapModule.PROPERTY_REGION_FIT)) {
-            regionFit = d.optBoolean(AkylasMapModule.PROPERTY_REGION_FIT,
-                    regionFit);
+    
+    protected static final ArrayList<String> KEY_SEQUENCE;
+    static{
+      ArrayList<String> tmp = new ArrayList<String>();
+      tmp.add(AkylasMapModule.PROPERTY_ANIMATE_CHANGES);
+//      tmp.add(AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES);
+//      tmp.add(AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES);
+//      tmp.add(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE);
+      tmp.add(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS);
+      tmp.add(AkylasMapModule.PROPERTY_REGION_FIT);
+      tmp.add(AkylasMapModule.PROPERTY_TILE_SOURCE);
+//      tmp.add(AkylasMapModule.PROPERTY_ANNOTATIONS);
+//      tmp.add(AkylasMapModule.PROPERTY_ROUTES);
+      tmp.add(AkylasMapModule.PROPERTY_MINZOOM);
+      tmp.add(AkylasMapModule.PROPERTY_MAXZOOM);
+      tmp.add(AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT);
+      tmp.add(AkylasMapModule.PROPERTY_ZOOM);
+      tmp.add(TiC.PROPERTY_REGION);
+      tmp.add(AkylasMapModule.PROPERTY_CENTER_COORDINATE);
+//      tmp.add(AkylasMapModule.PROPERTY_USER_TRACKING_MODE);
+//      tmp.add(AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED);
+      KEY_SEQUENCE = tmp;
+    }
+    
+    @Override
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+        case AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES:
+            processTemplates((HashMap)newValue);
+            break;
+        case AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES:
+            _calloutUsesTemplates = TiConvert.toBoolean(newValue, false);
+            break;
+        case AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE:
+            defaultTemplateBinding = TiConvert.toString(newValue);
+            break;
+        case AkylasMapModule.PROPERTY_MAX_ANNOTATIONS:
+            ((MapDefaultViewProxy)proxy).maxAnnotations = TiConvert.toInt(newValue, 0);
+            break;
+        case AkylasMapModule.PROPERTY_REGION_FIT:
+            regionFit = TiConvert.toBoolean(newValue, false);
+            break;
+        case AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT:
+            updateScrollableAreaLimit(TiConvert.toKrollDict(newValue));
+            break;
+        case AkylasMapModule.PROPERTY_ZOOM:
+            changeZoomLevel(TiConvert.toFloat(newValue), shouldAnimate());
+            break;
+        case AkylasMapModule.PROPERTY_ANIMATE_CHANGES:
+            animate = TiConvert.toBoolean(newValue, false);
+            break;
+        case TiC.PROPERTY_REGION:
+            updateRegion(newValue, shouldAnimate());
+            break;
+        case AkylasMapModule.PROPERTY_CENTER_COORDINATE:
+            updateCenter(newValue, shouldAnimate());
+            break;
+        case AkylasMapModule.PROPERTY_TILE_SOURCE:
+            setTileSources(newValue);
+            break;
+        case AkylasMapModule.PROPERTY_ANNOTATIONS:
+            addAnnotations((Object[])newValue);
+            break;
+        case AkylasMapModule.PROPERTY_ROUTES:
+            addRoutes((Object[]) newValue);
+            break;
+        case AkylasMapModule.PROPERTY_MINZOOM:
+            handleMinZoomLevel(TiConvert.toFloat(newValue));
+            break;
+        case AkylasMapModule.PROPERTY_MAXZOOM:
+            handleMaxZoomLevel(TiConvert.toFloat(newValue));
+            break;
+        case AkylasMapModule.PROPERTY_USER_TRACKING_MODE:
+            setUserTrackingMode(TiConvert.toInt(newValue, 0));
+            break;
+        case AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED:
+            setUserLocationEnabled(TiConvert.toBoolean(newValue, false));
+            break;
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+            break;
         }
     }
     
-    public void processMapPositioningProperties(final KrollDict d, final boolean animated) {
-        if (d.containsKey(AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT)) {
-            updateScrollableAreaLimit(d
-                    .getKrollDict(AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT));
-        }
-        
-        if (d.containsKey(AkylasMapModule.PROPERTY_ZOOM)) {
-            changeZoomLevel(
-                    TiConvert.toFloat(d, AkylasMapModule.PROPERTY_ZOOM),
-                    animated);
-        }
+//    public void processPreMapProperties(final KrollDict d) {
+//        if (d.containsKey(AkylasMapModule.PROPERTY_CALLOUT_TEMPLATES)) {
+//        } 
+//        
+//        if (d.containsKey(AkylasMapModule.PROPERTY_CALLOUT_USE_TEMPLATES)) {
+//        } 
+//        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE)) {
+//            defaultTemplateBinding = d.getString(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_TEMPLATE);
+//        }
+//        if (d.containsKey(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS)) {
+//            ((MapDefaultViewProxy)proxy).maxAnnotations = d.optInt(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS, 0);
+//        }
+//        if (d.containsKey(AkylasMapModule.PROPERTY_REGION_FIT)) {
+//            regionFit = d.optBoolean(AkylasMapModule.PROPERTY_REGION_FIT,
+//                    regionFit);
+//        }
+//    }
+    
+//    public void processMapPositioningProperties(final KrollDict d, final boolean animated) {
+//        if (d.containsKey(AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT)) {
+//            updateScrollableAreaLimit(d
+//                    .getKrollDict(AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT));
+//        }
+//        
+//        if (d.containsKey(AkylasMapModule.PROPERTY_ZOOM)) {
+//            changeZoomLevel(
+//                    TiConvert.toFloat(d, AkylasMapModule.PROPERTY_ZOOM),
+//                    animated);
+//        }
+//
+//        if (d.containsKey(TiC.PROPERTY_REGION)) {
+//            updateRegion(d.get(TiC.PROPERTY_REGION), animated);
+//        }
+//        if (d.containsKey(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
+//            updateCenter(d.get(AkylasMapModule.PROPERTY_CENTER_COORDINATE),
+//                    animated);
+//        }
+//        
+//    }
 
-        if (d.containsKey(TiC.PROPERTY_REGION)) {
-            updateRegion(d.get(TiC.PROPERTY_REGION), animated);
-        }
-        if (d.containsKey(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
-            updateCenter(d.get(AkylasMapModule.PROPERTY_CENTER_COORDINATE),
-                    animated);
-        }
-        
+//    public void processPostMapProperties(final KrollDict d, final boolean animated) {
+//        
+//        if (d.containsKey(AkylasMapModule.PROPERTY_TILE_SOURCE)) {
+//            setTileSources(d.get(AkylasMapModule.PROPERTY_TILE_SOURCE));
+//        }
+//        if (d.containsKey(AkylasMapModule.PROPERTY_ANNOTATIONS)) {
+//            ((MapDefaultViewProxy)proxy).addAnnotations(d.get(AkylasMapModule.PROPERTY_ANNOTATIONS));
+//        }
+//        if (d.containsKey(AkylasMapModule.PROPERTY_ROUTES)) {
+//            Object[] routes = (Object[]) d.get(AkylasMapModule.PROPERTY_ROUTES);
+//            addRoutes(routes);
+//        }
+//        
+//
+//        if (d.containsKey(AkylasMapModule.PROPERTY_MINZOOM)) {
+//            handleMinZoomLevel(TiConvert.toFloat(d,
+//                    AkylasMapModule.PROPERTY_MINZOOM));
+//        }
+//
+//        if (d.containsKey(AkylasMapModule.PROPERTY_MAXZOOM)) {
+//            handleMaxZoomLevel(TiConvert.toFloat(d,
+//                    AkylasMapModule.PROPERTY_MAXZOOM));
+//        }
+//
+//        processMapPositioningProperties(d, animated);
+//        
+//        // the order is important !
+//        if (d.containsKey(AkylasMapModule.PROPERTY_USER_TRACKING_MODE)) {
+//            setUserTrackingMode(TiConvert.toInt(d,
+//                    AkylasMapModule.PROPERTY_USER_TRACKING_MODE, 0));
+//        }
+//
+//        if (d.containsKey(AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED)) {
+//            setUserLocationEnabled(TiConvert.toBoolean(d,
+//                    AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED, false));
+//        }
+//    }
+    
+    
+    protected boolean shouldAnimate() {
+        return animate && proxy.viewInitialised();
     }
+//    public void processMapProperties(final KrollDict d) {
+//        if (d.containsKey(AkylasMapModule.PROPERTY_ANIMATE_CHANGES)) {
+//            animate = d.optBoolean(AkylasMapModule.PROPERTY_ANIMATE_CHANGES, animate);
+//        }
+//        boolean animated = animate && proxy.viewInitialised();
+//        processPreMapProperties(d);
+//        processPostMapProperties(d, animated);
+//    }
 
-    public void processPostMapProperties(final KrollDict d, final boolean animated) {
-
-        if (d.containsKey(AkylasMapModule.PROPERTY_ANNOTATIONS)) {
-            ((MapDefaultViewProxy)proxy).addAnnotations(d.get(AkylasMapModule.PROPERTY_ANNOTATIONS));
-        }
-        if (d.containsKey(AkylasMapModule.PROPERTY_ROUTES)) {
-            Object[] routes = (Object[]) d.get(AkylasMapModule.PROPERTY_ROUTES);
-            addRoutes(routes);
-        }
-        
-
-        if (d.containsKey(AkylasMapModule.PROPERTY_MINZOOM)) {
-            handleMinZoomLevel(TiConvert.toFloat(d,
-                    AkylasMapModule.PROPERTY_MINZOOM));
-        }
-
-        if (d.containsKey(AkylasMapModule.PROPERTY_MAXZOOM)) {
-            handleMaxZoomLevel(TiConvert.toFloat(d,
-                    AkylasMapModule.PROPERTY_MAXZOOM));
-        }
-
-        processMapPositioningProperties(d, animated);
-        
-        // the order is important !
-        if (d.containsKey(AkylasMapModule.PROPERTY_USER_TRACKING_MODE)) {
-            setUserTrackingMode(TiConvert.toInt(d,
-                    AkylasMapModule.PROPERTY_USER_TRACKING_MODE, 0));
-        }
-
-        if (d.containsKey(AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED)) {
-            setUserLocationEnabled(TiConvert.toBoolean(d,
-                    AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED, false));
-        }
-    }
-
-    public void processMapProperties(final KrollDict d) {
-        if (d.containsKey(AkylasMapModule.PROPERTY_ANIMATE_CHANGES)) {
-            animate = d.optBoolean(AkylasMapModule.PROPERTY_ANIMATE_CHANGES, animate);
-        }
-        boolean animated = animate && proxy.viewInitialised();
-        processPreMapProperties(d);
-        ((MapDefaultViewProxy) getProxy()).processPreloaded();
-        processPostMapProperties(d, animated);
-    }
-
-    @Override
-    public void propertyChanged(String key, Object oldValue, Object newValue,
-            KrollProxy proxy) {
-
-        if (key.equals(AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED)) {
-            setUserLocationEnabled(TiConvert.toBoolean(newValue));
-        } else if (key.equals(AkylasMapModule.PROPERTY_USER_TRACKING_MODE)) {
-            setUserTrackingMode(TiConvert.toInt(newValue, 0));
-        } else if (key.equals(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS)) {
-            ((MapDefaultViewProxy)proxy).maxAnnotations = TiConvert.toInt(newValue, 0);
-        } else if (key.equals(TiC.PROPERTY_REGION)) {
-            updateRegion(newValue, true);
-        } else if (key.equals(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
-            updateCenter(newValue, true);
-        } else if (key.equals(AkylasMapModule.PROPERTY_ZOOM)) {
-            changeZoomLevel(TiConvert.toFloat(newValue), true);
-        } else if (key.equals(AkylasMapModule.PROPERTY_ANIMATE_CHANGES)) {
-            animate = TiConvert.toBoolean(newValue, animate);
-        } else if (key.equals(AkylasMapModule.PROPERTY_REGION_FIT)) {
-            regionFit = TiConvert.toBoolean(newValue, regionFit);
-        } else if (key.equals(TiC.PROPERTY_ANNOTATIONS)) {
-            ((MapDefaultViewProxy)proxy).setAnnotations(newValue);
-        } else if (key.equals(AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT)) {
-            updateScrollableAreaLimit(newValue);
-        } else {
-            super.propertyChanged(key, oldValue, newValue, proxy);
-        }
-    }
+//    @Override
+//    public void propertyChanged(String key, Object oldValue, Object newValue,
+//            KrollProxy proxy) {
+//
+//        if (key.equals(AkylasMapModule.PROPERTY_TILE_SOURCE)) {
+//            setTileSources(newValue);
+//        } else if (key.equals(AkylasMapModule.PROPERTY_USER_LOCATION_ENABLED)) {
+//            setUserLocationEnabled(TiConvert.toBoolean(newValue));
+//        } else if (key.equals(AkylasMapModule.PROPERTY_USER_TRACKING_MODE)) {
+//            setUserTrackingMode(TiConvert.toInt(newValue, 0));
+//        } else if (key.equals(AkylasMapModule.PROPERTY_MAX_ANNOTATIONS)) {
+//            ((MapDefaultViewProxy)proxy).maxAnnotations = TiConvert.toInt(newValue, 0);
+//        } else if (key.equals(TiC.PROPERTY_REGION)) {
+//            updateRegion(newValue, true);
+//        } else if (key.equals(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
+//            updateCenter(newValue, true);
+//        } else if (key.equals(AkylasMapModule.PROPERTY_ZOOM)) {
+//            changeZoomLevel(TiConvert.toFloat(newValue), true);
+//        } else if (key.equals(AkylasMapModule.PROPERTY_ANIMATE_CHANGES)) {
+//            animate = TiConvert.toBoolean(newValue, animate);
+//        } else if (key.equals(AkylasMapModule.PROPERTY_REGION_FIT)) {
+//            regionFit = TiConvert.toBoolean(newValue, regionFit);
+//        } else if (key.equals(TiC.PROPERTY_ANNOTATIONS)) {
+//            ((MapDefaultViewProxy)proxy).setAnnotations(newValue);
+//        } else if (key.equals(AkylasMapModule.PROPERTY_SCROLLABLE_AREA_LIMIT)) {
+//            updateScrollableAreaLimit(newValue);
+//        } else {
+//            super.propertyChanged(key, oldValue, newValue, proxy);
+//        }
+//    }
 
     abstract public KrollDict getUserLocation();
     abstract boolean getUserLocationEnabled();
@@ -213,17 +313,8 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     abstract void zoomOut(final LatLng about, final boolean userAction);
     abstract KrollDict getRegionDict();
 
-    protected void addAnnotations(Object[] annotations) {
-        for (int i = 0; i < annotations.length; i++) {
-            handleAddAnnotation((AnnotationProxy) annotations[i]);
-        }
-    }
-    
-    protected void removeAnnotations(Object[] annotations) {
-        for (int i = 0; i < annotations.length; i++) {
-            removeAnnotation(annotations[i]);
-        }
-    }
+
+
 
 //    public AkylasMarker findMarkerByTitle(String title) {
 //        for (int i = 0; i < timarkers.size(); i++) {
@@ -257,28 +348,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
 //        return null;
 //    }
     
-    protected void removeAllAnnotations() {
-//        for (int i = 0; i < timarkers.size(); i++) {
-//            handleRemoveMarker(timarkers.get(i));
-//        }
-//        timarkers.clear();
-    }
-    
-    protected void removeAnnotation(Object annotation) {
-        AkylasMarker timarker = null;
-        if (annotation instanceof AkylasMarker) {
-            timarker = (AkylasMarker) annotation;
-        } else if (annotation instanceof AnnotationProxy) {
-            timarker = ((AnnotationProxy) annotation).getMarker();
-//        } else if (annotation instanceof String) {
-//            timarker = findMarkerByTitle((String) annotation);
-        }
 
-        if (timarker != null) {
-            handleRemoveMarker(timarker);
-        }
-    }
-    
     protected void selectAnnotation(Object annotation) {
         AkylasMarker marker = null;
         if (annotation instanceof AnnotationProxy) {
@@ -330,13 +400,85 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         }
         return null;
     }
+    
+    public ArrayList<RouteProxy> addRoutes(Object[] routes) {
+        ArrayList<RouteProxy> result = new ArrayList<RouteProxy>();
+        for (int i = 0; i < routes.length; i++) {
+            RouteProxy route = addRoute(routes[i]);
+            if (route != null) {
+                result.add(route);
+            }
+        }
+        return result;
+    }
 
     public void removeRoute(Object object) {
+        if (object instanceof Object[]) {
+            for (Object obj : (Object[]) object) {
+                removeRoute(obj);
+            }
+            return;
+        }
         if (object instanceof RouteProxy) {
             RouteProxy r = (RouteProxy) object;
             handleRemoveRoute(r);
         }
     }
+    
+    public AnnotationProxy addAnnotation(Object object) {
+        if (object instanceof HashMap) {
+            object = KrollProxy.createProxy(AnnotationProxy.class, null,
+                    new Object[] { object }, null);
+        }
+        if (object instanceof AnnotationProxy) {
+            AnnotationProxy annotation = (AnnotationProxy) object;
+            handleAddAnnotation(annotation);
+            return annotation;
+        }
+        return null;
+    }
+    
+    public ArrayList<AnnotationProxy> addAnnotations(Object[] annotations) {
+        ArrayList<AnnotationProxy> result = new ArrayList<AnnotationProxy>();
+        for (int i = 0; i < annotations.length; i++) {
+            AnnotationProxy annotation = addAnnotation(annotations[i]);
+            if (annotation != null) {
+                result.add(annotation);
+            }
+        }
+        return result;
+    }
+    
+    
+
+    public void removeAnnotation(Object object) {
+        if (object == null) return;
+        if (object instanceof Object[]) {
+            for (Object obj : (Object[]) object) {
+                removeAnnotation(obj);
+            }
+            return;
+        }
+        AkylasMarker timarker = null;
+        if (object instanceof AkylasMarker) {
+            timarker = (AkylasMarker) object;
+        } else if (object instanceof AnnotationProxy) {
+            timarker = ((AnnotationProxy) object).getMarker();
+//        } else if (annotation instanceof String) {
+//            timarker = findMarkerByTitle((String) annotation);
+        }
+
+        if (timarker != null) {
+            handleRemoveMarker(timarker);
+        }
+    }
+    protected void removeAllAnnotations() {
+//      for (int i = 0; i < timarkers.size(); i++) {
+//          handleRemoveMarker(timarkers.get(i));
+//      }
+//      timarkers.clear();
+  }
+
 
     private AnnotationProxy getProxyByMarker(AkylasMarker m) {
         if (m != null) {
@@ -351,16 +493,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         return null;
     }
 
-    public ArrayList<RouteProxy> addRoutes(Object[] routes) {
-        ArrayList<RouteProxy> result = new ArrayList<RouteProxy>();
-        for (int i = 0; i < routes.length; i++) {
-            RouteProxy route = addRoute(routes[i]);
-            if (route != null) {
-                result.add(route);
-            }
-        }
-        return result;
-    }
+    
 
     protected void fireEventOnMap(String type, ILatLng point) {
         if (!hasListeners(type))
@@ -448,11 +581,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         return null;
     }
     
-    public MabpoxInfoWindow createInfoWindow(AnnotationProxy annotationProxy) {
-        MabpoxInfoWindow result = (MabpoxInfoWindow) mInfoWindowCache.get("window");
-        result.setProxy(annotationProxy);
-        return result;
-    }
+
     
     protected void processTemplates(HashMap<String,Object> templates) {
         templatesByBinding = new HashMap<String, TiViewTemplate>();
@@ -475,30 +604,41 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
 
     
 
-    public void infoWindowDidClose(MabpoxInfoWindow mabpoxInfoWindow) {
-        mabpoxInfoWindow.setProxy(null);
-        mabpoxInfoWindow.getBoundMarker().setInfoWindow(null);
-        if (_calloutUsesTemplates) {
-            AkylasMapInfoView infoView = (AkylasMapInfoView) mabpoxInfoWindow.getInfoView();
-            Object view = infoView.getLeftView();
-            if (view != null && view instanceof TiCompositeLayout) {
-                view = ((TiCompositeLayout)view).getView();
+    
+    
+    protected void setTileSources(Object sources) {
+        if (sources instanceof Object[]) {
+            int length = Array.getLength(sources);
+            for (int i = 0; i < length; i++) {
+                addTileSource(((Object[]) sources)[i], i);
             }
-            if (view instanceof ReusableView) {
-                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
-                infoView.setLeftOrRightPane(null, AkylasMapInfoView.LEFT_PANE);
+        } else if (sources instanceof List) {
+            for (int i = 0; i < ((List) sources).size(); i++) {
+                addTileSource(((List) sources).get(i), i);
             }
-            view = infoView.getRightView();
-            if (view != null && view instanceof TiCompositeLayout) {
-                view = ((TiCompositeLayout)view).getView();
-            }
-            if (view instanceof ReusableView) {
-                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
-                infoView.setLeftOrRightPane(null, AkylasMapInfoView.RIGHT_PANE);
-            }
-            infoView.setCustomView(null);
+        } else {
+            addTileSource(sources, 0);
         }
-        mInfoWindowCache.put("window", mabpoxInfoWindow);
+    }
+    
+    
+    public TileSourceProxy addTileSource(Object object, int index) {
+        return null;
     }
 
+    public void removeTileSource(Object object) {
+    }
+    
+    protected void setShouldFollowUserLocation(final boolean value) {
+        if (shouldFollowUserLocation != value) {
+            shouldFollowUserLocation = value;
+            if (proxy.hasListeners(AkylasMapModule.EVENT_FOLLOW_LOCATION,
+                    false)) {
+                KrollDict d = new KrollDict();
+                d.put(TiC.PROPERTY_VALUE, shouldFollowUserLocation);
+                proxy.fireEvent(AkylasMapModule.EVENT_FOLLOW_LOCATION, d,
+                        false, false);
+            }
+        }
+    }
 }
