@@ -18,9 +18,9 @@
 {
 @private
 	AkylasSlidemenuDrawerController *_controller;    
-    TiViewProxy* leftView;
-    TiViewProxy* rightView;
-    TiViewProxy* centerView;
+//    TiViewProxy* leftView;
+//    TiViewProxy* rightView;
+//    TiViewProxy* centerView;
     TiDimension _leftScrollScale;
     TiDimension _rightScrollScale;
     TiDimension _leftViewWidth;
@@ -87,9 +87,9 @@
 //        [self closeWindowProxy:centerView];
 //        [self closeWindowProxy:leftView];
 //        [self closeWindowProxy:rightView];
-        RELEASE_WITH_DETACH_TO_NIL(centerView);
-        RELEASE_WITH_DETACH_TO_NIL(leftView);
-        RELEASE_WITH_DETACH_TO_NIL(rightView);
+//        RELEASE_WITH_DETACH_TO_NIL(centerView);
+//        RELEASE_WITH_DETACH_TO_NIL(leftView);
+//        RELEASE_WITH_DETACH_TO_NIL(rightView);
         RELEASE_TO_NIL(_leftTransition);
         RELEASE_TO_NIL(_rightTransition);
     }, YES);
@@ -147,81 +147,106 @@
     [self controller].showsStatusBarBackgroundView = ![TiUtils boolValue:args def:false];
 }
 
--(void)setCenterView_:(id)args
+-(void)setCenterView_:(id)value
 {
-    __block TiViewProxy* odlCenterView = nil;
+    __block TiViewProxy* oldCenterView = nil;
     UIViewController* ctlr;
     CGRect frame = [[self controller] childControllerContainerViewFrame];
-    if ([args isKindOfClass:[UIViewController class]]) {
-        ctlr = args;
+    if ([value isKindOfClass:[UIViewController class]]) {
+        ctlr = value;
     }
     else {
-        ENSURE_UI_THREAD(setCenterView_,args);
-        ENSURE_TYPE_OR_NIL(args,TiViewProxy);
+        ENSURE_UI_THREAD(setCenterView_,value);
+//        ENSURE_TYPE_OR_NIL(args,TiViewProxy);
         
-        if (args == centerView) {
+        oldCenterView = [[[self viewProxy] holdedProxyForKey:@"centerView"] retain];
+        if (value == oldCenterView) {
             [[self controller] closeDrawerAnimated:YES completion:nil];
             return;
         }
-        if (centerView)
-        {
-            //retain proxy until animation end
-            odlCenterView = [centerView retain];
-            if ([odlCenterView isKindOfClass:[TiWindowProxy class]]) {
-                TiWindowProxy* window = (TiWindowProxy*)odlCenterView;
-                [window setIsManaged:NO];
-                [window resignFocus];
-            }
-            RELEASE_WITH_PARENT_TO_NIL(centerView);
+        
+        if ([oldCenterView isKindOfClass:[TiWindowProxy class]]) {
+            TiWindowProxy* window = (TiWindowProxy*)oldCenterView;
+            [window setIsManaged:NO];
+            [window resignFocus];
         }
-        centerView = [args retain];
-        ctlr = [self controllerForViewProxy:centerView withFrame:frame];
-        [ctlr view];
-    }
-    if ([centerView isKindOfClass:[TiWindowProxy class]]) {
-        TiWindowProxy* window = (TiWindowProxy*)centerView;
-        [window updateOrientationModes];
-        [window gainFocus];
+        
+        id vp = [[self viewProxy] addObjectToHold:value forKey:@"centerView"];
+        if (IS_OF_CLASS(vp, TiViewProxy)) {
+            CGRect frame = [[self controller] childControllerContainerViewFrame];
+            //        view = [(TiViewProxy*)vp getAndPrepareViewForOpening:frame];
+            ctlr = [self controllerForViewProxy:vp withFrame:frame];
+            [ctlr view];
+            if (IS_OF_CLASS(vp, TiWindowProxy)) {
+                TiWindowProxy* window = (TiWindowProxy*)vp;
+                [window updateOrientationModes];
+                [window gainFocus];
+            }
+        }
+
     }
     
     [[self controller] setCenterViewController:ctlr withFullCloseAnimation:YES completion:^(BOOL finished) {
-        if (odlCenterView) {
+        if (oldCenterView) {
 //            [self closeWindowProxy:odlCenterView];
-            RELEASE_TO_NIL(odlCenterView);
+            RELEASE_TO_NIL(oldCenterView);
         }
     }];
 }
 
--(void)setLeftView_:(id)args
+-(void)setLeftView_:(id)value
 {
-    ENSURE_UI_THREAD(setLeftView_,args);
-    ENSURE_TYPE_OR_NIL(args,TiViewProxy);
+    ENSURE_UI_THREAD(setLeftView_,value);
+//    ENSURE_TYPE_OR_NIL(args,TiViewProxy);
     
-	RELEASE_WITH_PARENT_TO_NIL(leftView);
-    if (args != nil) {
-        leftView = [args retain];
+//    UIView* view = nil;
+    id vp = [[self viewProxy] addObjectToHold:value forKey:@"leftView"];
+    if (IS_OF_CLASS(vp, TiViewProxy)) {
         CGRect frame = [[self controller] childControllerContainerViewFrame];
         frame.size.width = [self controller].maximumLeftDrawerWidth;
-        [self controller].leftDrawerViewController = [self controllerForViewProxy:leftView withFrame:frame];
-    }
-    else {
+//        view = [(TiViewProxy*)vp getAndPrepareViewForOpening:frame];
+        [self controller].leftDrawerViewController = [self controllerForViewProxy:vp withFrame:frame];
+    } else {
         [self controller].leftDrawerViewController = nil;
     }
+
+    
+//	RELEASE_WITH_PARENT_TO_NIL(leftView);
+//    if (args != nil) {
+//        leftView = [args retain];
+//        CGRect frame = [[self controller] childControllerContainerViewFrame];
+//        frame.size.width = [self controller].maximumLeftDrawerWidth;
+//        [self controller].leftDrawerViewController = [self controllerForViewProxy:leftView withFrame:frame];
+//    }
+//    else {
+//        [self controller].leftDrawerViewController = nil;
+//    }
 }
 
--(void)setRightView_:(id)args
+-(void)setRightView_:(id)value
 {
-    ENSURE_UI_THREAD(setRightView_,args);
-    ENSURE_TYPE_OR_NIL(args,TiViewProxy);
+    ENSURE_UI_THREAD(setRightView_,value);
+//    ENSURE_TYPE_OR_NIL(args,TiViewProxy);
+//    
+//	RELEASE_WITH_PARENT_TO_NIL(rightView);
+//    if (args != nil) {
+//        rightView = [args retain];
+//        CGRect frame = [[self controller] childControllerContainerViewFrame];
+//        frame.size.width = [self controller].maximumRightDrawerWidth;
+//        [self controller].rightDrawerViewController = [self controllerForViewProxy:rightView withFrame:frame];
+//    }
+//    else {
+//        [self controller].rightDrawerViewController = nil;
+//    }
     
-	RELEASE_WITH_PARENT_TO_NIL(rightView);
-    if (args != nil) {
-        rightView = [args retain];
+//    UIView* view = nil;
+    id vp = [[self viewProxy] addObjectToHold:value forKey:@"rightView"];
+    if (IS_OF_CLASS(vp, TiViewProxy)) {
         CGRect frame = [[self controller] childControllerContainerViewFrame];
         frame.size.width = [self controller].maximumRightDrawerWidth;
-        [self controller].rightDrawerViewController = [self controllerForViewProxy:rightView withFrame:frame];
-    }
-    else {
+//        view = [(TiViewProxy*)vp getAndPrepareViewForOpening:frame];
+        [self controller].rightDrawerViewController = [self controllerForViewProxy:vp withFrame:frame];
+    } else {
         [self controller].rightDrawerViewController = nil;
     }
 }
