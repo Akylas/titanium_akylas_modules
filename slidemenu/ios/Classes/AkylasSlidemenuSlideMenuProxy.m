@@ -59,6 +59,14 @@
     [super windowDidClose];
 }
 
+-(UIView *)parentViewForChild:(TiViewProxy *)child
+{
+    NSArray* keys = [self allKeysForHoldedProxy:child];
+    if ([keys count] > 0) {
+        return nil;
+    }
+    return [super parentViewForChild:child];
+}
 
 #pragma mark - TiOrientationController
 
