@@ -3,6 +3,9 @@
 @interface AkylasSlidemenuModule : TiModule 
 {
 }
+@property(nonatomic,readonly) NSNumber *LEFT_VIEW;
+@property(nonatomic,readonly) NSNumber *RIGHT_VIEW;
+
 @property(nonatomic,readonly) NSNumber *MENU_PANNING_NONE;
 @property(nonatomic,readonly) NSNumber *MENU_PANNING_ALL_VIEWS;
 @property(nonatomic,readonly) NSNumber *MENU_PANNING_CENTER_VIEW;
