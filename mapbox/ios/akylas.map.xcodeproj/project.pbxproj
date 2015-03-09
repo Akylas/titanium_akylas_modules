@@ -31,14 +31,16 @@
 		D5354B7519B9EFA300960301 /* ReusableViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5354B7319B9EFA300960301 /* ReusableViewProxy.m */; };
 		D5354B7C19B9EFE300960301 /* ReusableViewProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = D5354B7B19B9EFE300960301 /* ReusableViewProtocol.h */; };
 		D548DB14191D511000E78AA1 /* libMapbox.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D548DB0D191D510000E78AA1 /* libMapbox.a */; };
+		D55DD14B1AA9BA1A00CA14EE /* AkylasMBXTileOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = D55DD1491AA9BA1A00CA14EE /* AkylasMBXTileOverlay.h */; };
+		D55DD14C1AA9BA1A00CA14EE /* AkylasMBXTileOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = D55DD14A1AA9BA1A00CA14EE /* AkylasMBXTileOverlay.m */; };
 		D578CAA519234A360019CA5A /* AkylasMapTileSourceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CA9B19234A360019CA5A /* AkylasMapTileSourceProxy.h */; };
 		D578CAA619234A360019CA5A /* AkylasMapTileSourceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CA9C19234A360019CA5A /* AkylasMapTileSourceProxy.m */; };
 		D578CAA719234A360019CA5A /* AkylasMapView.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CA9D19234A360019CA5A /* AkylasMapView.h */; };
 		D578CAA819234A360019CA5A /* AkylasMapView.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CA9E19234A360019CA5A /* AkylasMapView.m */; };
 		D578CAA919234A360019CA5A /* AkylasMapViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CA9F19234A360019CA5A /* AkylasMapViewProxy.h */; };
 		D578CAAA19234A360019CA5A /* AkylasMapViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAA019234A360019CA5A /* AkylasMapViewProxy.m */; };
-		D578CAAB19234A360019CA5A /* AkylasTileSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAA119234A360019CA5A /* AkylasTileSource.h */; };
-		D578CAAC19234A360019CA5A /* AkylasTileSource.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAA219234A360019CA5A /* AkylasTileSource.m */; };
+		D578CAAB19234A360019CA5A /* AkylasMapboxTileSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAA119234A360019CA5A /* AkylasMapboxTileSource.h */; };
+		D578CAAC19234A360019CA5A /* AkylasMapboxTileSource.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAA219234A360019CA5A /* AkylasMapboxTileSource.m */; };
 		D578CAAD19234A360019CA5A /* RMMapView+BundlePath.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAA319234A360019CA5A /* RMMapView+BundlePath.h */; };
 		D578CAAE19234A360019CA5A /* RMMapView+BundlePath.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAA419234A360019CA5A /* RMMapView+BundlePath.m */; };
 		D578CAC619234A430019CA5A /* AkylasMapCameraProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAB119234A430019CA5A /* AkylasMapCameraProxy.h */; };
@@ -69,6 +71,19 @@
 		D578CAFF1923553E0019CA5A /* AkylasMapMapboxViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAFD1923553E0019CA5A /* AkylasMapMapboxViewProxy.m */; };
 		D578CB02192358920019CA5A /* AkylasMapMapboxView.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CB00192358920019CA5A /* AkylasMapMapboxView.h */; };
 		D578CB03192358920019CA5A /* AkylasMapMapboxView.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CB01192358920019CA5A /* AkylasMapMapboxView.m */; };
+		D5F82DE51AA9B261002298AB /* MBXConstantsAndTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = D5F82DD81AA9B261002298AB /* MBXConstantsAndTypes.h */; };
+		D5F82DE61AA9B261002298AB /* MBXMapKit.h in Headers */ = {isa = PBXBuildFile; fileRef = D5F82DD91AA9B261002298AB /* MBXMapKit.h */; };
+		D5F82DE71AA9B261002298AB /* MBXMapKit.m in Sources */ = {isa = PBXBuildFile; fileRef = D5F82DDA1AA9B261002298AB /* MBXMapKit.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D5F82DE81AA9B261002298AB /* MBXOfflineMapDatabase.h in Headers */ = {isa = PBXBuildFile; fileRef = D5F82DDB1AA9B261002298AB /* MBXOfflineMapDatabase.h */; };
+		D5F82DE91AA9B261002298AB /* MBXOfflineMapDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = D5F82DDC1AA9B261002298AB /* MBXOfflineMapDatabase.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D5F82DEA1AA9B261002298AB /* MBXOfflineMapDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = D5F82DDD1AA9B261002298AB /* MBXOfflineMapDownloader.h */; };
+		D5F82DEB1AA9B261002298AB /* MBXOfflineMapDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = D5F82DDE1AA9B261002298AB /* MBXOfflineMapDownloader.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D5F82DEC1AA9B261002298AB /* MBXPointAnnotation.h in Headers */ = {isa = PBXBuildFile; fileRef = D5F82DDF1AA9B261002298AB /* MBXPointAnnotation.h */; };
+		D5F82DED1AA9B261002298AB /* MBXPointAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = D5F82DE01AA9B261002298AB /* MBXPointAnnotation.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D5F82DEE1AA9B261002298AB /* MBXRasterTileOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = D5F82DE11AA9B261002298AB /* MBXRasterTileOverlay.h */; };
+		D5F82DEF1AA9B261002298AB /* MBXRasterTileOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = D5F82DE21AA9B261002298AB /* MBXRasterTileOverlay.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D5F82DF01AA9B261002298AB /* MBXRasterTileRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = D5F82DE31AA9B261002298AB /* MBXRasterTileRenderer.h */; };
+		D5F82DF11AA9B261002298AB /* MBXRasterTileRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = D5F82DE41AA9B261002298AB /* MBXRasterTileRenderer.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -132,19 +147,20 @@
 		AA747D9E0F9514B9006C5449 /* akylas.map_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = akylas.map_Prefix.pch; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libakylas.map.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.map.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D52DF20F18C77F7E0076FB71 /* module.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = module.xcconfig; path = ../../timap/ios/module.xcconfig; sourceTree = "<group>"; };
 		D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Mapbox.xcodeproj; path = ../../../../../ios/MapBox/MapView/Mapbox.xcodeproj; sourceTree = SOURCE_ROOT; };
 		D5354B7219B9EFA300960301 /* ReusableViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReusableViewProxy.h; path = Classes/ReusableViewProxy.h; sourceTree = "<group>"; };
 		D5354B7319B9EFA300960301 /* ReusableViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ReusableViewProxy.m; path = Classes/ReusableViewProxy.m; sourceTree = "<group>"; };
 		D5354B7B19B9EFE300960301 /* ReusableViewProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReusableViewProtocol.h; sourceTree = "<group>"; };
+		D55DD1491AA9BA1A00CA14EE /* AkylasMBXTileOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMBXTileOverlay.h; path = Classes/map/AkylasMBXTileOverlay.h; sourceTree = "<group>"; };
+		D55DD14A1AA9BA1A00CA14EE /* AkylasMBXTileOverlay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMBXTileOverlay.m; path = Classes/map/AkylasMBXTileOverlay.m; sourceTree = "<group>"; };
 		D578CA9B19234A360019CA5A /* AkylasMapTileSourceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapTileSourceProxy.h; path = Classes/mapbox/AkylasMapTileSourceProxy.h; sourceTree = "<group>"; };
 		D578CA9C19234A360019CA5A /* AkylasMapTileSourceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapTileSourceProxy.m; path = Classes/mapbox/AkylasMapTileSourceProxy.m; sourceTree = "<group>"; };
 		D578CA9D19234A360019CA5A /* AkylasMapView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapView.h; path = Classes/mapbox/AkylasMapView.h; sourceTree = "<group>"; };
 		D578CA9E19234A360019CA5A /* AkylasMapView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapView.m; path = Classes/mapbox/AkylasMapView.m; sourceTree = "<group>"; };
 		D578CA9F19234A360019CA5A /* AkylasMapViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapViewProxy.h; path = Classes/mapbox/AkylasMapViewProxy.h; sourceTree = "<group>"; };
 		D578CAA019234A360019CA5A /* AkylasMapViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapViewProxy.m; path = Classes/mapbox/AkylasMapViewProxy.m; sourceTree = "<group>"; };
-		D578CAA119234A360019CA5A /* AkylasTileSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasTileSource.h; path = Classes/mapbox/AkylasTileSource.h; sourceTree = "<group>"; };
-		D578CAA219234A360019CA5A /* AkylasTileSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasTileSource.m; path = Classes/mapbox/AkylasTileSource.m; sourceTree = "<group>"; };
+		D578CAA119234A360019CA5A /* AkylasMapboxTileSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapboxTileSource.h; path = Classes/mapbox/AkylasMapboxTileSource.h; sourceTree = "<group>"; };
+		D578CAA219234A360019CA5A /* AkylasMapboxTileSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapboxTileSource.m; path = Classes/mapbox/AkylasMapboxTileSource.m; sourceTree = "<group>"; };
 		D578CAA319234A360019CA5A /* RMMapView+BundlePath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RMMapView+BundlePath.h"; path = "Classes/mapbox/RMMapView+BundlePath.h"; sourceTree = "<group>"; };
 		D578CAA419234A360019CA5A /* RMMapView+BundlePath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "RMMapView+BundlePath.m"; path = "Classes/mapbox/RMMapView+BundlePath.m"; sourceTree = "<group>"; };
 		D578CAB119234A430019CA5A /* AkylasMapCameraProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapCameraProxy.h; path = Classes/map/AkylasMapCameraProxy.h; sourceTree = "<group>"; };
@@ -177,6 +193,20 @@
 		D578CAFD1923553E0019CA5A /* AkylasMapMapboxViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapMapboxViewProxy.m; path = Classes/AkylasMapMapboxViewProxy.m; sourceTree = "<group>"; };
 		D578CB00192358920019CA5A /* AkylasMapMapboxView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapMapboxView.h; path = Classes/AkylasMapMapboxView.h; sourceTree = "<group>"; };
 		D578CB01192358920019CA5A /* AkylasMapMapboxView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapMapboxView.m; path = Classes/AkylasMapMapboxView.m; sourceTree = "<group>"; };
+		D5F82DD81AA9B261002298AB /* MBXConstantsAndTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBXConstantsAndTypes.h; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXConstantsAndTypes.h; sourceTree = "<group>"; };
+		D5F82DD91AA9B261002298AB /* MBXMapKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBXMapKit.h; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXMapKit.h; sourceTree = "<group>"; };
+		D5F82DDA1AA9B261002298AB /* MBXMapKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBXMapKit.m; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXMapKit.m; sourceTree = "<group>"; };
+		D5F82DDB1AA9B261002298AB /* MBXOfflineMapDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBXOfflineMapDatabase.h; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXOfflineMapDatabase.h; sourceTree = "<group>"; };
+		D5F82DDC1AA9B261002298AB /* MBXOfflineMapDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBXOfflineMapDatabase.m; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXOfflineMapDatabase.m; sourceTree = "<group>"; };
+		D5F82DDD1AA9B261002298AB /* MBXOfflineMapDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBXOfflineMapDownloader.h; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXOfflineMapDownloader.h; sourceTree = "<group>"; };
+		D5F82DDE1AA9B261002298AB /* MBXOfflineMapDownloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBXOfflineMapDownloader.m; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXOfflineMapDownloader.m; sourceTree = "<group>"; };
+		D5F82DDF1AA9B261002298AB /* MBXPointAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBXPointAnnotation.h; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXPointAnnotation.h; sourceTree = "<group>"; };
+		D5F82DE01AA9B261002298AB /* MBXPointAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBXPointAnnotation.m; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXPointAnnotation.m; sourceTree = "<group>"; };
+		D5F82DE11AA9B261002298AB /* MBXRasterTileOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBXRasterTileOverlay.h; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXRasterTileOverlay.h; sourceTree = "<group>"; };
+		D5F82DE21AA9B261002298AB /* MBXRasterTileOverlay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBXRasterTileOverlay.m; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXRasterTileOverlay.m; sourceTree = "<group>"; };
+		D5F82DE31AA9B261002298AB /* MBXRasterTileRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBXRasterTileRenderer.h; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXRasterTileRenderer.h; sourceTree = "<group>"; };
+		D5F82DE41AA9B261002298AB /* MBXRasterTileRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBXRasterTileRenderer.m; path = ../../../../../ios/mbxmapkit/MBXMapKit/MBXRasterTileRenderer.m; sourceTree = "<group>"; };
+		D5FBE0BB1AA997B000EB35E8 /* module.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -205,6 +235,7 @@
 			isa = PBXGroup;
 			children = (
 				D52DF22018C79FCE0076FB71 /* Mapbox.xcodeproj */,
+				D5F82DD61AA9B24A002298AB /* MBXMapKit */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
@@ -225,6 +256,10 @@
 		08FB77AEFE84172EC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				D578CA9B19234A360019CA5A /* AkylasMapTileSourceProxy.h */,
+				D578CA9C19234A360019CA5A /* AkylasMapTileSourceProxy.m */,
+				D578CAA119234A360019CA5A /* AkylasMapboxTileSource.h */,
+				D578CAA219234A360019CA5A /* AkylasMapboxTileSource.m */,
 				D578CAEE19234D2B0019CA5A /* AkylasMapModule.h */,
 				D578CAEF19234D2B0019CA5A /* AkylasMapModule.m */,
 				D578CAF019234D2B0019CA5A /* AkylasMapModuleAssets.h */,
@@ -253,7 +288,7 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				D52DF20F18C77F7E0076FB71 /* module.xcconfig */,
+				D5FBE0BB1AA997B000EB35E8 /* module.xcconfig */,
 				AA747D9E0F9514B9006C5449 /* akylas.map_Prefix.pch */,
 				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
 			);
@@ -272,10 +307,6 @@
 		D578CA95192347C50019CA5A /* MapBox */ = {
 			isa = PBXGroup;
 			children = (
-				D578CA9B19234A360019CA5A /* AkylasMapTileSourceProxy.h */,
-				D578CA9C19234A360019CA5A /* AkylasMapTileSourceProxy.m */,
-				D578CAA119234A360019CA5A /* AkylasTileSource.h */,
-				D578CAA219234A360019CA5A /* AkylasTileSource.m */,
 				D578CAA319234A360019CA5A /* RMMapView+BundlePath.h */,
 				D578CAA419234A360019CA5A /* RMMapView+BundlePath.m */,
 				D578CAFC1923553E0019CA5A /* AkylasMapMapboxViewProxy.h */,
@@ -306,8 +337,30 @@
 				D578CAC119234A430019CA5A /* AkylasMapMapViewProxy.h */,
 				D578CAC219234A430019CA5A /* AkylasMapMapViewProxy.m */,
 				D578CAC319234A430019CA5A /* AkylasMKOverlayPathUniversal.h */,
+				D55DD1491AA9BA1A00CA14EE /* AkylasMBXTileOverlay.h */,
+				D55DD14A1AA9BA1A00CA14EE /* AkylasMBXTileOverlay.m */,
 			);
 			name = Map;
+			sourceTree = "<group>";
+		};
+		D5F82DD61AA9B24A002298AB /* MBXMapKit */ = {
+			isa = PBXGroup;
+			children = (
+				D5F82DD81AA9B261002298AB /* MBXConstantsAndTypes.h */,
+				D5F82DD91AA9B261002298AB /* MBXMapKit.h */,
+				D5F82DDA1AA9B261002298AB /* MBXMapKit.m */,
+				D5F82DDB1AA9B261002298AB /* MBXOfflineMapDatabase.h */,
+				D5F82DDC1AA9B261002298AB /* MBXOfflineMapDatabase.m */,
+				D5F82DDD1AA9B261002298AB /* MBXOfflineMapDownloader.h */,
+				D5F82DDE1AA9B261002298AB /* MBXOfflineMapDownloader.m */,
+				D5F82DDF1AA9B261002298AB /* MBXPointAnnotation.h */,
+				D5F82DE01AA9B261002298AB /* MBXPointAnnotation.m */,
+				D5F82DE11AA9B261002298AB /* MBXRasterTileOverlay.h */,
+				D5F82DE21AA9B261002298AB /* MBXRasterTileOverlay.m */,
+				D5F82DE31AA9B261002298AB /* MBXRasterTileRenderer.h */,
+				D5F82DE41AA9B261002298AB /* MBXRasterTileRenderer.m */,
+			);
+			name = MBXMapKit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -320,7 +373,7 @@
 				D578CAFA19234D2B0019CA5A /* AkylasMapRouteProxy.h in Headers */,
 				D578CACE19234A430019CA5A /* AkylasMapMapIOS7ViewProxy.h in Headers */,
 				D578CAA519234A360019CA5A /* AkylasMapTileSourceProxy.h in Headers */,
-				D578CAAB19234A360019CA5A /* AkylasTileSource.h in Headers */,
+				D578CAAB19234A360019CA5A /* AkylasMapboxTileSource.h in Headers */,
 				D578CAF419234D2B0019CA5A /* AkylasMapAnnotationProxy.h in Headers */,
 				D578CAF819234D2B0019CA5A /* AkylasMapModuleAssets.h in Headers */,
 				D578CAD019234A430019CA5A /* AkylasMapPinAnnotationView.h in Headers */,
@@ -332,13 +385,21 @@
 				AA747D9F0F9514B9006C5449 /* akylas.map_Prefix.pch in Headers */,
 				D578CAF619234D2B0019CA5A /* AkylasMapModule.h in Headers */,
 				D578CAD419234A430019CA5A /* AkylasMapMapView.h in Headers */,
+				D5F82DE61AA9B261002298AB /* MBXMapKit.h in Headers */,
 				D578CAA719234A360019CA5A /* AkylasMapView.h in Headers */,
+				D5F82DE51AA9B261002298AB /* MBXConstantsAndTypes.h in Headers */,
 				D578CACC19234A430019CA5A /* AkylasMapMapIOS7View.h in Headers */,
 				D578CB02192358920019CA5A /* AkylasMapMapboxView.h in Headers */,
+				D5F82DF01AA9B261002298AB /* MBXRasterTileRenderer.h in Headers */,
+				D5F82DEE1AA9B261002298AB /* MBXRasterTileOverlay.h in Headers */,
 				D578CAC619234A430019CA5A /* AkylasMapCameraProxy.h in Headers */,
 				D578CACA19234A430019CA5A /* AkylasMapImageAnnotationView.h in Headers */,
+				D5F82DEC1AA9B261002298AB /* MBXPointAnnotation.h in Headers */,
 				D578CAAD19234A360019CA5A /* RMMapView+BundlePath.h in Headers */,
+				D5F82DEA1AA9B261002298AB /* MBXOfflineMapDownloader.h in Headers */,
+				D55DD14B1AA9BA1A00CA14EE /* AkylasMBXTileOverlay.h in Headers */,
 				D578CAD819234A430019CA5A /* AkylasMKOverlayPathUniversal.h in Headers */,
+				D5F82DE81AA9B261002298AB /* MBXOfflineMapDatabase.h in Headers */,
 				D578CAA919234A360019CA5A /* AkylasMapViewProxy.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -455,19 +516,26 @@
 			files = (
 				D520FD5C1927C687009A2C1B /* Mapbox.bundle in Sources */,
 				D578CAFF1923553E0019CA5A /* AkylasMapMapboxViewProxy.m in Sources */,
+				D5F82DF11AA9B261002298AB /* MBXRasterTileRenderer.m in Sources */,
 				D578CAFB19234D2B0019CA5A /* AkylasMapRouteProxy.m in Sources */,
 				D578CAAA19234A360019CA5A /* AkylasMapViewProxy.m in Sources */,
+				D55DD14C1AA9BA1A00CA14EE /* AkylasMBXTileOverlay.m in Sources */,
 				D578CAD719234A430019CA5A /* AkylasMapMapViewProxy.m in Sources */,
 				D578CACF19234A430019CA5A /* AkylasMapMapIOS7ViewProxy.m in Sources */,
 				D578CACD19234A430019CA5A /* AkylasMapMapIOS7View.m in Sources */,
+				D5F82DED1AA9B261002298AB /* MBXPointAnnotation.m in Sources */,
+				D5F82DE71AA9B261002298AB /* MBXMapKit.m in Sources */,
+				D5F82DEF1AA9B261002298AB /* MBXRasterTileOverlay.m in Sources */,
 				24DD6CFA1134B3F500162E58 /* AkylasMapModule.m in Sources */,
 				D578CAAE19234A360019CA5A /* RMMapView+BundlePath.m in Sources */,
+				D5F82DE91AA9B261002298AB /* MBXOfflineMapDatabase.m in Sources */,
+				D5F82DEB1AA9B261002298AB /* MBXOfflineMapDownloader.m in Sources */,
 				D578CAA819234A360019CA5A /* AkylasMapView.m in Sources */,
 				D578CB03192358920019CA5A /* AkylasMapMapboxView.m in Sources */,
 				D578CAC719234A430019CA5A /* AkylasMapCameraProxy.m in Sources */,
 				D578CAC919234A430019CA5A /* AkylasMapCustomAnnotationView.m in Sources */,
 				D578CAF519234D2B0019CA5A /* AkylasMapAnnotationProxy.m in Sources */,
-				D578CAAC19234A360019CA5A /* AkylasTileSource.m in Sources */,
+				D578CAAC19234A360019CA5A /* AkylasMapboxTileSource.m in Sources */,
 				D5354B7519B9EFA300960301 /* ReusableViewProxy.m in Sources */,
 				D578CAA619234A360019CA5A /* AkylasMapTileSourceProxy.m in Sources */,
 				D578CAD519234A430019CA5A /* AkylasMapMapView.m in Sources */,
@@ -502,6 +570,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(TITANIUM_BASE_SDK)/**",
 					"$(TITANIUM_BASE_SDK2)",
@@ -515,6 +584,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(TITANIUM_BASE_SDK)/**",
 					"$(TITANIUM_BASE_SDK2)",

@@ -7,8 +7,7 @@
 //
 
 #import "TiProxy.h"
-
-#import "GADInterstitialDelegate.h"
+#import <GoogleMobileAds/GADInterstitial.h>
 @interface AkylasAdmobInterstitialProxy : TiProxy<GADInterstitialDelegate>
 
 @end

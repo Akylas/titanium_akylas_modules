@@ -7,7 +7,6 @@
 //
 
 #import "AkylasAdmobInterstitialProxy.h"
-#import "GADInterstitial.h"
 #import "TiApp.h"
 
 @implementation AkylasAdmobInterstitialProxy

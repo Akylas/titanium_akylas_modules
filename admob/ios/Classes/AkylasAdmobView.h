@@ -6,10 +6,9 @@
  */
 
 #import "TiUIView.h"
-#import "GADBannerView.h"
-#import "GADBannerViewDelegate.h"
 
-@interface AkylasAdmobView : TiUIView<GADBannerViewDelegate> 
+#import <GoogleMobileAds/GADBannerView.h>
+@interface AkylasAdmobView : TiUIView<GADBannerViewDelegate>
 
 -(void)refreshAdForAdSize:(GADAdSize)adSize;
 @end

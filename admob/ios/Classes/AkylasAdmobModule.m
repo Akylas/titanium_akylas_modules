@@ -10,7 +10,6 @@
 #import "TiBase.h"
 #import "TiHost.h"
 #import "TiUtils.h"
-#import "GADRequest.h"
 
 @implementation AkylasAdmobModule
 
@@ -65,6 +64,6 @@
 
 #pragma mark Constants
 
-MAKE_SYSTEM_STR(SIMULATOR_ID,GAD_SIMULATOR_ID);
+MAKE_SYSTEM_STR(SIMULATOR_ID,@"");
 
 @end
