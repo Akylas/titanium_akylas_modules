@@ -114,6 +114,12 @@
     [map addOverlay:polyline level:level];
 }
 
+// These methods override the default implementation in TiMapView
+-(void)addOverlay:(MKPolyline*)polyline index:(NSInteger)index level:(MKOverlayLevel)level
+{
+    [map insertOverlay:polyline atIndex:index level:level];
+}
+
 #pragma mark Delegates
 
 - (void)mapView:(MKMapView *)mapView regionDidChangeAnimated:(BOOL)animated

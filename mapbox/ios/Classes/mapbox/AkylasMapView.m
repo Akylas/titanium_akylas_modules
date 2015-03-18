@@ -7,6 +7,7 @@
  
 #import "TiBase.h"
 #import "AkylasMapView.h"
+#import "AkylasMapViewProxy.h"
 #import "TiUtils.h"
 #import "AkylasMapModule.h"
 #import "AkylasMapAnnotationProxy.h"
@@ -125,6 +126,14 @@
 
 @end
 
+@interface AkylasMapViewProxy()
+
+-(AkylasMapAnnotationProxy*)annotationFromArg:(id)arg;
+-(AkylasMapRouteProxy*)routeFromArg:(id)arg;
+-(AkylasMapTileSourceProxy*)tileSourceFromArg:(id)arg;
+
+@end
+
 @implementation AkylasMapView
 {
     NSDictionary* _calloutTemplates;
@@ -144,6 +153,7 @@
         defaultCalloutAnchor = CGPointMake(0, -0.5f);
         _internalZoom = -1;
         animate = true;
+        regionFits = NO;
         _calloutUseTemplates = NO;
         _reusableViews = [[NSMutableDictionary alloc] init];
     }
@@ -163,23 +173,55 @@
     return [(TiViewProxy*)(self.proxy) viewInitialized];
 }
 
--(AkylasMapAnnotationProxy*)annotationFromArg:(id)arg
+-(id)annotationsFromArgs:(id)value
 {
-    return [(AkylasMapViewProxy*)[self proxy] annotationFromArg:arg];
+    if (IS_OF_CLASS(value, NSArray)) {
+        NSMutableArray * result = [NSMutableArray arrayWithCapacity:[value count]];
+        if (value!=nil)
+        {
+            for (id arg in value)
+            {
+                [result addObject:[(AkylasMapViewProxy*)[self proxy] annotationFromArg:arg]];
+            }
+        }
+        return result;
+    } else {
+        return [(AkylasMapViewProxy*)[self proxy] annotationFromArg:value];
+    }
 }
 
--(NSArray*)annotationsFromArgs:(id)value
+-(id)routesFromArgs:(id)value
 {
-	ENSURE_TYPE_OR_NIL(value,NSArray);
-	NSMutableArray * result = [NSMutableArray arrayWithCapacity:[value count]];
-	if (value!=nil)
-	{
-		for (id arg in value)
-		{
-			[result addObject:[self annotationFromArg:arg]];
-		}
-	}
-	return result;
+    if (IS_OF_CLASS(value, NSArray)) {
+        NSMutableArray * result = [NSMutableArray arrayWithCapacity:[value count]];
+        if (value!=nil)
+        {
+            for (id arg in value)
+            {
+                [result addObject:[(AkylasMapViewProxy*)[self proxy] routeFromArg:arg]];
+            }
+        }
+        return result;
+    } else {
+        return [(AkylasMapViewProxy*)[self proxy] routeFromArg:value];
+    }
+}
+
+-(id)tileSourcesFromArgs:(id)value
+{
+    if (IS_OF_CLASS(value, NSArray)) {
+        NSMutableArray * result = [NSMutableArray arrayWithCapacity:[value count]];
+        if (value!=nil)
+        {
+            for (id arg in value)
+            {
+                [result addObject:[(AkylasMapViewProxy*)[self proxy] tileSourceFromArg:arg]];
+            }
+        }
+        return result;
+    } else {
+        return [(AkylasMapViewProxy*)[self proxy] tileSourceFromArg:value];
+    };
 }
 
 -(void)refreshAnnotation:(AkylasMapAnnotationProxy*)proxy readd:(BOOL)yn
@@ -187,39 +229,26 @@
 }
 
 
--(void)internalAddAnnotations:(id)annotations
-{
-}
-
--(void)internalRemoveAnnotations:(id)annotations
-{
-}
-
--(void)internalRemoveAllAnnotations
-{
-}
+-(BOOL)internalAddAnnotations:(id)value atIndex:(NSInteger)index{}
+-(BOOL)internalRemoveAnnotations:(id)value{}
+-(BOOL)internalRemoveAllAnnotations{}
+-(BOOL)internalAddRoutes:(id)value atIndex:(NSInteger)index{}
+-(BOOL)internalRemoveRoutes:(id)value{}
+-(BOOL)internalRemoveAllRoutes{}
+-(BOOL)internalAddTileSources:(id)value atIndex:(NSInteger)index{}
+-(BOOL)internalRemoveTileSources:(id)value{}
+-(BOOL)internalRemoveAllTileSources{}
 
 #pragma mark Public APIs
 
--(void)addAnnotation:(id)args
+-(void)addAnnotation:(id)args atIndex:(NSInteger)index
 {
-	[self internalAddAnnotations:[self annotationFromArg:args]];
-}
-
--(void)addAnnotations:(id)args
-{
-    NSArray* toadd = [self annotationsFromArgs:args];
-	[self internalAddAnnotations:toadd];
+	[self internalAddAnnotations:args atIndex:index];
 }
 
 -(void)removeAnnotation:(id)args
 {
 	 [self internalRemoveAnnotations:args];
-}
-
--(void)removeAnnotations:(id)args
-{
-    [self internalRemoveAnnotations:args];
 }
 
 -(void)removeAllAnnotations
@@ -233,7 +262,7 @@
 	ENSURE_TYPE_OR_NIL(value,NSArray);
 	ENSURE_UI_THREAD(setAnnotations_,value)
 	if (value != nil) {
-		[self addAnnotations:value];
+		[self addAnnotation:value atIndex:-1];
 	}
 }
 
@@ -258,10 +287,15 @@
 {
 }
 
+-(void)updateCamera:(id)args
+{
+}
+
 -(RMSphericalTrapezium) getCurrentRegion
 {
     return kMapboxDefaultLatLonBoundingBox;
 }
+
 
 #pragma mark Public APIs
 
@@ -315,7 +349,7 @@
 
 -(id)userTrackingMode_
 {
-    return NUMINT(0);
+    return NUMINTEGER(0);
 }
 
 -(void)setZoom_:(id)zoom
@@ -347,15 +381,61 @@
     return nil;
 }
 
--(void)addRoute:(AkylasMapRouteProxy*)route
+-(void)addRoute:(id)args atIndex:(NSInteger)index
 {
-	[self internalAddAnnotations:route];
+    [self internalAddRoutes:args atIndex:index];
 }
 
--(void)removeRoute:(AkylasMapRouteProxy*)route
+-(void)removeRoute:(id)args
 {
-	[self internalRemoveAnnotations:route];
+    [self internalRemoveRoutes:args];
 }
+
+-(void)removeAllRoutes
+{
+    ENSURE_UI_THREAD_0_ARGS;
+    [self internalRemoveAllRoutes];
+}
+
+-(void)setRoutes_:(id)value
+{
+    ENSURE_TYPE_OR_NIL(value,NSArray);
+    ENSURE_UI_THREAD(setRoutes_,value)
+    if (value != nil) {
+        [self addRoute:value atIndex:-1];
+    }
+}
+
+-(void)addTileSource:(id)args atIndex:(NSInteger)index
+{
+    [self internalAddTileSources:args atIndex:index];
+}
+
+-(void)removeTileSource:(id)args
+{
+    [self internalRemoveTileSources:args];
+}
+
+-(void)removeTileSources:(id)args
+{
+    [self internalRemoveTileSources:args];
+}
+
+-(void)removeAllTileSources
+{
+    ENSURE_UI_THREAD_0_ARGS;
+    [self internalRemoveAllTileSources];
+}
+
+-(void)setTileSource_:(id)value
+{
+    ENSURE_TYPE_OR_NIL(value,NSArray);
+    ENSURE_UI_THREAD(setTileSource_,value)
+    if (value != nil) {
+        [self addTileSource:value atIndex:-1];
+    }
+}
+
 
 -(void)setTintColor_:(id)color
 {
@@ -463,6 +543,7 @@
                 context = self.proxy.pageContext;
             }
             CalloutViewProxy *calloutProxy = [[CalloutViewProxy alloc] initInContext:context reuseIdentifier:templateId];
+            reuseCallout = (CalloutReusableView*)[calloutProxy getAndPrepareViewForOpening:[TiUtils appFrame]];
             [calloutProxy dirtyItAll];
             [reuseCallout configurationStart];
             id template = [_calloutTemplates objectForKey:templateId];
@@ -470,9 +551,7 @@
                 [calloutProxy unarchiveFromTemplate:template withEvents:YES];
             }
             [reuseCallout configurationSet];
-            reuseCallout = (CalloutReusableView*)[calloutProxy getAndPrepareViewForOpening:[TiUtils appFrame]];
             [calloutProxy release];
-            [reuseCallout autorelease];
         }
         CalloutViewProxy *calloutProxy = ((CalloutViewProxy *)reuseCallout.proxy);
         calloutProxy.annotation = proxy;
@@ -482,6 +561,7 @@
     }
     return reuseCallout;
 }
+
 -(void) reuseIfNecessary:(id)object {
     if ([object isKindOfClass:[CalloutReusableView class]]) {
         CalloutViewProxy *calloutProxy = ((CalloutViewProxy *)((CalloutReusableView*)object).proxy);

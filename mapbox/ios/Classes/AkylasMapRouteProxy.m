@@ -33,6 +33,8 @@ int lineJoinFromString(NSString* value)
     else  return kCGLineJoinMiter;
 }
 
+@implementation RMRouteAnnotation : RMShapeAnnotation
+@end
 
 @implementation AkylasMapRouteProxy
 {
@@ -142,8 +144,8 @@ int lineJoinFromString(NSString* value)
 //    else {
     RELEASE_TO_NIL(_shape)
     RELEASE_TO_NIL(routeRenderer)
-        RELEASE_TO_NIL(_routePolyline)
-        if (count > 1)[self setNeedsRefreshingWithSelection:YES];
+    RELEASE_TO_NIL(_routePolyline)
+    if (count > 1)[self setNeedsRefreshingWithSelection:YES];
 //    }
     
 }
@@ -204,6 +206,11 @@ int lineJoinFromString(NSString* value)
     if (routeRenderer != nil) {
         routeRenderer.fillColor = routeRenderer.strokeColor = _color;
     }
+}
+
+- (id)color
+{
+    return [self valueForUndefinedKey:@"color"];
 }
 
 -(void)setWidth:(id)value
@@ -284,7 +291,7 @@ int lineJoinFromString(NSString* value)
     
     if (count > 1 && _rmannotation == nil) {
         
-        _rmannotation = [[RMAnnotation alloc] initWithMapView:mapView coordinate:self.coordinate andTitle:[self title]];
+        _rmannotation = [[RMRouteAnnotation alloc] initWithMapView:mapView points:_routeLine];
         _rmannotation.userInfo = self;
         _rmannotation.subtitle = [self subtitle];
         //        [_annotation setBoundingBoxFromLocations:_routeLine];

@@ -1,8 +1,8 @@
-#import "AkylasTileSource.h"
+#import "AkylasMapboxTileSource.h"
 #import "AkylasMapModule.h"
 #import "AkylasMapTileSourceProxy.h"
 
-@implementation AkylasTileSource
+@implementation AkylasMapboxTileSource
 @synthesize tileSource, proxy;
 
 -(void)dealloc
@@ -11,11 +11,11 @@
 	[super dealloc];
 }
 
-+(AkylasTileSource*)tileSourceWithSource:(id)source proxyForSourceURL:(TiProxy *)proxy
++(AkylasMapboxTileSource*)tileSourceWithSource:(id)source proxyForSourceURL:(TiProxy *)proxy
 {
     if (source == nil) return nil;
-    if ([source isKindOfClass:[AkylasMapTileSourceProxy class]]) return [((AkylasMapTileSourceProxy*)source) tileSource];
-    AkylasTileSource* result = [[AkylasTileSource alloc] init];
+    if ([source isKindOfClass:[AkylasMapTileSourceProxy class]]) return [((AkylasMapTileSourceProxy*)source) mpTileSource];
+    AkylasMapboxTileSource* result = [[AkylasMapboxTileSource alloc] init];
     result.tileSource = (id<RMTileSource>)[AkylasMapModule sourceFromObject:source proxy:proxy];
     [result.tileSource setCacheable:YES];
     return [result autorelease];

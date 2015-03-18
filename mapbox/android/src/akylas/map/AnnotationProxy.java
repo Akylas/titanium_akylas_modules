@@ -50,6 +50,7 @@ public class AnnotationProxy extends AnimatableReusableProxy {
     private float mMaxZoom = -1;
     private double longitude = 0;
     private double latitude = 0;
+    private double altitude = 0;
     public float heading = 0;
     public boolean visible = true;
     private boolean imageWithShadow = false;
@@ -160,10 +161,10 @@ public class AnnotationProxy extends AnimatableReusableProxy {
         }
     }
 
-    public void setPosition(double latitude, double longitude) {
-        latLong = new com.mapbox.mapboxsdk.geometry.LatLng(latitude, longitude);
+    public void setPosition(double latitude, double longitude, double altitude) {
+        latLong = new com.mapbox.mapboxsdk.geometry.LatLng(latitude, longitude, altitude);
         if (marker != null) {
-            marker.setPosition(latitude, longitude);
+            marker.setPosition(latitude, longitude, altitude);
         }
     }
     
@@ -312,6 +313,10 @@ public class AnnotationProxy extends AnimatableReusableProxy {
             latitude = TiConvert.toDouble(newValue, 0.0);
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOCATION;
             break;
+        case TiC.PROPERTY_ALTITUDE:
+            altitude = TiConvert.toDouble(newValue, 0.0);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_LOCATION;
+            break;
         case TiC.PROPERTY_HEADING:
             heading = TiConvert.toFloat(newValue, 0.0f);
             if (marker != null) {
@@ -437,7 +442,7 @@ public class AnnotationProxy extends AnimatableReusableProxy {
     @Override
     protected void didProcessProperties() {
         if ((mProcessUpdateFlags & TIFLAG_NEEDS_LOCATION) != 0) {
-            setPosition(latitude, longitude);
+            setPosition(latitude, longitude, altitude);
             mProcessUpdateFlags &= ~TIFLAG_NEEDS_LOCATION;
         }
         super.didProcessProperties();

@@ -16,6 +16,7 @@
 #import "AkylasMapRouteProxy.h"
 
 
+
 @interface MKMapView (ZoomLevel)
 - (void)setCenterCoordinate:(CLLocationCoordinate2D)centerCoordinate
                   zoomLevel:(NSUInteger)zoomLevel
@@ -55,6 +56,9 @@
     CGFloat _maxZoom;
     SMCalloutView* _calloutView;
     UIView* calloutTouchedView;
+    BOOL _cameraAnimating;
+    MKMapCamera* _pendingCamera;
+    CGFloat _lastCameraHeading;
 }
 
 #pragma mark Internal
@@ -64,6 +68,9 @@
     if ((self = [super init])) {
         _minZoom = 0;
         _maxZoom = 100;
+        _cameraAnimating = NO;
+        _pendingCamera = nil;
+        _lastCameraHeading = 0.0f;
     }
     return self;
 }
@@ -85,6 +92,67 @@
     }
 	[super dealloc];
 }
+
+/**
+ * Given a MKMapRect, this returns the zoomLevel based on
+ * the longitude width of the box.
+ *
+ * This is because the Mercator projection, when tiled,
+ * normally operates with 2^zoomLevel tiles (1 big tile for
+ * world at zoom 0, 2 tiles at 1, 4 tiles at 2, etc.)
+ * and the ratio of the longitude width (out of 360º)
+ * can be used to reverse this.
+ *
+ * This method factors in screen scaling for the iPhone 4:
+ * the tile layer will use the *next* zoomLevel. (We are given
+ * a screen that is twice as large and zoomed in once more
+ * so that the "effective" region shown is the same, but
+ * of higher resolution.)
+ */
+- (NSUInteger)zoomLevelForMapRect:(MKMapRect)mapRect {
+    MKCoordinateRegion r = MKCoordinateRegionForMapRect(mapRect);
+    CGFloat lon_ratio = r.span.longitudeDelta/360.0;
+    NSUInteger z = (NSUInteger)(log(1/lon_ratio)/log(2.0)-1.0);
+    
+    z += ([[UIScreen mainScreen] scale] - 1.0);
+    return z;
+}
+/**
+ * Similar to above, but uses a MKZoomScale to determine the
+ * Mercator zoomLevel. (MKZoomScale is a ratio of screen points to
+ * map points.)
+ */
+- (CGFloat)zoomLevelForZoomScale:(MKZoomScale)zoomScale {
+    CGFloat realScale = zoomScale / [[UIScreen mainScreen] scale];
+    CGFloat z = (log(realScale)/log(2.0)+20.0);
+    
+    z += ([[UIScreen mainScreen] scale] - 1.0);
+    return z;
+}
+
+/**
+ * Similar to above, but uses a MKZoomScale to determine the
+ * Mercator zoomLevel. (MKZoomScale is a ratio of screen points to
+ * map points.)
+ */
+- (MKZoomScale)zoomScaleForZoomLevel:(CGFloat)zoomLevel {
+
+    zoomLevel -= ([[UIScreen mainScreen] scale] - 1.0);
+    CGFloat realScale = exp((zoomLevel-20.0)*log(2.0));
+    CGFloat zoomScale = realScale * [[UIScreen mainScreen] scale];
+    
+    return zoomScale;
+}
+/**
+ * Shortcut to determine the number of tiles wide *or tall* the
+ * world is, at the given zoomLevel. (In the Spherical Mercator
+ * projection, the poles are cut off so that the resulting 2D
+ * map is "square".)
+ */
+- (NSUInteger)worldTileWidthForZoomLevel:(NSUInteger)zoomLevel {
+    return (NSUInteger)(pow(2,zoomLevel));
+}
+
 
 MKCoordinateRegion mkregionFromRegion(RMSphericalTrapezium trapez)
 {
@@ -112,6 +180,14 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
             .longitude =  center.longitude - longitudeDelta_2
         }
     };
+}
+
+
+BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
+{
+
+    return mkregion.span.latitudeDelta > 0 && mkregion.span.longitudeDelta >0 &&
+    CLLocationCoordinate2DIsValid(mkregion.center);
 }
 
 -(void)render
@@ -181,7 +257,11 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
+    MKCoordinateRegion visibleRegion = [map region];
     [[self map] setFrame:bounds];
+    if (MKCoordinateRegionIsValid(visibleRegion)) {
+        [map setRegion:[map regionThatFits:visibleRegion]];
+    }
     [super frameSizeChanged:frame bounds:bounds];
     if (forceRender) {
         //Set this to NO so that region gets captured.
@@ -213,29 +293,26 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     ignoreClicks = NO;
 }
 
--(void)internalAddAnnotations:(id)annotations
+-(void)internalAddAnnotations:(id)annotations atIndex:(NSInteger)index
 {
     MKMapView* mapView = [self map];
-    if ([annotations isKindOfClass:[NSArray class]]) {
-        for (AkylasMapAnnotationProxy* annotProxy in annotations) {
-            [mapView addAnnotation:annotProxy];
-        }
+    if (IS_OF_CLASS(annotations, NSArray)) {
+        [mapView addAnnotations:[annotations filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+            return [object isKindOfClass:[AkylasMapAnnotationProxy class]];
+        }]]];
     }
     else {
-        [mapView addAnnotation:(AkylasMapAnnotationProxy*)annotations];
+        [mapView addAnnotation:annotations];
     }
 }
 
 -(void)internalRemoveAnnotations:(id)annotations
 {
     MKMapView* mapView = [self map];
-    if ([annotations isKindOfClass:[NSArray class]]) {
-        for (AkylasMapAnnotationProxy* annotProxy in annotations) {
-            if ([annotProxy isKindOfClass:[AkylasMapAnnotationProxy class]]) {
-                NSArray* current = [mapView annotations];
-                [mapView removeAnnotation:(AkylasMapAnnotationProxy*)annotProxy];
-            }
-        }
+    if (IS_OF_CLASS(annotations, NSArray)) {
+        [mapView removeAnnotations:[annotations filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+            return [object isKindOfClass:[AkylasMapAnnotationProxy class]];
+        }]]];
     }
     else if ([annotations isKindOfClass:[AkylasMapAnnotationProxy class]]) {
         [mapView removeAnnotation:(AkylasMapAnnotationProxy*)annotations];
@@ -247,6 +324,75 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 {
     MKMapView* mapView = [self map];
     [mapView removeAnnotations:mapView.annotations];
+}
+
+
+-(void)internalAddRoutes:(id)routes atIndex:(NSInteger)index
+{
+    MKMapView* mapView = [self map];
+    __block NSInteger realIndex = index;
+    if (realIndex == -1) {
+        realIndex = INT_MAX;
+    }
+    if (IS_OF_CLASS(routes, NSArray)) {
+        [routes enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if (IS_OF_CLASS(obj, AkylasMapRouteProxy)) {
+                MKPolyline *routeLine = [obj getPolyline];
+                
+                CFDictionaryAddValue(mapLine2View, routeLine, obj);
+                [self addOverlay:routeLine index:realIndex level:[obj level]];
+            }
+        }];
+    }
+    else if(IS_OF_CLASS(routes, AkylasMapRouteProxy)){
+        MKPolyline *routeLine = [routes getPolyline];
+        
+        CFDictionaryAddValue(mapLine2View, routeLine, routes);
+        [self addOverlay:routeLine index:realIndex level:[routes level]];
+    }
+}
+
+-(void)internalRemoveRoutes:(id)routes
+{
+    MKMapView* mapView = [self map];
+    if (IS_OF_CLASS(routes, NSArray)) {
+        [routes enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if (IS_OF_CLASS(obj, AkylasMapRouteProxy)) {
+                MKPolyline *routeLine = [obj getPolyline];
+                CFDictionaryRemoveValue(mapLine2View, routeLine);
+                [map removeOverlay:routeLine];
+            }
+        }];
+    }
+    else if(IS_OF_CLASS(routes, AkylasMapRouteProxy)){
+        MKPolyline *routeLine = [routes getPolyline];
+        CFDictionaryRemoveValue(mapLine2View, routeLine);
+        [map removeOverlay:routeLine];
+    }
+}
+
+
+-(void)internalRemoveAllRoutes
+{
+    MKMapView* mapView = [self map];
+    [mapView removeOverlays:[((__bridge NSDictionary*)mapLine2View) allValues]];
+    CFDictionaryRemoveAllValues(mapLine2View);
+}
+
+
+-(void)addRoute:(AkylasMapRouteProxy*)route
+{
+    MKPolyline *routeLine = [route getPolyline];
+    
+    CFDictionaryAddValue(mapLine2View, routeLine, route);
+    [self addOverlay:routeLine level:[route level]];
+}
+
+-(void)removeRoute:(AkylasMapRouteProxy*)route
+{
+    MKPolyline *routeLine = [route getPolyline];
+    CFDictionaryRemoveValue(mapLine2View, routeLine);
+    [map removeOverlay:routeLine];
 }
 
 #pragma mark Public APIs
@@ -312,7 +458,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 -(void)zoomTo:(id)args
 {
 	ENSURE_SINGLE_ARG(args,NSObject);
-	ENSURE_UI_THREAD(zoom,args);
+	ENSURE_UI_THREAD(zoomTo,args);
 
 	double v = [TiUtils doubleValue:args];
 	// TODO: Find a good delta tolerance value to deal with floating point goofs
@@ -335,6 +481,94 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 	[self render];
 }
 
+-(void)setCamera:(MKMapCamera*)camera animated:(BOOL)animated {
+    if (_cameraAnimating) {
+        RELEASE_TO_NIL(_pendingCamera)
+        _pendingCamera = [camera retain];
+        return;
+    }
+    
+    [CATransaction begin];
+    if (animated) {
+        CGFloat animationDuration = 0.3;
+        [CATransaction setAnimationDuration:animationDuration];
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationCurve:UIViewAnimationCurveLinear];
+        [UIView setAnimationDuration:animationDuration];
+        [UIView setAnimationBeginsFromCurrentState:YES];
+        _cameraAnimating = YES;
+    } else {
+        [CATransaction setDisableActions:YES];
+    }
+
+    [map setCamera:camera animated:animated];
+
+    if (animated) {
+        [UIView commitAnimations];
+    }
+    [CATransaction commit];
+}
+
+
+-(void)updateCamera:(id)args
+{
+    if (map == nil || map.bounds.size.width == 0 || map.bounds.size.height == 0) {
+        [self.proxy applyProperties:args];
+        return;
+    }
+    if (_cameraAnimating) return;
+    ENSURE_UI_THREAD(updateCamera,args);
+    
+    MKMapCamera *newCamera = [[map camera] copy];
+//    MKCoordinateRegion currentRegion = newCamera.centerCoordinate;
+    
+    CGFloat altitude = newCamera.altitude;
+    if ([args objectForKey:@"centerCoordinate"]) {
+//        currentRegion.center = ;
+        [newCamera setCenterCoordinate:[AkylasMapModule locationFromObject:[args objectForKey:@"centerCoordinate"]]];
+    }
+    if ([args objectForKey:@"altitude"]) {
+        [newCamera setAltitude:[TiUtils floatValue:[args objectForKey:@"altitude"] def:0.0f]];
+    } else if ([args objectForKey:@"zoom"]) {
+        CLLocationDistance altitude = newCamera.altitude;
+        MKZoomScale newZoomScale = [self zoomScaleForZoomLevel:[TiUtils floatValue:[args objectForKey:@"zoom"] def:1.0f]];
+        MKZoomScale currentZoomScale = map.bounds.size.width / map.visibleMapRect.size.width;
+        altitude = altitude* currentZoomScale / newZoomScale;
+        [newCamera setAltitude:altitude];
+    }
+    if ([args objectForKey:@"tilt"]) {
+        CGFloat pitch = MIN([TiUtils floatValue:[args objectForKey:@"tilt"] def:0.0f], 80);
+        if (pitch != newCamera.pitch) {
+            [newCamera setPitch:pitch];
+        }
+    }
+    if ([args objectForKey:@"bearing"]) {
+        CGFloat heading = [TiUtils floatValue:[args objectForKey:@"bearing"] def:0.0f];
+        CGFloat shortestDelta = MIN(heading - _lastCameraHeading, (360 - heading) - _lastCameraHeading);
+        heading = _lastCameraHeading + shortestDelta;
+        [newCamera setHeading:heading];
+        _lastCameraHeading = heading;
+    }
+    if (map == nil || map.bounds.size.width == 0 || map.bounds.size.height == 0) {
+        return;
+    }
+    BOOL animating  = animate;
+    if ([args objectForKey:@"animate"]) {
+        animating = [TiUtils boolValue:[args objectForKey:@"bearing"] def:animate];
+    }
+    
+    [self setCamera:newCamera animated:animating];
+    
+    if ([args objectForKey:@"region"]) {
+        region = [AkylasMapModule regionFromDict:[args objectForKey:@"region"]];
+        BOOL oldAnimate= animate;
+        animate = animating;
+        [self render];
+        animate = oldAnimate;
+    }
+    [newCamera release];
+}
+
 #pragma mark Public APIs
 
 -(void)setMapType_:(id)value
@@ -343,10 +577,16 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 }
 
 
--(id)getRegion
+//-(id)getRegion
+//{
+//    return [AkylasMapModule dictFromRegion:[self getCurrentRegion]];
+//}
+
+-(id)zoom_
 {
-    return [AkylasMapModule dictFromRegion:[self getCurrentRegion]];
+    return @([map getZoomLevel]);
 }
+
 
 -(void)setRegion_:(id)value
 {
@@ -507,21 +747,6 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     return [AkylasMapModule dictFromLocation2D:RMSphericalTrapeziumCenter(region)];
 }
 
--(void)addRoute:(AkylasMapRouteProxy*)route
-{
-    MKPolyline *routeLine = [route getPolyline];
-    
-    CFDictionaryAddValue(mapLine2View, routeLine, route);
-    [self addOverlay:routeLine level:[route level]];
-}
-
--(void)removeRoute:(AkylasMapRouteProxy*)route
-{
-    MKPolyline *routeLine = [route getPolyline];
-    CFDictionaryRemoveValue(mapLine2View, routeLine);
-    [map removeOverlay:routeLine];
-}
-
 #pragma mark Public APIs iOS 7
 
 -(void)setTintColor_:(id)color
@@ -562,6 +787,13 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     [map addOverlay:polyline];
 }
 
+// These methods override the default implementation in TiMapView
+-(void)addOverlay:(MKPolyline*)polyline index:(NSInteger)index level:(MKOverlayLevel)level
+{
+    [map insertOverlay:polyline atIndex:index];
+}
+
+
 - (void)tintColorDidChange
 {
     if (_calloutView)
@@ -589,12 +821,18 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 
 - (void)mapView:(MKMapView *)mapView regionDidChangeAnimated:(BOOL)animated
 {
+    _cameraAnimating = NO;
+    if (_pendingCamera) {
+        [self setCamera:_pendingCamera animated:animated];
+        RELEASE_TO_NIL(_pendingCamera)
+    }
     if (ignoreRegionChanged) {
         return;
     }
     region = regionFromMKRegion([mapView region]);
     _internalZoom = [mapView getZoomLevel];
-    if ([self.proxy _hasListeners:@"regionchanged"])
+    CGFloat zoomlevel = _internalZoom;
+    if ([self.viewProxy _hasListeners:@"regionchanged" checkParent:NO])
 	{
 		[self.proxy fireEvent:@"regionchanged" withObject:@{
                                                             @"region":[AkylasMapModule dictFromRegion:region],
@@ -606,7 +844,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 - (void)mapViewWillStartLoadingMap:(MKMapView *)mapView
 {
 	loaded = NO;
-	if ([self.proxy _hasListeners:@"loading"])
+	if ([self.viewProxy _hasListeners:@"loading" checkParent:NO])
 	{
 		[self.proxy fireEvent:@"loading" propagate:NO checkForListener:NO];
 	}
@@ -616,7 +854,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 {
 	ignoreClicks = YES;
 	loaded = YES;
-	if ([self.proxy _hasListeners:@"complete"])
+	if ([self.viewProxy _hasListeners:@"complete" checkParent:NO])
 	{
 		[self.proxy fireEvent:@"complete" propagate:NO checkForListener:NO];
 	}
@@ -625,7 +863,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 
 - (void)mapViewDidFailLoadingMap:(MKMapView *)mapView withError:(NSError *)error
 {
-	if ([self.proxy _hasListeners:@"error"])
+	if ([self.viewProxy _hasListeners:@"error" checkParent:NO])
 	{
 		NSString * message = [TiUtils messageFromError:error];
 		NSDictionary *event = [NSDictionary dictionaryWithObject:message forKey:@"message"];
@@ -640,26 +878,26 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 
 - (void)firePinChangeDragState:(MKAnnotationView *) pinview newState:(MKAnnotationViewDragState)newState fromOldState:(MKAnnotationViewDragState)oldState 
 {
-	AkylasMapAnnotationProxy *viewProxy = [self proxyForAnnotation:pinview];
+	AkylasMapAnnotationProxy *proxy = [self proxyForAnnotation:pinview];
 
-	if (viewProxy == nil)
+	if (proxy == nil)
 		return;
 
-	TiProxy * ourProxy = [self proxy];
-	BOOL parentWants = [ourProxy _hasListeners:@"pinchangedragstate"];
-	BOOL viewWants = [viewProxy _hasListeners:@"pinchangedragstate"];
+	TiViewProxy * ourProxy = [self viewProxy];
+	BOOL parentWants = [ourProxy _hasListeners:@"pinchangedragstate" checkParent:NO];
+	BOOL viewWants = [proxy _hasListeners:@"pinchangedragstate" checkParent:NO];
 	
 	if(!parentWants && !viewWants)
 		return;
 
-	id title = [viewProxy title];
+	id title = [proxy title];
 	if (title == nil)
 		title = [NSNull null];
 
-	NSNumber * indexNumber = NUMINT([viewProxy tag]);
+	NSNumber * indexNumber = NUMINT([proxy tag]);
 
 	NSDictionary * event = [NSDictionary dictionaryWithObjectsAndKeys:
-								viewProxy,@"annotation",
+								proxy,@"annotation",
 								ourProxy,@"map",
 								title,@"title",
 								indexNumber,@"index",
@@ -671,7 +909,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 		[ourProxy fireEvent:@"pinchangedragstate" withObject:event propagate:NO checkForListener:NO];
 
 	if (viewWants)
-		[viewProxy fireEvent:@"pinchangedragstate" withObject:event propagate:NO checkForListener:NO];
+		[proxy fireEvent:@"pinchangedragstate" withObject:event propagate:NO checkForListener:NO];
 }
 
 - (AkylasMapAnnotationProxy*)proxyForAnnotation:(MKAnnotationView*)pinview
@@ -713,7 +951,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     AkylasMapAnnotationProxy *annProxy = nil;
     if ([[annotationView annotation] isKindOfClass:[AkylasMapAnnotationProxy class]]) {
         annProxy = (AkylasMapAnnotationProxy*)[annotationView annotation];
-        canShowCallout = [TiUtils boolValue:[annProxy valueForUndefinedKey:@"canShowCallout"] def:YES];
+        canShowCallout = [TiUtils boolValue:[annProxy valueForUndefinedKey:@"showInfoWindow"] def:YES];
     }
     if (canShowCallout) {
         if (!_calloutView) {
@@ -827,9 +1065,10 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
         }
         NSString *identifier = nil;
         UIImage* image = nil;
+        
         if (pinView == nil) {
+            identifier = [ann nHasInternalImage] ? @"timap-image":@"timap-pin";
             image = [ann nGetInternalImage];
-            identifier = (image!=nil) ? @"timap-image":@"timap-pin";
         }
         else {
             identifier = @"timap-customView";
@@ -885,6 +1124,8 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 
         annView.userInteractionEnabled = YES;
         annView.tag = [ann tag];
+        
+        ann.annView = annView;
         return annView;
     }
     return nil;
@@ -996,21 +1237,21 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 		return;
 	}
     
-	AkylasMapAnnotationProxy *viewProxy = [self proxyForAnnotation:pinview];
-	if (viewProxy == nil)
+	AkylasMapAnnotationProxy *proxy = [self proxyForAnnotation:pinview];
+	if (proxy == nil)
 	{
 		return;
 	}
     
-	TiProxy * ourProxy = [self proxy];
-	BOOL parentWants = [ourProxy _hasListeners:type];
-	BOOL viewWants = [viewProxy _hasListeners:type];
+	TiViewProxy * ourProxy = [self viewProxy];
+	BOOL parentWants = [ourProxy _hasListeners:type checkParent:NO];
+	BOOL viewWants = [proxy _hasListeners:type checkParent:NO];
 	if(!parentWants && !viewWants)
 	{
 		return;
 	}
 	
-	id title = [viewProxy title];
+	id title = [proxy title];
 	if (title == nil)
 	{
 		title = [NSNull null];
@@ -1025,17 +1266,17 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
     }
     
     [event setObject:clicksource forKey:@"clicksource"];
-    [event setObject:viewProxy forKey:@"annotation"];
+    [event setObject:proxy forKey:@"annotation"];
     [event setObject:ourProxy forKey:@"map"];
     [event setObject:title forKey:@"title"];
-    [event setObject:NUMINT([viewProxy tag]) forKey:@"index"];
+    [event setObject:NUMINT([proxy tag]) forKey:@"index"];
 	if (parentWants)
 	{
 		[ourProxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 	}
 	if (viewWants)
 	{
-		[viewProxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
+		[proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 	}
     [event release];
 }
@@ -1060,7 +1301,7 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 		return;
 	}
     
-	if ([self.proxy _hasListeners:type]) {
+	if ([self.viewProxy _hasListeners:type checkParent:NO]) {
         CGPoint point = [recognizer locationInView:self];
         NSMutableDictionary *event = [[TiUtils dictionaryFromGesture:recognizer inView:self] mutableCopy];
         [event addEntriesFromDictionary:[AkylasMapModule dictFromLocation2D:[map convertPoint:point toCoordinateFromView:map]]];
@@ -1069,6 +1310,34 @@ RMSphericalTrapezium regionFromMKRegion(MKCoordinateRegion mkregion)
 	}
 }
 
+- (BOOL)internalAddTileSources:(id)tileSource atIndex:(NSInteger)index
+{
+//    __block NSInteger realIndex = index;
+//    if (realIndex == -1) {
+//        realIndex = INT_MAX;
+//    }
+//    if (IS_OF_CLASS(tileSource, NSArray)) {
+//        [tileSource enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//            [self internalAddTileSources:obj atIndex:realIndex++];
+//        }];
+//    } else {
+//    }
+}
+
+- (BOOL)internalRemoveTileSources:(id)tileSource
+{
+//    if (IS_OF_CLASS(tileSource, NSArray)) {
+//        [tileSource enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//            [self internalRemoveTileSources:obj];
+//        }];
+//    } else {
+//    }
+}
+
+- (BOOL)internalRemoveAllTileSources
+{
+//    [[self map] removeOverlays:[[self map] overlays]];
+}
 
 
 @end

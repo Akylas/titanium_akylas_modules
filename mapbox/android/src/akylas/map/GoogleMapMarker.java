@@ -176,7 +176,7 @@ public class GoogleMapMarker extends AkylasMarker {
     }
 
     @Override
-    void setPosition(double latitude, double longitude) {
+    void setPosition(double latitude, double longitude, double altitude) {
         final LatLng position = new LatLng(latitude, longitude);
         if (marker != null) {
             if (TiApplication.isUIThread()) {
@@ -195,6 +195,12 @@ public class GoogleMapMarker extends AkylasMarker {
         if (markerOptions != null) {
             markerOptions.position(position);
         }
+    }
+    
+
+    @Override
+    void setPosition(double latitude, double longitude) {
+        setPosition(latitude, longitude, 0);
     }
     
     @Override
@@ -347,4 +353,5 @@ public class GoogleMapMarker extends AkylasMarker {
             markerOptions.infoWindowAnchor(anchorX, anchorY);
         }
     }
+
 }

@@ -35,5 +35,6 @@
 +(CLLocation*)cllocationFromArray:(NSArray*)array;
 +(NSDictionary*)dictFromLocation:(CLLocation*)coord;
 +(NSDictionary*)dictFromHeading:(CLHeading*)headin;
++(CLLocationCoordinate2D)locationFromObject:(id)obj;
 
 @end

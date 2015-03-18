@@ -8,10 +8,10 @@
 
 #import "AkylasMapTileSourceProxy.h"
 
-@interface AkylasTileSource : NSObject
+@interface AkylasMapboxTileSource : NSObject
 @property (nonatomic, retain) id<RMTileSource> tileSource;
 @property (nonatomic, assign) AkylasMapTileSourceProxy *proxy;
 
-+(AkylasTileSource*)tileSourceWithSource:(id)source proxyForSourceURL:(TiProxy *)proxy;
++(AkylasMapboxTileSource*)tileSourceWithSource:(id)source proxyForSourceURL:(TiProxy *)proxy;
 +(AkylasMapTileSourceProxy*)tileSourceProxyWithSource:(id)source proxyForSourceURL:(TiProxy *)proxy;
 @end

@@ -17,7 +17,6 @@
 
 @implementation AkylasMapAnnotationProxy
 {
-    MKPinAnnotationColor _pinColor;
 	TiViewProxy* _leftViewProxy;
 	TiViewProxy* _rightViewProxy;
 	TiViewProxy* _customViewProxy;
@@ -25,6 +24,10 @@
     CGPoint _calloutAnchorPoint;
     CGFloat _calloutAlpha;
     id _sortKey;
+    BOOL configurationSet;
+    BOOL needsLocationRefresh;
+    ImageLoaderRequest *urlRequest;
+
 }
 
 @synthesize delegate;
@@ -32,6 +35,7 @@
 @synthesize placed;
 @synthesize draggable;
 @synthesize rmannotation = _rmannotation;
+@synthesize annView = _annView;
 
 #define LEFT_BUTTON  1
 #define RIGHT_BUTTON 2
@@ -53,6 +57,8 @@
     _sortKey = nil;
     _minZoom = 0.0f;
     _maxZoom = 22.0f;
+    configurationSet  = NO;
+    needsLocationRefresh = NO;
 	[super _configure];
 }
 
@@ -128,7 +134,31 @@
 	}
 }
 
+-(void)applyProperties:(id)args
+{
+    ENSURE_UI_THREAD_1_ARG(args)
+    configurationSet = NO;
+    [super applyProperties:args];
+    configurationSet = YES;
+    if (needsLocationRefresh) {
+        [self refreshCoords];
+    }
+
+}
+
 #pragma mark Public APIs
+
+-(void)refreshCoords {
+    if (_rmannotation != nil) {
+        _rmannotation.coordinate = self.coordinate;
+    }
+//    self.coordinate = [self coordinate];
+//    if (_annView) {
+//        _annView
+//        _annView setCenter:]
+//    }
+    [self setNeedsRefreshingWithSelection:YES];
+}
 
 -(CLLocationCoordinate2D)coordinate
 {
@@ -140,28 +170,34 @@
 
 -(void)setCoordinate:(CLLocationCoordinate2D)coordinate
 {
+    [self willChangeValueForKey:@"coordinate"];
 	[self setValue:NUMDOUBLE(coordinate.latitude) forUndefinedKey:@"latitude"];
 	[self setValue:NUMDOUBLE(coordinate.longitude) forUndefinedKey:@"longitude"];
+    [self didChangeValueForKey:@"coordinate"];
 }
 
 -(void)setLatitude:(id)latitude
 {
     double newValue = [TiUtils doubleValue:latitude];
     [self replaceValue:latitude forKey:@"latitude" notification:NO];
-    if (_rmannotation != nil) {
-        _rmannotation.coordinate = self.coordinate;
+    if (!configurationSet) {
+        needsLocationRefresh = YES;
+        return;
     }
-    [self setNeedsRefreshingWithSelection:YES];
+    [self refreshCoords];
 }
+
+
 
 -(void)setLongitude:(id)longitude
 {
     double newValue = [TiUtils doubleValue:longitude];
     [self replaceValue:longitude forKey:@"longitude" notification:NO];
-    if (_rmannotation != nil) {
-        _rmannotation.coordinate = self.coordinate;
+    if (!configurationSet) {
+        needsLocationRefresh = YES;
+        return;
     }
-    [self setNeedsRefreshingWithSelection:YES];
+    [self refreshCoords];
 }
 
 - (NSString *)title
@@ -418,14 +454,76 @@
     return _internalImage;
 }
 
--(void)setImage:(id)image
+-(BOOL)nHasInternalImage
 {
+    return [self valueForKey:@"image"] != nil;
+}
+
+-(void)startImageLoad:(NSURL *)url;
+{
+    [self cancelPendingImageLoads]; //Just in case we have a crusty old urlRequest.
+    NSDictionary* info = nil;
+    NSNumber* hires = [self valueForKey:@"hires"];
+    if (hires) {
+        info = [NSDictionary dictionaryWithObject:hires forKey:@"hires"];
+    }
+    urlRequest = [[[ImageLoader sharedLoader] loadImage:url delegate:self options:[self valueForUndefinedKey:@"httpOptions"] userInfo:info] retain];
+}
+
+-(void)setInternalImage:(UIImage*)image {
     RELEASE_TO_NIL(_internalImage)
-    _internalImage = [[[ImageLoader sharedLoader] loadImmediateImage:[TiUtils toURL:image proxy:self]] retain];
-	[self replaceValue:image forKey:@"image" notification:NO];
+    _internalImage = [image retain];
     if (_marker) {
         [_marker replaceUIImage:_internalImage anchorPoint:_mAnchorPoint];
     }
+    if (_annView) {
+        _annView.image = _internalImage;
+    }
+}
+
+-(void)cancelPendingImageLoads
+{
+    // cancel a pending request if we have one pending
+    if (urlRequest!=nil)
+    {
+        [urlRequest cancel];
+        RELEASE_TO_NIL(urlRequest);
+    }
+}
+
+-(void)imageLoadSuccess:(ImageLoaderRequest*)request image:(id)image
+{
+    if (request != urlRequest || !image)
+    {
+        return;
+    }
+    [self setInternalImage:image];
+//    [self setNeedsRefreshingWithSelection:YES];
+    RELEASE_TO_NIL(urlRequest);
+}
+
+-(void)imageLoadFailed:(ImageLoaderRequest*)request error:(NSError*)error
+{
+    if (request == urlRequest)
+    {
+        RELEASE_TO_NIL(urlRequest);
+    }
+}
+
+-(void)imageLoadCancelled:(ImageLoaderRequest *)request
+{
+}
+
+-(void)setImage:(id)image
+{
+    NSURL* url = [TiUtils toURL:image proxy:self];
+    [self setInternalImage: [[[ImageLoader sharedLoader] loadImmediateImage:url] retain]];
+    if (_internalImage==nil)
+    {
+        [self startImageLoad:url];
+    }
+	[self replaceValue:image forKey:@"image" notification:NO];
+
 }
 
 -(void)setMbImage:(id)image

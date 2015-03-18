@@ -28,6 +28,7 @@ import akylas.map.AnnotationProxy;
 import akylas.map.RouteProxy;
 import akylas.map.AkylasMarker;
 import android.view.MotionEvent;
+import android.view.View;
 
 abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     private static final String TAG = "AkylasMapDefaultView";
@@ -69,7 +70,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     }
 
     @Override
-    public boolean customInterceptTouchEvent(MotionEvent event) {
+    public boolean onTouch(View v, MotionEvent event) {
         // to prevent double events
         return false;
     }
@@ -110,6 +111,11 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     }
     
     @Override
+    protected ArrayList<String> keySequence() {
+        return KEY_SEQUENCE;
+    }
+    
+    @Override
     public void propertySet(String key, Object newValue, Object oldValue,
             boolean changedProperty) {
         switch (key) {
@@ -144,12 +150,21 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
             updateCenter(newValue, shouldAnimate());
             break;
         case AkylasMapModule.PROPERTY_TILE_SOURCE:
+            if (changedProperty) {
+                removeAllTileSources();
+            }
             setTileSources(newValue);
             break;
         case AkylasMapModule.PROPERTY_ANNOTATIONS:
+            if (changedProperty) {
+                removeAllAnnotations();
+            }
             addAnnotations((Object[])newValue);
             break;
         case AkylasMapModule.PROPERTY_ROUTES:
+            if (changedProperty) {
+                removeAllRoutes();
+            }
             addRoutes((Object[]) newValue);
             break;
         case AkylasMapModule.PROPERTY_MINZOOM:
@@ -472,12 +487,9 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
             handleRemoveMarker(timarker);
         }
     }
-    protected void removeAllAnnotations() {
-//      for (int i = 0; i < timarkers.size(); i++) {
-//          handleRemoveMarker(timarkers.get(i));
-//      }
-//      timarkers.clear();
-  }
+    protected void removeAllAnnotations() {}
+    protected void removeAllRoutes() {}
+    protected void removeAllTileSources() {}
 
 
     private AnnotationProxy getProxyByMarker(AkylasMarker m) {
@@ -496,7 +508,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
     
 
     protected void fireEventOnMap(String type, ILatLng point) {
-        if (!hasListeners(type))
+        if (!hasListeners(type, false))
             return;
         KrollDict d = new KrollDict();
         d.put(TiC.PROPERTY_ALTITUDE, point.getAltitude());
@@ -504,13 +516,13 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         d.put(TiC.PROPERTY_LONGITUDE, point.getLongitude());
         d.put(TiC.PROPERTY_REGION, getRegionDict());
         d.put(AkylasMapModule.PROPERTY_MAP, proxy);
-        fireEvent(type, d, true, false);
+        fireEvent(type, d, false, false);
     }
 
     protected void fireEventOnMarker(String type, AkylasMarker marker, String clickSource) {
         
         AnnotationProxy annoProxy = marker.getProxy();
-        if (!annoProxy.hasListeners(type))
+        if (!annoProxy.hasListeners(type, false))
             return;
         KrollDict d = new KrollDict();
         if (annoProxy != null) {
@@ -526,13 +538,15 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         }
         d.put(AkylasMapModule.PROPERTY_MAP, proxy);
         d.put(TiC.EVENT_PROPERTY_CLICKSOURCE, clickSource);
-        fireEvent(type, d, true, false);
+        fireEvent(type, d, false, false);
 
     }
     
 
     public void firePinChangeDragStateEvent(Marker marker,
             AnnotationProxy annoProxy, int dragState) {
+        if (!annoProxy.hasListeners(AkylasMapModule.EVENT_PIN_CHANGE_DRAG_STATE, false))
+            return;
         KrollDict d = new KrollDict();
         String title = null;
         // TiMapInfoWindow infoWindow = annoProxy.getMapInfoWindow();
@@ -545,7 +559,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         d.put(TiC.PROPERTY_SOURCE, proxy);
         d.put(AkylasMapModule.PROPERTY_NEWSTATE, dragState);
         d.put(TiC.PROPERTY_TYPE, AkylasMapModule.EVENT_PIN_CHANGE_DRAG_STATE);
-        proxy.fireEvent(AkylasMapModule.EVENT_PIN_CHANGE_DRAG_STATE, d);
+        proxy.fireEvent(AkylasMapModule.EVENT_PIN_CHANGE_DRAG_STATE, d, false, false);
     }
     
     public boolean calloutUseTemplates() {

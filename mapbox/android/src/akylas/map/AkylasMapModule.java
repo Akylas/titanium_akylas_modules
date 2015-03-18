@@ -217,8 +217,8 @@ public class AkylasMapModule extends KrollModule {
         if (dict == null)
             return null;
         if (dict.containsKey(PROPERTY_NE) && dict.containsKey(PROPERTY_SW)) {
-            LatLng ne = latlongFromDict(dict.getKrollDict(PROPERTY_NE));
-            LatLng sw = latlongFromDict(dict.getKrollDict(PROPERTY_SW));
+            LatLng ne = latlongFromObject(dict.get(PROPERTY_NE));
+            LatLng sw = latlongFromObject(dict.get(PROPERTY_SW));
             return new BoundingBox(ne.getLatitude(), ne.getLongitude(),
                     sw.getLatitude(), sw.getLongitude());
         } else {

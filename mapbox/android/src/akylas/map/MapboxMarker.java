@@ -248,4 +248,12 @@ public class MapboxMarker extends AkylasMarker{
             marker.setUsingMakiIcon(imageWithShadow);
         }
     }
+
+
+    @Override
+    void setPosition(double latitude, double longitude, double altitude) {
+        if (marker!= null) {
+            marker.setPoint(new LatLng(latitude, longitude, altitude));
+        }
+    }
 }

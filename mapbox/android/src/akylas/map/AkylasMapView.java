@@ -8,9 +8,15 @@
 package akylas.map;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
@@ -23,16 +29,14 @@ import akylas.map.AnnotationProxy;
 import akylas.map.RouteProxy;
 import akylas.map.AkylasMarker;
 import android.app.Activity;
-//import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
-//import android.location.Criteria;
 import android.location.Location;
-//import android.location.LocationListener;
-//import android.location.LocationManager;
 import android.os.Build;
-//import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -48,9 +52,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.GoogleMapOptions;
-//import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -63,8 +67,8 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         GoogleMap.OnCameraChangeListener, GoogleMap.OnMarkerDragListener,
         GoogleMap.OnInfoWindowClickListener, GoogleMap.InfoWindowAdapter,
         GoogleMap.OnMapLongClickListener, GoogleMap.OnMapLoadedCallback,
-        GoogleMap.OnMyLocationChangeListener, OnMyLocationButtonClickListener {
-    private static int viewId = 1000;
+        GoogleMap.OnMyLocationChangeListener, OnMyLocationButtonClickListener,
+        OnMapReadyCallback {
     private static final String TAG = "AkylasMapView";
     private GoogleMap map;
     protected boolean animate = false;
@@ -72,14 +76,26 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     protected LatLngBounds preLayoutUpdateBounds;
     protected ArrayList<AkylasMarker> timarkers;
     private Fragment fragment;
+    private static AkylasMapView currentMapHolder;
 
     private float mRequiredZoomLevel = 10;
     private CameraPosition currentCameraPosition = null;
-//    private FollowMeLocationSource followMeLocationSource = new FollowMeLocationSource();
+
+    private Handler mainHandler = new Handler(Looper.getMainLooper(), this);
+    private static final int MSG_GET_PROJECTION = 10001;
+    private static final int MSG_GET_MYLOCATION = 10002;
+    private static final int MSG_GET_MYLOCATION_ENABLED = 10003;
+
+    private static boolean INITIALIZED = false;
+    // private FollowMeLocationSource followMeLocationSource = new
+    // FollowMeLocationSource();
 
     private boolean googlePlayServicesAvailable = false;
-    
-    protected static final int TIFLAG_NEEDS_CAMERA   = 0x00000001;
+
+    private List<RouteProxy> addedRoutes = new ArrayList<RouteProxy>();
+    private List<TileSourceProxy> addedTileSources = new ArrayList<TileSourceProxy>();
+
+    protected static final int TIFLAG_NEEDS_CAMERA = 0x00000001;
 
     public AkylasMapView(final TiViewProxy proxy, final Activity activity) {
         super(proxy);
@@ -98,29 +114,82 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             public boolean dispatchTouchEvent(MotionEvent ev) {
                 return interceptTouchEvent(ev) || super.dispatchTouchEvent(ev);
             }
+
+            // @Override
+            // protected void onMeasure(int widthMeasureSpec, int
+            // heightMeasureSpec) {
+            // LatLngBounds region = null;
+            // if (map != null) {
+            // region = map.getProjection().getVisibleRegion().latLngBounds;
+            // }
+            // super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            // if (region != null) {
+            // CameraUpdate update;
+            // if (regionFit) {
+            // update = CameraUpdateFactory.newLatLngBounds(region,
+            // getMeasuredWidth(), getMeasuredHeight(), 0);
+            // } else {
+            // update = CameraUpdateFactory.newLatLngBounds(region, 0);
+            // }
+            // moveCamera(update, animate);
+            // }
+            // }
         };
-        container.setId(viewId++);
         setNativeView(container);
 
         if (googlePlayServicesAvailable) {
             try {
-                MapsInitializer.initialize(activity);
+                if (!INITIALIZED) {
+                    MapsInitializer.initialize(activity);
+                    INITIALIZED = true;
+                }
+                // if (currentMapHolder != null) {
+                // //there is already an existing view
+                // currentMapHolder.releaseFragment();
+                // }
                 fragment = createFragment();
-                
+                fragment.setRetainInstance(false);
+                // currentMapHolder = this;
+
                 TiUIHelper.transactionFragment(fragment, container,
                         (FragmentActivity) activity);
-                ((SupportMapFragment) fragment)
-                .getMapAsync(new OnMapReadyCallback() {
-                    @Override
-                    public void onMapReady(GoogleMap map) {
-                        setMap(map);
-                    }
-                });
+
+                ((SupportMapFragment) fragment).getMapAsync(this);
             } catch (Exception e) {
             }
         }
 
         timarkers = new ArrayList<AkylasMarker>();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        setMap(map);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what) {
+
+        case MSG_GET_PROJECTION: {
+            AsyncResult result = (AsyncResult) msg.obj;
+            result.setResult(map.getProjection());
+            return true;
+        }
+        case MSG_GET_MYLOCATION: {
+            AsyncResult result = (AsyncResult) msg.obj;
+            result.setResult(map.getMyLocation());
+            return true;
+        }
+        case MSG_GET_MYLOCATION_ENABLED: {
+            AsyncResult result = (AsyncResult) msg.obj;
+            result.setResult(map.isMyLocationEnabled());
+            return true;
+        }
+        default:
+            return false;
+
+        }
     }
 
     private void setMapListeners(GoogleMap theMap, AkylasMapView mapView) {
@@ -184,11 +253,10 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     // return true;
     // }
 
-    @Override
-    public void release() {
+    private void releaseFragment() {
         if (fragment != null) {
             FragmentManager fragmentManager = fragment.getFragmentManager();
-            if (fragmentManager != null) {
+            if (fragmentManager != null && !fragmentManager.isDestroyed()) {
                 FragmentTransaction transaction = null;
                 Fragment tabFragment = fragmentManager
                         .findFragmentById(android.R.id.tabcontent);
@@ -202,12 +270,26 @@ public class AkylasMapView extends AkylasMapDefaultView implements
                 transaction.remove(fragment);
                 transaction.commit();
             }
+            fragment = null;
+            // currentMapHolder = null;
         }
-        selectedAnnotation = null;
         if (map != null) {
             map.clear();
             map = null;
         }
+    }
+
+    @Override
+    public void release() {
+        releaseFragment();
+        selectedAnnotation = null;
+
+        addedRoutes.clear();
+
+        for (TileSourceProxy tileSource : addedTileSources) {
+            tileSource.release();
+        }
+        addedTileSources.clear();
 
         timarkers.clear();
         super.release();
@@ -225,14 +307,19 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             return SupportMapFragment.newInstance(gOptions);
         }
     }
-    
+
     protected static final ArrayList<String> KEY_SEQUENCE;
-    static{
-      ArrayList<String> tmp = AkylasMapDefaultView.KEY_SEQUENCE;
-      tmp.add(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM);
-      KEY_SEQUENCE = tmp;
+    static {
+        ArrayList<String> tmp = AkylasMapDefaultView.KEY_SEQUENCE;
+        tmp.add(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM);
+        KEY_SEQUENCE = tmp;
     }
-    
+
+    @Override
+    protected ArrayList<String> keySequence() {
+        return KEY_SEQUENCE;
+    }
+
     @Override
     public void propertySet(String key, Object newValue, Object oldValue,
             boolean changedProperty) {
@@ -241,31 +328,40 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             mRequiredZoomLevel = TiConvert.toFloat(newValue, 10);
             break;
         case AkylasMapModule.PROPERTY_USER_LOCATION_BUTTON:
-            map.getUiSettings().setMyLocationButtonEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setMyLocationButtonEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_ZOOM_CONTROLS_ENABLED:
-            map.getUiSettings().setZoomControlsEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setZoomControlsEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_COMPASS_ENABLED:
-            map.getUiSettings().setCompassEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setCompassEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_TOOLBAR_ENABLED:
-            map.getUiSettings().setMapToolbarEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setMapToolbarEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_INDOOR_CONTROLS_ENABLED:
-            map.getUiSettings().setIndoorLevelPickerEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setIndoorLevelPickerEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_SCROLL_ENABLED:
-            map.getUiSettings().setScrollGesturesEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setScrollGesturesEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case TiC.PROPERTY_ZOOM_ENABLED:
-            map.getUiSettings().setZoomGesturesEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setZoomGesturesEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_ROTATE_ENABLED:
-            map.getUiSettings().setRotateGesturesEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setRotateGesturesEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_TILT_ENABLED:
-            map.getUiSettings().setTiltGesturesEnabled(TiConvert.toBoolean(newValue, true));
+            map.getUiSettings().setTiltGesturesEnabled(
+                    TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_BUILDINGS_ENABLED:
             map.setBuildingsEnabled(TiConvert.toBoolean(newValue, true));
@@ -277,13 +373,13 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             map.setTrafficEnabled(TiConvert.toBoolean(newValue, false));
             break;
         case TiC.PROPERTY_BEARING:
-            getCameraBuilder().bearing( TiConvert.toFloat(newValue, 0));
+            getCameraBuilder().bearing(TiConvert.toFloat(newValue, 0));
             break;
         case AkylasMapModule.PROPERTY_TILT:
-            getCameraBuilder().tilt( TiConvert.toFloat(newValue, 0));
+            getCameraBuilder().tilt(TiConvert.toFloat(newValue, 0));
             break;
         case AkylasMapModule.PROPERTY_ZOOM:
-            getCameraBuilder().zoom( TiConvert.toFloat(newValue, 0));
+            getCameraBuilder().zoom(TiConvert.toFloat(newValue, 0));
             break;
         case TiC.PROPERTY_REGION:
             getCameraBuilder();
@@ -292,14 +388,14 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             mCameraRegionUpdate = mCameraRegion != null;
             break;
         case AkylasMapModule.PROPERTY_CENTER_COORDINATE:
-            getCameraBuilder().target(AkylasMapModule.mapBoxToGoogle(AkylasMapModule
-                    .latlongFromObject(newValue)));
+            getCameraBuilder().target(
+                    AkylasMapModule.mapBoxToGoogle(AkylasMapModule
+                            .latlongFromObject(newValue)));
             break;
         case TiC.PROPERTY_MAP_TYPE:
             map.setMapType(TiConvert.toInt(newValue, GoogleMap.MAP_TYPE_NORMAL));
             break;
-            
-            
+
         default:
             super.propertySet(key, newValue, oldValue, changedProperty);
             break;
@@ -398,26 +494,25 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     LatLngBounds mCameraRegion = null;
     LatLng mCameraCenter = null;
     CameraPosition.Builder mCameraBuilder = null;
-    
+
     private CameraPosition.Builder getCameraBuilder() {
-        if (mCameraBuilder == null)
-        {
+        if (mCameraBuilder == null) {
             mProcessUpdateFlags |= TIFLAG_NEEDS_CAMERA;
             mCameraBuilder = new CameraPosition.Builder();
             if (currentCameraPosition != null) {
                 mCameraBuilder.target(currentCameraPosition.target)
-                .zoom(currentCameraPosition.zoom)
-                .tilt(currentCameraPosition.tilt)
-                .bearing(currentCameraPosition.bearing);
+                        .zoom(currentCameraPosition.zoom)
+                        .tilt(currentCameraPosition.tilt)
+                        .bearing(currentCameraPosition.bearing);
             }
         }
         return mCameraBuilder;
     }
-    
+
     private void handleCameraUpdate() {
         if (preLayout || mCameraBuilder == null)
             return;
-        
+
         if (!TiApplication.isUIThread()) {
             proxy.getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -429,7 +524,15 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         }
         boolean animate = mCameraAnimate || shouldAnimate();
         if (mCameraRegionUpdate) {
-            moveCamera(CameraUpdateFactory.newLatLngBounds(mCameraRegion, 0), animate);
+            CameraUpdate update;
+            if (regionFit) {
+                update = CameraUpdateFactory.newLatLngBounds(mCameraRegion,
+                        nativeView.getMeasuredWidth(),
+                        nativeView.getMeasuredHeight(), 0);
+            } else {
+                update = CameraUpdateFactory.newLatLngBounds(mCameraRegion, 0);
+            }
+            moveCamera(update, animate);
         } else {
             CameraPosition position = mCameraBuilder.build();
             CameraUpdate camUpdate = CameraUpdateFactory
@@ -445,64 +548,65 @@ public class AkylasMapView extends AkylasMapDefaultView implements
 
     @Override
     protected void didProcessProperties() {
-        
-         if ((mProcessUpdateFlags & TIFLAG_NEEDS_CAMERA) != 0) {
-             handleCameraUpdate();
-             mProcessUpdateFlags &= ~TIFLAG_NEEDS_CAMERA;
-         }
-         super.didProcessProperties();
+
+        if ((mProcessUpdateFlags & TIFLAG_NEEDS_CAMERA) != 0) {
+            handleCameraUpdate();
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_CAMERA;
+        }
+        super.didProcessProperties();
     }
-    
-//    public void updateCamera(HashMap<String, Object> dict,
-//            final boolean animated) {
-//        if (preLayout)
-//            return;
-//        float bearing = TiConvert.toFloat(dict, TiC.PROPERTY_BEARING, 0);
-//        float tilt = TiConvert.toFloat(dict, AkylasMapModule.PROPERTY_TILT, 0);
-//        float zoom = TiConvert.toFloat(dict, AkylasMapModule.PROPERTY_ZOOM, 0);
-//        boolean anim = animated
-//                && TiConvert.toBoolean(dict, TiC.PROPERTY_ANIMATE, true);
-//
-//        boolean regionUpdate = false;
-//        LatLngBounds region = map.getProjection().getVisibleRegion().latLngBounds;
-//        LatLng center = region.getCenter();
-//        if (dict.containsKey(TiC.PROPERTY_REGION)) {
-//            region = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
-//                    .regionFromDict(dict.get(TiC.PROPERTY_REGION)));
-//            regionUpdate = region != null;
-//        }
-//
-//        if (dict.containsKey(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
-//            center = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
-//                    .latlongFromObject(dict
-//                            .get(AkylasMapModule.PROPERTY_CENTER_COORDINATE)));
-//        }
-//
-//        CameraPosition.Builder cameraBuilder = new CameraPosition.Builder();
-//        cameraBuilder.target(center);
-//        cameraBuilder.bearing(bearing);
-//        cameraBuilder.tilt(tilt);
-//        cameraBuilder.zoom(zoom);
-//
-//        if (regionUpdate) {
-//            moveCamera(CameraUpdateFactory.newLatLngBounds(region, 0), anim);
-//        } else {
-//            CameraPosition position = cameraBuilder.build();
-//            CameraUpdate camUpdate = CameraUpdateFactory
-//                    .newCameraPosition(position);
-//            moveCamera(camUpdate, anim);
-//        }
-//    }
+
+    // public void updateCamera(HashMap<String, Object> dict,
+    // final boolean animated) {
+    // if (preLayout)
+    // return;
+    // float bearing = TiConvert.toFloat(dict, TiC.PROPERTY_BEARING, 0);
+    // float tilt = TiConvert.toFloat(dict, AkylasMapModule.PROPERTY_TILT, 0);
+    // float zoom = TiConvert.toFloat(dict, AkylasMapModule.PROPERTY_ZOOM, 0);
+    // boolean anim = animated
+    // && TiConvert.toBoolean(dict, TiC.PROPERTY_ANIMATE, true);
+    //
+    // boolean regionUpdate = false;
+    // LatLngBounds region =
+    // map.getProjection().getVisibleRegion().latLngBounds;
+    // LatLng center = region.getCenter();
+    // if (dict.containsKey(TiC.PROPERTY_REGION)) {
+    // region = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
+    // .regionFromDict(dict.get(TiC.PROPERTY_REGION)));
+    // regionUpdate = region != null;
+    // }
+    //
+    // if (dict.containsKey(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
+    // center = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
+    // .latlongFromObject(dict
+    // .get(AkylasMapModule.PROPERTY_CENTER_COORDINATE)));
+    // }
+    //
+    // CameraPosition.Builder cameraBuilder = new CameraPosition.Builder();
+    // cameraBuilder.target(center);
+    // cameraBuilder.bearing(bearing);
+    // cameraBuilder.tilt(tilt);
+    // cameraBuilder.zoom(zoom);
+    //
+    // if (regionUpdate) {
+    // moveCamera(CameraUpdateFactory.newLatLngBounds(region, 0), anim);
+    // } else {
+    // CameraPosition position = cameraBuilder.build();
+    // CameraUpdate camUpdate = CameraUpdateFactory
+    // .newCameraPosition(position);
+    // moveCamera(camUpdate, anim);
+    // }
+    // }
 
     protected void moveCamera(CameraUpdate camUpdate, boolean anim) {
-        if (map == null) return;
+        if (map == null)
+            return;
         if (anim) {
             map.animateCamera(camUpdate);
         } else {
             map.moveCamera(camUpdate);
         }
     }
-
 
     // public GoogleMap acquireMap() {
     //
@@ -547,45 +651,76 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         map.getUiSettings().setCompassEnabled(enabled);
     }
 
-//    protected void setUserLocationButtonEnabled(boolean enabled) {
-//        map.getUiSettings().setMyLocationButtonEnabled(enabled);
-//    }
+    // protected void setUserLocationButtonEnabled(boolean enabled) {
+    // map.getUiSettings().setMyLocationButtonEnabled(enabled);
+    // }
 
     public float getMaxZoomLevel() {
         if (map == null) {
-            return TiConvert.toFloat(proxy.getProperty(AkylasMapModule.PROPERTY_MAXZOOM), 0);
+            return TiConvert.toFloat(
+                    proxy.getProperty(AkylasMapModule.PROPERTY_MAXZOOM), 0);
         }
-        return map.getMaxZoomLevel();
+        FutureTask<Float> futureResult = new FutureTask<Float>(
+                new Callable<Float>() {
+                    @Override
+                    public Float call() throws Exception {
+                        return map.getMaxZoomLevel();
+                    }
+                });
+        // this block until the result is calculated!
+        getProxy().getActivity().runOnUiThread(futureResult);
+        try {
+            return futureResult.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return TiConvert.toFloat(
+                    proxy.getProperty(AkylasMapModule.PROPERTY_MAXZOOM), 0);
+        }
     }
 
     public float getMinZoomLevel() {
         if (map == null) {
-            return TiConvert.toFloat(proxy.getProperty(AkylasMapModule.PROPERTY_MINZOOM), 0);
+            return TiConvert.toFloat(
+                    proxy.getProperty(AkylasMapModule.PROPERTY_MINZOOM), 0);
         }
-        return map.getMinZoomLevel();
+
+        FutureTask<Float> futureResult = new FutureTask<Float>(
+                new Callable<Float>() {
+                    @Override
+                    public Float call() throws Exception {
+                        return map.getMinZoomLevel();
+                    }
+                });
+        // this block until the result is calculated!
+        getProxy().getActivity().runOnUiThread(futureResult);
+        try {
+            return futureResult.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return TiConvert.toFloat(
+                    proxy.getProperty(AkylasMapModule.PROPERTY_MINZOOM), 0);
+        }
     }
 
     @Override
     public float getZoomLevel() {
         if (currentCameraPosition == null) {
-            return TiConvert.toFloat(proxy.getProperty(AkylasMapModule.PROPERTY_ZOOM), 0);
+            return TiConvert.toFloat(
+                    proxy.getProperty(AkylasMapModule.PROPERTY_ZOOM), 0);
         }
         return currentCameraPosition.zoom;
     }
 
-//    protected void setMapType(int type) {
-//        map.setMapType(type);
-//    }
+    // protected void setMapType(int type) {
+    // map.setMapType(type);
+    // }
 
-//    protected void setTrafficEnabled(boolean enabled) {
-//        map.setTrafficEnabled(enabled);
-//    }
+    // protected void setTrafficEnabled(boolean enabled) {
+    // map.setTrafficEnabled(enabled);
+    // }
 
-//    protected void setZoomControlsEnabled(boolean enabled) {
-//        map.getUiSettings().setZoomControlsEnabled(enabled);
-//    }
+    // protected void setZoomControlsEnabled(boolean enabled) {
+    // map.getUiSettings().setZoomControlsEnabled(enabled);
+    // }
 
-    
     private AnnotationProxy getProxyByMarker(Marker m) {
         if (m != null) {
             for (int i = 0; i < timarkers.size(); i++) {
@@ -598,17 +733,17 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         return null;
     }
 
-//    protected void changeZoomLevel(final float level) {
-//        changeZoomLevel(level, animate);
-//    }
-//
+    // protected void changeZoomLevel(final float level) {
+    // changeZoomLevel(level, animate);
+    // }
+    //
     @Override
     protected void changeZoomLevel(final float level, final boolean animated) {
-        //handled by propertySet
-//        if (preLayout)
-//            return;
-//        CameraUpdate camUpdate = CameraUpdateFactory.zoomBy(level);
-//        moveCamera(camUpdate, animated);
+        // handled by propertySet
+        // if (preLayout)
+        // return;
+        // CameraUpdate camUpdate = CameraUpdateFactory.zoomBy(level);
+        // moveCamera(camUpdate, animated);
     }
 
     protected void fireEventOnMap(String type, LatLng point) {
@@ -618,12 +753,13 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         d.put(TiC.PROPERTY_LATITUDE, point.latitude);
         d.put(TiC.PROPERTY_LONGITUDE, point.longitude);
         d.put(TiC.PROPERTY_REGION, getRegionDict());
+        d.put(AkylasMapModule.PROPERTY_ZOOM, currentCameraPosition.zoom);
         d.put(AkylasMapModule.PROPERTY_MAP, proxy);
         fireEvent(type, d, false, false);
     }
 
     public void fireLongClickEvent(LatLng point) {
-        fireEventOnMap(TiC.EVENT_LONGCLICK, point);
+        fireEventOnMap(TiC.EVENT_LONGPRESS, point);
     }
 
     public void fireClickEvent(final Marker marker, final String source) {
@@ -754,6 +890,8 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     }
 
     public void infoWindowDidClose(AkylasMapInfoView infoView) {
+        if (infoView == null)
+            return;
         if (_calloutUsesTemplates) {
             Object view = infoView.getLeftView();
             if (view != null && view instanceof TiCompositeLayout) {
@@ -793,22 +931,27 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             // we don't fire event when region is set initially
             preLayout = false;
             handleCameraUpdate();
-        } else if (proxy != null && map != null && proxy.hasListeners(TiC.EVENT_REGION_CHANGED, false)) {
-            LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
-            KrollDict result = new KrollDict();
-            result.put(TiC.PROPERTY_REGION,
-                    AkylasMapModule.regionToDict(bounds));
-            result.put(AkylasMapModule.PROPERTY_ZOOM, position.zoom);
-            proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result, false, false);
+        } else if (map != null) {
+            for (RouteProxy route : addedRoutes) {
+                route.onMapCameraChange(map, position);
+            }
+            if (proxy != null
+                    && proxy.hasListeners(TiC.EVENT_REGION_CHANGED, false)) {
+                LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
+                KrollDict result = new KrollDict();
+                result.put(TiC.PROPERTY_REGION,
+                        AkylasMapModule.regionToDict(bounds));
+                result.put(AkylasMapModule.PROPERTY_ZOOM, position.zoom);
+                proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result, false, false);
+            }
         }
     }
 
     @Override
     public boolean onMyLocationButtonClick() {
-        if (proxy.hasListeners(AkylasMapModule.EVENT_LOCATION_BUTTON,
-                false)) {
-            proxy.fireEvent(AkylasMapModule.EVENT_LOCATION_BUTTON, null,
-                    false, false);
+        if (proxy.hasListeners(AkylasMapModule.EVENT_LOCATION_BUTTON, false)) {
+            proxy.fireEvent(AkylasMapModule.EVENT_LOCATION_BUTTON, null, false,
+                    false);
         }
         return false;
     }
@@ -857,28 +1000,47 @@ public class AkylasMapView extends AkylasMapDefaultView implements
 
             @Override
             public void onSnapshotReady(Bitmap snapshot) {
-                TiBlob sblob = TiBlob.blobFromObject(snapshot);
-                KrollDict data = new KrollDict();
-                data.put("snapshot", sblob);
-                data.put("source", proxy);
-                proxy.fireEvent(AkylasMapModule.EVENT_ON_SNAPSHOT_READY, data);
+                if (proxy.hasListeners(AkylasMapModule.EVENT_ON_SNAPSHOT_READY, false)) {
+                    TiBlob sblob = TiBlob.blobFromObject(snapshot);
+                    KrollDict data = new KrollDict();
+                    data.put("snapshot", sblob);
+                    data.put("source", proxy);
+                    proxy.fireEvent(AkylasMapModule.EVENT_ON_SNAPSHOT_READY,
+                            data, false, false);
+                }
             }
         });
     }
 
     @Override
     public void onMapLoaded() {
-        proxy.fireEvent(TiC.EVENT_COMPLETE, null);
+        if (proxy.hasListeners(TiC.EVENT_COMPLETE, false)) {
+            proxy.fireEvent(TiC.EVENT_COMPLETE, null, false, false);
+        }
     }
 
     @Override
     public KrollDict getUserLocation() {
-        return AkylasMapModule.locationToDict(map.getMyLocation());
+        if (!getUserLocationEnabled()) {
+            return null;
+        }
+        if (TiApplication.isUIThread()) {
+            return AkylasMapModule.locationToDict(map.getMyLocation());
+        } else {
+            return AkylasMapModule.locationToDict((Location) TiMessenger
+                    .sendBlockingMainMessage(mainHandler
+                            .obtainMessage(MSG_GET_MYLOCATION)));
+        }
     }
 
     @Override
     boolean getUserLocationEnabled() {
-        return map.isMyLocationEnabled();
+        if (TiApplication.isUIThread()) {
+            return map.isMyLocationEnabled();
+        } else {
+            return (Boolean) TiMessenger.sendBlockingMainMessage(mainHandler
+                    .obtainMessage(MSG_GET_MYLOCATION_ENABLED));
+        }
     }
 
     @Override
@@ -900,116 +1062,116 @@ public class AkylasMapView extends AkylasMapDefaultView implements
      * updates from the Location Manager and for that reason we need to also
      * implement the LocationListener interface.
      */
-//    private class FollowMeLocationSource implements LocationSource,
-//            LocationListener {
-//
-//        private OnLocationChangedListener mListener;
-//        private LocationManager locationManager;
-//        private final Criteria criteria = new Criteria();
-//        private String bestAvailableProvider;
-//        /*
-//         * Updates are restricted to one every 10 seconds, and only when
-//         * movement of more than 10 meters has been detected.
-//         */
-//        private final int minTime = 10000; // minimum time interval between
-//                                           // location updates, in milliseconds
-//        private final int minDistance = 10; // minimum distance between location
-//                                            // updates, in meters
-//        private boolean withBearing = false;
-//
-//        private FollowMeLocationSource() {
-//            // Get reference to Location Manager
-//
-//            locationManager = (LocationManager) proxy.getActivity()
-//                    .getSystemService(Context.LOCATION_SERVICE);
-//
-//            // Specify Location Provider criteria
-//            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-//            criteria.setPowerRequirement(Criteria.POWER_LOW);
-//            criteria.setAltitudeRequired(true);
-//            criteria.setBearingRequired(true);
-//            criteria.setSpeedRequired(true);
-//            criteria.setCostAllowed(true);
-//        }
-//
-//        public void setBearingEnabled(final boolean value) {
-//            withBearing = value;
-//        }
-//
-//        private void getBestAvailableProvider() {
-//            /*
-//             * The preffered way of specifying the location provider (e.g. GPS,
-//             * NETWORK) to use is to ask the Location Manager for the one that
-//             * best satisfies our criteria. By passing the 'true' boolean we ask
-//             * for the best available (enabled) provider.
-//             */
-//            bestAvailableProvider = locationManager.getBestProvider(criteria,
-//                    true);
-//        }
-//
-//        /*
-//         * Activates this provider. This provider will notify the supplied
-//         * listener periodically, until you call deactivate(). This method is
-//         * automatically invoked by enabling my-location layer.
-//         */
-//        @Override
-//        public void activate(OnLocationChangedListener listener) {
-//            // We need to keep a reference to my-location layer's listener so we
-//            // can push forward
-//            // location updates to it when we receive them from Location
-//            // Manager.
-//            mListener = listener;
-//
-//            // Request location updates from Location Manager
-//            if (bestAvailableProvider != null) {
-//                locationManager.requestLocationUpdates(bestAvailableProvider,
-//                        minTime, minDistance, this);
-//            } else {
-//                // (Display a message/dialog) No Location Providers currently
-//                // available.
-//            }
-//        }
-//
-//        /*
-//         * Deactivates this provider. This method is automatically invoked by
-//         * disabling my-location layer.
-//         */
-//        @Override
-//        public void deactivate() {
-//            // Remove location updates from Location Manager
-//            locationManager.removeUpdates(this);
-//
-//            mListener = null;
-//        }
-//
-//        @Override
-//        public void onLocationChanged(Location location) {
-//            /*
-//             * Push location updates to the registered listener.. (this ensures
-//             * that my-location layer will set the blue dot at the new/received
-//             * location)
-//             */
-//            if (mListener != null) {
-//                mListener.onLocationChanged(location);
-//            }
-//
-//        }
-//
-//        @Override
-//        public void onStatusChanged(String s, int i, Bundle bundle) {
-//
-//        }
-//
-//        @Override
-//        public void onProviderEnabled(String s) {
-//
-//        }
-//
-//        @Override
-//        public void onProviderDisabled(String s) {
-//
-//        }
-//    }
+    // private class FollowMeLocationSource implements LocationSource,
+    // LocationListener {
+    //
+    // private OnLocationChangedListener mListener;
+    // private LocationManager locationManager;
+    // private final Criteria criteria = new Criteria();
+    // private String bestAvailableProvider;
+    // /*
+    // * Updates are restricted to one every 10 seconds, and only when
+    // * movement of more than 10 meters has been detected.
+    // */
+    // private final int minTime = 10000; // minimum time interval between
+    // // location updates, in milliseconds
+    // private final int minDistance = 10; // minimum distance between location
+    // // updates, in meters
+    // private boolean withBearing = false;
+    //
+    // private FollowMeLocationSource() {
+    // // Get reference to Location Manager
+    //
+    // locationManager = (LocationManager) proxy.getActivity()
+    // .getSystemService(Context.LOCATION_SERVICE);
+    //
+    // // Specify Location Provider criteria
+    // criteria.setAccuracy(Criteria.ACCURACY_FINE);
+    // criteria.setPowerRequirement(Criteria.POWER_LOW);
+    // criteria.setAltitudeRequired(true);
+    // criteria.setBearingRequired(true);
+    // criteria.setSpeedRequired(true);
+    // criteria.setCostAllowed(true);
+    // }
+    //
+    // public void setBearingEnabled(final boolean value) {
+    // withBearing = value;
+    // }
+    //
+    // private void getBestAvailableProvider() {
+    // /*
+    // * The preffered way of specifying the location provider (e.g. GPS,
+    // * NETWORK) to use is to ask the Location Manager for the one that
+    // * best satisfies our criteria. By passing the 'true' boolean we ask
+    // * for the best available (enabled) provider.
+    // */
+    // bestAvailableProvider = locationManager.getBestProvider(criteria,
+    // true);
+    // }
+    //
+    // /*
+    // * Activates this provider. This provider will notify the supplied
+    // * listener periodically, until you call deactivate(). This method is
+    // * automatically invoked by enabling my-location layer.
+    // */
+    // @Override
+    // public void activate(OnLocationChangedListener listener) {
+    // // We need to keep a reference to my-location layer's listener so we
+    // // can push forward
+    // // location updates to it when we receive them from Location
+    // // Manager.
+    // mListener = listener;
+    //
+    // // Request location updates from Location Manager
+    // if (bestAvailableProvider != null) {
+    // locationManager.requestLocationUpdates(bestAvailableProvider,
+    // minTime, minDistance, this);
+    // } else {
+    // // (Display a message/dialog) No Location Providers currently
+    // // available.
+    // }
+    // }
+    //
+    // /*
+    // * Deactivates this provider. This method is automatically invoked by
+    // * disabling my-location layer.
+    // */
+    // @Override
+    // public void deactivate() {
+    // // Remove location updates from Location Manager
+    // locationManager.removeUpdates(this);
+    //
+    // mListener = null;
+    // }
+    //
+    // @Override
+    // public void onLocationChanged(Location location) {
+    // /*
+    // * Push location updates to the registered listener.. (this ensures
+    // * that my-location layer will set the blue dot at the new/received
+    // * location)
+    // */
+    // if (mListener != null) {
+    // mListener.onLocationChanged(location);
+    // }
+    //
+    // }
+    //
+    // @Override
+    // public void onStatusChanged(String s, int i, Bundle bundle) {
+    //
+    // }
+    //
+    // @Override
+    // public void onProviderEnabled(String s) {
+    //
+    // }
+    //
+    // @Override
+    // public void onProviderDisabled(String s) {
+    //
+    // }
+    // }
 
     private AkylasMapModule.TrackingMode mUserTrackingMode = AkylasMapModule.TrackingMode.NONE;
 
@@ -1017,56 +1179,57 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     void setUserTrackingMode(int value) {
         mUserTrackingMode = AkylasMapModule.TrackingMode.values()[value];
         setShouldFollowUserLocation(true);
-//        switch (mUserTrackingMode) {
-//        case NONE:
-//            followMeLocationSource.deactivate();
-//            map.setLocationSource(null);
-//            break;
-//        case FOLLOW:
-//            map.setMyLocationEnabled(true);
-//            map.setLocationSource(followMeLocationSource);
-//            followMeLocationSource.setBearingEnabled(false);
-//            followMeLocationSource.activate(this);
-//            break;
-//        case FOLLOW_BEARING:
-//            map.setMyLocationEnabled(true);
-//            map.setLocationSource(followMeLocationSource);
-//            followMeLocationSource.setBearingEnabled(true);
-//            followMeLocationSource.activate(this);
-//            break;
-//        default:
-//            break;
-//        }
+        // switch (mUserTrackingMode) {
+        // case NONE:
+        // followMeLocationSource.deactivate();
+        // map.setLocationSource(null);
+        // break;
+        // case FOLLOW:
+        // map.setMyLocationEnabled(true);
+        // map.setLocationSource(followMeLocationSource);
+        // followMeLocationSource.setBearingEnabled(false);
+        // followMeLocationSource.activate(this);
+        // break;
+        // case FOLLOW_BEARING:
+        // map.setMyLocationEnabled(true);
+        // map.setLocationSource(followMeLocationSource);
+        // followMeLocationSource.setBearingEnabled(true);
+        // followMeLocationSource.activate(this);
+        // break;
+        // default:
+        // break;
+        // }
     }
 
     @Override
     void updateCenter(Object dict, boolean animated) {
-        //handled by propertySet
-//        LatLng center = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
-//                .latlongFromObject(dict));
-//        if (center != null) {
-//            if (preLayout)
-//                return;
-//            CameraPosition.Builder cameraBuilder = new CameraPosition.Builder();
-//            cameraBuilder.target(center);
-//            CameraPosition position = cameraBuilder.build();
-//            CameraUpdate camUpdate = CameraUpdateFactory
-//                    .newCameraPosition(position);
-//            moveCamera(camUpdate, animated);
-//
-//        }
+        // handled by propertySet
+        // LatLng center = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
+        // .latlongFromObject(dict));
+        // if (center != null) {
+        // if (preLayout)
+        // return;
+        // CameraPosition.Builder cameraBuilder = new CameraPosition.Builder();
+        // cameraBuilder.target(center);
+        // CameraPosition position = cameraBuilder.build();
+        // CameraUpdate camUpdate = CameraUpdateFactory
+        // .newCameraPosition(position);
+        // moveCamera(camUpdate, animated);
+        //
+        // }
     }
-//
+
+    //
     @Override
     void updateRegion(Object dict, boolean animated) {
-        //handled by propertySet
-//        LatLngBounds region = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
-//                .regionFromDict(dict));
-//        if (region != null) {
-//            if (preLayout)
-//                return;
-//            moveCamera(CameraUpdateFactory.newLatLngBounds(region, 0), animated);
-//        }
+        // handled by propertySet
+        // LatLngBounds region = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
+        // .regionFromDict(dict));
+        // if (region != null) {
+        // if (preLayout)
+        // return;
+        // moveCamera(CameraUpdateFactory.newLatLngBounds(region, 0), animated);
+        // }
     }
 
     @Override
@@ -1080,7 +1243,8 @@ public class AkylasMapView extends AkylasMapDefaultView implements
 
     @Override
     void zoomIn() {
-        float currentZoom = (currentCameraPosition != null)?currentCameraPosition.zoom:0;
+        float currentZoom = (currentCameraPosition != null) ? currentCameraPosition.zoom
+                : 0;
         float targetZoom = (float) (Math.ceil(currentZoom) + 1);
         float factor = (float) Math.pow(2, targetZoom - currentZoom);
 
@@ -1097,7 +1261,8 @@ public class AkylasMapView extends AkylasMapDefaultView implements
 
     @Override
     void zoomOut() {
-        float currentZoom = (currentCameraPosition != null)?currentCameraPosition.zoom:0;
+        float currentZoom = (currentCameraPosition != null) ? currentCameraPosition.zoom
+                : 0;
         float targetZoom = (float) (Math.floor(currentZoom));
         float factor = (float) Math.pow(2, targetZoom - currentZoom);
 
@@ -1112,9 +1277,18 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         zoomOut();
     }
 
+    private Projection getProjection() {
+        if (TiApplication.isUIThread()) {
+            return map.getProjection();
+        } else {
+            return (Projection) TiMessenger.sendBlockingMainMessage(mainHandler
+                    .obtainMessage(MSG_GET_PROJECTION));
+        }
+    }
+
     @Override
     KrollDict getRegionDict() {
-        LatLngBounds region = map.getProjection().getVisibleRegion().latLngBounds;
+        LatLngBounds region = getProjection().getVisibleRegion().latLngBounds;
         return AkylasMapModule.regionToDict(region);
     }
 
@@ -1129,17 +1303,53 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     }
 
     @Override
-    void handleAddRoute(RouteProxy route) {
-        route.setPolyline(map.addPolyline(route.getAndSetOptions()));
+    void handleAddRoute(final RouteProxy route) {
+        if (map == null) {
+            return;
+        }
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    handleAddRoute(route);
+                }
+            });
+            return;
+        }
+        route.setPolyline(map.addPolyline(route
+                .getAndSetOptions(currentCameraPosition)));
+        addedRoutes.add(route);
     }
 
     @Override
-    void handleRemoveRoute(RouteProxy route) {
+    void handleRemoveRoute(final RouteProxy route) {
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    handleRemoveRoute(route);
+                }
+            });
+            return;
+        }
         route.removePolyline();
+        addedRoutes.remove(route);
     }
 
     @Override
-    void handleAddAnnotation(AnnotationProxy annotation) {
+    void handleAddAnnotation(final AnnotationProxy annotation) {
+        if (map == null) {
+            return;
+        }
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    handleAddAnnotation(annotation);
+                }
+            });
+            return;
+        }
         AkylasMarker marker = annotation.getMarker();
         if (marker != null) {
             // already in
@@ -1148,6 +1358,10 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         annotation.setMapView(this);
         GoogleMapMarker gMarker = new GoogleMapMarker(annotation);
         Marker googlemarker = map.addMarker(gMarker.getMarkerOptions());
+        // we need to set the position again because addMarker can be long and
+        // position might already have changed
+        googlemarker.setPosition(AkylasMapModule.mapBoxToGoogle(annotation
+                .getPosition()));
         gMarker.setMarker(googlemarker);
         annotation.setMarker(gMarker);
         annotation.setParentForBubbling(this.proxy);
@@ -1155,7 +1369,16 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     }
 
     @Override
-    void handleRemoveMarker(AkylasMarker marker) {
+    void handleRemoveMarker(final AkylasMarker marker) {
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    handleRemoveMarker(marker);
+                }
+            });
+            return;
+        }
         ((GoogleMapMarker) marker).removeFromMap();
         timarkers.remove(marker);
         AnnotationProxy annotation = marker.getProxy();
@@ -1168,7 +1391,48 @@ public class AkylasMapView extends AkylasMapDefaultView implements
 
     @Override
     protected void removeAllAnnotations() {
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    removeAllAnnotations();
+                }
+            });
+            return;
+        }
         map.clear();
+    }
+
+    protected void removeAllRoutes() {
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    removeAllRoutes();
+                }
+            });
+            return;
+        }
+        for (RouteProxy route : addedRoutes) {
+            route.removePolyline();
+        }
+        addedRoutes.clear();
+    }
+
+    protected void removeAllTileSources() {
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    removeAllTileSources();
+                }
+            });
+            return;
+        }
+        for (TileSourceProxy tileSource : addedTileSources) {
+            tileSource.release();
+        }
+        addedTileSources.clear();
     }
 
     @Override
@@ -1183,7 +1447,8 @@ public class AkylasMapView extends AkylasMapDefaultView implements
                 cameraBuilder.bearing(location.getBearing());
             }
 
-            float currentZoom = (currentCameraPosition != null)?currentCameraPosition.zoom:0;
+            float currentZoom = (currentCameraPosition != null) ? currentCameraPosition.zoom
+                    : 0;
             if (currentZoom < mRequiredZoomLevel) {
                 if (location.hasAccuracy()) {
                     // approx meterPerDegree latitude, plus some margin
@@ -1228,7 +1493,7 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             d.put(TiC.PROPERTY_TIMESTAMP, location.getTime());
             d.put(TiC.PROPERTY_REGION, getRegionDict());
             d.put(AkylasMapModule.PROPERTY_MAP, proxy);
-            proxy.fireEvent(TiC.EVENT_LOCATION, d);
+            proxy.fireEvent(TiC.EVENT_LOCATION, d, false, false);
         }
     }
 
@@ -1252,6 +1517,7 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             if (options != null) {
                 sourceProxy.setTileOverlay(map.addTileOverlay(options
                         .zIndex(index)));
+                addedTileSources.add(sourceProxy);
             }
             return sourceProxy;
         }
@@ -1262,15 +1528,17 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     public void removeTileSource(Object object) {
         if (object instanceof TileSourceProxy) {
             ((TileSourceProxy) object).release();
+            addedTileSources.remove(object);
         }
     }
 
     void updateCamera(final KrollDict props) {
-        if (props == null) return;
+        if (props == null)
+            return;
         if (preLayout || map == null) {
             props.remove(TiC.PROPERTY_ANIMATE);
-            if (!props.containsKey(TiC.PROPERTY_REGION) && 
-                    props.containsKey(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
+            if (!props.containsKey(TiC.PROPERTY_REGION)
+                    && props.containsKey(AkylasMapModule.PROPERTY_CENTER_COORDINATE)) {
                 props.put(TiC.PROPERTY_REGION, null);
             }
             proxy.applyProperties(props);
@@ -1285,8 +1553,9 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             });
             return;
         }
-        
-        mCameraAnimate = TiConvert.toBoolean(props, TiC.PROPERTY_ANIMATE, shouldAnimate());
+
+        mCameraAnimate = TiConvert.toBoolean(props, TiC.PROPERTY_ANIMATE,
+                shouldAnimate());
         processApplyProperties(props);
     }
 }

@@ -51,23 +51,23 @@
 @property (nonatomic, assign) CGPoint defaultPinAnchor;
 @property (nonatomic, assign) CGPoint defaultCalloutAnchor;
 
-#pragma mark Private APIs
--(AkylasMapAnnotationProxy*)annotationFromArg:(id)arg;
--(NSArray*)annotationsFromArgs:(id)value;
-
-
 #pragma mark Public APIs
--(void)addAnnotation:(id)args;
--(void)addAnnotations:(id)args;
--(void)setAnnotations_:(id)value;
+-(void)updateCamera:(id)args;
+-(void)zoomTo:(id)args;
+
+-(void)addAnnotation:(id)args atIndex:(NSInteger)index;
 -(void)removeAnnotation:(id)args;
--(void)removeAnnotations:(id)args;
 -(void)removeAllAnnotations;
 -(void)selectAnnotation:(id)args;
 -(void)deselectAnnotation:(id)args;
--(void)zoomTo:(id)args;
--(void)addRoute:(id)args;
+
+-(void)addRoute:(id)args atIndex:(NSInteger)index;
 -(void)removeRoute:(id)args;
+-(void)removeAllRoutes;
+
+-(void)addTileSource:(id)args atIndex:(NSInteger)index;
+-(void)removeTileSource:(id)args;
+-(void)removeAllTileSources;
 
 #pragma mark Framework
 -(void)refreshAnnotation:(AkylasMapAnnotationProxy*)proxy readd:(BOOL)yn;

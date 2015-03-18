@@ -28,10 +28,15 @@
 	BOOL placed;
 	CGPoint offset;
     
+    
     //Mapbox
     RMAnnotation* _rmannotation;
     RMMarker* _marker;
     RMMarkerMapboxImageSize _size;
+    
+    //MKMapView
+    MKPinAnnotationColor _pinColor;
+    MKAnnotationView* _annView;
 }
 
 // Center latitude and longitude of the annotion view.
@@ -57,6 +62,7 @@
 -(RMAnnotation*)getRMAnnotation;
 
 //native
+@property (nonatomic, readwrite, retain) MKAnnotationView *annView;
 - (int)tag;
 - (int)mapPincolor;
 - (BOOL)animatesDrop;
@@ -71,5 +77,6 @@
 -(CGPoint)nGetCalloutAnchorPoint;
 -(CGFloat)nGetCalloutAlpha;
 -(UIImage*)nGetInternalImage;
+-(BOOL)nHasInternalImage;
 
 @end

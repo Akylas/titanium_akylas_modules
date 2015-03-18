@@ -67,6 +67,7 @@ abstract class AkylasMarker  {
 
     abstract void hideInfoWindow();
     abstract void setPosition(double latitude, double longitude);
+    abstract void setPosition(double latitude, double longitude, double altitude);
     abstract void setDraggable(final boolean draggable);
     abstract void setAnchor(final PointF anchor);
     abstract void setWindowAnchor(final PointF anchor);

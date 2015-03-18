@@ -14,6 +14,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.location.Location;
 import android.view.MotionEvent;
+import android.view.View;
 
 import com.mapbox.mapboxsdk.api.ILatLng;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
@@ -106,9 +107,9 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     }
 
     @Override
-    public boolean customInterceptTouchEvent(MotionEvent event) {
+    public boolean onTouch(View v, MotionEvent event) {
         // to prevent double events
-        return super.customInterceptTouchEvent(event);
+        return super.onTouch(v, event);
     }
 
     public KrollDict getUserLocation() {
@@ -146,8 +147,14 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
       tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR);
       tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR);
       tmp.add(0, AkylasMapModule.PROPERTY_DISK_CACHE);
+      tmp.add(0, AkylasMapModule.PROPERTY_REGION_FIT);
       tmp.add(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM);
       KEY_SEQUENCE = tmp;
+    }
+    
+    @Override
+    protected ArrayList<String> keySequence() {
+        return KEY_SEQUENCE;
     }
     
     @Override
@@ -675,11 +682,12 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
 
     @Override
     public void onCameraChange(BoundingBox box, float zoom) {
-        if (proxy != null) {
+        if (proxy != null
+                && proxy.hasListeners(TiC.EVENT_REGION_CHANGED, false)) {
             KrollDict result = new KrollDict();
             result.put(TiC.PROPERTY_REGION, AkylasMapModule.regionToDict(box));
             result.put(AkylasMapModule.PROPERTY_ZOOM, zoom);
-            proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result);
+            proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result, false, false);
         }
         
     }

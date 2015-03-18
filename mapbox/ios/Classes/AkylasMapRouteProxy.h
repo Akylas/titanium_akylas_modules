@@ -1,6 +1,10 @@
 #import "AkylasMapAnnotationProxy.h"
 #import "AkylasMKOverlayPathUniversal.h"
 
+@interface RMRouteAnnotation : RMShapeAnnotation
+@end
+
+
 @class AkylasMapMapView;
 @interface AkylasMapRouteProxy : AkylasMapAnnotationProxy {
 }

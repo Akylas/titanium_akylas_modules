@@ -12,17 +12,4 @@
 	
 }
 
-
--(AkylasMapAnnotationProxy*)annotationFromArg:(id)arg;
-
--(void)addAnnotation:(id)args;
--(void)addAnnotations:(id)args;
--(void)removeAnnotation:(id)args;
--(void)removeAnnotations:(id)args;
--(void)removeAllAnnotations:(id)args;
--(void)selectAnnotation:(id)args;
--(void)deselectAnnotation:(id)args;
--(void)addRoute:(id)args;
--(void)removeRoute:(id)args;
-
 @end

@@ -7,8 +7,9 @@
 //
 
 #import "AkylasMapMapboxView.h"
-#import "AkylasTileSource.h"
+#import "AkylasMapboxTileSource.h"
 #import "AkylasMapAnnotationProxy.h"
+#import "AkylasMapRouteProxy.h"
 #import "AkylasMapModule.h"
 #import <Mapbox/SMCalloutView.h>
 #import "NetworkModule.h"
@@ -17,7 +18,7 @@
 @implementation AkylasMapMapboxView
 {
     RMMapView *map;
-    NSMutableArray *_tileSources;
+//    NSMutableArray *_tileSources;
     RMStackTileSource* _tileSourceContainer;
     BOOL _userStackTileSource;
     BOOL _needsRegionUpdate;
@@ -33,14 +34,14 @@
 }
 
 
--(void)clearTileSources {
-    if (_tileSources) {
-        for ( AkylasMapTileSourceProxy* tileSource in _tileSources) {
-            [self.proxy forgetProxy:tileSource];
-        }
-        RELEASE_TO_NIL(_tileSources)
-    }
-}
+//-(void)clearTileSources {
+//    if (_tileSources) {
+//        for ( AkylasMapTileSourceProxy* tileSource in _tileSources) {
+//            [self.proxy forgetProxy:tileSource];
+//        }
+//        RELEASE_TO_NIL(_tileSources)
+//    }
+//}
 
 -(void)dealloc
 {
@@ -50,7 +51,7 @@
 		RELEASE_TO_NIL(map);
         [[NSNotificationCenter defaultCenter] removeObserver:self name:kTiNetworkChangedNotification object:nil];
 	}
-    [self clearTileSources];
+//    [self clearTileSources];
 	[super dealloc];
 }
 
@@ -144,7 +145,7 @@
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0.0 * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             
-            [map zoomWithLatitudeLongitudeBoundsSouthWest:region.southWest northEast:region.northEast regionFit:regionFits animated:NO];
+            [map zoomWithLatitudeLongitudeBoundsSouthWest:region.southWest northEast:region.northEast regionFit:regionFits animated:NO roundOutZoom:YES];
         });
         
     }
@@ -196,7 +197,7 @@
 }
 
 
--(void)internalAddAnnotations:(id)annotations
+-(void)internalAddAnnotations:(id)annotations atIndex:(NSInteger)index
 {
     RMMapView* mapView = [self map];
     if ([annotations isKindOfClass:[NSArray class]]) {
@@ -231,6 +232,23 @@
     RMMapView* mapView = [self map];
     [mapView removeAllAnnotations];
 }
+
+-(void)internalAddRoutes:(id)routes atIndex:(NSInteger)index
+{
+    [self internalAddAnnotations:routes atIndex:index];
+}
+
+-(void)internalRemoveRoutes:(id)routes
+{
+    [self internalRemoveAnnotations:routes];
+}
+
+-(void)internalRemoveAllRoutes
+{
+    RMMapView* mapView = [self map];
+    [mapView removeAllAnnotationsOfClass:[RMRouteAnnotation class]];
+}
+
 
 -(void)setSelectedAnnotation:(AkylasMapAnnotationProxy*)annotation
 {
@@ -277,34 +295,34 @@
     }
 }
 
--(NSMutableArray*) setTileSourcesFromProp:(id)arg
-{
-    [self clearTileSources];
-    
-    
-    NSMutableArray* result = nil;
-    if ([arg isKindOfClass:[NSArray class]]) {
-        _tileSources =  [[NSMutableArray arrayWithCapacity:[arg count]] retain];
-        result =  [NSMutableArray arrayWithCapacity:[arg count]];
-        for (id source in arg) {
-            AkylasMapTileSourceProxy* tileSource = [AkylasTileSource tileSourceProxyWithSource:source proxyForSourceURL:self.proxy];
-            if (tileSource) {
-                [self.proxy rememberProxy:tileSource];
-                [_tileSources addObject:tileSource];
-                [result addObject:[tileSource.tileSource tileSource]];
-            }
-        }
-    }
-    else {
-        AkylasMapTileSourceProxy* tileSource = [AkylasTileSource tileSourceProxyWithSource:arg proxyForSourceURL:self.proxy];
-        if (tileSource)  {
-            [self.proxy rememberProxy:tileSource];
-            _tileSources =  [[NSMutableArray arrayWithObject:tileSource] retain];
-            result = [NSMutableArray arrayWithObject:[tileSource.tileSource tileSource]];
-        }
-    }
-    return result;
-}
+//-(NSMutableArray*) setTileSourcesFromProp:(id)arg
+//{
+//    [self clearTileSources];
+//    
+//    
+//    NSMutableArray* result = nil;
+//    if ([arg isKindOfClass:[NSArray class]]) {
+//        _tileSources =  [[NSMutableArray arrayWithCapacity:[arg count]] retain];
+//        result =  [NSMutableArray arrayWithCapacity:[arg count]];
+//        for (id source in arg) {
+//            AkylasMapTileSourceProxy* tileSource = [AkylasTileSource tileSourceProxyWithSource:source proxyForSourceURL:self.proxy];
+//            if (tileSource) {
+//                [self.proxy rememberProxy:tileSource];
+//                [_tileSources addObject:tileSource];
+//                [result addObject:[tileSource.tileSource tileSource]];
+//            }
+//        }
+//    }
+//    else {
+//        AkylasMapTileSourceProxy* tileSource = [AkylasTileSource tileSourceProxyWithSource:arg proxyForSourceURL:self.proxy];
+//        if (tileSource)  {
+//            [self.proxy rememberProxy:tileSource];
+//            _tileSources =  [[NSMutableArray arrayWithObject:tileSource] retain];
+//            result = [NSMutableArray arrayWithObject:[tileSource.tileSource tileSource]];
+//        }
+//    }
+//    return result;
+//}
 
 
 -(void)zoomTo:(id)args
@@ -350,7 +368,7 @@
 		region = [AkylasMapModule regionFromDict:value];
         map.userTrackingMode = RMUserTrackingModeNone;
         if ([(TiViewProxy*)[self proxy] viewLayedOut]) {
-            [map zoomWithLatitudeLongitudeBoundsSouthWest:region.southWest northEast:region.northEast regionFit:regionFits animated:[self shouldAnimate]];
+            [map zoomWithLatitudeLongitudeBoundsSouthWest:region.southWest northEast:region.northEast regionFit:regionFits animated:[self shouldAnimate] roundOutZoom:YES];
         }
         else {
             _needsRegionUpdate = YES;
@@ -498,66 +516,73 @@
     return _tileSourceContainer;
 }
 
--(void)setTileSource_:(id)value
-{
-    if (_userStackTileSource) {
-        [[self getTileSourceContainer] setTileSources:[self setTileSourcesFromProp:value]];
-        if ([[[self map] tileSources] count] == 0) {
-            [[self map] setTileSource:_tileSourceContainer];
-        }
-    }
-    else {
-        [[self map] setTileSources:[[[self setTileSourcesFromProp:value] reverseObjectEnumerator] allObjects]];
-    }
-}
+//-(void)setTileSource_:(id)value
+//{
+//    if (_userStackTileSource) {
+//        [[self getTileSourceContainer] setTileSources:[self setTileSourcesFromProp:value]];
+//        if ([[[self map] tileSources] count] == 0) {
+//            [[self map] setTileSource:_tileSourceContainer];
+//        }
+//    }
+//    else {
+//        [[self map] setTileSources:[[[self setTileSourcesFromProp:value] reverseObjectEnumerator] allObjects]];
+//    }
+//}
 
-- (BOOL)addTileSource:(AkylasMapTileSourceProxy*)tileSource
-{
-    [self addTileSource:tileSource atIndex:-1];
-}
+//- (BOOL)addTileSource:(AkylasMapTileSourceProxy*)tileSource
+//{
+//    [self addTileSource:tileSource atIndex:-1];
+//}
 
-- (BOOL)addTileSource:(AkylasMapTileSourceProxy*)tileSource atIndex:(NSInteger)index
+- (BOOL)internalAddTileSources:(id)tileSource atIndex:(NSInteger)index
 {
-    if (_tileSources) {
-        if (index < 0 || index >= [_tileSources count]) {
-            [_tileSources addObject:tileSource];
-        }
-        else {
-            [_tileSources insertObject:tileSource atIndex:index];
-        }
+    __block NSInteger realIndex = index;
+    if (realIndex == -1) {
+        realIndex = INT_MAX;
     }
-    else {
-        _tileSources = [[NSMutableArray arrayWithObject:tileSource] retain];
-    }
-    if (_userStackTileSource) {
-        [[self getTileSourceContainer] addTileSource:[[tileSource tileSource] tileSource] atIndex:index];
-        if ([[[self map] tileSources] count] == 0) {
-            [[self map] setTileSource:_tileSourceContainer];
-        }
-    }
-    else {
-        if (index == -1) {
-            index = 0;
-        }
-        else {
-            index = [_tileSources count] - index - 1;
-        }
-        [[self map] addTileSource:[[tileSource tileSource] tileSource] atIndex:index];
-    }
-    
-}
-
-- (BOOL)removeTileSource:(AkylasMapTileSourceProxy*)tileSource
-{
-    if (_tileSources) {
-        [_tileSources removeObject:tileSource];
-    }
-    if (_userStackTileSource) {
-        [_tileSourceContainer removeTileSource:[[tileSource tileSource] tileSource]];
+    if (IS_OF_CLASS(tileSource, NSArray)) {
+        [tileSource enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [self internalAddTileSources:obj atIndex:realIndex++];
+        }];
     } else {
-        [[self map] removeTileSource:[[tileSource tileSource] tileSource]];
+        if (_userStackTileSource) {
+            [[self getTileSourceContainer] addTileSource:[[(AkylasMapTileSourceProxy*)tileSource mpTileSource] tileSource] atIndex:realIndex];
+            if ([[[self map] tileSources] count] == 0) {
+                [[self map] setTileSource:_tileSourceContainer];
+            }
+        } else {
+            [[self map] addTileSource:[[(AkylasMapTileSourceProxy*)tileSource mpTileSource] tileSource] atIndex:realIndex];
+        }
     }
 }
+
+- (BOOL)internalRemoveTileSources:(id)tileSource
+{
+    if (IS_OF_CLASS(tileSource, NSArray)) {
+        [tileSource enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [self internalRemoveTileSources:obj];
+        }];
+    } else {
+        if (_userStackTileSource) {
+            [_tileSourceContainer removeTileSource:[[(AkylasMapTileSourceProxy*)tileSource mpTileSource] tileSource]];
+        } else {
+            [[self map] removeTileSource:[[(AkylasMapTileSourceProxy*)tileSource mpTileSource] tileSource]];
+        }
+    }
+}
+
+- (BOOL)internalRemoveAllTileSources
+{
+    if (_userStackTileSource) {
+        if (_tileSourceContainer) {
+            [[self map] removeTileSource:_tileSourceContainer];
+            RELEASE_TO_NIL(_tileSourceContainer)
+        }
+    } else {
+        [[self map] setTileSources:nil];
+    }
+}
+
 
 #pragma mark Delegates
 
@@ -581,23 +606,23 @@
 
 - (void)mapView:(RMMapView *)theMap didUpdateUserLocation:(RMUserLocation *)userLocation
 {
-    if ([self.proxy _hasListeners:@"userlocation"])
+    if ([self.viewProxy _hasListeners:@"location" checkParent:NO])
 	{
-		[self.proxy fireEvent:@"userlocation" withObject:[self dictFromUserLocation:userLocation] propagate:NO checkForListener:NO];
+		[self.proxy fireEvent:@"location" withObject:[self dictFromUserLocation:userLocation] propagate:NO checkForListener:NO];
 	}
 }
 
 - (void)mapView:(RMMapView *)theMap didFailToLocateUserWithError:(NSError *)error
 {
-    if ([self.proxy _hasListeners:@"userlocation"])
+    if ([self.viewProxy _hasListeners:@"location" checkParent:NO])
 	{
-		[self.proxy fireEvent:@"userlocation" withObject:@{@"error":[error description]} propagate:NO checkForListener:NO];
+		[self.proxy fireEvent:@"location" withObject:@{@"error":[error description]} propagate:NO checkForListener:NO];
 	}
 }
 
 - (void)mapView:(RMMapView *)theMap didChangeUserTrackingMode:(RMUserTrackingMode)mode animated:(BOOL)animated
 {
-    if ([self.proxy _hasListeners:@"usertracking"])
+    if ([self.viewProxy _hasListeners:@"usertracking" checkParent:NO])
 	{
 		[self.proxy fireEvent:@"usertracking" withObject:@{@"mode":NUMINT(mode), @"animated":NUMBOOL(animated)} propagate:NO checkForListener:NO];
 	}
@@ -608,7 +633,7 @@
 	if (ignoreRegionChanged) {
         return;
     }
-	if ([self.proxy _hasListeners:@"regionchanged"])
+	if ([self.viewProxy _hasListeners:@"regionchanged" checkParent:NO])
 	{
 		[self.proxy fireEvent:@"regionchanged" withObject:@{
                                                             @"region":[self.proxy valueForKey:@"region"],
@@ -620,10 +645,8 @@
 
 - (void)singleTapOnMap:(RMMapView *)theMap recognizer:(UIGestureRecognizer *)recognizer
 {
-    BOOL hasClick  = [self.proxy _hasListeners:@"click"];
-    BOOL hasTap  = [self.proxy _hasListeners:@"singletap"];
-	if (hasClick) [self fireEventOnMap:@"click" withRecognizer:recognizer];
-	if (hasTap) [self fireEventOnMap:@"singletap" withRecognizer:recognizer];
+    [self fireEventOnMap:@"click" withRecognizer:recognizer];
+	[self fireEventOnMap:@"singletap" withRecognizer:recognizer];
 }
 - (void)doubleTapOnMap:(RMMapView *)theMap recognizer:(UIGestureRecognizer *)recognizer
 {
@@ -752,7 +775,7 @@
 - (void)beforeMapZoom:(RMMapView *)theMap byUser:(BOOL)wasUserAction
 {
     NSString* type = @"willZoom";
-    if ([self.proxy _hasListeners:type]) {
+    if ([self.viewProxy _hasListeners:type checkParent:NO]) {
         
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
                                NUMBOOL(wasUserAction),@"userAction",
@@ -766,7 +789,7 @@
     NSString* type = @"zoom";
     _internalZoom = theMap.adjustedZoomForRetinaDisplay;
     [self.proxy replaceValue:NUMFLOAT(_internalZoom) forKey:type notification:NO];
-    if ([self.proxy _hasListeners:type]) {
+    if ([self.viewProxy _hasListeners:type checkParent:NO]) {
         
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
                                NUMBOOL(wasUserAction),@"userAction",
@@ -780,7 +803,7 @@
 - (void)beforeMapMove:(RMMapView *)theMap byUser:(BOOL)wasUserAction;
 {
     NSString* type = @"willMove";
-    if ([self.proxy _hasListeners:type]) {
+    if ([self.viewProxy _hasListeners:type checkParent:NO]) {
         
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
                                NUMBOOL(wasUserAction),@"userAction",
@@ -792,7 +815,7 @@
 - (void)afterMapMove:(RMMapView *)theMap byUser:(BOOL)wasUserAction
 {
     NSString* type = @"move";
-    if ([self.proxy _hasListeners:type]) {
+    if ([self.viewProxy _hasListeners:type checkParent:NO]) {
         
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
                                NUMBOOL(wasUserAction),@"userAction",
@@ -851,9 +874,9 @@
         [proxy replaceValue:@(coord.longitude) forKey:@"longitude" notification:YES];
     }
     
-	TiProxy * ourProxy = [self proxy];
-	BOOL parentWants = [ourProxy _hasListeners:@"pinchangedragstate"];
-	BOOL viewWants = [proxy _hasListeners:@"pinchangedragstate"];
+	TiViewProxy * ourProxy = [self viewProxy];
+	BOOL parentWants = [ourProxy _hasListeners:@"pinchangedragstate" checkParent:NO];
+	BOOL viewWants = [proxy _hasListeners:@"pinchangedragstate" checkParent:NO];
 	
 	if(!parentWants && !viewWants)
 		return;
@@ -889,21 +912,21 @@
 		return;
 	}
     
-	AkylasMapAnnotationProxy *viewProxy = pinview.userInfo;
-	if (viewProxy == nil)
+	AkylasMapAnnotationProxy *annotProxy = pinview.userInfo;
+	if (annotProxy == nil)
 	{
 		return NO;
 	}
     
-	TiProxy * ourProxy = [self proxy];
-	BOOL parentWants = [ourProxy _hasListeners:type];
-	BOOL viewWants = [viewProxy _hasListeners:type];
+	TiViewProxy * ourProxy = [self viewProxy];
+	BOOL parentWants = [ourProxy _hasListeners:type checkParent:NO];
+	BOOL viewWants = [annotProxy _hasListeners:type checkParent:NO];
 	if(!parentWants && !viewWants)
 	{
 		return NO;
 	}
 	
-	id title = [viewProxy title];
+	id title = [annotProxy title];
 	if (title == nil)
 	{
 		title = [NSNull null];
@@ -915,17 +938,17 @@
     NSMutableDictionary *event = [[TiUtils dictionaryFromGesture:recognizer inView:self] mutableCopy];
     [event addEntriesFromDictionary:[AkylasMapModule dictFromLocation2D:[map pixelToCoordinate:point]]];
     [event setObject:clicksource forKey:@"clicksource"];
-    [event setObject:viewProxy forKey:@"annotation"];
+    [event setObject:annotProxy forKey:@"annotation"];
     [event setObject:ourProxy forKey:@"map"];
     [event setObject:title forKey:@"title"];
-    [event setObject:NUMINT([viewProxy tag]) forKey:@"index"];
+    [event setObject:NUMINT([annotProxy tag]) forKey:@"index"];
 	if (parentWants)
 	{
 		[ourProxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 	}
 	if (viewWants)
 	{
-		[viewProxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
+		[annotProxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 	}
     [event release];
     return YES;
@@ -938,7 +961,7 @@
 		return;
 	}
     
-	if ([self.proxy _hasListeners:type]) {
+	if ([self.viewProxy _hasListeners:type checkParent:NO]) {
         CGPoint point = [recognizer locationInView:self];
         NSMutableDictionary *event = [[TiUtils dictionaryFromGesture:recognizer inView:self] mutableCopy];
         [event addEntriesFromDictionary:[AkylasMapModule dictFromLocation2D:[map pixelToCoordinate:point]]];

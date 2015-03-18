@@ -631,6 +631,13 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
 			return mapView.getRegionDict();
 		}
 		return null;
+		
+//      if (TiApplication.isUIThread()) {
+//      return getUserLocationEnabledInternal();
+//  } else {
+//      return (Boolean) TiMessenger.sendBlockingMainMessage(getMainHandler()
+//              .obtainMessage(MSG_GET_USER_LOCATION_ENABLED));
+//  }
 	}
 	
 	
@@ -989,11 +996,11 @@ public abstract class MapDefaultViewProxy extends TiViewProxy {
     }
     
        
-    @Kroll.method
-    public void setAnnotations(Object annos) {
-        removeAllAnnotations();
-        addAnnotation(annos);
-    }
+//    @Kroll.method
+//    public void setAnnotations(Object annos) {
+//        removeAllAnnotations();
+//        addAnnotation(annos);
+//    }
     
     
 //    private void handleInsertTileSourceAt(int index, Object tilesource) {

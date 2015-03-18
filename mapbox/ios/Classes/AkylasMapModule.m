@@ -141,6 +141,17 @@ MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_LABELS,MKOverlayLevelAboveLabels);
 MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
 
 
++(CLLocationCoordinate2D)locationFromObject:(id)obj
+{
+    if (IS_OF_CLASS(obj, NSDictionary)) {
+        return [AkylasMapModule locationFromDict:obj];
+    } else if (IS_OF_CLASS(obj, NSArray) && [obj count] >= 2) {
+        return CLLocationCoordinate2DMake([TiUtils floatValue:[obj objectAtIndex:0] def:0.0f], [TiUtils floatValue:[obj objectAtIndex:1] def:0.0f]);
+    }
+    return kCLLocationCoordinate2DInvalid;
+}
+
+
 +(CLLocationCoordinate2D)locationFromDict:(NSDictionary*)dict
 {
     return CLLocationCoordinate2DMake([TiUtils doubleValue:@"latitude" properties:dict def:0], [TiUtils doubleValue:@"longitude" properties:dict def:0]);
@@ -173,8 +184,8 @@ MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
     RMSphericalTrapezium result;
     result.southWest = result.northEast = kCLLocationCoordinate2DInvalid;
     if ([dict objectForKey:@"sw"] && [dict objectForKey:@"ne"]) {
-        result.southWest = [self locationFromDict:[dict objectForKey:@"sw"]];
-        result.northEast = [self locationFromDict:[dict objectForKey:@"ne"]];
+        result.southWest = [self locationFromObject:[dict objectForKey:@"sw"]];
+        result.northEast = [self locationFromObject:[dict objectForKey:@"ne"]];
     } else if ([dict objectForKey:@"latitude"] && [dict objectForKey:@"longitude"]) {
         CGFloat latitudeDelta_2 = [TiUtils floatValue:@"latitudeDelta" properties:dict]/2.0f;
         CGFloat longitudeDelta_2 = [TiUtils floatValue:@"longitudeDelta" properties:dict]/2.0f;
@@ -239,7 +250,7 @@ MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
 +(id)sourceFromObject:(id)value proxy:(TiProxy*)proxy
 {
     if ([value isKindOfClass:[AkylasMapTileSourceProxy class]]) {
-        return [((AkylasMapTileSourceProxy*)value) tileSource];
+        return [((AkylasMapTileSourceProxy*)value) mpTileSource];
     }
     NSString* type = nil;
     if ([value isKindOfClass:[NSString class]]) {

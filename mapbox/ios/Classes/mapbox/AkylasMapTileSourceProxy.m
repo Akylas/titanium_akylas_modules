@@ -1,23 +1,16 @@
 #import "AkylasMapTileSourceProxy.h"
 #import "AkylasMapModule.h"
-#import "AkylasTileSource.h"
+#import "AkylasMapboxTileSource.h"
 #import "TiUtils.h"
 #import <Mapbox/Mapbox.h>
 
 @implementation AkylasMapTileSourceProxy
 {
-    AkylasTileSource* _tileSource;
+    AkylasMapboxTileSource* _mpTileSource;
     RMTileCache* _tileCache;
 }
 @synthesize caching;
 #pragma mark Internal
-
--(id)initWithSource:(NSString*)source {
-    if (self = [super init]) {
-        [self setValue:source forKey:@"source"];
-    }
-    return self;
-}
 
 -(void)_configure
 {
@@ -26,9 +19,9 @@
 
 -(void)dealloc
 {
-    if (_tileSource != nil) {
-        _tileSource.proxy = nil;
-        RELEASE_TO_NIL(_tileSource);
+    if (_mpTileSource != nil) {
+        _mpTileSource.proxy = nil;
+        RELEASE_TO_NIL(_mpTileSource);
     }
     RELEASE_TO_NIL(_tileCache);
 	[super dealloc];
@@ -44,18 +37,27 @@
     return (_tileCache && [_tileCache isBackgroundCaching]);
 }
 
--(AkylasTileSource*)tileSource
+-(AkylasMapboxTileSource*)mpTileSource
 {
-    if (_tileSource == nil) {
-        _tileSource = [[AkylasTileSource tileSourceWithSource:[self valueForKey:@"source"] proxyForSourceURL:self] retain];
-        _tileSource.proxy = self;
+    if (_mpTileSource == nil) {
+        _mpTileSource = [[AkylasMapboxTileSource tileSourceWithSource:[self valueForKey:@"source"] proxyForSourceURL:self] retain];
+        _mpTileSource.proxy = self;
     }
-    return _tileSource;
+    return _mpTileSource;
+}
+
+-(AkylasMapboxTileSource*)mkTileOverlay
+{
+    if (_mpTileSource == nil) {
+        _mpTileSource = [[AkylasMapboxTileSource tileSourceWithSource:[self valueForKey:@"source"] proxyForSourceURL:self] retain];
+        _mpTileSource.proxy = self;
+    }
+    return _mpTileSource;
 }
 
 -(id<RMTileSource>)RMTileSource
 {
-    return [[self tileSource] tileSource];
+    return [[self mpTileSource] tileSource];
 }
 
 -(RMTileCache*)tileCache
@@ -98,7 +100,7 @@
 -(void)beginBackgroundCache:(id)arg
 {
 	ENSURE_SINGLE_ARG_OR_NIL(arg,NSDictionary);
-    id<RMTileSource> source = [[self tileSource] tileSource];
+    id<RMTileSource> source = [[self mpTileSource] tileSource];
     RMSphericalTrapezium region = [AkylasMapModule regionFromDict:arg];
     float minZoom = [TiUtils floatValue:@"minZoom" properties:arg def:source.minZoom];
     float maxZoom = [TiUtils floatValue:@"maxZoom" properties:arg def:source.maxZoom];
