@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: My module
+author: Martin Guillon
+license: Proprietary
+copyright: Copyright (c) 2013-2015 by Akylas
+
+
+# these should not be edited
+name: akylas.mopub
+moduleid: akylas.itinerarium.sas
+guid: 3dee9b25-1db0-4285-adc5-d8e96112e42f
+platform: iphone
+minsdk: 3.3.0.AKYLAS
