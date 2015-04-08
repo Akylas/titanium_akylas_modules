@@ -15,6 +15,6 @@
 
 -(AkylasMapCameraProxy*)camera;
 -(void)animateCamera:(id)args;
--(void)showAnnotations:(id)args;
+//-(void)showAnnotations:(id)args;
 
 @end

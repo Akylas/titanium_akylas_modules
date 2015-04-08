@@ -10,6 +10,7 @@
 }
 
 @property (nonatomic, readonly) NSArray *routeLine;
+@property (nonatomic, readonly) RMSphericalTrapezium box;
 
 @property (nonatomic, readonly) NSUInteger level;
 @property (nonatomic, readonly) id <AkylasMKOverlayPathUniversal> routeRenderer;
@@ -17,5 +18,6 @@
 
 -(id <AkylasMKOverlayPathUniversal>)rendererForMapView:(AkylasMapMapView*)mapView;
 -(MKPolyline*) getPolyline;
+-(id)region;
 
 @end

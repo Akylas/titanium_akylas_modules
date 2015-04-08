@@ -50,7 +50,7 @@ abstract class AkylasMapDefaultView extends TiUINonViewGroupView {
         }   
     }
 
-    protected boolean animate = false;
+    protected boolean animate = true;
     protected boolean preLayout = true;
 //    protected ArrayList<AkylasMarker> timarkers;
     protected AnnotationProxy selectedAnnotation;

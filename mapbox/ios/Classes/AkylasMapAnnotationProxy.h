@@ -7,6 +7,7 @@
 
 #import "TiBase.h"
 #import "TiViewProxy.h"
+#import "ImageLoader.h"
 
 #define DEFAULT_CALLOUT_PADDING UIEdgeInsetsMake(13,13,13,13)
 #define DEFAULT_CALLOUT_CORNER_RADIUS 8
@@ -15,12 +16,13 @@
 @class AkylasMapViewProxy;
 @class AkylasMapView;
 @class AkylasMapMapboxView;
-@interface AkylasMapAnnotationProxy : TiParentingProxy<MKAnnotation, TiProxyObserver> {
+@class GMSOverlay;
+@class GMSMapView;
+@interface AkylasMapAnnotationProxy : TiParentingProxy<MKAnnotation, TiProxyObserver, ImageLoaderDelegate> {
 @protected
     
     UIImage* _internalImage;
     NSString* _mbImage;
-    UIColor* _tintColor;
 	int tag;
 	AkylasMapViewProxy *delegate;
 	BOOL needsRefreshing;
@@ -33,24 +35,30 @@
     RMAnnotation* _rmannotation;
     RMMarker* _marker;
     RMMarkerMapboxImageSize _size;
-    
-    //MKMapView
-    MKPinAnnotationColor _pinColor;
-    MKAnnotationView* _annView;
+
 }
 
 // Center latitude and longitude of the annotion view.
 @property (nonatomic, assign) CLLocationCoordinate2D coordinate;
 @property (nonatomic, readwrite, assign) AkylasMapViewProxy *delegate;
 @property (nonatomic,readonly)	BOOL needsRefreshingWithSelection;
+
+@property (nonatomic, readwrite, assign) BOOL animate;
 @property (nonatomic, readwrite, assign) BOOL placed;
 @property (nonatomic, readwrite, assign) BOOL draggable;
+@property (nonatomic, readwrite, assign) BOOL flat;
+@property (nonatomic, readwrite, assign) BOOL showInfoWindow;
+@property (nonatomic, readwrite, copy) NSString *title;
+@property (nonatomic, readwrite, copy) NSString *subtitle;
+@property (nonatomic, readwrite, assign) MKPinAnnotationColor pinColor;
+@property (nonatomic, readwrite, retain) UIColor *tintColor;
+
 @property (nonatomic, readwrite, assign) CGFloat minZoom;
 @property (nonatomic, readwrite, assign) CGFloat maxZoom;
 
-// Title and subtitle for use by selection UI.
-- (NSString *)title;
-- (NSString *)subtitle;
+@property (nonatomic, readwrite, assign) CGFloat heading;
+@property (nonatomic, readwrite, assign) CGFloat opacity;
+@property (nonatomic, assign) NSInteger zIndex;
 
 -(void)setNeedsRefreshingWithSelection: (BOOL)shouldReselect;
 
@@ -60,12 +68,12 @@
 -(RMMapLayer*)shapeLayerForMapView:(AkylasMapMapboxView*)mapView;
 -(RMMarker*)marker;
 -(RMAnnotation*)getRMAnnotation;
+-(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView;
+-(GMSOverlay*)gOverlay;
 
 //native
 @property (nonatomic, readwrite, retain) MKAnnotationView *annView;
 - (int)tag;
-- (int)mapPincolor;
-- (BOOL)animatesDrop;
 - (UIView*)nGetLeftViewAccessory;
 - (UIView*)nGetRightViewAccessory;
 - (UIView*)nGetCustomViewAccessory;
@@ -78,5 +86,9 @@
 -(CGFloat)nGetCalloutAlpha;
 -(UIImage*)nGetInternalImage;
 -(BOOL)nHasInternalImage;
+-(CGSize)getSize;
+
+
++(int)gZIndexDelta;
 
 @end

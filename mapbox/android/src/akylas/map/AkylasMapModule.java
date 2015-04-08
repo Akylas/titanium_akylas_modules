@@ -89,7 +89,7 @@ public class AkylasMapModule extends KrollModule {
     public static final String PROPERTY_IMAGE_WITH_SHADOW = "imageWithShadow";
 
     public static final String PROPERTY_TILT_ENABLED = "tiltEnabled";
-    public static final String PROPERTY_ROTATE_ENABLED = "rotateEnabled";
+    public static final String PROPERTY_ROTATE_ENABLED = "rotationEnabled";
     public static final String PROPERTY_SCROLL_ENABLED = "scrollEnabled";
     // public static final String PROPERTY_ZOOM_ENABLED = "zoomEnabled";
 
@@ -105,11 +105,15 @@ public class AkylasMapModule extends KrollModule {
     @Kroll.constant
     public static final int NORMAL_TYPE = GoogleMap.MAP_TYPE_NORMAL;
     @Kroll.constant
+    public static final int STANDARD_TYPE = GoogleMap.MAP_TYPE_NORMAL;
+    @Kroll.constant
     public static final int TERRAIN_TYPE = GoogleMap.MAP_TYPE_TERRAIN;
     @Kroll.constant
     public static final int SATELLITE_TYPE = GoogleMap.MAP_TYPE_SATELLITE;
     @Kroll.constant
     public static final int HYBRID_TYPE = GoogleMap.MAP_TYPE_HYBRID;
+    @Kroll.constant
+    public static final int NONE_TYPE = GoogleMap.MAP_TYPE_NONE;
 
     @Kroll.constant
     public static final int ANNOTATION_DRAG_STATE_START = 1;
@@ -168,6 +172,7 @@ public class AkylasMapModule extends KrollModule {
         map.put("AkylasMap.MapboxView",
                 akylas.map.MapboxViewProxy.class.getName());
         map.put("AkylasMap.MapView", akylas.map.MapViewProxy.class.getName());
+        map.put("AkylasMap.GoogleMapView", akylas.map.GoogleMapViewProxy.class.getName());
         map.put("AkylasMap.Annotation",
                 akylas.map.AnnotationProxy.class.getName());
         map.put("AkylasMap.Route", akylas.map.RouteProxy.class.getName());
@@ -182,6 +187,8 @@ public class AkylasMapModule extends KrollModule {
             return latlongFromDict((KrollDict) value);
         } else if (value instanceof HashMap) {
             return latlongFromDict(new KrollDict((HashMap) value));
+        } else if (value instanceof AnnotationProxy) {
+            return ((AnnotationProxy) value).getPosition();
         } else if (value instanceof Object[]) {
             Object[] array = (Object[]) value;
             int count = array.length;
@@ -207,7 +214,20 @@ public class AkylasMapModule extends KrollModule {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static BoundingBox regionFromDict(Object value) {
+    public static BoundingBox regionFromObject(Object value) {
+        if (value instanceof RouteProxy) {
+            return ((RouteProxy)value).getBoundingBox();
+        } else if (value instanceof AnnotationProxy) {
+            LatLng center = ((AnnotationProxy)value).getPosition();
+            if (center != null) {
+                float latitudeDelta_2 = 0.001f;
+                float longitudeDelta_2 = 0.001f;
+                return new BoundingBox(center.getLatitude() + latitudeDelta_2,
+                        center.getLongitude() + longitudeDelta_2,
+                        center.getLatitude() - latitudeDelta_2,
+                        center.getLongitude() - longitudeDelta_2);
+            }
+        }
         KrollDict dict = null;
         if (value instanceof KrollDict) {
             dict = (KrollDict) value;
@@ -362,5 +382,28 @@ public class AkylasMapModule extends KrollModule {
     public void setMapboxAccessToken(String token)
     {
         MapboxUtils.setAccessToken(token);
+    }
+    
+    @Kroll.method
+    public Object computeRegion(Object arg)
+    {
+        if (arg instanceof Object[]) {
+            BoundingBox result = new BoundingBox(-90, -180, 90, 180);
+            Object[] array  = (Object[])arg;
+            for (int i = 0; i < array.length; i++) {
+                Object obj = array[i];
+                BoundingBox box = regionFromObject(obj);
+                if (box != null && box.isValid()) {
+                    result = result.union(box);
+                }
+            }
+            return regionToDict(result);
+        } else {
+            BoundingBox box = regionFromObject(arg);
+            if (box != null) {
+                return regionToDict(box);
+            }
+        }
+        return null;
     }
 }

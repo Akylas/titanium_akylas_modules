@@ -1,7 +1,9 @@
 package akylas.map;
 
+import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.util.TiActivityHelper;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiDrawableReference;
 
@@ -57,6 +59,11 @@ abstract class AkylasMarker  {
 	public AnnotationProxy getProxy() {
 		return proxy;
 	}
+	
+	
+	public void runInUiThread(final TiActivityHelper.CommandNoReturn command) {
+	    proxy.runInUiThread(command);
+    }
     abstract void invalidate();
     
     abstract double getLatitude();

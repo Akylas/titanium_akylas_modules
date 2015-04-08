@@ -1,5 +1,6 @@
 package akylas.map;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -27,7 +28,9 @@ import com.mapbox.mapboxsdk.tileprovider.tilesource.TileLayer;
 import com.mapbox.mapboxsdk.tileprovider.tilesource.WebSourceTileLayer;
 import com.mapbox.mapboxsdk.util.MapboxUtils;
 
-@Kroll.proxy(creatableInModule = AkylasMapModule.class, propertyAccessors = { TiC.PROPERTY_SOURCE })
+@Kroll.proxy(creatableInModule = AkylasMapModule.class, propertyAccessors = { 
+    TiC.PROPERTY_SOURCE
+    })
 public class TileSourceProxy extends ReusableProxy {
     private static final String TAG = "TileSourceProxy";
     private TileLayer mLayer;
@@ -40,14 +43,21 @@ public class TileSourceProxy extends ReusableProxy {
     private SQLiteDatabase mDb;
     
     public static class MapBoxOnlineTileProvider extends TileJsonProvider {
-        public MapBoxOnlineTileProvider(String pId) {
+        private String mToken;
+        public MapBoxOnlineTileProvider(final String pId) {
             super(pId, pId, true);
+            mToken = MapboxUtils.getAccessToken();
+        }
+        
+        public MapBoxOnlineTileProvider(final String pId, final String token) {
+            super(pId, pId, true);
+            mToken = token;
         }
 
         @Override
         public void setURL(final String aUrl) {
             if (!TextUtils.isEmpty(aUrl) && !aUrl.toLowerCase(Locale.US).contains("http://") && !aUrl.toLowerCase(Locale.US).contains("https://")) {
-                super.setURL(MapboxConstants.MAPBOX_BASE_URL_V4 + aUrl + "/{z}/{x}/{y}{2x}.png?access_token=" + MapboxUtils.getAccessToken());
+                super.setURL(MapboxConstants.MAPBOX_BASE_URL_V4 + aUrl + "/{z}/{x}/{y}{2x}.png?access_token=" + mToken);
             } else {
                 super.setURL(aUrl);
             }
@@ -63,6 +73,7 @@ public class TileSourceProxy extends ReusableProxy {
 
             return url;
         }
+        
     }
 
     public TileSourceProxy() {
@@ -177,7 +188,7 @@ public class TileSourceProxy extends ReusableProxy {
                     break;
                 case "tilemill":
                     String host = TiConvert.toString(getProperty("host"));
-                    String mapName = TiConvert.toString(getProperty("mapName"));
+                    String mapName = TiConvert.toString(getProperty("mapId"));
                     if (host != null && mapName != null) {
                         String cacheKey = TiConvert.toString(
                                 getProperty("cacheKey"), mapName);
@@ -193,7 +204,44 @@ public class TileSourceProxy extends ReusableProxy {
                         }.setName(mapName);
                     }
                     break;
-
+                case "ign":
+                {
+                    final String key = TiConvert.toString(getProperty("key"));
+                    String realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
+                    final String layer = TiConvert.toString(getProperty("layer"), realLayer);
+                    final String format = TiConvert.toString(getProperty("format"), "image/jpeg");
+                    if (layer.equals("express")) {
+                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE";
+                    } else if (layer.equals("expressStandard")) {
+                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD";
+                    } else if (layer.equals("plan")) {
+                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.PLANIGN";
+                    } else if (layer.equals("buildings")) {
+                        realLayer = "BUILDINGS.BUILDINGS";
+                    } else if (layer.equals("parcels")) {
+                        realLayer = "CADASTRALPARCELS.PARCELS";
+                    } else if (layer.equals("slopes")) {
+                        realLayer = "ELEVATION.SLOPES.HIGHRES";
+                    }
+                    final String url  = "http://gpp3-wxs.ign.fr/" + key + "/geoportail/wmts?LAYER=" + realLayer + "&EXCEPTIONS=text/xml&FORMAT=" + format + "&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
+                    
+                    mLayer = new WebSourceTileLayer("ign",
+                            url)
+                            .setName("IGN")
+                            .setAttribution(
+                                    "Copyright (c) 2008-2014, Institut National de l'Information Géographique et Forestière France");
+                    
+                    ((WebSourceTileLayer) mLayer).setUserAgent(TiConvert.toString(getProperty("userAgent")));
+                    break;
+                }
+                case "mapbox":
+                {
+                    final String mapId = TiConvert.toString(getProperty("mapId"));
+//                    final String imageQuality = TiConvert.toString(getProperty("imageQuality"), "png");
+                    final String token = TiConvert.toString(getProperty("accessToken"), MapboxUtils.getAccessToken());
+                    mLayer = new MapboxTileLayer(mapId, token, true);
+                    break;
+                }
                 default:
                     mLayer = new MapboxTileLayer(sSource);
                     break;
@@ -213,10 +261,15 @@ public class TileSourceProxy extends ReusableProxy {
     
     public TileProvider getTileProvider() {
         if (mTileProvider == null && mSource != null) {
-            if (!(mSource instanceof String)) {
+            String sSource = null;
+            if (mSource instanceof String) {
+                sSource = (String) mSource;
+            } else if (mSource instanceof HashMap) {
+                sSource = TiConvert.toString((HashMap) mSource, TiC.PROPERTY_SOURCE);
+            }
+            if (sSource == null) {
                 return null;
             }
-            final String sSource = (String) mSource;
             float minZoom = (mMinZoom >= 0) ? mMinZoom : 1.0f;
             float maxZoom = (mMaxZoom >= 0) ? mMaxZoom : 18.0f;
             if (sSource.toLowerCase().endsWith("mbtiles")) {
@@ -237,6 +290,12 @@ public class TileSourceProxy extends ReusableProxy {
                             .setName("OpenStreetMap").setAttribution(
                                     "© OpenStreetMap Contributors");
                     break;
+                case "openseamap":
+                    mTileProvider = new WebTileProvider("openseamap",
+                            "http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png")
+                            .setName("OpenSeaMap").setAttribution(
+                                    "© Map data © OpenStreetMap, licensed under Creative Commons Share Alike By Attribution.");
+                    break;
                 case "mapquest":
                     mTileProvider = new WebTileProvider("mapquest",
                             "http://otile1.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png")
@@ -251,6 +310,42 @@ public class TileSourceProxy extends ReusableProxy {
                             .setAttribution(
                                     "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
                     break;
+                case "ign":
+                {
+                    final String key = TiConvert.toString(getProperty("key"));
+                    String realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
+                    final String layer = TiConvert.toString(getProperty("layer"), realLayer);
+                    final String format = TiConvert.toString(getProperty("format"), "image/jpeg");
+                    if (layer.equals("express")) {
+                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE";
+                    } else if (layer.equals("expressStandard")) {
+                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD";
+                    } else if (layer.equals("plan")) {
+                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.PLANIGN";
+                    } else if (layer.equals("buildings")) {
+                        realLayer = "BUILDINGS.BUILDINGS";
+                    } else if (layer.equals("parcels")) {
+                        realLayer = "CADASTRALPARCELS.PARCELS";
+                    } else if (layer.equals("slopes")) {
+                        realLayer = "ELEVATION.SLOPES.HIGHRES";
+                    }
+                    final String url  = "http://gpp3-wxs.ign.fr/" + key + "/geoportail/wmts?LAYER=" + realLayer + "&EXCEPTIONS=text/xml&FORMAT=" + format + "&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
+                    mTileProvider = new WebTileProvider("ign",
+                            url)
+                            .setName("IGN")
+                            .setAttribution(
+                                    "Copyright (c) 2008-2014, Institut National de l'Information Géographique et Forestière France");
+                    ((WebTileProvider) mTileProvider).setUserAgent(TiConvert.toString(getProperty("userAgent")));
+                    break;
+                }
+                case "mapbox":
+                {
+                    final String mapId = TiConvert.toString(getProperty("mapId"));
+//                    final String imageQuality = TiConvert.toString(getProperty("imageQuality"), "png");
+                    final String token = TiConvert.toString(getProperty("accessToken"), MapboxUtils.getAccessToken());
+                    mTileProvider = new MapBoxOnlineTileProvider(mapId, token);
+                    break;
+                }
                 default:
                     mTileProvider = new MapBoxOnlineTileProvider(sSource);
                     break;

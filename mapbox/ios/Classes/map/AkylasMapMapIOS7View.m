@@ -94,17 +94,17 @@
                      completion:nil];
 }
 
--(void)showAnnotations:(id)args
-{
-    ENSURE_SINGLE_ARG_OR_NIL(args, NSArray);
-    // If no annotations are passed in, use the annotations on the map
-    if (args == nil) {
-        args = [self customAnnotations];
-    }
-    TiThreadPerformOnMainThread(^{
-        [[self map] showAnnotations:args animated:animate];
-    },NO);
-}
+//-(void)showAnnotations:(id)args
+//{
+//    ENSURE_SINGLE_ARG_OR_NIL(args, NSArray);
+//    // If no annotations are passed in, use the annotations on the map
+//    if (args == nil) {
+//        args = [self customAnnotations];
+//    }
+//    TiThreadPerformOnMainThread(^{
+//        [[self map] showAnnotations:args animated:animate];
+//    },NO);
+//}
 
 #pragma mark Utils
 

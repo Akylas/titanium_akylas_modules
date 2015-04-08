@@ -44,7 +44,7 @@ public class AnnotationProxy extends AnimatableReusableProxy {
     private boolean draggable = false;
     private boolean flat = false;
     private boolean showInfoWindow = true;
-    private float pinColor;
+    private int pinColor = -1;
     private com.mapbox.mapboxsdk.geometry.LatLng latLong;
     private float mMinZoom = -1;
     private float mMaxZoom = -1;
@@ -52,6 +52,7 @@ public class AnnotationProxy extends AnimatableReusableProxy {
     private double latitude = 0;
     private double altitude = 0;
     public float heading = 0;
+    public float opacity = 1.0f;
     public boolean visible = true;
     private boolean imageWithShadow = false;
 
@@ -115,7 +116,7 @@ public class AnnotationProxy extends AnimatableReusableProxy {
         return flat;
     }
 
-    public float getPinColor() {
+    public int getPinColor() {
         return pinColor;
     }
 
@@ -323,6 +324,12 @@ public class AnnotationProxy extends AnimatableReusableProxy {
                 marker.setHeading(heading);
             }
             break;
+        case TiC.PROPERTY_OPACITY:
+            opacity = TiConvert.toFloat(newValue, 1.0f);
+            if (marker instanceof GoogleMapMarker) {
+                ((GoogleMapMarker)marker).setAlpha(opacity);
+            }
+            break;
         case TiC.PROPERTY_VISIBLE:
             visible = TiConvert.toBoolean(newValue, true);
             if (marker != null) {
@@ -366,7 +373,7 @@ public class AnnotationProxy extends AnimatableReusableProxy {
                 marker.setAnchor(anchor);
             }
             break;
-        case TiC.PROPERTY_PINCOLOR:
+        case TiC.PROPERTY_COLOR:
             pinColor = TiConvert.toInt(newValue, -1);
             break;
         case TiC.PROPERTY_TITLE:

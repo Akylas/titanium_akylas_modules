@@ -20,9 +20,9 @@
     [(AkylasMapMapIOS7View *)[self view] animateCamera:args];
 }
 
--(void)showAnnotations:(id)args
-{
-    [(AkylasMapMapIOS7View *)[self view] showAnnotations:args];
-}
+//-(void)showAnnotations:(id)args
+//{
+//    [(AkylasMapMapIOS7View *)[self view] showAnnotations:args];
+//}
 
 @end

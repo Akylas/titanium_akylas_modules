@@ -32,17 +32,9 @@
     [AkylasMapModule logAddedIniOS7Warning:@"animateCamera()"];
 }
 
--(void)showAnnotations:(id)args
-{
-    [AkylasMapModule logAddedIniOS7Warning:@"showAnnotations()"];
-}
-
--(void)addTileSource:(id)args{
-
-}
-
--(void)removeTileSource:(id)args{
-
-}
+//-(void)showAnnotations:(id)args
+//{
+//    [AkylasMapModule logAddedIniOS7Warning:@"showAnnotations()"];
+//}
 
 @end

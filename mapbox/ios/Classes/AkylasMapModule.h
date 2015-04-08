@@ -16,6 +16,7 @@
 @property(nonatomic,readonly) NSNumber *NORMAL_TYPE; // For parity with Android
 @property(nonatomic,readonly) NSNumber *SATELLITE_TYPE;
 @property(nonatomic,readonly) NSNumber *HYBRID_TYPE;
+@property(nonatomic,readonly) NSNumber *NONE_TYPE;
 @property(nonatomic,readonly) NSNumber *ANNOTATION_RED;
 @property(nonatomic,readonly) NSNumber *ANNOTATION_GREEN;
 @property(nonatomic,readonly) NSNumber *ANNOTATION_PURPLE;
@@ -27,11 +28,10 @@
 @property(nonatomic,readonly) NSNumber *ANNOTATION_DRAG_STATE_END;
 
 +(CLLocationCoordinate2D)locationFromDict:(NSDictionary*)dict;
-+(RMSphericalTrapezium)regionFromDict:(NSDictionary*)dict;
++(RMSphericalTrapezium)regionFromObject:(NSDictionary*)dict;
 +(NSDictionary*)dictFromLocation2D:(CLLocationCoordinate2D)coord;
 +(NSDictionary*)dictFromRegion:(RMSphericalTrapezium)trapez;
 +(CLLocation*)cllocationFromDict:(NSDictionary*)dict;
-+(id)sourceFromObject:(id)value proxy:(TiProxy*)proxy;
 +(CLLocation*)cllocationFromArray:(NSArray*)array;
 +(NSDictionary*)dictFromLocation:(CLLocation*)coord;
 +(NSDictionary*)dictFromHeading:(CLHeading*)headin;

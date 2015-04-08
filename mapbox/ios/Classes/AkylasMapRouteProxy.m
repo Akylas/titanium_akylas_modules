@@ -13,6 +13,7 @@
 #import "AkylasMapMapboxView.h"
 #import "AkylasMapMapView.h"
 
+#import <GoogleMaps/GoogleMaps.h>
 
 
 int lineCapFromString(NSString* value)
@@ -39,17 +40,25 @@ int lineJoinFromString(NSString* value)
 @implementation AkylasMapRouteProxy
 {
     NSMutableArray *_routeLine;
-    MKPolyline *_routePolyline;
     RMShape * _shape;
     UIColor * _color;
+    NSArray * _spans;
     NSString * _lineJoin;
     NSString * _lineCap;
     int _lineWidth;
     RMSphericalTrapezium _box;
 	pthread_rwlock_t routeLineLock;
+    
+    //NativeMap
+    MKPolyline *_routePolyline;
+    
+    //GoogleMap
+    GMSPolyline* _gPoly;
+    GMSMutablePath *_gPath;
 }
 
 @synthesize routeLine = _routeLine;
+@synthesize box = _box;
 @synthesize level, routeRenderer;
 
 -(id)init
@@ -59,6 +68,7 @@ int lineJoinFromString(NSString* value)
         _lineWidth = 10;
         _color = [[UIColor blueColor] retain];
         _lineJoin = _lineCap = @"round";
+        _box = ((RMSphericalTrapezium){.northEast = {.latitude = kRMMinLatitude, .longitude = kRMMinLongitude}, .southWest = {.latitude = kRMMaxLatitude, .longitude = kRMMaxLongitude}});
     }
     return self;
 }
@@ -75,6 +85,11 @@ int lineJoinFromString(NSString* value)
     RELEASE_TO_NIL(_lineCap);
     RELEASE_TO_NIL(_routePolyline);
     RELEASE_TO_NIL(routeRenderer);
+    
+    RELEASE_TO_NIL(_gPath);
+    RELEASE_TO_NIL(_gPoly);
+    RELEASE_TO_NIL(_spans);
+
 	[super dealloc];
 }
 
@@ -131,23 +146,37 @@ int lineJoinFromString(NSString* value)
 {
     pthread_rwlock_rdlock(&routeLineLock);
     RELEASE_TO_NIL(_routeLine)
-    _routeLine = [[NSMutableArray arrayWithCapacity:[points count]] retain];
     _box = ((RMSphericalTrapezium){.northEast = {.latitude = kRMMinLatitude, .longitude = kRMMinLongitude}, .southWest = {.latitude = kRMMaxLatitude, .longitude = kRMMaxLongitude}});
+    
+    
+    if (!points) {
+        pthread_rwlock_unlock(&routeLineLock);
+        RELEASE_TO_NIL(_shape)
+        RELEASE_TO_NIL(routeRenderer)
+        RELEASE_TO_NIL(_routePolyline)
+        return;
+    }
+    _routeLine = [[NSMutableArray arrayWithCapacity:[points count]] retain];
+    
     for (id point in points) {
         [self processPoint:point];
     }
     NSUInteger count = [_routeLine count];
     pthread_rwlock_unlock(&routeLineLock);
-//    if (_shape) {
-//        [_shape setCoordinates:_routeLine];
-//    }
-//    else {
     RELEASE_TO_NIL(_shape)
     RELEASE_TO_NIL(routeRenderer)
     RELEASE_TO_NIL(_routePolyline)
+    RELEASE_TO_NIL(_gPath)
     if (count > 1)[self setNeedsRefreshingWithSelection:YES];
-//    }
-    
+}
+
+-(RMSphericalTrapezium) box
+{
+    RMSphericalTrapezium result;
+    pthread_rwlock_rdlock(&routeLineLock);
+    result = _box;
+    pthread_rwlock_unlock(&routeLineLock);
+    return result;
 }
 
 -(void)updateBoundingBoxWithPoint:(CLLocation*) point {
@@ -188,6 +217,9 @@ int lineJoinFromString(NSString* value)
     if (_shape) {
         [_shape addLineToCoordinate:newPoint.coordinate];
     }
+    if (_gPath) {
+        [_gPath addCoordinate:newPoint.coordinate];
+    }
     if (newPoint && count > 1){
         RELEASE_TO_NIL(routeRenderer)
         RELEASE_TO_NIL(_routePolyline)
@@ -203,8 +235,58 @@ int lineJoinFromString(NSString* value)
     if (_shape != nil)  {
         _shape.lineColor =_color;
     }
+    if (_gPoly != nil && !_spans)  {
+        _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
+    }
     if (routeRenderer != nil) {
         routeRenderer.fillColor = routeRenderer.strokeColor = _color;
+    }
+}
+
+-(void)setSpans:(id)value
+{
+    [self replaceValue:value forKey:@"spans" notification:NO];
+    ENSURE_TYPE(value, NSArray)
+    if (!value) {
+        RELEASE_TO_NIL(_spans)
+        if (_gPoly != nil)  {
+            _gPoly.spans = nil;
+        }
+    }
+    NSMutableArray* spans = [NSMutableArray arrayWithCapacity:[value count]];
+    [value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if (IS_OF_CLASS(obj, NSArray)) {
+            NSUInteger length = [obj count];
+            if (length > 0) {
+                UIColor* color1 = [[TiUtils colorValue:[obj objectAtIndex:0]] _color];
+                UIColor* color2 = nil;
+                NSUInteger segments = 0;
+                if (length > 2) {
+                    color2 = [[TiUtils colorValue:[obj objectAtIndex:1]] _color];
+                    segments = [TiUtils intValue:[obj objectAtIndex:2]];
+                } else if (length > 1) {
+                    color2 = [[TiUtils colorValue:[obj objectAtIndex:1]] _color];
+                    if (color2 == nil) {
+                        segments = [TiUtils intValue:[obj objectAtIndex:1]];
+                    }
+                }
+                GMSStrokeStyle *style;
+                if (color2) {
+                    style = [GMSStrokeStyle gradientFromColor:color1 toColor:color2];
+                } else {
+                    style = [GMSStrokeStyle solidColor:color1];
+                }
+                if (segments > 0) {
+                    [spans addObject:[GMSStyleSpan spanWithStyle:style segments:segments]];
+                } else {
+                    [spans addObject:[GMSStyleSpan spanWithStyle:style]];
+                }
+            }
+        }
+    }];
+    _spans = [spans retain];
+    if (_gPoly != nil)  {
+        _gPoly.spans = _spans;
     }
 }
 
@@ -219,6 +301,9 @@ int lineJoinFromString(NSString* value)
     _lineWidth = [TiUtils floatValue:value def:3.0];
     if (_shape != nil)  {
         _shape.lineWidth =_lineWidth;
+    }
+    if (_gPoly != nil)  {
+        _gPoly.strokeWidth =_lineWidth;
     }
     if (routeRenderer != nil) {
         routeRenderer.lineWidth = _lineWidth;
@@ -249,6 +334,45 @@ int lineJoinFromString(NSString* value)
     }
 }
 
+-(void)setShadow:(id)value
+{
+    [self replaceValue:value forKey:@"shadow" notification:NO];
+    NSShadow* shadow = [TiUtils shadowValue:value];
+    if (_shape != nil)  {
+        _shape.enableShadow = shadow != nil;
+        if (shadow != nil) {
+            _shape.shadowRadius = shadow.shadowBlurRadius;
+            _shape.shadowOffset =shadow.shadowOffset;
+            _shape.shadowColor = ((UIColor*)shadow.shadowColor).CGColor;
+        }
+    }
+}
+
+-(void)setScaleLineDash:(id)arg
+{
+    [self replaceValue:arg forKey:@"scaleLineDash" notification:NO];
+    if (_shape != nil)  {
+        _shape.scaleLineDash =[TiUtils boolValue:arg def:NO];
+    }
+}
+
+-(void)setLineDash:(id)arg
+{
+    ENSURE_SINGLE_ARG_OR_NIL(arg, NSDictionary);
+    
+    if ([arg objectForKey:@"pattern"]) {
+        NSArray* value  = [arg objectForKey:@"pattern"];
+        if (_shape != nil)  {
+            _shape.lineDashLengths = value;
+        }
+    }
+    if ([arg objectForKey:@"phase"]) {
+        if (_shape != nil)  {
+            _shape.lineDashPhase = [TiUtils floatValue:[arg objectForKey:@"phase"]];
+        }
+    }
+    [self replaceValue:arg forKey:@"lineDash" notification:NO];
+}
 
 -(CLLocationCoordinate2D)coordinate
 {
@@ -314,6 +438,49 @@ int lineJoinFromString(NSString* value)
         }];
     }
     return _shape;
+}
+
+
+#pragma mark GoogleMap
++(int)gZIndexDelta {
+    return 30;
+}
+-(GMSMutablePath *) getGPath {
+    if (_gPath == nil) {
+        _gPath =  [[GMSMutablePath alloc] init];
+        pthread_rwlock_rdlock(&routeLineLock);
+        NSUInteger count = [_routeLine count];
+        for (int i = 0; i < count; ++i) {
+            CLLocation* entry = [_routeLine objectAtIndex:i];
+            [_gPath addCoordinate:entry.coordinate];
+        }
+        pthread_rwlock_unlock(&routeLineLock);
+    }
+    return _gPath;
+}
+
+-(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
+{
+    if (_gPoly == nil) {
+        _gPoly = [GMSPolyline polylineWithPath:[self getGPath]];
+        if (_spans) {
+            _gPoly.spans = _spans;
+        } else {
+            _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
+        }
+        _gPoly.strokeWidth = _lineWidth;
+    }
+    else if (_gPoly.map != mapView) {
+        RELEASE_TO_NIL(_gPoly)
+        return [self getGOverlayForMapView:mapView];
+    }
+    return _gPoly;
+}
+
+
+-(GMSOverlay*)gOverlay
+{
+    return _gPoly;
 }
 
 #pragma mark Native Map

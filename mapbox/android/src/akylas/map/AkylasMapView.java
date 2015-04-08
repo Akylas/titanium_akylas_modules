@@ -13,6 +13,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
+import android.graphics.RectF;
+
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.Log;
@@ -46,6 +48,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -85,6 +88,8 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     private static final int MSG_GET_PROJECTION = 10001;
     private static final int MSG_GET_MYLOCATION = 10002;
     private static final int MSG_GET_MYLOCATION_ENABLED = 10003;
+    
+    private static int CAMERA_UPDATE_DURATION = 500;
 
     private static boolean INITIALIZED = false;
     // private FollowMeLocationSource followMeLocationSource = new
@@ -384,7 +389,7 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         case TiC.PROPERTY_REGION:
             getCameraBuilder();
             mCameraRegion = AkylasMapModule.mapBoxToGoogle(AkylasMapModule
-                    .regionFromDict(newValue));
+                    .regionFromObject(newValue));
             mCameraRegionUpdate = mCameraRegion != null;
             break;
         case AkylasMapModule.PROPERTY_CENTER_COORDINATE:
@@ -395,7 +400,12 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         case TiC.PROPERTY_MAP_TYPE:
             map.setMapType(TiConvert.toInt(newValue, GoogleMap.MAP_TYPE_NORMAL));
             break;
-
+        case TiC.PROPERTY_PADDING:
+            RectF padding  =  TiConvert.toPaddingRect(newValue);
+            map.setPadding((int)padding.left, (int)padding.top, (int)padding.right,
+                (int)padding.bottom);
+            break;
+        
         default:
             super.propertySet(key, newValue, oldValue, changedProperty);
             break;
@@ -602,7 +612,7 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         if (map == null)
             return;
         if (anim) {
-            map.animateCamera(camUpdate);
+            map.animateCamera(camUpdate, CAMERA_UPDATE_DURATION, null);
         } else {
             map.moveCamera(camUpdate);
         }
@@ -699,9 +709,13 @@ public class AkylasMapView extends AkylasMapDefaultView implements
                     proxy.getProperty(AkylasMapModule.PROPERTY_MINZOOM), 0);
         }
     }
-
+    
+    private float targetZoom = -1;
     @Override
     public float getZoomLevel() {
+        if (targetZoom != -1) {
+            return targetZoom;
+        }
         if (currentCameraPosition == null) {
             return TiConvert.toFloat(
                     proxy.getProperty(AkylasMapModule.PROPERTY_ZOOM), 0);
@@ -739,11 +753,12 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     //
     @Override
     protected void changeZoomLevel(final float level, final boolean animated) {
+        targetZoom = level;
         // handled by propertySet
         // if (preLayout)
         // return;
-        // CameraUpdate camUpdate = CameraUpdateFactory.zoomBy(level);
-        // moveCamera(camUpdate, animated);
+         CameraUpdate camUpdate = CameraUpdateFactory.zoomBy(level);
+         moveCamera(camUpdate, animated);
     }
 
     protected void fireEventOnMap(String type, LatLng point) {
@@ -924,6 +939,7 @@ public class AkylasMapView extends AkylasMapDefaultView implements
     @Override
     public void onCameraChange(CameraPosition position) {
         currentCameraPosition = position;
+        targetZoom = -1;
         if (preLayout) {
 
             // moveCamera will trigger another callback, so we do this to make
@@ -1510,9 +1526,9 @@ public class AkylasMapView extends AkylasMapDefaultView implements
             return sourceProxy;
         }
         if (sourceProxy != null) {
-            if (!getProxy().hasProperty(TiC.PROPERTY_MAP_TYPE)) {
-                map.setMapType(GoogleMap.MAP_TYPE_NONE);
-            }
+//            if (!getProxy().hasProperty(TiC.PROPERTY_MAP_TYPE)) {
+//                map.setMapType(GoogleMap.MAP_TYPE_NONE);
+//            }
             TileOverlayOptions options = sourceProxy.getTileOverlayOptions();
             if (options != null) {
                 sourceProxy.setTileOverlay(map.addTileOverlay(options
@@ -1557,5 +1573,46 @@ public class AkylasMapView extends AkylasMapDefaultView implements
         mCameraAnimate = TiConvert.toBoolean(props, TiC.PROPERTY_ANIMATE,
                 shouldAnimate());
         processApplyProperties(props);
+    }
+    
+    
+    public void updateMarkerPosition( final Marker marker, final LatLng toPosition) {
+        if (!shouldAnimate()) {
+            marker.setPosition(toPosition);
+            return;
+        }
+        final Handler handler = new Handler();
+        final long start = SystemClock.uptimeMillis();
+        Projection proj = map.getProjection();
+        Point startPoint = proj.toScreenLocation(marker.getPosition());
+        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
+        final long duration = CAMERA_UPDATE_DURATION;
+
+        final LinearInterpolator interpolator = new LinearInterpolator();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                long elapsed = SystemClock.uptimeMillis() - start;
+                float t = interpolator.getInterpolation((float) elapsed
+                        / duration);
+                double lng = t * toPosition.longitude + (1 - t)
+                        * startLatLng.longitude;
+                double lat = t * toPosition.latitude + (1 - t)
+                        * startLatLng.latitude;
+                marker.setPosition(new LatLng(lat, lng));
+
+                if (t < 1.0) {
+                    // Post again 16ms later.
+                    handler.postDelayed(this, 16);
+//                } else {
+//                    if (hideMarker) {
+//                        marker.setVisible(false);
+//                    } else {
+//                        marker.setVisible(true);
+//                    }
+                }
+            }
+        });
     }
 }

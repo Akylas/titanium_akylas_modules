@@ -25,7 +25,7 @@
 
 @property (nonatomic, readonly) CLLocationDegrees longitudeDelta;
 @property (nonatomic, readonly) CLLocationDegrees latitudeDelta;
-@property (nonatomic, readonly) NSArray *customAnnotations;
+//@property (nonatomic, readonly) NSArray *customAnnotations;
 
 #pragma mark Private APIs
 -(MKMapView*)map;

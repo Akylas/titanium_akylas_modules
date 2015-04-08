@@ -38,11 +38,9 @@ public class RouteProxy extends ReusableProxy {
 
     private static final int MSG_FIRST_ID = KrollProxy.MSG_LAST_ID + 1;
 
-    private static final int MSG_SET_POINTS = MSG_FIRST_ID + 400;
     private static final int MSG_SET_COLOR = MSG_FIRST_ID + 401;
     private static final int MSG_SET_WIDTH = MSG_FIRST_ID + 402;
     private static final int MSG_SET_ZINDEX = MSG_FIRST_ID + 403;
-    private static final int MSG_REFRESH_MAP = MSG_FIRST_ID + 404;
     private BoundingBox mBoundingBox = TileLayerConstants.WORLD_BOUNDING_BOX;
 
     private MapView mMapView;
@@ -63,20 +61,22 @@ public class RouteProxy extends ReusableProxy {
     }
 
     private void updateBoundingBox() {
-        mBoundingBox = BoundingBox.fromLatLngs(this.mPoints);
+        synchronized (mBoundingBox) {
+            mBoundingBox = BoundingBox.fromLatLngs(this.mPoints);
+        }
     }
+    
+    public BoundingBox getBoundingBox() {
+        synchronized (mBoundingBox) {
+            return mBoundingBox;
+        }
+    }
+
 
     @Override
     public boolean handleMessage(Message msg) {
         AsyncResult result = null;
         switch (msg.what) {
-
-        case MSG_SET_POINTS: {
-            result = (AsyncResult) msg.obj;
-            polyline.setPoints(mGooglePoints);
-            result.setResult(null);
-            return true;
-        }
 
         case MSG_SET_COLOR: {
             result = (AsyncResult) msg.obj;
@@ -96,13 +96,6 @@ public class RouteProxy extends ReusableProxy {
             result = (AsyncResult) msg.obj;
             polyline.setZIndex(zIndex);
             result.setResult(null);
-            return true;
-        }
-
-        case MSG_REFRESH_MAP: {
-            if (mMapView != null) {
-                mMapView.invalidate();
-            }
             return true;
         }
         default: {
@@ -253,14 +246,18 @@ public class RouteProxy extends ReusableProxy {
         if (mPath == null) {
             return;
         }
-        if (TiApplication.isUIThread()) {
-            if (mMapView != null) {
-                mMapView.invalidate();
-            }
-        } else {
-            getRuntimeHandler().obtainMessage(MSG_REFRESH_MAP);
+        if (!TiApplication.isUIThread()) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mapboxInvalidate();
+                }
+            });
+            return;
         }
-
+        if (mMapView != null) {
+            mMapView.invalidate();
+        }
     }
 
     // public PolylineOptions getOptions() {
@@ -300,8 +297,9 @@ public class RouteProxy extends ReusableProxy {
     @Kroll.method
     @Kroll.getProperty
     public KrollDict getRegion() {
-
-        return AkylasMapModule.regionToDict(mBoundingBox);
+        synchronized (mBoundingBox) {
+            return AkylasMapModule.regionToDict(mBoundingBox);
+        }
     }
 
     @Kroll.method

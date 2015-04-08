@@ -15,6 +15,8 @@
 #import "AkylasMapMapboxView.h"
 #import "ImageLoader.h"
 
+#import <GoogleMaps/GoogleMaps.h>
+
 @implementation AkylasMapAnnotationProxy
 {
 	TiViewProxy* _leftViewProxy;
@@ -27,13 +29,24 @@
     BOOL configurationSet;
     BOOL needsLocationRefresh;
     ImageLoaderRequest *urlRequest;
-
+    
+    BOOL _flat;
+    BOOL _showInfoWindow;
+    CGFloat _heading;
+    CGFloat _opacity;
+    
+    
+    //MKMapView
+    MKAnnotationView* _annView;
+    
+    //GoogleMap
+    GMSMarker* _gmarker;
 }
 
 @synthesize delegate;
 @synthesize needsRefreshingWithSelection;
-@synthesize placed;
-@synthesize draggable;
+@synthesize placed, showInfoWindow = _showInfoWindow, draggable = _draggable, flat = _flat, title, subtitle, pinColor,tintColor;
+@synthesize heading = _heading, opacity = _opacity;
 @synthesize rmannotation = _rmannotation;
 @synthesize annView = _annView;
 
@@ -53,12 +66,20 @@
     _calloutAnchorPoint = CGPointMake(0, -0.5f);
     _size = RMMarkerMapboxImageSizeMedium;
     _calloutAlpha = 1;
-    _tintColor = nil;
     _sortKey = nil;
     _minZoom = 0.0f;
     _maxZoom = 22.0f;
     configurationSet  = NO;
     needsLocationRefresh = NO;
+    
+    pinColor = MKPinAnnotationColorRed;
+    _flat = NO;
+    _showInfoWindow = YES;
+    _draggable = NO;
+    placed = NO;
+    _opacity = 1.0f;
+    _heading = 0.0f;
+    _zIndex = -1;
 	[super _configure];
 }
 
@@ -73,9 +94,12 @@
 {
     RELEASE_TO_NIL(_rmannotation);
     RELEASE_TO_NIL(_marker);
+    RELEASE_TO_NIL(_gmarker);
     RELEASE_TO_NIL(_internalImage);
     RELEASE_TO_NIL(_sortKey);
-    RELEASE_TO_NIL(_tintColor);
+    RELEASE_TO_NIL(title);
+    RELEASE_TO_NIL(subtitle);
+    RELEASE_TO_NIL(tintColor);
     DETACH_RELEASE_TO_NIL(_leftViewProxy)
     DETACH_RELEASE_TO_NIL(_rightViewProxy)
     DETACH_RELEASE_TO_NIL(_customViewProxy)
@@ -149,9 +173,16 @@
 #pragma mark Public APIs
 
 -(void)refreshCoords {
+    if (_gmarker) {
+        [CATransaction begin];
+        _gmarker.position = self.coordinate;
+        [CATransaction commit];
+//        return;
+    }
     if (_rmannotation != nil) {
         _rmannotation.coordinate = self.coordinate;
     }
+
 //    self.coordinate = [self coordinate];
 //    if (_annView) {
 //        _annView
@@ -200,61 +231,96 @@
     [self refreshCoords];
 }
 
-- (NSString *)title
-{
-	return [self valueForUndefinedKey:@"title"];
-}
 
--(void)setTitle:(id)title
+-(void)setTitle:(id)value
 {
-	title = [TiUtils replaceString:[TiUtils stringValue:title]
-			characters:[NSCharacterSet newlineCharacterSet] withString:@" "];
+    RELEASE_TO_NIL(title)
+	title = [[TiUtils replaceString:[TiUtils stringValue:value]
+			characters:[NSCharacterSet newlineCharacterSet] withString:@" "] copy];
 	//The label will strip out these newlines anyways (Technically, replace them with spaces)
     if (_rmannotation) {
         _rmannotation.title = title;
+    }
+    if (_gmarker) {
+        _gmarker.title = title;
     }
     [self replaceValue:title forKey:@"title" notification:NO];
     [self setNeedsRefreshingWithSelection:NO];
 }
 
-- (NSString *)subtitle
+-(void)setSubtitle:(id)value
 {
-	return [self valueForUndefinedKey:@"subtitle"];
-}
-
--(void)setSubtitle:(id)subtitle
-{
-	subtitle = [TiUtils replaceString:[TiUtils stringValue:subtitle]
-			characters:[NSCharacterSet newlineCharacterSet] withString:@" "];
+    RELEASE_TO_NIL(subtitle)
+	subtitle = [[TiUtils replaceString:[TiUtils stringValue:value]
+			characters:[NSCharacterSet newlineCharacterSet] withString:@" "] copy];
 	//The label will strip out these newlines anyways (Technically, replace them with spaces)
     if (_rmannotation) {
         _rmannotation.subtitle = subtitle;
+    }
+    
+    if (_gmarker) {
+        _gmarker.snippet = subtitle;
     }
     [self replaceValue:subtitle forKey:@"subtitle" notification:NO];
     [self setNeedsRefreshingWithSelection:NO];
 }
 
-- (int)mapPincolor
+-(void)setFlat:(BOOL)flat
 {
-	return _pinColor;
+    _flat = flat;
+    if (_gmarker) {
+        _gmarker.flat = _flat;
+    }
 }
 
-- (id)pincolor
+-(void)setShowInfoWindow:(BOOL)showInfoWindow
 {
-	return [self valueForUndefinedKey:@"pincolor"];
+    _showInfoWindow = showInfoWindow;
+    if (_gmarker) {
+        _gmarker.tappable = _showInfoWindow;
+    }
 }
 
--(void)setPincolor:(id)color
+
+-(void)setHeading:(CGFloat)heading
 {
-    RELEASE_TO_NIL(_tintColor);
-	[self replaceValue:color forKey:@"pincolor" notification:NO];
+    _heading = heading;
+    if (_gmarker) {
+        _gmarker.rotation = _heading;
+    }
+}
+
+-(void)setOpacity:(CGFloat)opacity
+{
+    _opacity = opacity;
+    if (_gmarker) {
+        _gmarker.opacity = _opacity;
+    }
+}
+
+-(void)setDraggable:(BOOL)draggable
+{
+    _draggable = draggable;
+    if (_gmarker) {
+        _gmarker.draggable = _draggable;
+    }
+    
+    if (_annView) {
+        _annView.draggable = _draggable;
+    }
+}
+
+-(void)setColor:(id)color
+{
+	[self replaceValue:color forKey:@"color" notification:NO];
     if ([color isKindOfClass:[NSNumber class]]) {
-        _pinColor = [TiUtils intValue:color];
+        self.pinColor = [TiUtils intValue:color];
+        self.tintColor = nil;
     }
     else {
-        TiColor* tiColor= [TiUtils colorValue:color];
-        if (tiColor) {
-            _tintColor = [tiColor.color retain];
+        self.tintColor = [[TiUtils colorValue:color] _color];
+        if (_gmarker) {
+            _gmarker.icon = [GMSMarker markerImageWithColor:self.tintColor];
         }
     }
     [self setNeedsRefreshingWithSelection:YES];
@@ -273,11 +339,6 @@
     if (_rmannotation) {
         _rmannotation.sortKey = _sortKey;
     }
-}
-
-- (BOOL)animatesDrop
-{
-	return [TiUtils boolValue:[self valueForUndefinedKey:@"animate"]];
 }
 
 -(UIColor*)nGetCalloutBackgroundColor {
@@ -420,6 +481,9 @@
     if (_marker) {
         [_marker replaceUIImage:_internalImage anchorPoint:_mAnchorPoint];
     }
+    if (_gmarker) {
+        _gmarker.groundAnchor = _mAnchorPoint;
+    }
 }
 
 -(CGPoint)nGetAnchorPoint
@@ -427,9 +491,22 @@
     return _mAnchorPoint;
 }
 
+-(CGSize)getSize {
+    if (_internalImage) {
+        return _internalImage.size;
+    }
+    if (_gmarker) {
+        return CGSizeMake(20, 40);
+    }
+    return CGSizeZero;
+}
+
 -(void)setCalloutAnchorPoint:(id)value
 {
     _calloutAnchorPoint = [TiUtils pointValue:value def:_calloutAnchorPoint];
+    if (_gmarker) {
+        _gmarker.infoWindowAnchor = _calloutAnchorPoint;
+    }
 	[self replaceValue:value forKey:@"calloutAnchorPoint" notification:NO];
 }
 
@@ -476,6 +553,9 @@
     if (_marker) {
         [_marker replaceUIImage:_internalImage anchorPoint:_mAnchorPoint];
     }
+    if (_gmarker) {
+        _gmarker.icon = _internalImage;
+    }
     if (_annView) {
         _annView.image = _internalImage;
     }
@@ -517,7 +597,7 @@
 -(void)setImage:(id)image
 {
     NSURL* url = [TiUtils toURL:image proxy:self];
-    [self setInternalImage: [[[ImageLoader sharedLoader] loadImmediateImage:url] retain]];
+    [self setInternalImage: [[ImageLoader sharedLoader] loadImmediateImage:url]];
     if (_internalImage==nil)
     {
         [self startImageLoad:url];
@@ -672,7 +752,7 @@
         }
         else {
             
-            _marker = [[RMMarker alloc] initWithUIImage:[self getMapBoxImage:_mbImage color:_tintColor size:_size] anchorPoint:mapView.defaultPinAnchor];
+            _marker = [[RMMarker alloc] initWithUIImage:[self getMapBoxImage:_mbImage color:tintColor size:_size] anchorPoint:mapView.defaultPinAnchor];
         }
         if ([self valueForUndefinedKey:@"anchorPoint"]) {
             _marker.anchorPoint = _mAnchorPoint;
@@ -689,6 +769,50 @@
     return _marker;
 }
 
+
+#pragma mark GoogleMap
++(int)gZIndexDelta {
+    return 1000;
+}
+
+
+-(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
+{
+    if (_gmarker == nil) {
+        
+        _gmarker = [GMSMarker markerWithPosition:self.coordinate];
+        _gmarker.appearAnimation = kGMSMarkerAnimationPop;
+        _gmarker.map = mapView;
+        _gmarker.title = [self title];
+        _gmarker.snippet = [self subtitle];
+        _gmarker.flat = _flat;
+        _gmarker.userData = self;
+        if (_internalImage) {
+            _gmarker.icon = _internalImage;
+        } else if (tintColor){
+            if (_gmarker) {
+                _gmarker.icon = [GMSMarker markerImageWithColor:tintColor];
+            }
+        }
+        _gmarker.draggable = _draggable;
+        _gmarker.tappable = _showInfoWindow;
+        _gmarker.opacity = _opacity;
+        _gmarker.rotation = _heading;
+        _gmarker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
+        _gmarker.groundAnchor = [self nGetAnchorPoint];
+    }
+    else if (_gmarker.map != mapView) {
+        RELEASE_TO_NIL(_gmarker)
+        return [self getGOverlayForMapView:mapView];
+    }
+    return _gmarker;
+}
+
+
+-(GMSOverlay*)gOverlay
+{
+    return _gmarker;
+}
 
 #pragma mark Native Map
 

@@ -1,17 +1,27 @@
 package akylas.map;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.util.TiImageHelper;
 
-import com.google.android.gms.maps.model.UrlTileProvider;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+
+import com.google.android.gms.maps.model.Tile;
+import com.google.android.gms.maps.model.TileProvider;
 import com.mapbox.mapboxsdk.geometry.BoundingBox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.tileprovider.constants.TileLayerConstants;
 import com.mapbox.mapboxsdk.util.AppUtils;
+import com.squareup.picasso.OkHttpDownloader;
+import com.squareup.picasso.Picasso;
 
-public class WebTileProvider extends UrlTileProvider {
+public class WebTileProvider implements TileProvider {
 
     private static final String TAG = "WebTileProvider";
 
@@ -21,6 +31,7 @@ public class WebTileProvider extends UrlTileProvider {
     protected String mDescription;
     protected String mAttribution;
     protected String mLegend;
+    protected String mUserAgent = null;
 
     protected float mMinimumZoomLevel = TileLayerConstants.MINIMUM_ZOOMLEVEL;
     protected float mMaximumZoomLevel = TileLayerConstants.MAXIMUM_ZOOMLEVEL;
@@ -30,32 +41,99 @@ public class WebTileProvider extends UrlTileProvider {
 
     protected boolean mEnableSSL = false;
     protected boolean mHdpi = false;
-
+    
+    private float mScale = 1.0f;
+    
+    private final Picasso picasso;
+    
+    
     public WebTileProvider(final String pId, final String url,
             final boolean enableSSL) {
-        super(mTileSizePixels, mTileSizePixels);
         mEnableSSL = enableSSL;
         mHdpi = AppUtils.isRunningOn2xOrGreaterScreen(TiApplication.getAppContext());
+        
+//        mScale = Math.round(TiApplication.getAppDensity() + .3f);
         mId = pId;
         setURL(url);
+        final Context context = TiApplication.getAppContext();
+        picasso = new Picasso.Builder(context).downloader(
+            new OkHttpDownloader(context) {
+                @Override
+                protected HttpURLConnection openConnection(
+                        Uri uri) throws IOException {
+                    HttpURLConnection connection = super
+                            .openConnection(uri);
+                    if (mUserAgent != null) {
+                        connection.addRequestProperty("User-Agent", mUserAgent);
+                    }
+                    
+                    return connection;
+                }
+            }).build();
     }
     public WebTileProvider(final String pId, final String url) {
         this(pId, url, false);
     }
-
+ 
     @Override
-    public URL getTileUrl(int x, int y, int zoom) {
+    public Tile getTile(int x, int y, int z) {
+        byte[] tileImage = getTileImage(x, y, z);
+        if (tileImage != null) {
+            return new Tile(mTileSizePixels, mTileSizePixels, tileImage);
+        }
+        return NO_TILE;
+    }
+ 
+    /**
+     * Synchronously loads the requested Tile image either from cache or from the web.</p>
+     * Background threading/pooling is done by the google maps api so we can do it all synchronously.
+     *
+     * @param x x coordinate of the tile
+     * @param y y coordinate of the tile
+     * @param z the zoom level
+     * @return byte data of the image or <i>null</i> if the image could not be loaded.
+     */
+    private byte[] getTileImage(int x, int y, int z) {
+        Bitmap bitmap;
+        try {
+            bitmap = picasso.load(getTileUrl(x, y, z)).get();
+            if (mScale != 1) {
+                bitmap = TiImageHelper.imageScaled(bitmap, mScale);
+            }
+        } catch (IOException e) {
+            bitmap = null;
+        }
+        if (bitmap == null) {
+            return null;
+        }
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
+ 
+    /**
+     * Return the url to your tiles. For example:
+     * <pre>
+public String getTileUrl(int x, int y, int z) {
+     return String.format("https://a.tile.openstreetmap.org/%3$s/%1$s/%2$s.png",x,y,z);
+}
+     </pre>
+     * See <a href="http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames">http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames</a> for more details
+     *
+     * @param x x coordinate of the tile
+     * @param y y coordinate of the tile
+     * @param z the zoom level
+     * @return the url to the tile specified by the parameters
+     */
+
+    public String getTileUrl(int x, int y, int zoom) {
         if (mUrl == null) {
             return null;
         }
-        try {
-            return new URL(mUrl.replace("{z}", Integer.toString(zoom))
-                    .replace("{x}", Integer.toString(x))
-                    .replace("{y}", Integer.toString(y))
-                    .replace("{2x}", mHdpi ? "@2x" : ""));
-        } catch (MalformedURLException e) {
-            return null;
-        }
+        return mUrl.replace("{z}", Integer.toString(zoom))
+                .replace("{x}", Integer.toString(x))
+                .replace("{y}", Integer.toString(y))
+                .replace("{2x}", mHdpi ? "@2x" : "");
     }
     
     public void setURL(final String aUrl) {
@@ -89,6 +167,17 @@ public class WebTileProvider extends UrlTileProvider {
         this.mName = aName;
         return this;
     }
+    
+    public WebTileProvider setHdpi(final boolean hdpi) {
+        this.mHdpi = hdpi;
+        return this;
+    }
+    
+    public WebTileProvider setUserAgent(final String agent) {
+        this.mUserAgent = agent;
+        return this;
+    }
+    
 
     /**
      * Sets the layer's minimum zoom level.

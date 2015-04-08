@@ -59,6 +59,7 @@
     BOOL _cameraAnimating;
     MKMapCamera* _pendingCamera;
     CGFloat _lastCameraHeading;
+    RMSphericalTrapezium region;
 }
 
 #pragma mark Internal
@@ -234,12 +235,12 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
 	return [self map];
 }
 
-- (NSArray *)customAnnotations
-{
-    NSMutableArray *annotations = [NSMutableArray arrayWithArray:self.map.annotations];
-    [annotations removeObject:self.map.userLocation];
-    return annotations;
-}
+//- (NSArray *)customAnnotations
+//{
+//    NSMutableArray *annotations = [NSMutableArray arrayWithArray:self.map.annotations];
+//    [annotations removeObject:self.map.userLocation];
+//    return annotations;
+//}
 
 -(void)setBounds:(CGRect)bounds
 {
@@ -513,7 +514,9 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
 -(void)updateCamera:(id)args
 {
     if (map == nil || map.bounds.size.width == 0 || map.bounds.size.height == 0) {
-        [self.proxy applyProperties:args];
+        NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:args];
+        [dict removeObjectForKey:@"animate"];
+        [self.proxy applyProperties:dict];
         return;
     }
     if (_cameraAnimating) return;
@@ -560,7 +563,7 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
     [self setCamera:newCamera animated:animating];
     
     if ([args objectForKey:@"region"]) {
-        region = [AkylasMapModule regionFromDict:[args objectForKey:@"region"]];
+        region = [AkylasMapModule regionFromObject:[args objectForKey:@"region"]];
         BOOL oldAnimate= animate;
         animate = animating;
         [self render];
@@ -595,7 +598,7 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
 	}
 	else 
 	{
-		region = [AkylasMapModule regionFromDict:value];
+		region = [AkylasMapModule regionFromObject:value];
 		[self render];
 	}
 }
@@ -951,7 +954,7 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
     AkylasMapAnnotationProxy *annProxy = nil;
     if ([[annotationView annotation] isKindOfClass:[AkylasMapAnnotationProxy class]]) {
         annProxy = (AkylasMapAnnotationProxy*)[annotationView annotation];
-        canShowCallout = [TiUtils boolValue:[annProxy valueForUndefinedKey:@"showInfoWindow"] def:YES];
+        canShowCallout = annProxy.showInfoWindow;
     }
     if (canShowCallout) {
         if (!_calloutView) {
@@ -1098,8 +1101,8 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
         }
         else {
             MKPinAnnotationView *pinview = (MKPinAnnotationView*)annView;
-            pinview.pinColor = [ann mapPincolor];
-            pinview.animatesDrop = [ann animatesDrop] && ![(AkylasMapAnnotationProxy *)annotation placed];
+            pinview.pinColor = [ann pinColor];
+            pinview.animatesDrop = [ann animate] && ![(AkylasMapAnnotationProxy *)annotation placed];
             annView.centerOffset = CGPointMake(8, -15); //reinit centerOffset for default Pin
         }
         CGPoint currentOffset = annView.centerOffset;
@@ -1118,10 +1121,7 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
 //        annView.backgroundColor = [UIColor greenColor];
 //        annView.centerOffset = CGPointMake(-8, 0);
 
-        BOOL draggable = [TiUtils boolValue: [ann valueForUndefinedKey:@"draggable"]];
-        if (draggable && [[MKAnnotationView class] instancesRespondToSelector:@selector(setDraggable:)])
-            [annView performSelector:@selector(setDraggable:) withObject:[NSNumber numberWithBool:YES]];
-
+        annView.draggable = ann.draggable;
         annView.userInteractionEnabled = YES;
         annView.tag = [ann tag];
         
@@ -1149,7 +1149,7 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
          *image annotation on top of the mapview.*/
         if([thisView isKindOfClass:[AkylasMapImageAnnotationView class]] || [thisView isKindOfClass:[AkylasMapCustomAnnotationView class]])
         {
-            if([thisProxy animatesDrop] && ![thisProxy placed])
+            if([thisProxy animate] && ![thisProxy placed])
             {
                 CGRect viewFrame = thisView.frame;
                 thisView.frame = CGRectMake(viewFrame.origin.x, viewFrame.origin.y - self.frame.size.height, viewFrame.size.width, viewFrame.size.height);
@@ -1259,7 +1259,7 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
     
 	id clicksource = source ? source : (id)[NSNull null];
 	
-    NSMutableDictionary *event = [[TiUtils dictionaryFromGesture:recognizer inView:self] mutableCopy];
+    NSMutableDictionary *event = [TiUtils dictionaryFromGesture:recognizer inView:self];
     if (recognizer) {
         CGPoint point = [recognizer locationInView:self];
         [event addEntriesFromDictionary:[AkylasMapModule dictFromLocation2D:[map convertPoint:point toCoordinateFromView:map]]];
@@ -1278,7 +1278,6 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
 	{
 		[proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 	}
-    [event release];
 }
 
 
@@ -1303,10 +1302,9 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
     
 	if ([self.viewProxy _hasListeners:type checkParent:NO]) {
         CGPoint point = [recognizer locationInView:self];
-        NSMutableDictionary *event = [[TiUtils dictionaryFromGesture:recognizer inView:self] mutableCopy];
+        NSMutableDictionary *event = [TiUtils dictionaryFromGesture:recognizer inView:self];
         [event addEntriesFromDictionary:[AkylasMapModule dictFromLocation2D:[map convertPoint:point toCoordinateFromView:map]]];
         [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
-        [event release];
 	}
 }
 
@@ -1339,5 +1337,14 @@ BOOL MKCoordinateRegionIsValid(MKCoordinateRegion mkregion)
 //    [[self map] removeOverlays:[[self map] overlays]];
 }
 
+
+-(NSMutableDictionary*)dictionaryFromGesture:(UIGestureRecognizer*)recognizer
+{
+    NSMutableDictionary* event = [super dictionaryFromGesture:recognizer];
+    CGPoint point = [recognizer locationInView:self];
+    [event addEntriesFromDictionary:[AkylasMapModule dictFromLocation2D:[map convertPoint:point toCoordinateFromView:map]]];
+    
+    return event;
+}
 
 @end

@@ -9,6 +9,7 @@
 #import "AkylasMapMapViewProxy.h"
 #import "AkylasMapMapIOS7ViewProxy.h"
 #import "AkylasMapMapboxViewProxy.h"
+#import "AkylasMapGoogleMapViewProxy.h"
 #import "AkylasMapRouteProxy.h"
 #import "TiBase.h"
 #import "TiHost.h"
@@ -16,11 +17,31 @@
 #if defined(USE_TI_FILESYSTEM)
 #import "TiFilesystemFileProxy.h"
 #endif
-#import <Mapbox/RMOpenStreetMapSource.h>
-#import <Mapbox/RMOpenSeaMapSource.h>
-#import <Mapbox/RMOpenCycleMapSource.h>
-#import <Mapbox/RMTileMillSource.h>
-#import <Mapbox/RMMapQuestOSMSource.h>
+
+#import "JRSwizzle.h"
+#import <objc/runtime.h>
+
+#import <GoogleMaps/GoogleMaps.h>
+
+@implementation NSBundle (CorrectedPath)
+
++ (void) swizzle
+{
+    [NSBundle jr_swizzleMethod:@selector(initWithPath:) withMethod:@selector(initWithCorrectedPath:) error:nil];
+}
+
+-(NSString*)fixPath:(NSString *)path
+{
+    NSError *error = nil;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(?!akylas.map/)(GoogleMaps|Mapbox)\\.bundle$" options:NSRegularExpressionCaseInsensitive error:&error];
+    NSString *modifiedString = [regex stringByReplacingMatchesInString:path options:0 range:NSMakeRange(0, [path length]) withTemplate:@"modules/akylas.map/$0"];
+    return modifiedString;
+}
+
+- (instancetype)initWithCorrectedPath:(NSString *)path {
+    return [self initWithCorrectedPath:[self fixPath:path]];
+}
+@end
 
 @implementation AkylasMapModule
 
@@ -42,9 +63,11 @@
 
 -(void)startup
 {
+    [NSBundle swizzle];
 	// this method is called when the module is first loaded
 	// you *must* call the superclass
     CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.MapboxView", [AkylasMapMapboxViewProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.GoogleMapView", [AkylasMapGoogleMapViewProxy class]);
     CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.MapView", [AkylasMapMapViewProxy class]);
     CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.Annotation", [AkylasMapAnnotationProxy class]);
     CFDictionarySetValue([TiProxy classNameLookup], @"AkylasMap.TileSource", [AkylasMapTileSourceProxy class]);
@@ -127,6 +150,8 @@ MAKE_SYSTEM_PROP(STANDARD_TYPE,MKMapTypeStandard);
 MAKE_SYSTEM_PROP(NORMAL_TYPE,MKMapTypeStandard); // For parity with Android
 MAKE_SYSTEM_PROP(SATELLITE_TYPE,MKMapTypeSatellite);
 MAKE_SYSTEM_PROP(HYBRID_TYPE,MKMapTypeHybrid);
+MAKE_SYSTEM_PROP(TERRAIN_TYPE,kGMSTypeTerrain);
+MAKE_SYSTEM_PROP(NONE_TYPE,kGMSTypeNone);
 MAKE_SYSTEM_PROP(ANNOTATION_RED,MKPinAnnotationColorRed);
 MAKE_SYSTEM_PROP(ANNOTATION_GREEN,MKPinAnnotationColorGreen);
 MAKE_SYSTEM_PROP(ANNOTATION_PURPLE,MKPinAnnotationColorPurple);
@@ -179,23 +204,31 @@ MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
     
     return [[[CLLocation alloc] initWithCoordinate:loc altitude:altitude horizontalAccuracy:0 verticalAccuracy:0 course:course speed:speed timestamp:[TiUtils dateValue:timestamp]] autorelease];
 }
-+(RMSphericalTrapezium)regionFromDict:(NSDictionary*)dict
++(RMSphericalTrapezium)regionFromObject:(id)obj
 {
-    RMSphericalTrapezium result;
-    result.southWest = result.northEast = kCLLocationCoordinate2DInvalid;
-    if ([dict objectForKey:@"sw"] && [dict objectForKey:@"ne"]) {
-        result.southWest = [self locationFromObject:[dict objectForKey:@"sw"]];
-        result.northEast = [self locationFromObject:[dict objectForKey:@"ne"]];
-    } else if ([dict objectForKey:@"latitude"] && [dict objectForKey:@"longitude"]) {
-        CGFloat latitudeDelta_2 = [TiUtils floatValue:@"latitudeDelta" properties:dict]/2.0f;
-        CGFloat longitudeDelta_2 = [TiUtils floatValue:@"longitudeDelta" properties:dict]/2.0f;
-        CLLocationCoordinate2D center;
-        center.latitude = [TiUtils floatValue:@"latitude" properties:dict];
-        center.longitude = [TiUtils floatValue:@"longitude" properties:dict];
+    RMSphericalTrapezium result = kRMSphericalTrapeziumInvalid;
+    if (IS_OF_CLASS(obj, AkylasMapRouteProxy)) {
+        return [((AkylasMapRouteProxy*)obj) box];
+    } else if (IS_OF_CLASS(obj, AkylasMapAnnotationProxy)) {
+        CLLocationCoordinate2D center = [((AkylasMapAnnotationProxy*)obj) coordinate];
+        CGFloat latitudeDelta_2 = 0.001f;
+        CGFloat longitudeDelta_2 = 0.001f;
         result.southWest = CLLocationCoordinate2DMake(center.latitude - latitudeDelta_2, center.longitude - longitudeDelta_2);
         result.northEast = CLLocationCoordinate2DMake(center.latitude + latitudeDelta_2, center.longitude + longitudeDelta_2);
+    } else if (IS_OF_CLASS(obj, NSDictionary)) {
+        if ([obj objectForKey:@"sw"] && [obj objectForKey:@"ne"]) {
+            result.southWest = [self locationFromObject:[obj objectForKey:@"sw"]];
+            result.northEast = [self locationFromObject:[obj objectForKey:@"ne"]];
+        } else if ([obj objectForKey:@"latitude"] && [obj objectForKey:@"longitude"]) {
+            CGFloat latitudeDelta_2 = [TiUtils floatValue:@"latitudeDelta" properties:obj def:0.0f]/2.0f;
+            CGFloat longitudeDelta_2 = [TiUtils floatValue:@"longitudeDelta" properties:obj def:0.0f]/2.0f;
+            CLLocationCoordinate2D center;
+            center.latitude = [TiUtils floatValue:@"latitude" properties:obj];
+            center.longitude = [TiUtils floatValue:@"longitude" properties:obj];
+            result.southWest = CLLocationCoordinate2DMake(center.latitude - latitudeDelta_2, center.longitude - longitudeDelta_2);
+            result.northEast = CLLocationCoordinate2DMake(center.latitude + latitudeDelta_2, center.longitude + longitudeDelta_2);
+        }
     }
-    
 	return result;
 }
 
@@ -247,52 +280,58 @@ MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
              };
 }
 
-+(id)sourceFromObject:(id)value proxy:(TiProxy*)proxy
+
+-(id)computeRegion:(id)value
 {
-    if ([value isKindOfClass:[AkylasMapTileSourceProxy class]]) {
-        return [((AkylasMapTileSourceProxy*)value) mpTileSource];
+    ENSURE_SINGLE_ARG_OR_NIL(value, NSObject)
+    if (IS_OF_CLASS(value , NSArray)) {
+        __block RMSphericalTrapezium result = ((RMSphericalTrapezium){.northEast = {.latitude = kRMMinLatitude, .longitude = kRMMinLongitude}, .southWest = {.latitude = kRMMaxLatitude, .longitude = kRMMaxLongitude}});
+        [value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            RMSphericalTrapezium box = [AkylasMapModule regionFromObject:obj];
+            if (RMSphericalTrapeziumIsValid(box)) {
+                result = RMSphericalTrapeziumUnion(result, box);
+            }
+        }];
+        return [AkylasMapModule dictFromRegion:result];
+    } else {
+        RMSphericalTrapezium box = [AkylasMapModule regionFromObject:value];
+        if (RMSphericalTrapeziumIsValid(box)) {
+            return [AkylasMapModule dictFromRegion:box];
+        }
     }
-    NSString* type = nil;
-    if ([value isKindOfClass:[NSString class]]) {
-        type = value;
-    }
-#if defined(USE_TI_FILESYSTEM)
-    else if ([value isKindOfClass:[TiFilesystemFileProxy class]]) {
-        type = [(TiFilesystemFileProxy*)value nativePath];
-    }
-#endif
-    else if ([value isKindOfClass:[NSDictionary class]]) {
-        type = [(NSDictionary*)value valueForKey:@"source"];
-    }
-    if (type == nil) return nil;
-    NSString* typeLower = [type lowercaseString];
-    id result = nil;
-    if ([typeLower isEqualToString:@"openstreetmap"])
-    {
-        result = [[RMOpenStreetMapSource alloc] init];
-    }
-    else if ([typeLower isEqualToString:@"openseamap"])
-    {
-        result = [[RMOpenSeaMapSource alloc] init];
-    }
-    else if ([typeLower isEqualToString:@"mapquest"])
-    {
-        result = [[RMMapQuestOSMSource alloc] init];
-    }
-    else if ([typeLower isEqualToString:@"tilemill"] &&[value isKindOfClass:[NSDictionary class]] )
-    {
-        NSString* name = [TiUtils stringValue:@"mapName" properties:value];
-        NSString* cacheKey = [TiUtils stringValue:@"cacheKey" properties:value def:name];
-        result = [[RMTileMillSource alloc] initWithHost:[TiUtils stringValue:@"host" properties:value] mapName:name tileCacheKey:cacheKey minZoom:[TiUtils floatValue:@"minZoom" properties:value] maxZoom:[TiUtils floatValue:@"maxZoom" properties:value]];
-    }
-    else if ([typeLower hasSuffix:@"mbtiles"])
-    {
-        result = [[RMMBTilesSource alloc] initWithTileSetURL:[TiUtils toURL:type proxy:proxy]];
-    }
-    else {
-        result = [[RMMapboxSource alloc] initWithMapID:type];
-    }
-    return [result autorelease];
+    return nil;
 }
+
+-(void)setMapboxAccessToken:(id)value
+{
+    [[RMConfiguration configuration] setAccessToken:[TiUtils stringValue:value]];
+    [self replaceValue:value forKey:@"mapboxAccessToken" notification:NO];
+}
+
+
+-(void)setGoogleMapAPIKey:(id)value
+{
+    ENSURE_UI_THREAD_1_ARG(value)
+    [GMSServices  provideAPIKey:[TiUtils stringValue:value]];
+    static GMSServices * services;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        services = [[GMSServices sharedServices] retain];
+    });
+    [self replaceValue:value forKey:@"googleMapAPIKey" notification:NO];
+}
+
+
+-(id)googleMapLicenses
+{
+    return [GMSServices openSourceLicenseInfo];
+}
+
+
+-(id)googleMapSDKVersion
+{
+    return [GMSServices SDKVersion];
+}
+
 
 @end

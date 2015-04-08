@@ -52,7 +52,7 @@ public class TileJsonProvider extends WebTileProvider {
     }
     
     @Override
-    public URL getTileUrl(int x, int y, int zoom) {
+    public String getTileUrl(int x, int y, int zoom) {
         if (jsonURL != null && this.tileJSON == null && !isFetchingtileJSON) {
             //try to get the JSON again
             ConnectivityManager cm = (ConnectivityManager) TiApplication.getAppSystemService(Context.CONNECTIVITY_SERVICE);

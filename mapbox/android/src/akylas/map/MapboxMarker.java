@@ -86,7 +86,7 @@ public class MapboxMarker extends AkylasMarker{
     
     protected BitmapDrawable getColorImage() {
         BitmapDrawable drawable = (BitmapDrawable) mapView.getDefaultPinDrawable();
-        String value = TiConvert.toString(proxy.getProperty(TiC.PROPERTY_PINCOLOR));
+        String value = TiConvert.toString(proxy.getProperty(TiC.PROPERTY_COLOR));
         if (value != null) {
             int color = TiConvert.toColor(value);
             if (color != Color.TRANSPARENT) {

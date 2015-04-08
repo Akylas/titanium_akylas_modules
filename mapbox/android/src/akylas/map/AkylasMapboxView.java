@@ -25,41 +25,42 @@ import com.mapbox.mapboxsdk.tileprovider.tilesource.TileLayer;
 import com.mapbox.mapboxsdk.views.MapController;
 import com.mapbox.mapboxsdk.views.MapView;
 
-public class AkylasMapboxView extends AkylasMapDefaultView implements MapView.OnCameraChangeListener,
-MapView.OnInfoWindowClickListener, MapView.OnInfoWindowShowListener, MapView.OnMapClickListener,
-MapView.OnMapLongClickListener, MapView.OnMarkerClickListener, MapView.OnMarkerLongClickListener,
-MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
+public class AkylasMapboxView extends AkylasMapDefaultView implements
+        MapView.OnCameraChangeListener, MapView.OnInfoWindowClickListener,
+        MapView.OnInfoWindowShowListener, MapView.OnMapClickListener,
+        MapView.OnMapLongClickListener, MapView.OnMarkerClickListener,
+        MapView.OnMarkerLongClickListener, MapView.OnMyLocationChangeListener,
+        MapView.OnMarkerDragListener {
 
     private static final String TAG = "AkylasMapboxView";
     private MapView map;
     private MapController mapController;
 
-
-
-    
     public AkylasMapboxView(TiViewProxy proxy) {
         super(proxy);
-        if (proxy.hasProperty(AkylasMapModule.PROPERTY_DEBUG))
-        {
-            MapView.setDebugMode(TiConvert.toBoolean(proxy.getProperty(AkylasMapModule.PROPERTY_DEBUG)));
+        if (proxy.hasProperty(AkylasMapModule.PROPERTY_DEBUG)) {
+            MapView.setDebugMode(TiConvert.toBoolean(proxy
+                    .getProperty(AkylasMapModule.PROPERTY_DEBUG)));
         }
         map = new MapView(proxy.getActivity(), null) {
             private boolean canDetach = true;
+
             @Override
             public void onDetach() {
-                if (!canDetach) return;
+                if (!canDetach)
+                    return;
                 super.onDetach();
             }
+
             @Override
             protected void onDetachedFromWindow() {
                 canDetach = false;
                 super.onDetachedFromWindow();
                 canDetach = true;
             }
-            
+
             @Override
-            public boolean dispatchTouchEvent(MotionEvent ev)
-            {
+            public boolean dispatchTouchEvent(MotionEvent ev) {
                 return interceptTouchEvent(ev) || super.dispatchTouchEvent(ev);
             }
         };
@@ -76,24 +77,27 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
 
         setNativeView(map);
     }
-    
- // Intercept the touch event to find out the correct clicksource if clicking on the info window.
-    protected boolean interceptTouchEvent(MotionEvent ev)
-    {
-        if (ev.getAction() == MotionEvent.ACTION_UP && selectedAnnotation != null) {
-            AkylasMapInfoView infoWindow = selectedAnnotation.getMapInfoWindow();
+
+    // Intercept the touch event to find out the correct clicksource if clicking
+    // on the info window.
+    protected boolean interceptTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_UP
+                && selectedAnnotation != null) {
+            AkylasMapInfoView infoWindow = selectedAnnotation
+                    .getMapInfoWindow();
             AkylasMarker timarker = selectedAnnotation.getMarker();
             if (infoWindow != null && timarker != null) {
                 Marker marker = ((MapboxMarker) timarker).getMarker();
                 if (marker != null && marker.isInfoWindowShown()) {
                     PointF markerPoint = marker.getPositionOnScreen(null);
-                    infoWindow.analyzeTouchEvent( ev, new Point((int) markerPoint.x, (int) markerPoint.y), 0);
+                    infoWindow.analyzeTouchEvent(ev, new Point(
+                            (int) markerPoint.x, (int) markerPoint.y), 0);
                 }
             }
         }
         return false;
     }
-    
+
     @Override
     public void release() {
         if (map != null) {
@@ -139,30 +143,33 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
             mapController.setZoom(level);
         }
     }
-    
+
     protected static final ArrayList<String> KEY_SEQUENCE;
-    static{
-      ArrayList<String> tmp = AkylasMapDefaultView.KEY_SEQUENCE;
-      tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE);
-      tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR);
-      tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR);
-      tmp.add(0, AkylasMapModule.PROPERTY_DISK_CACHE);
-      tmp.add(0, AkylasMapModule.PROPERTY_REGION_FIT);
-      tmp.add(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM);
-      KEY_SEQUENCE = tmp;
+    static {
+        ArrayList<String> tmp = AkylasMapDefaultView.KEY_SEQUENCE;
+        tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE);
+        tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR);
+        tmp.add(0, AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR);
+        tmp.add(0, AkylasMapModule.PROPERTY_DISK_CACHE);
+        tmp.add(0, AkylasMapModule.PROPERTY_REGION_FIT);
+        tmp.add(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM);
+        KEY_SEQUENCE = tmp;
     }
-    
+
     @Override
     protected ArrayList<String> keySequence() {
         return KEY_SEQUENCE;
     }
-    
+
     @Override
     public void propertySet(String key, Object newValue, Object oldValue,
             boolean changedProperty) {
         switch (key) {
         case AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE:
             map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(newValue));
+            break;
+        case AkylasMapModule.PROPERTY_ROTATE_ENABLED:
+            map.setMapRotationEnabled(TiConvert.toBoolean(newValue, true));
             break;
         case AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR:
             map.setDefaultPinAnchor(TiConvert.toPointF(newValue));
@@ -173,6 +180,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         case AkylasMapModule.PROPERTY_DISK_CACHE:
             setDiskCacheEnabled(TiConvert.toBoolean(newValue));
             break;
+            
         case AkylasMapModule.PROPERTY_REGION_FIT:
             super.propertySet(key, newValue, oldValue, changedProperty);
             map.setConstraintRegionFit(regionFit);
@@ -180,75 +188,80 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         case AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM:
             map.setUserLocationRequiredZoom(TiConvert.toFloat(newValue, 10));
             break;
+
         default:
             super.propertySet(key, newValue, oldValue, changedProperty);
             break;
         }
     }
 
-//    @Override
-//    public void processPreMapProperties(final KrollDict d) {
-//        super.processPreMapProperties(d);
-//         
-//        
-//        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
-//            map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(d
-//                    .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)));
-//        }
-//        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
-//            map.setDefaultPinAnchor(TiConvert.toPointF(d
-//                    .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)));
-//        }
-//        if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
-//            map.setDefaultInfoWindowAnchor(TiConvert.toPointF(d
-//                    .get(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)));
-//        }
-//        if (d.containsKey(AkylasMapModule.PROPERTY_DISK_CACHE)) {
-//            setDiskCacheEnabled(TiConvert.toBoolean(d, AkylasMapModule.PROPERTY_DISK_CACHE));
-//        }
-//        super.processPreMapProperties(d);
-//        map.setConstraintRegionFit(regionFit);
-//    }
-    
-//    @Override 
-//    public void processMapPositioningProperties(final KrollDict d, final boolean animated) {
-//        super.processMapPositioningProperties(d, animated);
-//        if (d.containsKey(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM)) {
-//            setUserLocationRequiredZoom(TiConvert.toFloat(d,
-//                    AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM, 10));
-//        }
-//    }
+    // @Override
+    // public void processPreMapProperties(final KrollDict d) {
+    // super.processPreMapProperties(d);
+    //
+    //
+    // if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
+    // map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(d
+    // .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)));
+    // }
+    // if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
+    // map.setDefaultPinAnchor(TiConvert.toPointF(d
+    // .get(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)));
+    // }
+    // if (d.containsKey(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
+    // map.setDefaultInfoWindowAnchor(TiConvert.toPointF(d
+    // .get(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)));
+    // }
+    // if (d.containsKey(AkylasMapModule.PROPERTY_DISK_CACHE)) {
+    // setDiskCacheEnabled(TiConvert.toBoolean(d,
+    // AkylasMapModule.PROPERTY_DISK_CACHE));
+    // }
+    // super.processPreMapProperties(d);
+    // map.setConstraintRegionFit(regionFit);
+    // }
 
-//    @Override
-//    public void processPostMapProperties(final KrollDict d,
-//            final boolean animated) {
-//        if (d.containsKey(AkylasMapModule.PROPERTY_TILE_SOURCE)) {
-//            setTileSources(d.get(AkylasMapModule.PROPERTY_TILE_SOURCE));
-//        }
-//        super.processPostMapProperties(d, animated);
-//    }
+    // @Override
+    // public void processMapPositioningProperties(final KrollDict d, final
+    // boolean animated) {
+    // super.processMapPositioningProperties(d, animated);
+    // if (d.containsKey(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM))
+    // {
+    // setUserLocationRequiredZoom(TiConvert.toFloat(d,
+    // AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM, 10));
+    // }
+    // }
 
-//    @Override
-//    public void propertyChanged(String key, Object oldValue, Object newValue,
-//            KrollProxy proxy) {
-//
-//        if (key.equals(AkylasMapModule.PROPERTY_DISK_CACHE)) {
-//            setDiskCacheEnabled(TiConvert.toBoolean(newValue));
-//        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
-//            map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(newValue));
-//        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
-//            map.setDefaultPinAnchor(TiConvert.toPointF(newValue));
-//        } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
-//            map.setDefaultInfoWindowAnchor(TiConvert.toPointF(newValue));
-//        } else if (key.equals(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM)) {
-//            setUserLocationRequiredZoom(TiConvert.toFloat(newValue));
-//        } else if (key.equals(AkylasMapModule.PROPERTY_REGION_FIT)) {
-//            regionFit = TiConvert.toBoolean(newValue, regionFit);
-//            map.setConstraintRegionFit(regionFit);
-//        } else {
-//            super.propertyChanged(key, oldValue, newValue, proxy);
-//        }
-//    }
+    // @Override
+    // public void processPostMapProperties(final KrollDict d,
+    // final boolean animated) {
+    // if (d.containsKey(AkylasMapModule.PROPERTY_TILE_SOURCE)) {
+    // setTileSources(d.get(AkylasMapModule.PROPERTY_TILE_SOURCE));
+    // }
+    // super.processPostMapProperties(d, animated);
+    // }
+
+    // @Override
+    // public void propertyChanged(String key, Object oldValue, Object newValue,
+    // KrollProxy proxy) {
+    //
+    // if (key.equals(AkylasMapModule.PROPERTY_DISK_CACHE)) {
+    // setDiskCacheEnabled(TiConvert.toBoolean(newValue));
+    // } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_IMAGE)) {
+    // map.setDefaultPinDrawable(TiUIHelper.getResourceDrawable(newValue));
+    // } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_PIN_ANCHOR)) {
+    // map.setDefaultPinAnchor(TiConvert.toPointF(newValue));
+    // } else if (key.equals(AkylasMapModule.PROPERTY_DEFAULT_CALLOUT_ANCHOR)) {
+    // map.setDefaultInfoWindowAnchor(TiConvert.toPointF(newValue));
+    // } else if
+    // (key.equals(AkylasMapModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM)) {
+    // setUserLocationRequiredZoom(TiConvert.toFloat(newValue));
+    // } else if (key.equals(AkylasMapModule.PROPERTY_REGION_FIT)) {
+    // regionFit = TiConvert.toBoolean(newValue, regionFit);
+    // map.setConstraintRegionFit(regionFit);
+    // } else {
+    // super.propertyChanged(key, oldValue, newValue, proxy);
+    // }
+    // }
 
     @Override
     public void zoomIn() {
@@ -320,19 +333,19 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         map.setUserLocationEnabled(enabled);
     }
 
-    protected void setDiskCacheEnabled(boolean enabled)
-    {
+    protected void setDiskCacheEnabled(boolean enabled) {
         map.setDiskCacheEnabled(enabled);
     }
 
     @Override
     protected void setUserTrackingMode(int mode) {
-        map.setUserLocationTrackingMode(UserLocationOverlay.TrackingMode.values()[mode]);
+        map.setUserLocationTrackingMode(UserLocationOverlay.TrackingMode
+                .values()[mode]);
     }
-    
-//    protected void setUserLocationRequiredZoom(float zoomLevel) {
-//        map.setUserLocationRequiredZoom(zoomLevel);
-//    }
+
+    // protected void setUserLocationRequiredZoom(float zoomLevel) {
+    // map.setUserLocationRequiredZoom(zoomLevel);
+    // }
 
     @Override
     public float getMaxZoomLevel() {
@@ -343,6 +356,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     public float getMinZoomLevel() {
         return map.getMinZoomLevel();
     }
+
     @Override
     public float getZoomLevel() {
         return map.getZoomLevel();
@@ -361,16 +375,15 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
 
     @Override
     public void updateRegion(Object dict, final boolean animated) {
-        BoundingBox box = AkylasMapModule.regionFromDict(dict);
+        BoundingBox box = AkylasMapModule.regionFromObject(dict);
         if (box != null) {
-            map.zoomToBoundingBox(box, regionFit, animated, true,
-                    true);
+            map.zoomToBoundingBox(box, regionFit, animated, true, true);
         }
     }
 
     @Override
     public void updateScrollableAreaLimit(Object dict) {
-        BoundingBox box = AkylasMapModule.regionFromDict(dict);
+        BoundingBox box = AkylasMapModule.regionFromObject(dict);
         if (box != null) {
             map.setScrollableAreaLimit(box);
         }
@@ -390,7 +403,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
     @Override
     public void removeTileSource(Object object) {
         if (object instanceof TileSourceProxy) {
-            TileLayer layer = ((TileSourceProxy)object).getLayer();
+            TileLayer layer = ((TileSourceProxy) object).getLayer();
             if (layer != null) {
                 map.removeTileSource(layer);
             }
@@ -407,32 +420,36 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         }
         return ((MapboxMarker) marker).getMarker(map);
     }
-    
+
     public MabpoxInfoWindow createInfoWindow(AnnotationProxy annotationProxy) {
-        MabpoxInfoWindow result = (MabpoxInfoWindow) mInfoWindowCache.get("window");
+        MabpoxInfoWindow result = (MabpoxInfoWindow) mInfoWindowCache
+                .get("window");
         result.setProxy(annotationProxy);
         return result;
     }
-    
+
     public void infoWindowDidClose(MabpoxInfoWindow mabpoxInfoWindow) {
         mabpoxInfoWindow.setProxy(null);
         mabpoxInfoWindow.getBoundMarker().setInfoWindow(null);
         if (_calloutUsesTemplates) {
-            AkylasMapInfoView infoView = (AkylasMapInfoView) mabpoxInfoWindow.getInfoView();
+            AkylasMapInfoView infoView = (AkylasMapInfoView) mabpoxInfoWindow
+                    .getInfoView();
             Object view = infoView.getLeftView();
             if (view != null && view instanceof TiCompositeLayout) {
-                view = ((TiCompositeLayout)view).getView();
+                view = ((TiCompositeLayout) view).getView();
             }
             if (view instanceof ReusableView) {
-                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
+                mInfoWindowCache.put(
+                        ((ReusableView) view).getReusableIdentifier(), view);
                 infoView.setLeftOrRightPane(null, AkylasMapInfoView.LEFT_PANE);
             }
             view = infoView.getRightView();
             if (view != null && view instanceof TiCompositeLayout) {
-                view = ((TiCompositeLayout)view).getView();
+                view = ((TiCompositeLayout) view).getView();
             }
             if (view instanceof ReusableView) {
-                mInfoWindowCache.put(((ReusableView)view).getReusableIdentifier(), view);
+                mInfoWindowCache.put(
+                        ((ReusableView) view).getReusableIdentifier(), view);
                 infoView.setLeftOrRightPane(null, AkylasMapInfoView.RIGHT_PANE);
             }
             infoView.setCustomView(null);
@@ -529,7 +546,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
         } else {
             marker = getOrCreateMapboxMarker(annotation);
         }
-        
+
         if (TiApplication.isUIThread()) {
             map.addMarker(marker);
         } else {
@@ -567,7 +584,7 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
             }
         }
     }
-    
+
     @Override
     protected void removeAllAnnotations() {
         if (TiApplication.isUIThread()) {
@@ -581,76 +598,75 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
             });
         }
     }
-    
-    public void fireLongClickEvent(ILatLng point)
-    {
+
+    public void fireLongClickEvent(ILatLng point) {
         fireEventOnMap(TiC.EVENT_LONGPRESS, point);
     }
-    
-    public void fireClickEvent(final Marker marker, final String source)
-    {
+
+    public void fireClickEvent(final Marker marker, final String source) {
         fireEventOnMarker(TiC.EVENT_CLICK, marker, source);
     }
-    
-    protected void fireEventOnMarker(String type, Marker marker, String clickSource) {
+
+    protected void fireEventOnMarker(String type, Marker marker,
+            String clickSource) {
         fireEventOnMarker(type, getAkMarker(marker), clickSource);
     }
-    
 
     @Override
-    public boolean onMarkerClick(Marker marker)
-    {
+    public boolean onMarkerClick(Marker marker) {
         fireClickEvent(marker, AkylasMapModule.PROPERTY_PIN);
         return true;
     }
 
     @Override
-    public void onMapClick(ILatLng point)
-    {
+    public void onMapClick(ILatLng point) {
         fireEventOnMap(TiC.EVENT_CLICK, point);
     }
-    
+
     @Override
-    public void onMapLongClick(ILatLng point)
-    {
+    public void onMapLongClick(ILatLng point) {
         fireLongClickEvent(point);
     }
 
-//    @Override
-//    public void onMarkerDrag(Marker marker)
-//    {
-//        Log.d(TAG, "The annotation is dragged.", Log.DEBUG_MODE);
-//    }
+    // @Override
+    // public void onMarkerDrag(Marker marker)
+    // {
+    // Log.d(TAG, "The annotation is dragged.", Log.DEBUG_MODE);
+    // }
 
-//    @Override
-//    public void onMarkerDragEnd(Marker marker)
-//    {
-//        AnnotationProxy annoProxy = getProxyByMarker(marker);
-//        if (annoProxy != null) {
-//            LatLng position = marker.getPosition();
-//            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.longitude);
-//            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.latitude);
-//            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_END);
-//        }
-//    }
+    // @Override
+    // public void onMarkerDragEnd(Marker marker)
+    // {
+    // AnnotationProxy annoProxy = getProxyByMarker(marker);
+    // if (annoProxy != null) {
+    // LatLng position = marker.getPosition();
+    // annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.longitude);
+    // annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.latitude);
+    // firePinChangeDragStateEvent(marker, annoProxy,
+    // AkylasMapModule.ANNOTATION_DRAG_STATE_END);
+    // }
+    // }
 
-//    @Override
-//    public void onMarkerDragStart(Marker marker)
-//    {
-//        AnnotationProxy annoProxy = getProxyByMarker(marker);
-//        if (annoProxy != null) {
-//            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_START);
-//        }
-//    }
+    // @Override
+    // public void onMarkerDragStart(Marker marker)
+    // {
+    // AnnotationProxy annoProxy = getProxyByMarker(marker);
+    // if (annoProxy != null) {
+    // firePinChangeDragStateEvent(marker, annoProxy,
+    // AkylasMapModule.ANNOTATION_DRAG_STATE_START);
+    // }
+    // }
 
     @Override
-    public void onInfoWindowClick(Marker marker)
-    {
+    public void onInfoWindowClick(Marker marker) {
         AkylasMarker akMarker = getAkMarker(marker);
         if (akMarker != null) {
-            String clicksource = akMarker.getProxy().getMapInfoWindow().getClicksource();
-            // The clicksource is null means the click event is not inside "leftPane", "title", "subtible"
-            // or "rightPane". In this case, use "infoWindow" as the clicksource.
+            String clicksource = akMarker.getProxy().getMapInfoWindow()
+                    .getClicksource();
+            // The clicksource is null means the click event is not inside
+            // "leftPane", "title", "subtible"
+            // or "rightPane". In this case, use "infoWindow" as the
+            // clicksource.
             if (clicksource == null) {
                 clicksource = AkylasMapModule.PROPERTY_INFO_WINDOW;
             }
@@ -664,20 +680,23 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
 
     @Override
     public boolean onMarkerLongClick(Marker marker) {
-        fireEventOnMarker(TiC.EVENT_LONGPRESS, marker, AkylasMapModule.PROPERTY_PIN);
+        fireEventOnMarker(TiC.EVENT_LONGPRESS, marker,
+                AkylasMapModule.PROPERTY_PIN);
         return false;
     }
 
     @Override
     public void onInfoWindowShow(Marker marker) {
         selectedAnnotation = getAkMarker(marker).getProxy();
-        fireEventOnMarker(TiC.EVENT_FOCUS, getAkMarker(marker), AkylasMapModule.PROPERTY_PIN);
+        fireEventOnMarker(TiC.EVENT_FOCUS, getAkMarker(marker),
+                AkylasMapModule.PROPERTY_PIN);
     }
 
     @Override
     public void onInfoWindowHide(Marker marker) {
         selectedAnnotation = null;
-        fireEventOnMarker(TiC.EVENT_BLUR, getAkMarker(marker), AkylasMapModule.PROPERTY_PIN);
+        fireEventOnMarker(TiC.EVENT_BLUR, getAkMarker(marker),
+                AkylasMapModule.PROPERTY_PIN);
     }
 
     @Override
@@ -689,47 +708,50 @@ MapView.OnMyLocationChangeListener, MapView.OnMarkerDragListener{
             result.put(AkylasMapModule.PROPERTY_ZOOM, zoom);
             proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result, false, false);
         }
-        
+
     }
 
     @Override
     public void onMarkerDragCancel(Marker marker) {
         AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
         if (annoProxy != null) {
-            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_CANCEL);
-        }
-    }
-    
-    @Override
-    public void onMarkerDrag(Marker marker)
-    {
-        AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
-        if (annoProxy != null) {
-            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_DRAGGING);
+            firePinChangeDragStateEvent(marker, annoProxy,
+                    AkylasMapModule.ANNOTATION_DRAG_STATE_CANCEL);
         }
     }
 
     @Override
-    public void onMarkerDragEnd(Marker marker)
-    {
+    public void onMarkerDrag(Marker marker) {
+        AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
+        if (annoProxy != null) {
+            firePinChangeDragStateEvent(marker, annoProxy,
+                    AkylasMapModule.ANNOTATION_DRAG_STATE_DRAGGING);
+        }
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
         AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
         if (annoProxy != null) {
             LatLng position = marker.getPosition();
-            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE, position.getLongitude());
-            annoProxy.setProperty(TiC.PROPERTY_LATITUDE, position.getLatitude());
-            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_END);
+            annoProxy.setProperty(TiC.PROPERTY_LONGITUDE,
+                    position.getLongitude());
+            annoProxy
+                    .setProperty(TiC.PROPERTY_LATITUDE, position.getLatitude());
+            firePinChangeDragStateEvent(marker, annoProxy,
+                    AkylasMapModule.ANNOTATION_DRAG_STATE_END);
         }
     }
 
     @Override
-    public void onMarkerDragStart(Marker marker)
-    {
+    public void onMarkerDragStart(Marker marker) {
         AnnotationProxy annoProxy = getAkMarker(marker).getProxy();
         if (annoProxy != null) {
-            firePinChangeDragStateEvent(marker, annoProxy, AkylasMapModule.ANNOTATION_DRAG_STATE_START);
+            firePinChangeDragStateEvent(marker, annoProxy,
+                    AkylasMapModule.ANNOTATION_DRAG_STATE_START);
         }
     }
-    
+
     public float getMetersPerPixel() {
         final float density = getContext().getResources().getDisplayMetrics().density - 1;
         float result = (float) map.getProjection().groundResolution(0);
