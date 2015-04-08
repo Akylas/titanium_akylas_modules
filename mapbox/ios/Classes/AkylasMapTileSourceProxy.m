@@ -3,13 +3,6 @@
 #import "TiUtils.h"
 #import <Mapbox/Mapbox.h>
 #import <GoogleMaps/GoogleMaps.h>
-#if defined(USE_TI_FILESYSTEM)
-#import "TiFilesystemFileProxy.h"
-#endif
-#if defined(USE_TI_DATABASE)
-#import "TiDatabaseProxy.h"
-#endif
-
 #import <Mapbox/RMOpenStreetMapSource.h>
 #import <Mapbox/RMOpenSeaMapSource.h>
 #import <Mapbox/RMOpenCycleMapSource.h>
@@ -210,16 +203,9 @@
         if (IS_OF_CLASS(source, AkylasMapTileSourceProxy) && source != self) {
             return [source mpSource];
         }
-#if defined(USE_TI_DATABASE)
-        else if (IS_OF_CLASS(source, TiDatabaseProxy)) {
-            source = [(TiDatabaseProxy*)source path];
+        else if ([source respondsToSelector:@selector(nativePath)]) {
+            source = [source nativePath];
         }
-#endif
-#if defined(USE_TI_FILESYSTEM)
-        else if (IS_OF_CLASS(source, TiFilesystemFileProxy)) {
-            source = [(TiFilesystemFileProxy*)source nativePath];
-        }
-#endif
         else  {
             return nil;
         }
@@ -346,16 +332,9 @@
         if (IS_OF_CLASS(source, AkylasMapTileSourceProxy) && source != self) {
             return [source mpSource];
         }
-#if defined(USE_TI_DATABASE)
-        else if (IS_OF_CLASS(source, TiDatabaseProxy)) {
-            source = [(TiDatabaseProxy*)source path];
+        else if ([source respondsToSelector:@selector(nativePath)]) {
+            source = [source nativePath];
         }
-#endif
-#if defined(USE_TI_FILESYSTEM)
-        else if (IS_OF_CLASS(source, TiFilesystemFileProxy)) {
-            source = [(TiFilesystemFileProxy*)source nativePath];
-        }
-#endif
         else  {
             return nil;
         }
