@@ -28,6 +28,7 @@
 + (void) swizzle
 {
     [NSBundle jr_swizzleMethod:@selector(initWithPath:) withMethod:@selector(initWithCorrectedPath:) error:nil];
+    [NSBundle jr_swizzleMethod:@selector(pathForResource:ofType:) withMethod:@selector(correctedPathForResource:ofType:) error:nil];
 }
 
 -(NSString*)fixPath:(NSString *)path
@@ -37,6 +38,15 @@
     NSString *modifiedString = [regex stringByReplacingMatchesInString:path options:0 range:NSMakeRange(0, [path length]) withTemplate:@"modules/akylas.map/$0"];
     return modifiedString;
 }
+
+- (NSString *)correctedPathForResource:(NSString *)name ofType:(NSString *)ext;
+{
+    if ([name isEqualToString:@"Mapbox"]) {
+        return [self pathForResource:name ofType:ext inDirectory:@"modules/akylas.map"];
+    }
+    return [self correctedPathForResource:name ofType:ext];
+}
+
 
 - (instancetype)initWithCorrectedPath:(NSString *)path {
     return [self initWithCorrectedPath:[self fixPath:path]];
