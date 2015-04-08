@@ -19,21 +19,8 @@
 		D50FDC521A4489B800D962C9 /* AkylasAdmobInterstitialProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D50FDC501A4489B800D962C9 /* AkylasAdmobInterstitialProxy.h */; };
 		D50FDC531A4489B800D962C9 /* AkylasAdmobInterstitialProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D50FDC511A4489B800D962C9 /* AkylasAdmobInterstitialProxy.m */; };
 		D5DCBA821AA9A47F0087139B /* GoogleMobileAds.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5DCBA811AA9A47F0087139B /* GoogleMobileAds.framework */; };
-		D5F82DD51AA9A852002298AB /* GoogleMobileAds.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = D5DCBA811AA9A47F0087139B /* GoogleMobileAds.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D5EC57C51ACAD04D008314D0 /* GoogleMobileAds.framework in Headers */ = {isa = PBXBuildFile; fileRef = D5DCBA811AA9A47F0087139B /* GoogleMobileAds.framework */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		D5F82DD41AA9A84E002298AB /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 16;
-			files = (
-				D5F82DD51AA9A852002298AB /* GoogleMobileAds.framework in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		249BE66D11B47B2700AF41CF /* AkylasAdmobViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasAdmobViewProxy.h; path = Classes/AkylasAdmobViewProxy.h; sourceTree = "<group>"; };
@@ -58,8 +45,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D5DCBA821AA9A47F0087139B /* GoogleMobileAds.framework in Frameworks */,
 				CE6C17A01982D1170017C788 /* AdSupport.framework in Frameworks */,
+				D5DCBA821AA9A47F0087139B /* GoogleMobileAds.framework in Frameworks */,
 				AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -128,6 +115,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5EC57C51ACAD04D008314D0 /* GoogleMobileAds.framework in Headers */,
 				AA747D9F0F9514B9006C5449 /* akylas.admob_Prefix.pch in Headers */,
 				24DD6CF91134B3F500162E58 /* AkylasAdmobModule.h in Headers */,
 				249BE66F11B47B2700AF41CF /* AkylasAdmobViewProxy.h in Headers */,
@@ -146,7 +134,6 @@
 				D2AAC07A0554694100DB518D /* Headers */,
 				D2AAC07B0554694100DB518D /* Sources */,
 				D2AAC07C0554694100DB518D /* Frameworks */,
-				D5F82DD41AA9A84E002298AB /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -236,6 +223,7 @@
 				);
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				PUBLIC_HEADERS_FOLDER_PATH = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				USER_HEADER_SEARCH_PATHS = "";
@@ -276,6 +264,7 @@
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				PUBLIC_HEADERS_FOLDER_PATH = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				USER_HEADER_SEARCH_PATHS = "";
@@ -289,6 +278,10 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/platform",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -324,6 +317,10 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/platform",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${PROJECT_NAME}_Prefix.pch";
