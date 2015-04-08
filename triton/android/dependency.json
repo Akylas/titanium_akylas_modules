@@ -1,0 +1,4 @@
+{
+    "required": ["audio"],
+	"googleplayservices_features":["com.google.android.gms.ads.*"]
+}

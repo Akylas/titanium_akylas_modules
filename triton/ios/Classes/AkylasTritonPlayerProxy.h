@@ -6,12 +6,11 @@
  */
 
 
-#ifdef USE_TI_AUDIOSTREAMER
 
 #import "TiProxy.h"
 #import "ImageLoader.h"
 
-@interface TiAudioStreamerProxy : TiProxy<ImageLoaderDelegate>
+@interface AkylasTritonPlayerProxy : TiProxy<ImageLoaderDelegate>
 
 @property (nonatomic,readonly) NSURL *url;
 @property (nonatomic,readwrite,assign)  NSNumber *paused;
@@ -33,5 +32,3 @@
 @property (nonatomic,readonly) NSNumber *STATE_PAUSED;
 
 @end
-
-#endif
