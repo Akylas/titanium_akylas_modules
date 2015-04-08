@@ -285,7 +285,7 @@ MAKE_SYSTEM_PROP(OVERLAY_LEVEL_ABOVE_ROADS,MKOverlayLevelAboveRoads);
 {
     ENSURE_SINGLE_ARG_OR_NIL(value, NSObject)
     if (IS_OF_CLASS(value , NSArray)) {
-        __block RMSphericalTrapezium result = ((RMSphericalTrapezium){.northEast = {.latitude = kRMMinLatitude, .longitude = kRMMinLongitude}, .southWest = {.latitude = kRMMaxLatitude, .longitude = kRMMaxLongitude}});
+        __block RMSphericalTrapezium result = ((RMSphericalTrapezium){.northEast = {.latitude = kRMMinLatitude, .longitude = kRMMinLongitude}, .southWest = {.latitude = kRMMinLatitude, .longitude = kRMMinLongitude}});
         [value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             RMSphericalTrapezium box = [AkylasMapModule regionFromObject:obj];
             if (RMSphericalTrapeziumIsValid(box)) {

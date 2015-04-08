@@ -388,7 +388,7 @@ public class AkylasMapModule extends KrollModule {
     public Object computeRegion(Object arg)
     {
         if (arg instanceof Object[]) {
-            BoundingBox result = new BoundingBox(-90, -180, 90, 180);
+            BoundingBox result = new BoundingBox(-90, -180, -90, -180);
             Object[] array  = (Object[])arg;
             for (int i = 0; i < array.length; i++) {
                 Object obj = array[i];
