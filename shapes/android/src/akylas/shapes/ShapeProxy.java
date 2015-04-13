@@ -1142,7 +1142,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 			_paint.setShader(new BitmapShader(((TiBlob)object).getImage(), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
 		}
 		else {
-			Drawable drawable = TiUIHelper.buildImageDrawable(TiConvert.toString(object), false, this);
+			Drawable drawable = TiUIHelper.buildImageDrawable(context, object, false, this);
 			if (drawable instanceof BitmapDrawable) {
 				_paint.setShader(new BitmapShader(((BitmapDrawable) drawable).getBitmap(), Shader.TileMode.REPEAT, Shader.TileMode.REPEAT));
 			}
