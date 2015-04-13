@@ -2,7 +2,7 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2.0
+version: 1.0
 apiversion: 2
 description: Akylas MapBox module
 author: Martin Guillon
@@ -12,9 +12,9 @@ debug_project_subpath: mapbox/android
 
 
 # these should not be edited
-name:  akylas-map
-moduleid: akylas.map
+name:  akylas-mapbox
+moduleid: akylas.mapbox
 guid: 0e81237e-7ec2-4064-9ed0-d6cf26d10e23
 platform: android
-minsdk: 3.6.0.AKYLAS
+minsdk: 4.1.0.AKYLAS
 respackage: com.mapbox.mapboxsdk

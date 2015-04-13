@@ -14,5 +14,11 @@
         "copyright":"copyright (c) 2000, Frank Warmerdam",
         "licenseId":"mit"
 
+    },
+    "SMCalloutView":{
+        "title":"SMCalloutView",
+        "copyright":"copyright (c) 2013, Nick Farina (nfarina@gmail.com)",
+        "licenseId":"apache_2"
+
     }
 }

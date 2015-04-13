@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: Map module
+author: Martin Guillon
+license: Proprietary
+copyright: Copyright (c) 2014-2015 by Akylas
+
+
+# on ios make sure that moduleid is the name of the project
+name:  akylas-map
+moduleid: akylas.map
+guid: 4c80e438-6315-4936-b3fe-42525f7f46fb
+platform: iphone
+minsdk: 4.1.0.AKYLAS

@@ -10,3 +10,12 @@
 [submodule "commonjs/ios/assets"]
 	path = commonjs/ios/assets
 	url = git@bitbucket.org:farfromrefuge/ti.ak.include.git
+[submodule "map/ios/Classes/common"]
+	path = map/ios/Classes/common
+	url = git@bitbucket.org:farfromrefuge/akylas.map.common.ios.git
+[submodule "mapbox/ios/Classes/common"]
+	path = mapbox/ios/Classes/common
+	url = git@bitbucket.org:farfromrefuge/akylas.map.common.ios.git
+[submodule "googlemap/android/src/akylas/map"]
+	path = googlemap/android/src/akylas/map
+	url = git@bitbucket.org:farfromrefuge/akylas.map.common.android.git
