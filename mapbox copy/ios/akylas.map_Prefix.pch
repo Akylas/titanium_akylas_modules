@@ -1,8 +1,0 @@
-
-#ifdef __OBJC__
-    #import <Foundation/Foundation.h>
-    #import <CoreGraphics/CoreGraphics.h>
-    #import <UIKit/UIKit.h>
-    #import <Mapbox/Mapbox.h>
-    #import <MapKit/MapKit.h>
-#endif
