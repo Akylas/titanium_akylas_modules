@@ -7,7 +7,7 @@
 //
 
 #import "AkylasGMSURLTileLayer.h"
-#import "AkylasGoogleMapView.h"
+#import "AkylasGooglemapView.h"
 
 #define HTTP_404_NOT_FOUND 404
 @interface AkylasGMSURLTileLayer()

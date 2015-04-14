@@ -8,6 +8,6 @@
 
 #import "AkylasMapBaseViewProxy.h"
 
-@interface AkylasGoogleMapViewProxy : AkylasMapBaseViewProxy
+@interface AkylasGooglemapViewProxy : AkylasMapBaseViewProxy
 
 @end

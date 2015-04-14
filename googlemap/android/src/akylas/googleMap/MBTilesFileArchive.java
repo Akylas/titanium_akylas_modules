@@ -1,4 +1,4 @@
-package akylas.googleMap;
+package akylas.googlemap;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

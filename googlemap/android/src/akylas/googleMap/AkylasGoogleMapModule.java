@@ -1,4 +1,4 @@
-package akylas.googleMap;
+package akylas.googlemap;
 
 import java.util.HashMap;
 
@@ -15,7 +15,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 
 import akylas.map.common.AkylasMapBaseModule;
 
-@Kroll.module(name = "AkylasGoogleMap", id = "akylas.googleMap", parentModule = AkylasMapBaseModule.class)
+@Kroll.module(name = "AkylasGoogleMap", id = "akylas.googlemap", parentModule = AkylasMapBaseModule.class)
 public class AkylasGoogleMapModule extends
         AkylasMapBaseModule<LatLng, LatLngBounds> {
 

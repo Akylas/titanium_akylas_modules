@@ -5,7 +5,7 @@
  * Please see the LICENSE included with this distribution for details.
  */
 
-package akylas.googleMap;
+package akylas.googlemap;
 
 import java.util.ArrayList;
 import java.util.List;

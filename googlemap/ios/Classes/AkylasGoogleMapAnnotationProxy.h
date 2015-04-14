@@ -9,7 +9,7 @@
 #import "AkylasMapBaseAnnotationProxy.h"
 @class GMSOverlay;
 @class GMSMapView;
-@interface AkylasGoogleMapAnnotationProxy : AkylasMapBaseAnnotationProxy
+@interface AkylasGooglemapAnnotationProxy : AkylasMapBaseAnnotationProxy
 
 +(int)gZIndexDelta;
 

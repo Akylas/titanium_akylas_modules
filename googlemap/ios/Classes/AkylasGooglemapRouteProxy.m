@@ -6,9 +6,9 @@
 //
 //
 
-#import "AkylasGoogleMapRouteProxy.h"
+#import "AkylasGooglemapRouteProxy.h"
 
-@implementation AkylasGoogleMapRouteProxy
+@implementation AkylasGooglemapRouteProxy
 {
     GMSPolyline* _gPoly;
     GMSMutablePath *_gPath;

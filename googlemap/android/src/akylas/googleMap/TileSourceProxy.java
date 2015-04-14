@@ -1,4 +1,4 @@
-package akylas.googleMap;
+package akylas.googlemap;
 
 import java.lang.reflect.Method;
 import java.util.regex.Pattern;

@@ -6,14 +6,14 @@
 //
 //
 
-#import "AkylasGoogleMapTileSourceProxy.h"
+#import "AkylasGooglemapTileSourceProxy.h"
 #import "AkylasMapBaseModule.h"
 #import "TiUtils.h"
 
 #import "AkylasGMSURLTileLayer.h"
 #import "AkylasGMSMBTilesLayer.h"
 
-@implementation AkylasGoogleMapTileSourceProxy
+@implementation AkylasGooglemapTileSourceProxy
 {
     GMSTileLayer*  _gTileLayer;
 }
@@ -71,7 +71,7 @@
 {
     id source = [self valueForKey:@"source"];
     if (!IS_OF_CLASS(source, NSString)) {
-        if (IS_OF_CLASS(source, AkylasGoogleMapTileSourceProxy) && source != self) {
+        if (IS_OF_CLASS(source, AkylasGooglemapTileSourceProxy) && source != self) {
             return [source tileLayer];
         }
         else if ([source respondsToSelector:@selector(nativePath)]) {

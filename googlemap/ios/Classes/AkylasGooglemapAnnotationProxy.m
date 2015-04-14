@@ -6,9 +6,9 @@
 //
 //
 
-#import "AkylasGoogleMapAnnotationProxy.h"
+#import "AkylasGooglemapAnnotationProxy.h"
 
-@implementation AkylasGoogleMapAnnotationProxy
+@implementation AkylasGooglemapAnnotationProxy
 {
     GMSMarker* _gmarker;
 }

@@ -6,7 +6,7 @@
  */
 #import "AkylasMapBaseModule.h"
 
-@interface AkylasGoogleMapModule : AkylasMapBaseModule
+@interface AkylasGooglemapModule : AkylasMapBaseModule
 {
 }
 

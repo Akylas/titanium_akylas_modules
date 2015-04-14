@@ -6,11 +6,11 @@
 //
 //
 
-#import "AkylasGoogleMapView.h"
-#import "AkylasGoogleMapAnnotationProxy.h"
-#import "AkylasGoogleMapTileSourceProxy.h"
-#import "AkylasGoogleMapRouteProxy.h"
-#import "AkylasGoogleMapModule.h"
+#import "AkylasGooglemapView.h"
+#import "AkylasGooglemapAnnotationProxy.h"
+#import "AkylasGooglemapTileSourceProxy.h"
+#import "AkylasGooglemapRouteProxy.h"
+#import "AkylasGooglemapModule.h"
 #import "TiApp.h"
 
 
@@ -28,7 +28,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     return [[[GMSCoordinateBounds alloc] initWithCoordinate:trapez.northEast coordinate:trapez.southWest] autorelease];
 }
 
-@implementation AkylasGoogleMapView
+@implementation AkylasGooglemapView
 {
     AkylasGMSMapView *map;
     BOOL _shouldFollowUserLocation;
@@ -302,7 +302,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
         return;
 	}
     
-    GMSCameraPosition* position = [[self map] cameraForBounds:boundsFromRegion([AkylasGoogleMapModule regionFromObject:value]) insets:UIEdgeInsetsZero];
+    GMSCameraPosition* position = [[self map] cameraForBounds:boundsFromRegion([AkylasGooglemapModule regionFromObject:value]) insets:UIEdgeInsetsZero];
 //    if (!configurationSet) {
 //        _needsCameraUpdate = YES;
 //        _cameraUpdate = [[GMSCameraUpdate setCamera:position] retain];
@@ -336,7 +336,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 
 -(id)userLocation_
 {
-    return [AkylasGoogleMapModule dictFromLocation:[self map].myLocation];
+    return [AkylasGooglemapModule dictFromLocation:[self map].myLocation];
 }
 
 
@@ -437,7 +437,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 {
     ENSURE_UI_THREAD_1_ARG(value)
     [self setShouldFollowUserLocation:NO];
-    CLLocationCoordinate2D coord = [AkylasGoogleMapModule locationFromObject:value];
+    CLLocationCoordinate2D coord = [AkylasGooglemapModule locationFromObject:value];
     if (animate || !configurationSet) {
         [[self map] animateToLocation:coord];
     } else {
@@ -447,7 +447,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 
 -(id)centerCoordinate_
 {
-    return [AkylasGoogleMapModule dictFromLocation2D:[self centerCoordinate]];
+    return [AkylasGooglemapModule dictFromLocation2D:[self centerCoordinate]];
 }
 
 -(void)setMinZoom_:(id)zoom
@@ -638,7 +638,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     }
 }
 
--(void)refreshAnnotation:(AkylasGoogleMapAnnotationProxy*)proxy readd:(BOOL)yn
+-(void)refreshAnnotation:(AkylasGooglemapAnnotationProxy*)proxy readd:(BOOL)yn
 {
     GMSOverlay *newSelected = [proxy getGOverlayForMapView:[self map]];
     if (!IS_OF_CLASS(newSelected, GMSMarker)) return;
@@ -675,11 +675,11 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     }
     else {
         GMSMapView* mapView = [self map];
-        GMSOverlay* overlay = [(AkylasGoogleMapAnnotationProxy*)annotations getGOverlayForMapView:mapView];
+        GMSOverlay* overlay = [(AkylasGooglemapAnnotationProxy*)annotations getGOverlayForMapView:mapView];
         if (((AkylasMapBaseAnnotationProxy*)annotations).zIndex == -1) {
             overlay.zIndex = (int)(realIndex + [[annotations class] gZIndexDelta]);
         } else {
-            overlay.zIndex = (int)((AkylasGoogleMapAnnotationProxy*)annotations).zIndex;
+            overlay.zIndex = (int)((AkylasGooglemapAnnotationProxy*)annotations).zIndex;
         }
         [overlay setMap:mapView];
 //        if (realIndex >= 0) {
@@ -692,13 +692,13 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 {
     if ([annotations isKindOfClass:[NSArray class]]) {
         for (AkylasMapBaseAnnotationProxy* annotProxy in annotations) {
-            if ([annotProxy isKindOfClass:[AkylasGoogleMapAnnotationProxy class]]) {
-                [[(AkylasGoogleMapAnnotationProxy*)annotProxy gOverlay] setMap:nil];
+            if ([annotProxy isKindOfClass:[AkylasGooglemapAnnotationProxy class]]) {
+                [[(AkylasGooglemapAnnotationProxy*)annotProxy gOverlay] setMap:nil];
             }
         }
     }
-    else if ([annotations isKindOfClass:[AkylasGoogleMapAnnotationProxy class]]) {
-        [[(AkylasGoogleMapAnnotationProxy*)annotations gOverlay] setMap:nil];
+    else if ([annotations isKindOfClass:[AkylasGooglemapAnnotationProxy class]]) {
+        [[(AkylasGooglemapAnnotationProxy*)annotations gOverlay] setMap:nil];
     }
 }
 
@@ -725,7 +725,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 }
 
 
--(void)setSelectedAnnotation:(AkylasGoogleMapAnnotationProxy*)annotation
+-(void)setSelectedAnnotation:(AkylasGooglemapAnnotationProxy*)annotation
 {
     GMSMapView* mapView = [self map];
     GMSOverlay *marker = [annotation getGOverlayForMapView:mapView];
@@ -792,7 +792,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
         }
         if ([self.viewProxy _hasListeners:@"location" checkParent:NO])
         {
-            [self.proxy fireEvent:@"location" withObject:[AkylasGoogleMapModule dictFromLocation:location] propagate:NO checkForListener:NO];
+            [self.proxy fireEvent:@"location" withObject:[AkylasGooglemapModule dictFromLocation:location] propagate:NO checkForListener:NO];
         }
     } else if([keyPath isEqualToString:@"selectedMarker"]) {
 
@@ -818,7 +818,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
         }];
     } else {
         GMSMapView* mapView = [self map];
-        GMSTileLayer* layer = [(AkylasGoogleMapTileSourceProxy*)tileSource getGTileLayerForMapView:mapView];
+        GMSTileLayer* layer = [(AkylasGooglemapTileSourceProxy*)tileSource getGTileLayerForMapView:mapView];
         [layer setMap:mapView];
         if (((AkylasMapBaseTileSourceProxy*)tileSource).zIndex == -1) {
             layer.zIndex = (int)realIndex;
@@ -836,7 +836,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
             [self internalRemoveTileSources:obj];
         }];
     } else {
-        [[(AkylasGoogleMapTileSourceProxy*)tileSource gTileLayer] setMap:nil];
+        [[(AkylasGooglemapTileSourceProxy*)tileSource gTileLayer] setMap:nil];
     }
 }
 
@@ -877,7 +877,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     
     CGPoint point = [[map projection] pointForCoordinate:((GMSMarker*)overlay).position];
     NSMutableDictionary *event = [TiUtils dictionaryFromPoint:point inView:map];
-    [event addEntriesFromDictionary:[AkylasGoogleMapModule dictFromLocation2D:[[map projection] coordinateForPoint:point]]];
+    [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:[[map projection] coordinateForPoint:point]]];
     if (IS_OF_CLASS(annotProxy, AkylasMapBaseRouteProxy)) {
         [event setObject:annotProxy forKey:@"route"];
     } else {
@@ -912,7 +912,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     
     if ([self.viewProxy _hasListeners:type checkParent:NO]) {
         NSMutableDictionary *event = [TiUtils dictionaryFromPoint:[[map projection] pointForCoordinate:coordinate] inView:map];
-        [event addEntriesFromDictionary:[AkylasGoogleMapModule dictFromLocation2D:coordinate]];
+        [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:coordinate]];
         [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
     }
 }

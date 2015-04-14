@@ -10,7 +10,7 @@
 
 @class GMSTileLayer;
 @class GMSMapView;
-@interface AkylasGoogleMapTileSourceProxy : AkylasMapBaseTileSourceProxy
+@interface AkylasGooglemapTileSourceProxy : AkylasMapBaseTileSourceProxy
 
 -(GMSTileLayer*)getGTileLayerForMapView:(GMSMapView*)mapView;
 -(GMSTileLayer*)gTileLayer;

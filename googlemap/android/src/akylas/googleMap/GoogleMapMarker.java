@@ -1,4 +1,4 @@
-package akylas.googleMap;
+package akylas.googlemap;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.common.Log;

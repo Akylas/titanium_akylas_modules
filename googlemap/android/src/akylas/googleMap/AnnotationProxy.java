@@ -1,4 +1,4 @@
-package akylas.googleMap;
+package akylas.googlemap;
 
 import org.appcelerator.kroll.annotations.Kroll;
 

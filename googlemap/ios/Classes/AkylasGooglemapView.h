@@ -8,7 +8,7 @@
 @property (nonatomic, readwrite, assign) BOOL networkConnected;
 @end
 
-@interface AkylasGoogleMapView : AkylasMapBaseView<SMCalloutViewDelegate, GMSMapViewDelegate>
+@interface AkylasGooglemapView : AkylasMapBaseView<SMCalloutViewDelegate, GMSMapViewDelegate>
 {
 }
 

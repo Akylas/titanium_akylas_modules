@@ -4,11 +4,11 @@
  * Appcelerator Titanium is Copyright (c) 2009-2010 by Appcelerator, Inc.
  * and licensed under the Apache Public License (version 2)
  */
-#import "AkylasGoogleMapModule.h"
-#import "AkylasGoogleMapTileSourceProxy.h"
-#import "AkylasGoogleMapViewProxy.h"
-#import "AkylasGoogleMapRouteProxy.h"
-#import "AkylasGoogleMapAnnotationProxy.h"
+#import "AkylasGooglemapModule.h"
+#import "AkylasGooglemapTileSourceProxy.h"
+#import "AkylasGooglemapViewProxy.h"
+#import "AkylasGooglemapRouteProxy.h"
+#import "AkylasGooglemapAnnotationProxy.h"
 #import "TiBase.h"
 #import "TiHost.h"
 #import "TiUtils.h"
@@ -16,7 +16,7 @@
 #import "JRSwizzle.h"
 #import <objc/runtime.h>
 
-#define MODULE_ID @"akylas.googleMap"
+#define MODULE_ID @"akylas.googlemap"
 #define REGEX @"(?!"  MODULE_ID  @"/)(GoogleMaps)\\.bundle$"
 #define TEMPLATE @"modules/"  MODULE_ID  @"/$0"
 
@@ -40,7 +40,7 @@
 }
 @end
 
-@implementation AkylasGoogleMapModule
+@implementation AkylasGooglemapModule
 
 #pragma mark Internal
 
@@ -63,10 +63,10 @@
     [NSBundle swizzle];
 	// this method is called when the module is first loaded
 	// you *must* call the superclass
-    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.GoogleMap.View", [AkylasGoogleMapViewProxy class]);
-    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.GoogleMap.Annotation", [AkylasGoogleMapAnnotationProxy class]);
-    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.GoogleMap.TileSource", [AkylasGoogleMapTileSourceProxy class]);
-    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.GoogleMap.Route", [AkylasGoogleMapRouteProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.View", [AkylasGooglemapViewProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.Annotation", [AkylasGooglemapAnnotationProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.TileSource", [AkylasGooglemapTileSourceProxy class]);
+    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.Route", [AkylasGooglemapRouteProxy class]);
 	[super startup];
 	
 	NSLog(@"[INFO] %@ loaded",self);

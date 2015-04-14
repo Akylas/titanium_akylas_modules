@@ -8,6 +8,6 @@
 
 #import "AkylasMapBaseRouteProxy.h"
 
-@interface AkylasGoogleMapRouteProxy : AkylasMapBaseRouteProxy
+@interface AkylasGooglemapRouteProxy : AkylasMapBaseRouteProxy
 
 @end

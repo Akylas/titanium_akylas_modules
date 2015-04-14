@@ -12,8 +12,8 @@ debug_project_subpath: googlemap/android
 
 
 # these should not be edited
-name:  akylas-googleMap
-moduleid: akylas.googleMap
+name:  akylas-googlemap
+moduleid: akylas.googlemap
 guid: 0e81237e-7ec2-4064-9ed0-d6cf26d10e23
 platform: android
 minsdk: 4.1.0.AKYLAS
