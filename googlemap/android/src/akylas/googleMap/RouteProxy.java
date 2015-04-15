@@ -23,7 +23,7 @@ import android.graphics.Paint.Cap;
 import android.graphics.Paint.Join;
 import android.os.Message;
 
-@Kroll.proxy(creatableInModule = AkylasGoogleMapModule.class)
+@Kroll.proxy(creatableInModule = AkylasGooglemapModule.class)
 public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     private static final int MSG_FIRST_ID = KrollProxy.MSG_LAST_ID + 1;
 
@@ -41,7 +41,7 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
 
     public RouteProxy() {
         super();
-        mBoundingBox = AkylasGoogleMapModule.MIN_BOUNDING_BOX;
+        mBoundingBox = AkylasGooglemapModule.MIN_BOUNDING_BOX;
     }
 
     @Override
@@ -111,10 +111,10 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
                 polyline.setVisible(TiConvert.toBoolean(newValue));
             }
             break;
-        case AkylasGoogleMapModule.PROPERTY_LINE_JOIN:
+        case AkylasGooglemapModule.PROPERTY_LINE_JOIN:
             mStrokeJoin = joinFromString(TiConvert.toString(newValue));
             break;
-        case AkylasGoogleMapModule.PROPERTY_LINE_CAP:
+        case AkylasGooglemapModule.PROPERTY_LINE_CAP:
             mStrokeCap = capFromString(TiConvert.toString(newValue));
             break;
         default:

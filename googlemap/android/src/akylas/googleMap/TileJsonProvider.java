@@ -76,12 +76,12 @@ public class TileJsonProvider extends WebTileProvider {
 
             double[] center = getJSONDoubleArray(this.tileJSON, "center", 3);
             if (center != null) {
-                mCenter = (LatLng) AkylasGoogleMapModule.getFactory()
+                mCenter = (LatLng) AkylasGooglemapModule.getFactory()
                         .createPoint(center[0], center[1], center[2]);
             }
             double[] bounds = getJSONDoubleArray(this.tileJSON, "bounds", 4);
             if (bounds != null) {
-                mBoundingBox = (LatLngBounds) AkylasGoogleMapModule
+                mBoundingBox = (LatLngBounds) AkylasGooglemapModule
                         .getFactory().createRegion(bounds[3], bounds[2],
                                 bounds[1], bounds[0]);
             }

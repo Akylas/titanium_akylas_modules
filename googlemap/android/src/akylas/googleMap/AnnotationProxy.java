@@ -6,7 +6,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import akylas.map.common.BaseAnnotationProxy;
 
-@Kroll.proxy(creatableInModule = AkylasGoogleMapModule.class)
+@Kroll.proxy(creatableInModule = AkylasGooglemapModule.class)
 public class AnnotationProxy extends BaseAnnotationProxy<LatLng> {
     @Override
     public String getApiName() {

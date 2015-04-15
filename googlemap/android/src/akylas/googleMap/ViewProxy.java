@@ -12,7 +12,7 @@ import akylas.map.common.MapDefaultViewProxy;
 import android.app.Activity;
 import android.os.Message;
 
-@Kroll.proxy(creatableInModule = AkylasGoogleMapModule.class, propertyAccessors = {
+@Kroll.proxy(creatableInModule = AkylasGooglemapModule.class, propertyAccessors = {
 })
 public class ViewProxy extends MapDefaultViewProxy {
     private static final String TAG = "GoogleMapViewProxy";
@@ -101,6 +101,8 @@ public class ViewProxy extends MapDefaultViewProxy {
         TiUIView view = peekView();
         if (view instanceof GoogleMapView) {
             ((GoogleMapView) view).updateCamera(TiConvert.toKrollDict(value));
+        } else {
+            applyProperties(value);
         }
     }
 }

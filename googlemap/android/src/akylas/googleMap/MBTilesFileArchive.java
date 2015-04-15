@@ -124,7 +124,7 @@ public class MBTilesFileArchive {
         String result = getStringValue("bounds");
         if (result != null) {
             String[] boundsArray = result.split(",\\s*");
-            return (LatLngBounds) AkylasGoogleMapModule.getFactory().createRegion(Double.parseDouble(boundsArray[3]),
+            return (LatLngBounds) AkylasGooglemapModule.getFactory().createRegion(Double.parseDouble(boundsArray[3]),
                     Double.parseDouble(boundsArray[2]), Double.parseDouble(boundsArray[1]),
                     Double.parseDouble(boundsArray[0]));
         }

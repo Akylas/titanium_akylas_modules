@@ -35,7 +35,7 @@ public class MBTilesProvider implements TileProvider {
 
     protected float mMinimumZoomLevel = 0;
     protected float mMaximumZoomLevel = 22;
-    protected LatLngBounds mBoundingBox = AkylasGoogleMapModule.WORLD_BOUNDING_BOX;
+    protected LatLngBounds mBoundingBox = AkylasGooglemapModule.WORLD_BOUNDING_BOX;
     protected LatLng mCenter = new LatLng(0, 0);
     
     public MBTilesProvider(Context context, String url) {

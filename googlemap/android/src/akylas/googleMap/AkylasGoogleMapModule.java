@@ -5,7 +5,6 @@ import java.util.HashMap;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.APIMap;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 
@@ -15,11 +14,11 @@ import com.google.android.gms.maps.model.LatLngBounds;
 
 import akylas.map.common.AkylasMapBaseModule;
 
-@Kroll.module(name = "AkylasGoogleMap", id = "akylas.googlemap", parentModule = AkylasMapBaseModule.class)
-public class AkylasGoogleMapModule extends
+@Kroll.module(name = "AkylasGooglemap", id = "akylas.googlemap", parentModule = AkylasMapBaseModule.class)
+public class AkylasGooglemapModule extends
         AkylasMapBaseModule<LatLng, LatLngBounds> {
 
-    private static final String TAG = "AkylasGoogleMapModule";
+    private static final String TAG = "AkylasGooglemapModule";
     @Kroll.constant
     public static final int SUCCESS = 0;
     @Kroll.constant
@@ -176,37 +175,20 @@ public class AkylasGoogleMapModule extends
         return mFactory;
     }
 
-
-    public AkylasGoogleMapModule() {
+    
+    public AkylasGooglemapModule() {
         super();
-        
         googlePlayServicesState = TiApplication.getGooglePlayServicesState();
-
         googlePlayServicesAvailable = googlePlayServicesState == 0;
-        if (!googlePlayServicesAvailable) {
-            if (hasListeners(TiC.EVENT_ERROR)) {
-                KrollDict data = new KrollDict();
-
-                data.putCodeAndMessage(
-                        googlePlayServicesState,
-                        AkylasGoogleMapModule
-                                .getGoogleServiceStateMessage(googlePlayServicesState));
-                fireEvent(TiC.EVENT_ERROR, data);
-            }
-            Log.e(TAG,
-                    "Google Play Services not available: Error "
-                            + AkylasGoogleMapModule
-                                    .getGoogleServiceStateMessage(googlePlayServicesState));
-        }
     }
 
     @Kroll.onAppCreate
     public static void onAppCreate(TiApplication app) {
         HashMap<String, String> map = new HashMap();
-        map.put("Akylas.GoogleMap.View", ViewProxy.class.getName());
-        map.put("Akylas.GoogleMap.Annotation", AnnotationProxy.class.getName());
-        map.put("Akylas.GoogleMap.Route", RouteProxy.class.getName());
-        map.put("Akylas.GoogleMap.TileSource", TileSourceProxy.class.getName());
+        map.put("Akylas.Googlemap.View", ViewProxy.class.getName());
+        map.put("Akylas.Googlemap.Annotation", AnnotationProxy.class.getName());
+        map.put("Akylas.Googlemap.Route", RouteProxy.class.getName());
+        map.put("Akylas.Googlemap.TileSource", TileSourceProxy.class.getName());
         APIMap.addMapping(map);
     }
 
@@ -219,12 +201,22 @@ public class AkylasGoogleMapModule extends
             return "SERVICE_VERSION_UPDATE_REQUIRED";
         case 3:
             return "SERVICE_DISABLED";
+        case 4:
+            return "CANT_INVOKE_AVAILABLE";
         case 9:
             return "SERVICE_INVALID";
         default:
         case 0:
             return "SUCCESS";
         }
+    }
+    
+    static public final String getGoogleServiceStateMessage() {
+        return getGoogleServiceStateMessage(googlePlayServicesState);
+    }
+    
+    static public final int getGoogleServiceState() {
+        return googlePlayServicesState;
     }
 
     public static final boolean googlePlayServicesAvailable() {

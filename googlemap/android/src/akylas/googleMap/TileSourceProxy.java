@@ -18,7 +18,7 @@ import com.google.android.gms.maps.model.TileProvider;
 import akylas.map.common.BaseTileSourceProxy;
 import android.database.sqlite.SQLiteDatabase;
 
-@Kroll.proxy(creatableInModule = AkylasGoogleMapModule.class)
+@Kroll.proxy(creatableInModule = AkylasGooglemapModule.class)
 public class TileSourceProxy extends BaseTileSourceProxy {
     private static final String TAG = "TileSourceProxy";
     private TileOverlay mOverlay;
@@ -256,7 +256,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             bounds = ((MBTilesProvider)mTileProvider).getBoundingBox();
         }
         if (bounds != null) {
-            return AkylasGoogleMapModule.getFactory().regionToDict(bounds);
+            return AkylasGooglemapModule.getFactory().regionToDict(bounds);
         }
         return super.getRegion();
     }

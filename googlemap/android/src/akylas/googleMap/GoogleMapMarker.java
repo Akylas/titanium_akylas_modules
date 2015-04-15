@@ -10,6 +10,7 @@ import org.appcelerator.titanium.util.TiActivityHelper;
 import org.appcelerator.titanium.util.TiActivityHelper.CommandNoReturn;
 
 import akylas.map.common.AkylasMarker;
+
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -199,6 +200,10 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
 
     @Override
     public void setPosition(final LatLng point) {
+        if (point == null) 
+        {
+            return;
+        }
         if (marker == null) {
             if (markerOptions != null) {
                 markerOptions.position(point);
