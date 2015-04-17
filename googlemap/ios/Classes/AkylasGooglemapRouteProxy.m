@@ -18,8 +18,8 @@
 -(void)dealloc
 {
     RELEASE_TO_NIL(_gPath);
-    RELEASE_TO_NIL(_gPoly);
     RELEASE_TO_NIL(_spans);
+    RELEASE_TO_NIL(_gPoly);
     
     [super dealloc];
 }
@@ -140,7 +140,7 @@
 -(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
 {
     if (_gPoly == nil) {
-        _gPoly = [GMSPolyline polylineWithPath:[self getGPath]];
+        _gPoly = [[GMSPolyline polylineWithPath:[self getGPath]] retain];
         if (_spans) {
             _gPoly.spans = _spans;
         } else {

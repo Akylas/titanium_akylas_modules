@@ -284,7 +284,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                     transaction = fragmentManager.beginTransaction();
                 }
                 transaction.remove(fragment);
-                transaction.commit();
+                transaction.commitAllowingStateLoss();
             }
             fragment = null;
             // currentMapHolder = null;
@@ -1250,7 +1250,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
     
     
     public void updateMarkerPosition( final Marker marker, final LatLng toPosition) {
-        if (!shouldAnimate()) {
+        if (!shouldAnimate() || marker.getPosition() == null) {
             marker.setPosition(toPosition);
             return;
         }

@@ -212,8 +212,9 @@
     }
 }
 
--(void)internalRemoveAllAnnotations
+-(void)removeAllAnnotations
 {
+    ENSURE_UI_THREAD_0_ARGS;
     RMMapView* mapView = [self map];
     [mapView removeAllAnnotations];
 }
@@ -228,12 +229,12 @@
     [self internalRemoveAnnotations:routes];
 }
 
--(void)internalRemoveAllRoutes
+-(void)removeAllRoutes
 {
+    ENSURE_UI_THREAD_0_ARGS;
     RMMapView* mapView = [self map];
     [mapView removeAllAnnotationsOfClass:[RMRouteAnnotation class]];
 }
-
 
 -(void)setSelectedAnnotation:(AkylasMapboxAnnotationProxy*)annotation
 {
@@ -557,8 +558,9 @@
     }
 }
 
-- (BOOL)internalRemoveAllTileSources
+-(void)removeAllTileSources
 {
+    ENSURE_UI_THREAD_0_ARGS;
     if (_userStackTileSource) {
         if (_tileSourceContainer) {
             [[self map] removeTileSource:_tileSourceContainer];
@@ -568,7 +570,6 @@
         [[self map] setTileSources:nil];
     }
 }
-
 
 #pragma mark Delegates
 

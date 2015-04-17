@@ -130,7 +130,9 @@
 -(void)setInternalImage:(UIImage*)image {
     [super setInternalImage:image];
     if (_gmarker) {
-        _gmarker.icon = _internalImage;
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.icon = _internalImage;
+        }, NO);
     }
 }
 

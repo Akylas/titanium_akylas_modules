@@ -9,5 +9,6 @@
 #import "AkylasMapBaseRouteProxy.h"
 
 @interface AkylasGooglemapRouteProxy : AkylasMapBaseRouteProxy
-
+-(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView;
+-(GMSOverlay*)gOverlay;
 @end

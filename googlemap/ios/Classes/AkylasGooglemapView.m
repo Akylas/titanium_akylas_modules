@@ -675,11 +675,12 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     }
     else {
         GMSMapView* mapView = [self map];
-        GMSOverlay* overlay = [(AkylasGooglemapAnnotationProxy*)annotations getGOverlayForMapView:mapView];
+        GMSOverlay* overlay = [annotations getGOverlayForMapView:mapView];
+        
         if (((AkylasMapBaseAnnotationProxy*)annotations).zIndex == -1) {
             overlay.zIndex = (int)(realIndex + [[annotations class] gZIndexDelta]);
         } else {
-            overlay.zIndex = (int)((AkylasGooglemapAnnotationProxy*)annotations).zIndex;
+            overlay.zIndex = (int)((AkylasMapBaseAnnotationProxy*)annotations).zIndex;
         }
         [overlay setMap:mapView];
 //        if (realIndex >= 0) {
@@ -692,20 +693,16 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 {
     if ([annotations isKindOfClass:[NSArray class]]) {
         for (AkylasMapBaseAnnotationProxy* annotProxy in annotations) {
-            if ([annotProxy isKindOfClass:[AkylasGooglemapAnnotationProxy class]]) {
-                [[(AkylasGooglemapAnnotationProxy*)annotProxy gOverlay] setMap:nil];
+            if ([annotProxy respondsToSelector:@selector(gOverlay)]) {
+                GMSOverlay* overlay = [(id)annotProxy gOverlay];
+                [overlay setMap:nil];
             }
         }
     }
-    else if ([annotations isKindOfClass:[AkylasGooglemapAnnotationProxy class]]) {
-        [[(AkylasGooglemapAnnotationProxy*)annotations gOverlay] setMap:nil];
+    else if ([annotations respondsToSelector:@selector(gOverlay)]) {
+        GMSOverlay* overlay = [annotations gOverlay];
+        [overlay setMap:nil];
     }
-}
-
--(void)internalRemoveAllAnnotations
-{
-    GMSMapView* mapView = [self map];
-    [mapView clear];
 }
 
 -(void)internalAddRoutes:(id)routes atIndex:(NSInteger)index
@@ -716,12 +713,6 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 -(void)internalRemoveRoutes:(id)routes
 {
     [self internalRemoveAnnotations:routes];
-}
-
--(void)internalRemoveAllRoutes
-{
-    //    RMMapView* mapView = [self map];
-    //    [mapView removeAllAnnotationsOfClass:[RMRouteAnnotation class]];
 }
 
 
@@ -739,9 +730,6 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if([keyPath isEqualToString:@"myLocation"]) {
         CLLocation *location = [object myLocation];
-        //...
-        NSLog(@"Location, %@,", location);
-        
         CLLocationCoordinate2D target =
         CLLocationCoordinate2DMake(location.coordinate.latitude, location.coordinate.longitude);
         
@@ -840,17 +828,6 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     }
 }
 
-- (BOOL)internalRemoveAllTileSources
-{
-//    if (_userStackTileSource) {
-//        if (_tileSourceContainer) {
-//            [[self map] removeTileSource:_tileSourceContainer];
-//            RELEASE_TO_NIL(_tileSourceContainer)
-//        }
-//    } else {
-//        [[self map] setTileSources:nil];
-//    }
-}
 
 #pragma mark Event generation
 
