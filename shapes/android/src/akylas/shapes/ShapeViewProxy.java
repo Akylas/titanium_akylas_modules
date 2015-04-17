@@ -26,6 +26,7 @@ import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUIView;
+import org.appcelerator.titanium.view.TiCompositeLayout.LayoutArrangement;
 
 import akylas.shapes.ShapeProxy.PRoundRect;
 import android.app.Activity;
@@ -51,33 +52,13 @@ public class ShapeViewProxy extends TiViewProxy {
 			TiC.EVENT_SINGLE_TAP, TiC.EVENT_LONGPRESS, TiC.EVENT_TOUCH_CANCEL, TiC.EVENT_TOUCH_END,
 			TiC.EVENT_TOUCH_MOVE, TiC.EVENT_TOUCH_START);
 
-	protected class ShapeView extends TiCompositeLayout {
-
-		public ShapeView(Context context) {
-			super(context);
-			setWillNotDraw(false); // or we wont draw if we dont have a
-									// background
-		}
-
-		@Override
-		protected void onDraw(Canvas canvas) {
-			super.onDraw(canvas);
-			for (int i = 0; i < children.size(); i++) {
-                KrollProxy childProxy = children.get(i);
-			    if (childProxy instanceof ShapeProxy) {
-			        ((ShapeProxy) childProxy).drawOnCanvas(canvas);
-			    }
-			}
-		}
-	}
-
 	protected class TiShapeView extends TiUIView {
-		protected ShapeView nativeView;
 		private Rect nativeViewBounds;
 
 		protected void onLayoutChanged(int left, int top, int right, int bottom) {
 			nativeViewBounds.set(0, 0, right - left, bottom - top);
 			update();
+			redrawNativeView();
 		}
 
 		public void update() {
@@ -91,26 +72,42 @@ public class ShapeViewProxy extends TiViewProxy {
             }
 		}
 
-		protected void createNativeView(Activity activity) {
-			nativeView = new ShapeView(activity) {
-				@Override
-				protected void onLayout(boolean changed, int left, int top,
-						int right, int bottom) {
-					super.onLayout(changed, left, top, right, bottom);
-					if (changed) {
-						onLayoutChanged(left, top, right, bottom);
-					}
-				}
-			};
-			setNativeView(nativeView);
-			disableHWAcceleration();
-		}
-
 		public TiShapeView(final TiViewProxy proxy, Activity activity) {
 			super(proxy);
-			hardwareAccEnabled = false;
+			layoutParams.autoFillsHeight = true;
+			layoutParams.autoFillsWidth = true;
 			nativeViewBounds = new Rect();
-			createNativeView(activity);
+			setNativeView(new TiCompositeLayout(activity, LayoutArrangement.DEFAULT, this) {
+                
+                @Override
+                public void setView(TiUIView view) {
+                    setWillNotDraw(false); // or we wont draw if we dont have a
+                    // background
+                    super.setView(view);
+                    
+                }
+
+                @Override
+                protected void onDraw(Canvas canvas) {
+                    super.onDraw(canvas);
+                    KrollProxy[] children = ShapeViewProxy.this.getChildren();
+                    for (int i = 0; i < children.length; i++) {
+                        KrollProxy childProxy = children[i];
+                        if (childProxy instanceof ShapeProxy) {
+                            ((ShapeProxy) childProxy).drawOnCanvas(canvas);
+                        }
+                    }
+                }
+                @Override
+                protected void onLayout(boolean changed, int left, int top,
+                        int right, int bottom) {
+                    super.onLayout(changed, left, top, right, bottom);
+                    if (changed) {
+                        onLayoutChanged(left, top, right, bottom);
+                    }
+                }
+            });
+//            disableHWAcceleration();
 		}
 
 		@Override
@@ -122,15 +119,15 @@ public class ShapeViewProxy extends TiViewProxy {
 	        }
 			redrawNativeView();
 		}
+		
+		public void redrawNativeView() {
+	        super.redrawNativeView();
+	    }
 
 		@Override
 		public void release() {
 			super.release();
 			nativeView = null;
-		}
-
-		public void redrawNativeView() {
-			super.redrawNativeView();
 		}
 	}
 
@@ -141,8 +138,8 @@ public class ShapeViewProxy extends TiViewProxy {
 	
 	@Override
     public boolean hasListeners(String eventName, boolean checkParent) {
+        boolean handledByChildren = false;
         if (supportedEvents.contains(eventName) &&  children != null && children.size() > 0) {
-            boolean handledByChildren = false;
             KrollProxy[] children = ShapeViewProxy.this.getChildren();
             for (int i = 0; i < children.length; i++) {
                 KrollProxy childProxy = children[i];
@@ -151,12 +148,8 @@ public class ShapeViewProxy extends TiViewProxy {
 
                 }
             }
-            if (!handledByChildren) {
-                handledByChildren = super.hasListeners(eventName, checkParent);
-            }
-            return handledByChildren;
         }
-        return super.hasListeners(eventName, checkParent);
+        return handledByChildren || super.hasListeners(eventName, checkParent);
     }
 	private boolean canFire = true;
 	@Override
@@ -191,25 +184,10 @@ public class ShapeViewProxy extends TiViewProxy {
 
 	@Override
 	public TiUIView createView(Activity activity) {
-		TiUIView view = new TiShapeView(this, activity);
-		view.getLayoutParams().autoFillsHeight = true;
-		view.getLayoutParams().autoFillsWidth = true;
-		return view;
-	}
-
-	@Override
-	public TiUIView getOrCreateView() {
-		TiUIView view = super.getOrCreateView(true);
-		return view;
-	}
-
-	// Handle creation options
-	@Override
-	public void handleCreationDict(KrollDict options) {
-		Log.d(TAG, "handleCreationDict ");
-		super.handleCreationDict(options);
 		
+		return new TiShapeView(this, activity);
 	}
+
 
 	@Kroll.method
 	public void redraw() {
