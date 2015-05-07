@@ -14,6 +14,7 @@
 @interface ShapeCustomProxy : ShapeProxy
 {
     TiPoint* _center;
+    UIEdgeInsets _padding;
 }
 @property(nonatomic,retain) TiPoint* center;
 

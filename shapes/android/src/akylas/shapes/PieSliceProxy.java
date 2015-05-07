@@ -32,8 +32,8 @@ public class PieSliceProxy extends ArcProxy{
 	
 	@Override
 	protected void updatePath() {
-		int width = parentBounds.width();
-		int height = parentBounds.height();
+		int width = currentBounds.width();
+		int height = currentBounds.height();
 		((PieSlice) pathable).innerRadius = computeRadius(this.innerRadius, width, height);
 		super.updatePath();
 	}

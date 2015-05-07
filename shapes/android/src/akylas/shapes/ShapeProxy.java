@@ -69,7 +69,8 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	protected Paint linePaint;
 	protected ShapeDrawable lineGradient;
 	protected ShapeDrawable fillGradient;
-	protected Rect currentBounds;
+    protected Rect currentPathBounds;
+    protected Rect currentBounds = new Rect();
 	protected Rect parentBounds;
 	protected Region currentRegion;
 	protected Context context;
@@ -80,7 +81,8 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	protected ArrayList<Pathable> pathables;
 	
 	protected Object radius;
-	protected TiPoint center;
+    protected TiPoint center;
+    protected RectF padding;
 	protected AnchorPosition anchor;
 	protected float anchorPointX = 0.5f;
 	protected float anchorPointY = 0.5f;
@@ -137,6 +139,9 @@ public class ShapeProxy extends AnimatableReusableProxy {
 						anchor_ == AnchorPosition.RIGHT_BOTTOM) {
 			result.x  = point_.getX().getAsPixels(width - 2*decale.x, height);
 			result.x  = width - result.x - decale.x;
+			if (padding != null) {
+	            result.x  -= padding.right;
+	        }
 		}
 		else if (anchor_ == AnchorPosition.BOTTOM_MIDDLE ||
 				anchor_ == AnchorPosition.TOP_MIDDLE) {
@@ -145,6 +150,9 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		else {
 			result.x = point_.getX().getAsPixels(width - 2*decale.x, height);
 			result.x += decale.x;
+			if (padding != null) {
+                result.x  += padding.left;
+            }
 		}
 		
 		if (anchor_ == AnchorPosition.LEFT_BOTTOM ||
@@ -152,6 +160,9 @@ public class ShapeProxy extends AnimatableReusableProxy {
 						anchor_ == AnchorPosition.RIGHT_BOTTOM) {
 			result.y = point_.getY().getAsPixels(width, height - 2*decale.y);
 			result.y = height - result.y - decale.y;
+			if (padding != null) {
+                result.y  -= padding.bottom;
+            }
 		}
 		else if (anchor_ == AnchorPosition.LEFT_MIDDLE ||
 				anchor_ == AnchorPosition.RIGHT_MIDDLE) {
@@ -160,6 +171,9 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		else {
 			result.y = point_.getY().getAsPixels(width, height - 2*decale.y);
 			result.y += decale.y;
+			if (padding != null) {
+                result.y  += padding.top;
+            }
 		}
 		return result;
 	}
@@ -195,6 +209,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	    } else if(!radius.getY().isUnitUndefined()) {
 	    	result.x  = result.y  = radius.getY().getAsPixels(width, height);
 	    }
+		
 		return result;
 	}
 	
@@ -510,8 +525,8 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	}
 	
 	protected void updatePath() {
-		int width = parentBounds.width();
-		int height = parentBounds.height();
+		int width = currentBounds.width();
+		int height = currentBounds.height();
 		if (pathable != null) {
 			pathable.radius = computeRadius(this.radius, width, height);
 			pathable.center = computePoint(this.center, anchor, width, height, pathable.radius);
@@ -534,12 +549,20 @@ public class ShapeProxy extends AnimatableReusableProxy {
 
 	protected void update(Context context, Rect parentBounds) {
 		this.parentBounds = parentBounds;
+		if (padding != null) {
+	        this.currentBounds.set(parentBounds.left + (int)padding.left, 
+	                parentBounds.top + (int)padding.top, 
+	                parentBounds.right - (int)padding.right, 
+	                parentBounds.bottom - (int)padding.bottom);
+		} else {
+            this.currentBounds.set(parentBounds);
+		}
 		updatePath();
-		updateGradients(context, parentBounds);
+		updateGradients();
 	}
 	
 	
-	protected Region clipRectWithPath(Rect parentBounds, Path path) {
+	protected Region clipRectWithPath(Rect currentBounds, Path path) {
 		//let s create a 'infinite'  clip rect
 		Region parentRegion = new Region(-10000, -10000, 10000, 10000);
 		Region myRegion = new Region();
@@ -571,7 +594,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		}
 	}
 	protected void updateGradients() {
-		updateGradients(context, parentBounds);
+		updateGradients(context, currentBounds);
 	}
 
 	
@@ -617,22 +640,22 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		
 		path.reset();
 		if (pathable != null) {
-			pathable.updatePathForRect(context, path, parentBounds.width(), parentBounds.height());
+			pathable.updatePathForRect(context, path, currentBounds.width(), currentBounds.height());
 		} else if (pathables != null) {
 			for (int i = 0; i < pathables.size(); i++) {
-				pathables.get(i).updatePathForRect(context, path, parentBounds.width(), parentBounds.height());
+				pathables.get(i).updatePathForRect(context, path, currentBounds.width(), currentBounds.height());
 			}
 		}
 		
 		{
-			this.currentRegion = clipRectWithPath(parentBounds, path);
+			this.currentRegion = clipRectWithPath(currentBounds, path);
 			Rect rect = currentRegion.getBounds();
-			boolean sizeChanged = !rect.equals(currentBounds);
+			boolean sizeChanged = !rect.equals(currentPathBounds);
 			if (sizeChanged) {
-				this.currentBounds = rect;
+				this.currentPathBounds = rect;
 				for (int i = 0; i < mShapes.size(); i++) {
 					ShapeProxy shapeProxy = mShapes.get(i);
-					shapeProxy.onLayoutChanged(this.context, currentBounds);
+					shapeProxy.onLayoutChanged(this.context, currentPathBounds);
 				}
 				
 			}
@@ -650,8 +673,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 			drawPathWithPaint(path, linePaint, canvas, AkylasShapesModule.PROPERTY_LINE_SHADOW, lineOpacity);
 		}
 		canvas.save();
-//		canvas.clipRect(currentBounds);
-		canvas.translate(currentBounds.left, currentBounds.top);
+		canvas.translate(currentPathBounds.left, currentPathBounds.top);
 		for (int i = 0; i < mShapes.size(); i++) {
 			ShapeProxy shapeProxy = mShapes.get(i);
 			shapeProxy.drawOnCanvas(canvas);
@@ -749,10 +771,10 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		public Ti2DMatrix evaluate(float fraction, Ti2DMatrix startValue,
 				Ti2DMatrix endValue) {
 			
-			int width = proxy.currentBounds.width();
-			int height = proxy.currentBounds.height();
-			int parentWidth = proxy.parentBounds.width();
-			int parentHeight = proxy.parentBounds.height();
+			int width = proxy.currentPathBounds.width();
+			int height = proxy.currentPathBounds.height();
+			int parentWidth = parentBounds.width();
+			int parentHeight = parentBounds.height();
 			AffineTransform a = (startValue != null)?startValue.getAffineTransform(width, height, parentWidth, parentHeight):(new AffineTransform());
 			AffineTransform b = endValue.getAffineTransform(width, height, parentWidth, parentHeight);
 			b.blend(a, fraction);
@@ -771,8 +793,8 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		Boolean animatingRadius = animOptions
 				.containsKey(AkylasShapesModule.PROPERTY_RADIUS);
 		if (animatingCenter || animatingRadius) {
-			int width = parentBounds.width();
-			int height = parentBounds.height();
+			int width = currentBounds.width();
+			int height = currentBounds.height();
 			Point currentRadius = computeRadius(this.radius, width, height);
 			Point animRadius = computeRadius(
 					animatingRadius ? animOptions.get(AkylasShapesModule.PROPERTY_RADIUS)
@@ -886,11 +908,11 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	
 	protected boolean handleTouchEvent(String eventName, Object data, boolean bubbles, boolean checkListeners, int x, int y) {
 		if (context != null) {
-			if (currentBounds.contains(x, y)) {
+			if (currentPathBounds.contains(x, y)) {
 				boolean handledByChildren = false;
 				if (mShapes.size() > 0) {
-					int childrenX = x - currentBounds.left;
-					int childrenY = y - currentBounds.top;
+					int childrenX = x - currentPathBounds.left;
+					int childrenY = y - currentPathBounds.top;
 					for (int i = 0; i < mShapes.size(); i++) {
 						ShapeProxy shapeProxy = mShapes.get(i);
 						handledByChildren |= shapeProxy.handleTouchEvent(eventName, data, bubbles, checkListeners, childrenX, childrenY);
@@ -914,8 +936,8 @@ public class ShapeProxy extends AnimatableReusableProxy {
 			proxy.setParentForBubbling(this);
 			if (shapeViewProxy != null) {
 				proxy.setShapeViewProxy(shapeViewProxy);
-				if (currentBounds != null) {
-					proxy.update(this.context, currentBounds);
+				if (currentPathBounds != null) {
+					proxy.update(this.context, currentPathBounds);
 					shapeViewProxy.redraw();
 				}
 			}
@@ -951,7 +973,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 			update(context, parentBounds);
 			for (int i = 0; i < mShapes.size(); i++) {
 				ShapeProxy shapeProxy = mShapes.get(i);
-				shapeProxy.update(this.context, currentBounds);
+				shapeProxy.update(this.context, currentPathBounds);
 			}
 			if (shapeViewProxy != null) {
 				shapeViewProxy.redraw();
@@ -987,12 +1009,12 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	@Kroll.method
 	@Kroll.getProperty
 	public KrollDict getRect() {
-		if (currentBounds != null) {
+		if (currentPathBounds != null) {
 			KrollDict d = new KrollDict();
-			d.put(TiC.PROPERTY_WIDTH, currentBounds.width());
-			d.put(TiC.PROPERTY_HEIGHT, currentBounds.height());
-			d.put(TiC.PROPERTY_X, currentBounds.left);
-			d.put(TiC.PROPERTY_Y, currentBounds.top);
+			d.put(TiC.PROPERTY_WIDTH, currentPathBounds.width());
+			d.put(TiC.PROPERTY_HEIGHT, currentPathBounds.height());
+			d.put(TiC.PROPERTY_X, currentPathBounds.left);
+			d.put(TiC.PROPERTY_Y, currentPathBounds.top);
 			return d;
 		}
 		return null;
@@ -1103,12 +1125,12 @@ public class ShapeProxy extends AnimatableReusableProxy {
 			}
 			else {
 				matrix = new Matrix();
-				matrix = transform.getMatrix(currentBounds.width(), currentBounds.height(),
-						parentBounds.width(), parentBounds.height());
+				matrix = transform.getMatrix(currentPathBounds.width(), currentPathBounds.height(),
+				        currentBounds.width(), currentBounds.height());
 			}
 			
-			float dx = currentBounds.left + currentBounds.width()*anchorPointX;
-			float dy = currentBounds.top + currentBounds.height()*anchorPointY;
+			float dx = currentPathBounds.left + currentPathBounds.width()*anchorPointX;
+			float dy = currentPathBounds.top + currentPathBounds.height()*anchorPointY;
 			
 			matrix.preTranslate(-dx, -dy);
 			matrix.postTranslate(dx, dy);
@@ -1208,6 +1230,9 @@ public class ShapeProxy extends AnimatableReusableProxy {
         case AkylasShapesModule.PROPERTY_RADIUS:
 			this.radius = newValue;
 		break;
+        case TiC.PROPERTY_PADDING:
+            padding = TiConvert.toPaddingRect(newValue, padding);
+            break;
         case AkylasShapesModule.PROPERTY_ANCHOR:
 			this.anchor = AnchorPosition.values()[TiConvert.toInt(newValue)];
 		break;

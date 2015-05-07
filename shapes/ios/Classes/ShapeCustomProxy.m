@@ -26,6 +26,7 @@
         _center = [[TiPoint alloc] initWithObject:[NSDictionary dictionaryWithObjectsAndKeys:@"0%", @"x", @"0%", @"y", nil]];
         anchor = ShapeAnchorCenter;
         clockwise = YES;
+        _padding = UIEdgeInsetsZero;
     }
     return self;
 }
@@ -33,6 +34,11 @@
 - (UIBezierPath *)getBPath
 {
     return [UIBezierPath bezierPath];
+}
+
+-(void)setPadding:(id)value
+{
+    _padding = [TiUtils insetValue:value];
 }
 
 -(void)boundsChanged:(CGRect)bounds
@@ -50,10 +56,11 @@
 
 -(void)updateRect:(CGRect) parentBounds
 {
-    _layer.frame = _parentBounds = parentBounds;
-    
-    CGSize radius = [self getRadius:parentBounds.size inProperties:[self allProperties]];
-    CGPoint cgCenter = [self computePoint:_center withAnchor:self.anchor inSize:parentBounds.size decale:radius];
+    _parentBounds = parentBounds;
+    CGRect bounds = UIEdgeInsetsInsetRect(parentBounds, _padding);
+    _layer.frame = bounds;
+    CGSize radius = [self getRadius:bounds.size inProperties:[self allProperties]];
+    CGPoint cgCenter = [self computePoint:_center withAnchor:self.anchor inSize:bounds.size decale:radius];
     
     [_layer setValue:[NSValue valueWithCGSize:radius] forKey:kAnimRadius];
     [_layer setValue:[NSValue valueWithCGPoint:cgCenter] forKey:kAnimCenter];
@@ -65,7 +72,7 @@
 
 -(void)updateRealTransform
 {
-    CGAffineTransform transform = [self getRealTransform:_currentShapeBounds parentSize:_parentBounds.size];
+    CGAffineTransform transform = [self getRealTransform:_currentShapeBounds parentSize:_layer.frame.size];
     [self setLayerValue:[NSValue valueWithCATransform3D:CATransform3DMakeAffineTransform(transform)] forKey:kAnimShapeTransform];
 }
 

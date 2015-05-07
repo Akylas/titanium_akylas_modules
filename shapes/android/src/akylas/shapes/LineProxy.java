@@ -43,8 +43,8 @@ public class LineProxy extends ArcProxy{
 	
 	@Override
 	protected void updatePath() {
-		int width = parentBounds.width();
-		int height = parentBounds.height();
+		int width = currentBounds.width();
+		int height = currentBounds.height();
 		ArrayList<BezierPoint> realPoints = new ArrayList<BezierPoint>(this.points.size());
 		for (int i = 0; i < this.points.size(); i++) {
 			TiBezierPoint tiBPoint = this.points.get(i);
