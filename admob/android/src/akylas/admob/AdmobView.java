@@ -77,7 +77,7 @@ class AdmobView extends AdmobDefaultView {
             boolean changedProperty) {
         switch (key) {
         case TiC.PROPERTY_PADDING:
-            padding  = TiConvert.toPaddingRect(newValue);
+            padding = TiConvert.toPaddingRect(newValue, padding);
             if (adView != null) {
                 adView.setPadding((int) padding.left, (int) padding.top, (int) padding.right, (int) padding.bottom);
                 setNeedsLayout();
