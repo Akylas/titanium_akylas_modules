@@ -289,15 +289,17 @@ public class TritonAudioService extends AudioStreamerService {
             }
             return -1;
         }
-
+        
+        private boolean releasing = false;
         @Override
         public void release() {
-            if (mPlayer != null) {
-                mPlayer.stop();
+            if (mPlayer != null && !releasing) {
+                releasing = true;
                 mPlayer.release();
                 mPlayer = null;
             }
             mIsInitialized = false;
+            releasing = false;
         }
 
         @Override
