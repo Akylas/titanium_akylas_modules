@@ -69,6 +69,7 @@ public class AkylasSlidemenuModule extends KrollModule
 	
 	public static String EVENT_OPEN_MENU = "openmenu";
 	public static String EVENT_CLOSE_MENU = "closemenu";
+	public static String EVENT_CLOSED_MENU = "closedmenu";
 	
 }
 

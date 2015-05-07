@@ -81,7 +81,7 @@
 
 -(void)cleanup
 {
-    TiThreadPerformOnMainThread(^{
+    TiThreadPerformBlockOnMainThread(^{
         [_controller removeFromParentViewController];
         RELEASE_TO_NIL(_controller);
 //        [self closeWindowProxy:centerView];

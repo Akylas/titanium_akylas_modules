@@ -104,6 +104,17 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 				}
 			}
 		});
+		slidingMenu.setOnClosedListener(new SlidingMenu.OnClosedListener() {
+            @Override
+            public void onClosed() {
+//                materialMenu.setState(MaterialMenuDrawable.IconState.BURGER);
+                if (proxy.hasListeners(AkylasSlidemenuModule.EVENT_CLOSED_MENU, false))
+                {
+                    KrollDict options = new KrollDict();
+                    proxy.fireEvent(AkylasSlidemenuModule.EVENT_CLOSED_MENU, options, false, false);
+                }
+            }
+        });
 		slidingMenu.setOnOpenListener(new SlidingMenu.OnOpenListener() {
 			@Override
 			public void onOpen(int leftOrRight, boolean animated, int duration) {

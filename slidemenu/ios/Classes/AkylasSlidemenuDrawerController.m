@@ -115,6 +115,17 @@
     
 }
 
+-(void)setOpenSide:(MMDrawerSide)openSide{
+    [super setOpenSide:openSide];
+    if (openSide == MMDrawerSideNone) {
+        if ([_proxy _hasListeners:@"closedmenu" checkParent:NO])
+        {
+            [_proxy fireEvent:@"closedmenu" withObject:@{} propagate:NO checkForListener:NO];
+        }
+    }
+    
+}
+
 -(void)openDrawerSide:(MMDrawerSide)drawerSide animated:(BOOL)animated velocity:(CGFloat)velocity animationOptions:(UIViewAnimationOptions)options completion:(void (^)(BOOL))completion __attribute((objc_requires_super))
 {
     [super openDrawerSide:drawerSide animated:animated velocity:velocity animationOptions:options completion:completion];
@@ -229,6 +240,7 @@
         case UIGestureRecognizerStateBegan:
             self.startingPanRect = self.centerContainerView.frame;
             event = @"scrollstart";
+            break;
         case UIGestureRecognizerStateChanged:{
             event = @"scroll";
             break;
