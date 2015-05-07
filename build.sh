@@ -3,7 +3,7 @@
 # ScriptPath=$(cd "$(dirname "$0")"; pwd)
 Directory=$(pwd)
 Platform="all"
-MODULES_REGEX=".*(shapes|mapbox|slidemenu|commonjs|charts|admob|testflight)"
+MODULES_REGEX=".*(shapes|googlemap|mapbox|map|slidemenu|commonjs|charts|admob|testfairy|triton)"
 IPHONE_REGEX=$MODULES_REGEX".*titanium\.xcconfig"
 ANDROID_REGEX=$MODULES_REGEX".*build\.properties"
 OutputDir="/Volumes/data/dev/titanium/dist_modules"
