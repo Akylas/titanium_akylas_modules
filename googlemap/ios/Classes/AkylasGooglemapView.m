@@ -276,7 +276,11 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 
 -(id)metersPerPixel_
 {
-    CGFloat px = [[self map].projection pointsForMeters:1 atCoordinate:[self map].camera.target];
+    __block CGFloat px = 1.0f;
+    TiThreadPerformBlockOnMainThread(^{
+        px = [[self map].projection pointsForMeters:1 atCoordinate:[self map].camera.target];
+    }, YES);
+
     return @(1.0f/px);
 }
 

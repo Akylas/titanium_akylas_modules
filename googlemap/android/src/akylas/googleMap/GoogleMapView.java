@@ -85,7 +85,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
     protected LatLngBounds preLayoutUpdateBounds;
     protected ArrayList<AkylasMarker> timarkers;
     private Fragment fragment;
-    private static GoogleMapView currentMapHolder;
+//    private static GoogleMapView currentMapHolder;
 
     private float mRequiredZoomLevel = 10;
     private CameraPosition currentCameraPosition = null;
@@ -98,6 +98,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
     private static int CAMERA_UPDATE_DURATION = 500;
 
     private static boolean INITIALIZED = false;
+    private RectF padding = null;
     // private FollowMeLocationSource followMeLocationSource = new
     // FollowMeLocationSource();
 
@@ -105,7 +106,8 @@ public class GoogleMapView extends AkylasMapBaseView implements
     private List<RouteProxy> addedRoutes = new ArrayList<RouteProxy>();
     private List<BaseTileSourceProxy> addedTileSources = new ArrayList<BaseTileSourceProxy>();
 
-    protected static final int TIFLAG_NEEDS_CAMERA = 0x00000001;
+    protected static final int TIFLAG_NEEDS_CAMERA          = 0x00000001;
+    protected static final int TIFLAG_NEEDS_MAP_INVALIDATE  = 0x00000002;
 
     public GoogleMapView(final TiViewProxy proxy, final Activity activity) {
         super(proxy);
@@ -115,26 +117,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
             public boolean dispatchTouchEvent(MotionEvent ev) {
                 return interceptTouchEvent(ev) || super.dispatchTouchEvent(ev);
             }
-
-            // @Override
-            // protected void onMeasure(int widthMeasureSpec, int
-            // heightMeasureSpec) {
-            // LatLngBounds region = null;
-            // if (map != null) {
-            // region = map.getProjection().getVisibleRegion().latLngBounds;
-            // }
-            // super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            // if (region != null) {
-            // CameraUpdate update;
-            // if (regionFit) {
-            // update = CameraUpdateFactory.newLatLngBounds(region,
-            // getMeasuredWidth(), getMeasuredHeight(), 0);
-            // } else {
-            // update = CameraUpdateFactory.newLatLngBounds(region, 0);
-            // }
-            // moveCamera(update, animate);
-            // }
-            // }
         };
         setNativeView(container);
 
@@ -395,7 +377,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
             getCameraBuilder().tilt(TiConvert.toFloat(newValue, 0));
             break;
         case AkylasGooglemapModule.PROPERTY_ZOOM:
-            getCameraBuilder().zoom(TiConvert.toFloat(newValue, 0));
+            targetZoom = TiConvert.toFloat(newValue, 0);
+            Log.d(TAG,"propertySet zoom " + targetZoom);
+            getCameraBuilder().zoom(targetZoom);
             break;
         case TiC.PROPERTY_REGION:
             getCameraBuilder();
@@ -427,9 +411,10 @@ public class GoogleMapView extends AkylasMapBaseView implements
             map.setMapType(googleType);
             break;
         case TiC.PROPERTY_PADDING:
-            RectF padding  =  TiConvert.toPaddingRect(newValue);
+            padding = TiConvert.toPaddingRect(newValue, padding);
             map.setPadding((int)padding.left, (int)padding.top, (int)padding.right,
                 (int)padding.bottom);
+            mProcessUpdateFlags |= TIFLAG_NEEDS_MAP_INVALIDATE;
             break;
         
         default:
@@ -448,6 +433,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (mCameraBuilder == null) {
             mProcessUpdateFlags |= TIFLAG_NEEDS_CAMERA;
             mCameraBuilder = new CameraPosition.Builder();
+            if (currentCameraPosition == null) {
+                currentCameraPosition = map.getCameraPosition();
+            }
             if (currentCameraPosition != null) {
                 mCameraBuilder.target(currentCameraPosition.target)
                         .zoom(currentCameraPosition.zoom)
@@ -461,7 +449,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
     private void handleCameraUpdate() {
         if (preLayout || mCameraBuilder == null)
             return;
-
         if (!TiApplication.isUIThread()) {
             proxy.getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -483,10 +470,12 @@ public class GoogleMapView extends AkylasMapBaseView implements
             }
             moveCamera(update, animate);
         } else {
-            CameraPosition position = mCameraBuilder.build();
-            CameraUpdate camUpdate = CameraUpdateFactory
-                    .newCameraPosition(position);
-            moveCamera(camUpdate, animate);
+            try {
+                CameraPosition position = mCameraBuilder.build();
+                CameraUpdate camUpdate = CameraUpdateFactory
+                        .newCameraPosition(position);
+                moveCamera(camUpdate, animate);
+            } catch (Exception e) {}
         }
         mCameraBuilder = null;
         mCameraRegionUpdate = false;
@@ -497,10 +486,17 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     @Override
     protected void didProcessProperties() {
-
+        
         if ((mProcessUpdateFlags & TIFLAG_NEEDS_CAMERA) != 0) {
             handleCameraUpdate();
             mProcessUpdateFlags &= ~TIFLAG_NEEDS_CAMERA;
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_MAP_INVALIDATE;
+        }
+        if ((mProcessUpdateFlags & TIFLAG_NEEDS_MAP_INVALIDATE) != 0) {
+            if (currentCameraPosition != null) {
+                map.moveCamera(CameraUpdateFactory.newCameraPosition(currentCameraPosition));
+            }
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_MAP_INVALIDATE;
         }
         super.didProcessProperties();
     }
@@ -572,17 +568,61 @@ public class GoogleMapView extends AkylasMapBaseView implements
                     proxy.getProperty(AkylasGooglemapModule.PROPERTY_MINZOOM), 0);
         }
     }
+
+    public static float metersToEquatorPixels(GoogleMap map, final LatLng location, final float zoom, final float meters) {
+        CameraPosition position = map.getCameraPosition();
+        LatLng center = location;
+        if (center == null) {
+            center = position.target;
+            if (center == null) {
+                center = new LatLng(0, 0);
+            }
+        }
+        float zoomLevel = zoom;
+        if (zoomLevel < 0) {
+            zoomLevel = position.zoom;
+        }
+        double latRadians = center.latitude * Math.PI / 180;
+        double metersPerPixel = 40075016.68 / (256 * Math.pow(2, zoomLevel));
+        return (float) (meters / Math.cos(latRadians) / metersPerPixel);
+    }
+
+    @Override
+    public float getMetersPerPixel(final float zoomToCheck, final Object position) {
+        if (map == null) {
+            return 0.0f;
+        }
+        final LatLng pos = (LatLng) AkylasGooglemapModule.latlongFromObject(position);
+
+        FutureTask<Float> futureResult = new FutureTask<Float>(
+                new Callable<Float>() {
+                    @Override
+                    public Float call() throws Exception {
+                        return 1.0f / metersToEquatorPixels(map, pos, zoomToCheck, 1.0f);
+                    }
+                });
+        // this block until the result is calculated!
+        getProxy().getActivity().runOnUiThread(futureResult);
+        try {
+            return futureResult.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return 0.0f;
+        }
+    }
     
     private float targetZoom = -1;
     @Override
     public float getZoomLevel() {
         if (targetZoom != -1) {
+            Log.d(TAG, "getZoomLevel targetZoom");
             return targetZoom;
         }
         if (currentCameraPosition == null) {
+            Log.d(TAG, "getZoomLevel getProperty");
             return TiConvert.toFloat(
                     proxy.getProperty(AkylasGooglemapModule.PROPERTY_ZOOM), 0);
         }
+        Log.d(TAG, "getZoomLevel currentCameraPosition");
         return currentCameraPosition.zoom;
     }
 
@@ -612,7 +652,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         d.put(TiC.PROPERTY_LATITUDE, point.latitude);
         d.put(TiC.PROPERTY_LONGITUDE, point.longitude);
         d.put(TiC.PROPERTY_REGION, getRegionDict());
-        d.put(AkylasGooglemapModule.PROPERTY_ZOOM, currentCameraPosition.zoom);
+        d.put(AkylasGooglemapModule.PROPERTY_ZOOM, getZoomLevel());
         d.put(AkylasGooglemapModule.PROPERTY_MAP, proxy);
         fireEvent(type, d, false, false);
     }
@@ -1250,15 +1290,13 @@ public class GoogleMapView extends AkylasMapBaseView implements
     
     
     public void updateMarkerPosition( final Marker marker, final LatLng toPosition) {
-        if (!shouldAnimate() || marker.getPosition() == null) {
+        if (!shouldAnimate() || marker.getPosition() == null|| toPosition == null) {
             marker.setPosition(toPosition);
             return;
         }
+        final LatLng startLatLng = marker.getPosition();
         final Handler handler = new Handler();
         final long start = SystemClock.uptimeMillis();
-        Projection proj = map.getProjection();
-        Point startPoint = proj.toScreenLocation(marker.getPosition());
-        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
         final long duration = CAMERA_UPDATE_DURATION;
 
         final LinearInterpolator interpolator = new LinearInterpolator();
@@ -1266,18 +1304,23 @@ public class GoogleMapView extends AkylasMapBaseView implements
         handler.post(new Runnable() {
             @Override
             public void run() {
-                long elapsed = SystemClock.uptimeMillis() - start;
-                float t = interpolator.getInterpolation((float) elapsed
-                        / duration);
-                double lng = t * toPosition.longitude + (1 - t)
-                        * startLatLng.longitude;
-                double lat = t * toPosition.latitude + (1 - t)
-                        * startLatLng.latitude;
-                marker.setPosition(new LatLng(lat, lng));
+                try {
+                    long elapsed = SystemClock.uptimeMillis() - start;
+                    float t = Math.min(interpolator.getInterpolation((float) elapsed
+                            / duration), 1.0f);
+                    double lng = t * toPosition.longitude + (1 - t)
+                            * startLatLng.longitude;
+                    double lat = t * toPosition.latitude + (1 - t)
+                            * startLatLng.latitude;
+                    marker.setPosition(new LatLng(lat, lng));
 
-                if (t < 1.0) {
-                    handler.postDelayed(this, 16);
+                    if (t < 1.0) {
+                        handler.postDelayed(this, 16);
+                    }
+                } catch(Exception e) {
+                   e.printStackTrace();
                 }
+               
             }
         });
     }
@@ -1308,4 +1351,5 @@ public class GoogleMapView extends AkylasMapBaseView implements
 //            }
 //        });
     }
+
 }

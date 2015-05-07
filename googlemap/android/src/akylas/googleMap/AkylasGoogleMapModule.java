@@ -86,7 +86,11 @@ public class AkylasGooglemapModule extends
                 @Override
                 public LatLngBounds createRegion(final LatLng ne,
                         final LatLng sw) {
-                    return new LatLngBounds(ne, sw);
+                    try {
+                        return new LatLngBounds(ne, sw);
+                    } catch (Exception e) {
+                        return null;
+                    }
                 }
 
                 @Override

@@ -114,7 +114,6 @@ public class AkylasLocationModule extends KrollModule
 	public AkylasLocationModule()
 	{
 	    super();
-        Log.d(TAG, "creation", Log.DEBUG_MODE);
         init();
 	}
 	
@@ -125,18 +124,15 @@ public class AkylasLocationModule extends KrollModule
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app)
 	{
-        Log.d(TAG, "onAppCreate", Log.DEBUG_MODE);
 	    init();
 	}
 	
 	public static void startLocationTracking() {
-        Log.d(TAG, "startLocationTracking", Log.DEBUG_MODE);
         Manager.addListener(listener);
 	    Manager.startLocUpdater(getAppContext());
 	}
 	
 	public static void stopLocationTracking() {
-        Log.d(TAG, "stopLocationTracking", Log.DEBUG_MODE);
         Manager.removeListener(listener);
         Manager.stopLocUpdater(getAppContext());
     }

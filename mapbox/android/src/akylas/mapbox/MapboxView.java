@@ -1,6 +1,9 @@
 package akylas.mapbox;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.common.Log;
@@ -33,6 +36,7 @@ import com.mapbox.mapboxsdk.overlay.UserLocationOverlay;
 import com.mapbox.mapboxsdk.tileprovider.tilesource.TileLayer;
 import com.mapbox.mapboxsdk.views.MapController;
 import com.mapbox.mapboxsdk.views.MapView;
+import com.mapbox.mapboxsdk.views.util.Projection;
 
 public class MapboxView extends AkylasMapBaseView implements
         MapView.OnCameraChangeListener, MapView.OnInfoWindowClickListener,
@@ -377,6 +381,19 @@ public class MapboxView extends AkylasMapBaseView implements
     public float getZoomLevel() {
         return map.getZoomLevel();
     }
+    
+    @Override
+    public float getMetersPerPixel(final float zoomToCheck, final Object position) {
+        if (map == null) {
+            return 0.0f;
+        }
+        final LatLng pos = (LatLng) AkylasMapboxModule.latlongFromObject(position);
+        float zoomLevel = zoomToCheck;
+        if (zoomLevel < 0) {
+            zoomLevel = getZoomLevel();
+        }
+        return (float) Projection.groundResolution((pos != null)?pos.getLatitude():0, zoomLevel);
+    }
 
     @Override
     public void updateCenter(Object dict, final boolean animated) {
@@ -392,7 +409,6 @@ public class MapboxView extends AkylasMapBaseView implements
 
     @Override
     public void updateRegion(Object dict, final boolean animated) {
-        Log.d(TAG, "updateRegion " + dict.toString());
         final BoundingBox box = (BoundingBox) AkylasMapboxModule
                 .regionFromObject(dict);
         if (box != null) {
