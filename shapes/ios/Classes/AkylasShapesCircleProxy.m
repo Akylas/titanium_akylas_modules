@@ -27,4 +27,13 @@
 }
 
 
+
+-(CGPoint) computeCenterInSize:(CGSize)size_ decale:(CGSize)decale_
+{
+    CGFloat lineWidth_2 = [TiUtils floatValue:[self valueForKey:kAnimLineWidth] def:0.0f] / 2;
+    decale_.width += lineWidth_2 - 2;
+    decale_.height += lineWidth_2 - 2;
+    return [super computeCenterInSize:size_ decale:decale_];
+}
+
 @end

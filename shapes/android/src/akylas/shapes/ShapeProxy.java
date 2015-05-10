@@ -51,8 +51,6 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.os.Build;
-import android.view.View;
-import android.view.ViewParent;
 import android.view.animation.LinearInterpolator;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -1186,13 +1184,21 @@ public class ShapeProxy extends AnimatableReusableProxy {
 			lineOpacity = TiConvert.toFloat(newValue, 1.0f);
 		break;
         case AkylasShapesModule.PROPERTY_LINE_JOIN:
-			Utils.styleJoin(TiConvert.toInt(newValue), getOrCreateLinePaint());
+            if (newValue instanceof String) {
+                Utils.styleJoin(AkylasShapesModule.lineJoinFromString((String) newValue), getOrCreateLinePaint());
+            } else {
+                Utils.styleJoin(TiConvert.toInt(newValue), getOrCreateLinePaint());
+            }
 		break;
         case AkylasShapesModule.PROPERTY_LINE_COLOR:
 			Utils.styleColor(TiConvert.toColor(newValue), getOrCreateLinePaint());
 		break;
         case AkylasShapesModule.PROPERTY_LINE_CAP:
-			Utils.styleCap(TiConvert.toInt(newValue), getOrCreateLinePaint());
+            if (newValue instanceof String) {
+                Utils.styleCap(AkylasShapesModule.lineCapFromString((String) newValue), getOrCreateLinePaint());
+            } else {
+                Utils.styleCap(TiConvert.toInt(newValue), getOrCreateLinePaint());
+            }
 		break;
         case AkylasShapesModule.PROPERTY_LINE_SHADOW:
 //			Utils.styleShadow(properties, ShapeModule.PROPERTY_LINE_SHADOW, getOrCreateLinePaint());

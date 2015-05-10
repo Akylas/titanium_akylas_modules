@@ -54,13 +54,18 @@
     }
 }
 
+-(CGPoint) computeCenterInSize:(CGSize)size_ decale:(CGSize)decale_
+{
+    return [self computePoint:_center withAnchor:self.anchor inSize:size_ decale:decale_];
+}
+
 -(void)updateRect:(CGRect) parentBounds
 {
     _parentBounds = parentBounds;
     CGRect bounds = UIEdgeInsetsInsetRect(parentBounds, _padding);
     _layer.frame = bounds;
     CGSize radius = [self getRadius:bounds.size inProperties:[self allProperties]];
-    CGPoint cgCenter = [self computePoint:_center withAnchor:self.anchor inSize:bounds.size decale:radius];
+    CGPoint cgCenter = [self computeCenterInSize:bounds.size decale:radius];
     
     [_layer setValue:[NSValue valueWithCGSize:radius] forKey:kAnimRadius];
     [_layer setValue:[NSValue valueWithCGPoint:cgCenter] forKey:kAnimCenter];
