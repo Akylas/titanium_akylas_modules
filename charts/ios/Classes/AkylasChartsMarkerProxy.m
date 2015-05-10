@@ -9,6 +9,7 @@
 #import "AkylasChartsMarkerProxy.h"
 #import "AkylasChartsMarkerAnnotation.h"
 #import "AkylasChartsLineAndTextLayer.h"
+#import "TiBase.h"
 
 @implementation AkylasChartsMarkerProxy
 {
