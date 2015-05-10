@@ -10,6 +10,7 @@
 #import "AkylasGooglemapAnnotationProxy.h"
 #import "AkylasGooglemapTileSourceProxy.h"
 #import "AkylasGooglemapRouteProxy.h"
+#import "AkylasGooglemapGroundOverlayProxy.h"
 #import "AkylasGooglemapView.h"
 
 @implementation AkylasGooglemapViewProxy
@@ -39,5 +40,12 @@
 {
     return [AkylasGooglemapTileSourceProxy class];
 }
+
+
+-(Class)groundOverlayClass
+{
+    return [AkylasGooglemapGroundOverlayProxy class];
+}
+
 
 @end

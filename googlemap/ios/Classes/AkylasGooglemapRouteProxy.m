@@ -121,7 +121,7 @@
 
 #pragma mark GoogleMap
 +(int)gZIndexDelta {
-    return 30;
+    return 300;
 }
 -(GMSMutablePath *) getGPath {
     if (_gPath == nil) {

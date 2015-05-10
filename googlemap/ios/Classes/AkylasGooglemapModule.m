@@ -20,6 +20,11 @@
 #define REGEX @"(?!"  MODULE_ID  @"/)(GoogleMaps)\\.bundle$"
 #define TEMPLATE @"modules/"  MODULE_ID  @"/$0"
 
+GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
+{
+    return [[[GMSCoordinateBounds alloc] initWithCoordinate:trapez.northEast coordinate:trapez.southWest] autorelease];
+}
+
 @implementation NSBundle (GoogleMapsFix)
 
 + (void) swizzle

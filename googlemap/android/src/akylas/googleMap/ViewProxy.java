@@ -44,6 +44,10 @@ public class ViewProxy extends MapDefaultViewProxy {
     protected Class tileSourceClass() {
         return TileSourceProxy.class;
     }
+    @Override
+    protected Class groundOverlayClass() {
+        return GroundOverlayProxy.class;
+    }
     
     @Override
     public void realizeViews(TiUIView view, boolean enableModelListener, boolean processProperties)

@@ -6,6 +6,7 @@
  */
 #import "AkylasMapBaseModule.h"
 
+GMSCoordinateBounds* boundsFromRegion(AkRegion trapez);
 @interface AkylasGooglemapModule : AkylasMapBaseModule
 {
 }

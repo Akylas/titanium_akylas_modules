@@ -87,8 +87,9 @@ public class AkylasGooglemapModule extends
                 public LatLngBounds createRegion(final LatLng ne,
                         final LatLng sw) {
                     try {
-                        return new LatLngBounds(ne, sw);
+                        return new LatLngBounds(sw, ne);
                     } catch (Exception e) {
+                        e.printStackTrace();
                         return null;
                     }
                 }

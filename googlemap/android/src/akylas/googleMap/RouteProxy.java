@@ -16,9 +16,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import akylas.map.common.AkylasMapBaseModule;
 import akylas.map.common.BaseRouteProxy;
-import android.graphics.Paint;
 import android.graphics.Paint.Cap;
 import android.graphics.Paint.Join;
 import android.os.Message;

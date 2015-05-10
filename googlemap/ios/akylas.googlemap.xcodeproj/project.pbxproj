@@ -63,6 +63,10 @@
 		D5B4A8F91ACAD0FA003B8608 /* GoogleMaps.framework in Headers */ = {isa = PBXBuildFile; fileRef = D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */; settings = {ATTRIBUTES = (Public, ); }; };
 		D5B4A8FB1ACAD15D003B8608 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */; };
 		D5B4A9081ACAD913003B8608 /* GoogleMaps.bundle in Headers */ = {isa = PBXBuildFile; fileRef = D5B4A9031ACAD87E003B8608 /* GoogleMaps.bundle */; settings = {ATTRIBUTES = (Public, ); }; };
+		D5BD8AE31AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5BD8AE11AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h */; };
+		D5BD8AE41AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5BD8AE21AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m */; };
+		D5BD8AE71AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5BD8AE51AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h */; };
+		D5BD8AE81AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5BD8AE61AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -134,6 +138,10 @@
 		D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleMaps.framework; path = platform/GoogleMaps.framework; sourceTree = "<group>"; };
 		D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		D5B4A9031ACAD87E003B8608 /* GoogleMaps.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = GoogleMaps.bundle; path = assets/GoogleMaps.bundle; sourceTree = "<group>"; };
+		D5BD8AE11AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapBaseGroundOverlayProxy.h; path = Classes/common/AkylasMapBaseGroundOverlayProxy.h; sourceTree = "<group>"; };
+		D5BD8AE21AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapBaseGroundOverlayProxy.m; path = Classes/common/AkylasMapBaseGroundOverlayProxy.m; sourceTree = "<group>"; };
+		D5BD8AE51AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGooglemapGroundOverlayProxy.h; path = Classes/AkylasGooglemapGroundOverlayProxy.h; sourceTree = "<group>"; };
+		D5BD8AE61AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapGroundOverlayProxy.m; path = Classes/AkylasGooglemapGroundOverlayProxy.m; sourceTree = "<group>"; };
 		D5FBE0BB1AA997B000EB35E8 /* module.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -206,6 +214,8 @@
 				D594D1A31AD5648800EA6005 /* AkylasGooglemapRouteProxy.m */,
 				D59988601AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h */,
 				D59988611AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m */,
+				D5BD8AE51AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h */,
+				D5BD8AE61AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -250,6 +260,8 @@
 				D594D1881AD5600700EA6005 /* ReusableViewProxy.m */,
 				D594D19A1AD560EB00EA6005 /* AkylasMapBaseModule.h */,
 				D594D19B1AD560EB00EA6005 /* AkylasMapBaseModule.m */,
+				D5BD8AE11AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h */,
+				D5BD8AE21AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m */,
 			);
 			name = common;
 			sourceTree = "<group>";
@@ -271,6 +283,7 @@
 				D59988621AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h in Headers */,
 				D594D1731AD55FE300EA6005 /* AkylasGMSURLTileLayer.h in Headers */,
 				D594D1891AD5600700EA6005 /* AkylasMapBaseAnnotationProxy.h in Headers */,
+				D5BD8AE31AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h in Headers */,
 				AA747D9F0F9514B9006C5449 /* akylas.googlemap_Prefix.pch in Headers */,
 				D594D1A01AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.h in Headers */,
 				D594D1931AD5600700EA6005 /* ReusableViewProtocol.h in Headers */,
@@ -280,6 +293,7 @@
 				D594D1711AD55FE300EA6005 /* AkylasGMSMBTilesLayer.h in Headers */,
 				D55C825E1AD6BAF400339334 /* SMClassicCalloutView.h in Headers */,
 				D594D19C1AD560EB00EA6005 /* AkylasMapBaseModule.h in Headers */,
+				D5BD8AE71AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h in Headers */,
 				D55C81FE1AD6B8B600339334 /* AkylasMapBaseView.h in Headers */,
 				D594D1791AD55FE300EA6005 /* AkylasGooglemapViewProxy.h in Headers */,
 			);
@@ -393,6 +407,8 @@
 				D594D1721AD55FE300EA6005 /* AkylasGMSMBTilesLayer.m in Sources */,
 				D594D1921AD5600700EA6005 /* AkylasMapBaseViewProxy.m in Sources */,
 				D59988631AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m in Sources */,
+				D5BD8AE81AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.m in Sources */,
+				D5BD8AE41AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m in Sources */,
 				D55C81FF1AD6B8B600339334 /* AkylasMapBaseView.m in Sources */,
 				D594D1951AD5600700EA6005 /* ReusableViewProxy.m in Sources */,
 				D594D18C1AD5600700EA6005 /* AkylasMapBaseRouteProxy.m in Sources */,

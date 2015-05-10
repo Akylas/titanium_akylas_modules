@@ -23,10 +23,7 @@
 }
 @end
 
-GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
-{
-    return [[[GMSCoordinateBounds alloc] initWithCoordinate:trapez.northEast coordinate:trapez.southWest] autorelease];
-}
+
 
 @implementation AkylasGooglemapView
 {
@@ -680,13 +677,15 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     else {
         GMSMapView* mapView = [self map];
         GMSOverlay* overlay = [annotations getGOverlayForMapView:mapView];
-        
-        if (((AkylasMapBaseAnnotationProxy*)annotations).zIndex == -1) {
-            overlay.zIndex = (int)(realIndex + [[annotations class] gZIndexDelta]);
-        } else {
-            overlay.zIndex = (int)((AkylasMapBaseAnnotationProxy*)annotations).zIndex;
+        if (overlay) {
+            if (((AkylasMapBaseAnnotationProxy*)annotations).zIndex == -1) {
+                overlay.zIndex = (int)(realIndex + [[annotations class] gZIndexDelta]);
+            } else {
+                overlay.zIndex = (int)((AkylasMapBaseAnnotationProxy*)annotations).zIndex;
+            }
+            [overlay setMap:mapView];
         }
-        [overlay setMap:mapView];
+        
 //        if (realIndex >= 0) {
 //            overlay.zIndex = (overlay.zIndex > 0) ? overlay.zIndex : (int)realIndex;
 //        }
@@ -719,6 +718,16 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     [self internalRemoveAnnotations:routes];
 }
 
+
+-(void)internalAddGroundOverlays:(id)grounds atIndex:(NSInteger)index
+{
+    [self internalAddAnnotations:grounds atIndex:index];
+}
+
+-(void)internalRemoveGroundOverlays:(id)grounds
+{
+    [self internalRemoveAnnotations:grounds];
+}
 
 -(void)setSelectedAnnotation:(AkylasGooglemapAnnotationProxy*)annotation
 {

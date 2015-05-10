@@ -17,6 +17,7 @@ import akylas.map.common.AkylasMapBaseView;
 import akylas.map.common.AkylasMapInfoView;
 import akylas.map.common.AkylasMarker;
 import akylas.map.common.BaseAnnotationProxy;
+import akylas.map.common.BaseGroundOverlayProxy;
 import akylas.map.common.BaseRouteProxy;
 import akylas.map.common.BaseTileSourceProxy;
 import akylas.map.common.ReusableView;
@@ -104,6 +105,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
 
     private List<RouteProxy> addedRoutes = new ArrayList<RouteProxy>();
+    private List<GroundOverlayProxy> addedGroundOverlays = new ArrayList<GroundOverlayProxy>();
     private List<BaseTileSourceProxy> addedTileSources = new ArrayList<BaseTileSourceProxy>();
 
     protected static final int TIFLAG_NEEDS_CAMERA          = 0x00000001;
@@ -283,6 +285,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         selectedAnnotation = null;
 
         addedRoutes.clear();
+        addedGroundOverlays.clear();
 
         for (BaseTileSourceProxy tileSource : addedTileSources) {
             tileSource.release();
@@ -378,7 +381,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
             break;
         case AkylasGooglemapModule.PROPERTY_ZOOM:
             targetZoom = TiConvert.toFloat(newValue, 0);
-            Log.d(TAG,"propertySet zoom " + targetZoom);
             getCameraBuilder().zoom(targetZoom);
             break;
         case TiC.PROPERTY_REGION:
@@ -1070,6 +1072,33 @@ public class GoogleMapView extends AkylasMapBaseView implements
             }
         });
     }
+    
+    @Override
+    public void handleAddGroundOverlay(final BaseGroundOverlayProxy overlay) {
+        if (map == null) {
+            return;
+        }
+        final GroundOverlayProxy fOverlay = (GroundOverlayProxy) overlay;
+        proxy.runInUiThread(new CommandNoReturn() {
+            @Override
+            public void execute() {
+                fOverlay.setGroundOverlay(map.addGroundOverlay(fOverlay.getAndSetOptions(currentCameraPosition)));
+                addedGroundOverlays.add(fOverlay);
+            }
+        });
+    }
+
+    @Override
+    public void handleRemoveGroundOverlay(final BaseGroundOverlayProxy overlay) {
+        final GroundOverlayProxy fOverlay = (GroundOverlayProxy) overlay;
+        proxy.runInUiThread(new CommandNoReturn() {
+            @Override
+            public void execute() {
+                fOverlay.removeGroundOverlay();
+                addedGroundOverlays.remove(fOverlay);
+            }
+        });
+    }
 
     @Override
     public void handleAddAnnotation(final BaseAnnotationProxy annotation) {
@@ -1151,6 +1180,22 @@ public class GoogleMapView extends AkylasMapBaseView implements
             route.removePolyline();
         }
         addedRoutes.clear();
+    }
+    
+    protected void removeAllGroundOverlays() {
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    removeAllGroundOverlays();
+                }
+            });
+            return;
+        }
+        for (GroundOverlayProxy overlay : addedGroundOverlays) {
+            overlay.removeGroundOverlay();
+        }
+        addedGroundOverlays.clear();
     }
 
     protected void removeAllTileSources() {
