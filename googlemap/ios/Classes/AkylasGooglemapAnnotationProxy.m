@@ -38,7 +38,9 @@
 {
     [super setTitle:value];
     if (_gmarker) {
-        _gmarker.title = self.title;
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.title = self.title;
+        }, NO);
     }
     [self setNeedsRefreshingWithSelection:NO];
 }
@@ -48,7 +50,9 @@
     [super setSubtitle:value];
     
     if (_gmarker) {
-        _gmarker.snippet = self.subtitle;
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.snippet = self.subtitle;
+        }, NO);
     }
     [self setNeedsRefreshingWithSelection:NO];
 }
@@ -57,7 +61,9 @@
 {
     [super setFlat:flat];
     if (_gmarker) {
-        _gmarker.flat = self.flat;
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.flat = self.flat;
+        }, NO);
     }
 }
 
@@ -65,7 +71,9 @@
 {
     [super setShowInfoWindow:showInfoWindow];
     if (_gmarker) {
-        _gmarker.tappable = self.showInfoWindow;
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.tappable = self.showInfoWindow;
+        }, NO);
     }
 }
 
@@ -74,7 +82,9 @@
 {
     [super setHeading:heading];
     if (_gmarker) {
-        _gmarker.rotation = self.heading;
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.rotation = self.heading;
+        }, NO);
     }
 }
 
@@ -82,7 +92,17 @@
 {
     [super setOpacity:opacity];
     if (_gmarker) {
-        _gmarker.opacity = self.opacity;
+        
+    }
+}
+
+-(void)setVisible:(BOOL)visible
+{
+    [super setVisible:visible];
+    if (_gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.opacity = self.visible?self.opacity:0;
+        }, NO);
     }
 }
 
@@ -90,7 +110,9 @@
 {
     [super setDraggable:draggable];
     if (_gmarker) {
-        _gmarker.draggable = self.draggable;
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.draggable = self.draggable;
+        }, NO);
     }
 }
 
@@ -105,7 +127,9 @@
 //    else {
 //        self.tintColor = [[TiUtils colorValue:color] _color];
         if (_gmarker) {
-            _gmarker.icon = [GMSMarker markerImageWithColor:self.tintColor];
+            TiThreadPerformBlockOnMainThread(^{
+                _gmarker.icon = [GMSMarker markerImageWithColor:self.tintColor];
+            }, NO);
         }
 //    }
     [self setNeedsRefreshingWithSelection:YES];
@@ -115,7 +139,9 @@
 {
     [super setAnchorPoint:value];
     if (_gmarker) {
-        _gmarker.groundAnchor = [self nGetAnchorPoint];
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.groundAnchor = [self nGetAnchorPoint];
+        }, NO);
     }
 }
 
@@ -123,7 +149,9 @@
 {
     [super setCalloutAnchorPoint:value];
     if (_gmarker) {
-        _gmarker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
+        }, NO);
     }
 }
 
@@ -172,7 +200,7 @@
         }
         _gmarker.draggable = self.draggable;
         _gmarker.tappable = self.showInfoWindow;
-        _gmarker.opacity = self.opacity;
+        _gmarker.opacity = self.visible?self.opacity:0;
         _gmarker.rotation = self.heading;
         _gmarker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
         _gmarker.groundAnchor = [self nGetAnchorPoint];

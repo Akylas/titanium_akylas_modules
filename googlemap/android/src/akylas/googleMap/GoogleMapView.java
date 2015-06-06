@@ -27,12 +27,12 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger;
+import org.appcelerator.kroll.common.TiMessenger.Command;
+import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
-import org.appcelerator.titanium.util.TiActivityHelper.Command;
-import org.appcelerator.titanium.util.TiActivityHelper.CommandNoReturn;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout;
@@ -56,6 +56,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
+import android.widget.LinearLayout;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -143,20 +144,19 @@ public class GoogleMapView extends AkylasMapBaseView implements
             } catch (Exception e) {
             }
         } else  {
+          final String message = "Google Play Services not available: Error "
+                  + AkylasGooglemapModule
+                  .getGoogleServiceStateMessage();
           if (proxy.hasListeners(TiC.EVENT_ERROR)) {
               
               KrollDict data = new KrollDict();
 
               data.putCodeAndMessage(
                       AkylasGooglemapModule.getGoogleServiceState(),
-                      AkylasGooglemapModule
-                              .getGoogleServiceStateMessage());
+                      message);
               proxy.fireEvent(TiC.EVENT_ERROR, data);
           }
-          Log.e(TAG,
-                  "Google Play Services not available: Error "
-                          + AkylasGooglemapModule
-                                  .getGoogleServiceStateMessage());
+          Log.e(TAG, message);
         }
 
         timarkers = new ArrayList<AkylasMarker>();
@@ -771,7 +771,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     public View getInfoContents(Marker marker) {
         AnnotationProxy annoProxy = getProxyByMarker(marker);
-        if (annoProxy != null) {
+        if (annoProxy != null && annoProxy.canShowInfoWindow()) {
             if (marker != null && marker.isInfoWindowShown()) {
                 marker.hideInfoWindow();
                 annoProxy.prepareInfoView(annoProxy.getMapInfoWindow());
@@ -813,9 +813,17 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
         mInfoWindowCache.put("infoView", infoView);
     }
-
+    private View mEmptyInfoWindowView = null;
     @Override
     public View getInfoWindow(Marker marker) {
+        AnnotationProxy annoProxy = getProxyByMarker(marker);
+        if (annoProxy != null && !annoProxy.canShowInfoWindow()) {
+            if (mEmptyInfoWindowView == null) {
+                mEmptyInfoWindowView = new LinearLayout(getContext());
+                mEmptyInfoWindowView.setLayoutParams(new LinearLayout.LayoutParams(0, 0));
+            }
+            return mEmptyInfoWindowView;
+        }
         return null;
     }
 
@@ -823,6 +831,10 @@ public class GoogleMapView extends AkylasMapBaseView implements
     public void onCameraChange(CameraPosition position) {
         currentCameraPosition = position;
         targetZoom = -1;
+        if (userAction) {
+            setShouldFollowUserLocation(false);
+            userAction = false;
+        }
         if (preLayout) {
 
             // moveCamera will trigger another callback, so we do this to make
@@ -840,6 +852,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 KrollDict result = new KrollDict();
                 result.put(TiC.PROPERTY_REGION, AkylasGooglemapModule.getFactory().regionToDict(bounds));
                 result.put(AkylasGooglemapModule.PROPERTY_ZOOM, position.zoom);
+                result.put(AkylasGooglemapModule.PROPERTY_USER_ACTION, userAction);
                 proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result, false, false);
             }
         }
@@ -854,24 +867,29 @@ public class GoogleMapView extends AkylasMapBaseView implements
         return false;
     }
 
-    private long lastTouched = 0;
-    private static final long SCROLL_TIME = 200L; // 200 Milliseconds, but you
-                                                  // can adjust that to your
-                                                  // liking
+    private boolean userAction = false;
 
     // Intercept the touch event to find out the correct clicksource if clicking
     // on the info window.
-    protected boolean interceptTouchEvent(MotionEvent ev) {
-        switch (ev.getAction()) {
+    protected boolean interceptTouchEvent(MotionEvent event) {
+        
+        final int action = event.getAction();
+        switch (action) {
         case MotionEvent.ACTION_DOWN:
-            lastTouched = SystemClock.uptimeMillis();
+            userAction = false;
+            lastDownEvent = event;
+            setPointerDown(true);
+            break;
+        case MotionEvent.ACTION_MOVE:
+            userAction = true;
+            lastDownEvent = event;
+            setPointerDown(true);
             break;
         case MotionEvent.ACTION_UP:
-            final long now = SystemClock.uptimeMillis();
-            if (now - lastTouched > SCROLL_TIME) {
-                // Update the map
-                onUpdateMapAfterUserInterection();
-            }
+        case MotionEvent.ACTION_CANCEL:
+        case MotionEvent.ACTION_OUTSIDE:
+            lastUpEvent = event;
+            setPointerDown(false);
             break;
         }
         if (selectedAnnotation != null) {
@@ -885,12 +903,13 @@ public class GoogleMapView extends AkylasMapBaseView implements
                     // Get a marker position on the screen
                     Point markerPoint = map.getProjection().toScreenLocation(
                             marker.getPosition());
-                    return infoWindow.dispatchMapTouchEvent(ev, markerPoint,
+                    return infoWindow.dispatchMapTouchEvent(event, markerPoint,
                             gmarker.getIconImageHeight());
                 }
             }
         }
-        return false;
+        handleTouchEvent(event);
+       return !isTouchEnabled;
     }
 
     public void snapshot() {
@@ -955,14 +974,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     }
 
-    private AkylasGooglemapModule.TrackingMode mUserTrackingMode = AkylasGooglemapModule.TrackingMode.NONE;
-
-    @Override
-    public void setUserTrackingMode(int value) {
-        mUserTrackingMode = AkylasGooglemapModule.TrackingMode.values()[value];
-        setShouldFollowUserLocation(true);
-    }
-
     @Override
     public void updateCenter(Object dict, boolean animated) {
     }
@@ -995,6 +1006,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     @Override
     public void zoomIn(Object about, boolean userAction) {
+        this.userAction = true;
         zoomIn();
     }
 
@@ -1013,6 +1025,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     @Override
     public void zoomOut(Object about, boolean userAction) {
+        this.userAction = true;
         zoomOut();
     }
 
@@ -1020,13 +1033,13 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (map == null) {
             return null;
         }
-        return proxy.getValueInUIThread(new Command<Projection>() {
+        return proxy.getInUiThread(new Command<Projection>() {
             
             @Override
             public Projection execute() {
                 return map.getProjection();
             }            
-        }, null);
+        });
     }
         
 
@@ -1058,7 +1071,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 fRoute.setPolyline(map.addPolyline(fRoute.getAndSetOptions(currentCameraPosition)));
                 addedRoutes.add(fRoute);
             }
-        });
+        }, true);
     }
 
     @Override
@@ -1070,7 +1083,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 fRoute.removePolyline();
                 addedRoutes.remove(fRoute);
             }
-        });
+        }, true);
     }
     
     @Override
@@ -1085,7 +1098,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 fOverlay.setGroundOverlay(map.addGroundOverlay(fOverlay.getAndSetOptions(currentCameraPosition)));
                 addedGroundOverlays.add(fOverlay);
             }
-        });
+        }, true);
     }
 
     @Override
@@ -1097,7 +1110,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 fOverlay.removeGroundOverlay();
                 addedGroundOverlays.remove(fOverlay);
             }
-        });
+        }, true);
     }
 
     @Override
@@ -1276,10 +1289,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
     }
 
-    private void onUpdateMapAfterUserInterection() {
-        setShouldFollowUserLocation(false);
-    }
-
     @Override
     public BaseTileSourceProxy addTileSource(Object object, int index) {
         BaseTileSourceProxy sourceProxy = tileSourceProxyFromObject(object);
@@ -1372,6 +1381,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
     
     public void updateMarkerHeading( final Marker marker, final float heading) {
 //        if (!shouldAnimate()) {
+        
             marker.setRotation(heading);
             return;
 //        }

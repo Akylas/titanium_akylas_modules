@@ -2,15 +2,13 @@ package akylas.googlemap;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.TiViewProxy;
-import org.appcelerator.titanium.util.TiActivityHelper;
-import org.appcelerator.titanium.util.TiActivityHelper.CommandNoReturn;
 
 import akylas.map.common.AkylasMarker;
-
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -176,21 +174,29 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     }
 
     public void showInfoWindow() {
-        if (marker != null) {
-            marker.showInfoWindow();
-        }
+        runInUiThread(new CommandNoReturn() {
+            public void execute() {
+                if (marker != null) {
+                    marker.showInfoWindow();
+                }
+            }
+        });
     }
 
     public void hideInfoWindow() {
-        if (marker != null) {
-            marker.hideInfoWindow();
-            if (proxy != null) {
-                proxy.infoWindowDidClose();
+        runInUiThread(new CommandNoReturn() {
+            public void execute() {
+                if (marker != null) {
+                    marker.hideInfoWindow();
+                    if (proxy != null) {
+                        proxy.infoWindowDidClose();
+                    }
+                }
             }
-        }
+        });
     }
     
-    public void runInUiThread(final TiActivityHelper.CommandNoReturn command) {
+    public void runInUiThread(final CommandNoReturn command) {
         if (marker != null) {
             super.runInUiThread(command);
         }

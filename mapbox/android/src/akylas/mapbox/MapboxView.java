@@ -7,9 +7,9 @@ import java.util.concurrent.FutureTask;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
-import org.appcelerator.titanium.util.TiActivityHelper.CommandNoReturn;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout;
@@ -19,6 +19,7 @@ import akylas.map.common.AkylasMapBaseView;
 import akylas.map.common.AkylasMapInfoView;
 import akylas.map.common.AkylasMarker;
 import akylas.map.common.BaseAnnotationProxy;
+import akylas.map.common.BaseGroundOverlayProxy;
 import akylas.map.common.BaseRouteProxy;
 import akylas.map.common.BaseTileSourceProxy;
 import akylas.map.common.ReusableView;
@@ -299,7 +300,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 mapController.zoomIn();
             }
-        });
+        }, true);
     }
 
     @Override
@@ -312,7 +313,7 @@ public class MapboxView extends AkylasMapBaseView implements
                 mapController.zoomInAbout(point, userAction);
 
             }
-        });
+        }, true);
     }
 
     @Override
@@ -322,7 +323,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 mapController.zoomOut();
             }
-        });
+        }, true);
     }
 
     @Override
@@ -335,7 +336,7 @@ public class MapboxView extends AkylasMapBaseView implements
                 mapController.zoomOutAbout(point, userAction);
 
             }
-        });
+        }, true);
     }
 
     @Override
@@ -356,11 +357,10 @@ public class MapboxView extends AkylasMapBaseView implements
     protected void setDiskCacheEnabled(boolean enabled) {
         map.setDiskCacheEnabled(enabled);
     }
-
-    @Override
-    public void setUserTrackingMode(int mode) {
+    
+    protected void handleUserTrackingModeChanged(AkylasMapBaseModule.TrackingMode mode) {
         map.setUserLocationTrackingMode(UserLocationOverlay.TrackingMode
-                .values()[mode]);
+                .values()[mode.ordinal()]);
     }
 
     // protected void setUserLocationRequiredZoom(float zoomLevel) {
@@ -507,7 +507,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 map.goToUserLocation(true);
             }
-        });
+        }, true);
     }
 
     @Override
@@ -517,7 +517,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 map.selectMarker(null);
             }
-        });
+        }, true);
     }
 
     @Override
@@ -528,7 +528,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 map.selectMarker(fMarker);
             }
-        });
+        }, true);
     }
 
     @Override
@@ -540,7 +540,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 map.addOverlay(path);
             }
-        });
+        }, true);
     }
 
     @Override
@@ -551,7 +551,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 map.removeOverlay(path);
             }
-        });
+        }, true);
         ((RouteProxy) route).setMapView(null);
     }
 
@@ -571,7 +571,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 map.addMarker(fMarker);
             }
-        });
+        }, true);
     }
 
     @Override
@@ -584,7 +584,7 @@ public class MapboxView extends AkylasMapBaseView implements
                     public void execute() {
                         map.addMarker(mapBoxMarker);
                     }
-                });
+                }, true);
             }
             BaseAnnotationProxy annotation = marker.getProxy();
             if (annotation != null) {
@@ -602,7 +602,7 @@ public class MapboxView extends AkylasMapBaseView implements
             public void execute() {
                 map.clear();
             }
-        });
+        }, true);
     }
 
     public void fireLongClickEvent(ILatLng point) {
@@ -737,5 +737,17 @@ public class MapboxView extends AkylasMapBaseView implements
             result *= density;
         }
         return result;
+    }
+
+    @Override
+    public void handleAddGroundOverlay(BaseGroundOverlayProxy router) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void handleRemoveGroundOverlay(BaseGroundOverlayProxy router) {
+        // TODO Auto-generated method stub
+        
     }
 }

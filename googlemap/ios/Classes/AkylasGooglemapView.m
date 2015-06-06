@@ -13,13 +13,31 @@
 #import "AkylasGooglemapModule.h"
 #import "TiApp.h"
 
-
-
 @implementation AkylasGMSMapView
 -(void)dealloc
 {
     RELEASE_TO_NIL(_tileCache)
     [super dealloc];
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesBegan:touches withEvent:event];
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesMoved:touches withEvent:event];
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesEnded:touches withEvent:event];
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesCancelled:touches withEvent:event];
 }
 @end
 
@@ -28,6 +46,7 @@
 @implementation AkylasGooglemapView
 {
     AkylasGMSMapView *map;
+    BOOL _forwarding;
     BOOL _shouldFollowUserLocation;
     NSInteger _userTrackingMode;
     CGFloat _userLocationRequiredZoom;
@@ -36,7 +55,7 @@
     SMCalloutView* _calloutView;
     UIView* calloutTouchedView;
     UIView* _emptyCalloutView;
-    
+    UIView* _gestureView;
     AkMapDragState _dragState;
 }
 
@@ -45,6 +64,8 @@
     if ((self = [super init])) {
         _shouldFollowUserLocation = YES;
         _inUserAction = NO;
+        _forwarding = NO;
+        _userTrackingMode = AkUserTrackingModeNone;
         _emptyCalloutView = [[UIView alloc] initWithFrame:CGRectZero];
         _dragState = AkMapDragStateNone;
     }
@@ -107,10 +128,11 @@
     if (map==nil)
     {
         map = [[AkylasGMSMapView alloc] initWithFrame:self.bounds];
-
         [map addObserver:self forKeyPath:@"selectedMarker" options:0 context:nil];
         [map setTileCache:[[TiCache alloc] initWithConfig:@[@{@"type":@"db-cache", @"name":@"AkGMSCache"}] expiryPeriod:0]];
         [self addSubview:map];
+        NSArray* subs = [map subviews];
+        _gestureView = [[map subviews] objectAtIndex:0];
         map.delegate = self;
         map.networkConnected = [[TiApp app] networkConnected];
         //Initialize loaded state to YES. This will automatically go to NO if the map needs to download new data
@@ -124,6 +146,7 @@
 -(UIView *)hitTest:(CGPoint) point withEvent:(UIEvent *)event
 {
     UIView *hitView = [super hitTest:point withEvent:event];
+
     if (!([hitView isKindOfClass:[UIControl class]]) && [_calloutView pointInside:[_calloutView convertPoint:point fromView:self] withEvent:event]) {
         calloutTouchedView = hitView;
     }
@@ -139,7 +162,6 @@
 {
 	return [self map];
 }
-
 //
 //-(void)networkChanged:(NSNotification*)note
 //{
@@ -297,7 +319,7 @@
 {
     ENSURE_SINGLE_ARG_OR_NIL(value, NSDictionary)
     ENSURE_UI_THREAD_1_ARG(value)
-    [self setShouldFollowUserLocation:NO];
+//    [self setShouldFollowUserLocation:NO];
 	if (value==nil)
 	{
         return;
@@ -437,7 +459,7 @@
 -(void)setCenterCoordinate_:(id)value
 {
     ENSURE_UI_THREAD_1_ARG(value)
-    [self setShouldFollowUserLocation:NO];
+//    [self setShouldFollowUserLocation:!configurationSet];
     CLLocationCoordinate2D coord = [AkylasGooglemapModule locationFromObject:value];
     if (animate || !configurationSet) {
         [[self map] animateToLocation:coord];
@@ -605,7 +627,7 @@
 
 - (void)setCenterCoordinate:(CLLocationCoordinate2D)centerCoordinate animated:(BOOL)animated
 {
-    [self setShouldFollowUserLocation:NO];
+//    [self setShouldFollowUserLocation:NO];
     //    if (!configurationSet) {
     //        _needsCameraUpdate = YES;
     //        _cameraUpdate = [[GMSCameraUpdate setTarget:centerCoordinate] retain];
@@ -1068,7 +1090,7 @@
 //        [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
 //    }
 //    
-    _inUserAction = gesture;
+    _inUserAction = configurationSet && gesture;
 }
 
 /**
@@ -1079,6 +1101,9 @@
  */
 - (void)mapView:(GMSMapView *)mapView didChangeCameraPosition:(GMSCameraPosition *)position {
 //    region = regionFromMKRegion([mapView region]);
+    if (_inUserAction) {
+        [self setShouldFollowUserLocation:NO];
+    }
     if (mapView.selectedMarker != nil && _calloutView && !_calloutView.hidden) {
         CLLocationCoordinate2D anchor = [mapView.selectedMarker position];
         GMSMarker* marker = mapView.selectedMarker;

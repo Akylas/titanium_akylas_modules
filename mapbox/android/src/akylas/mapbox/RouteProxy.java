@@ -1,8 +1,8 @@
 package akylas.mapbox;
 
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.util.TiActivityHelper.CommandNoReturn;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 
@@ -92,7 +92,7 @@ public class RouteProxy extends BaseRouteProxy<LatLng, BoundingBox> {
                 }
                 
             }
-        });
+        }, false);
     }
     
     @Override

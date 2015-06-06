@@ -33,7 +33,9 @@
 {
     [super setColor:value];
     if (_gPoly != nil && !_spans)  {
-        _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
+        TiThreadPerformBlockOnMainThread(^{
+            _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
+        }, NO);
     }
 }
 
@@ -41,17 +43,21 @@
 -(void)onPointProcessed
 {
     RELEASE_TO_NIL(_gPath)
+    if (_gPoly) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gPoly.path = [self getGPath];
+        }, NO);
+    }
 }
-
 
 -(void)onPointAdded:(CLLocation*)newPoint
 {
-    //    if (_shape) {
-    //        [_shape addLineToCoordinate:newPoint.coordinate];
-    //    }
+
+    TiThreadPerformBlockOnMainThread(^{
         if (_gPath) {
             [_gPath addCoordinate:newPoint.coordinate];
         }
+    }, NO);
     //    if (_shape) {
     //        [_shape addLineToCoordinate:newPoint.coordinate];
     //    }

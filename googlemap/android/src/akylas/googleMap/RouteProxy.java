@@ -4,8 +4,8 @@ import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.TiMessenger;
+import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.util.TiActivityHelper.CommandNoReturn;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 
@@ -127,7 +127,7 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
                 public void execute() {
                     polyline.setPoints(mPoints);
                 }
-            });
+            }, true);
         }
     }
     
