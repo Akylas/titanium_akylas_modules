@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TESTFAIRY_ENDPOINT="http://app.testfairy.com/upload/dsym/";
+TESTFAIRY_ENDPOINT="http://app.testfairy.com/upload/dsym/"
 
 ZIP=zip
 CURL=curl
@@ -10,26 +10,49 @@ log() {
 	echo "${NOW} ${1}"
 }
 
-DAEMON=0
-if [ "${1}" == "-d" ]; then
-	log "Enabling background dSYM upload"
+help() {
+	echo "Usage: ${0} [-f] TESTFAIRY_API_KEY [-p DSYM_PATH]"
+	exit 1
+}
 
-	DAEMON=1
+DAEMON=1
+if [ "${1}" == "-f" ]; then
+	DAEMON=0
+	shift
+elif [ "${1}" == "-d" ]; then
+	# backward compatible when -f was the default
 	shift
 fi
 
+
 API_KEY="${1}"
 if [ ! "${API_KEY}" ]; then
-	echo "Usage: ${0} [-d] TESTFAIRY_API_KEY"
-	exit 1
+	help
+fi
+
+DSYM_PATH=${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}
+
+if [ "${#}" -gt 1 ]; then
+	shift
+	if [ "${1}" != "-p" ]; then
+		help
+	fi
+
+	shift
+	DSYM_PATH="${1}"
+fi
+
+if [ "${DSYM_PATH}" == "" ] || [ "${DSYM_PATH}" == "/" ] || [ ! -d "${DSYM_PATH}" ]; then
+	echo "Fatal: Can't find .dSYM folder!"
+	help
 fi
 
 NOW=$(date +%s)
 TMP_FILENAME="/tmp/${NOW}-${DWARF_DSYM_FILE_NAME}.zip"
 
 # Compress the .dSYM folder into a zip file
-log "Compressing .dSYM folder"
-$ZIP -qrp9 ${TMP_FILENAME} ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}
+log "Compressing .dSYM folder ${DSYM_PATH}"
+$ZIP -qrp9 ${TMP_FILENAME} ${DSYM_PATH}
 FILE_SIZE=$(stat -f "%z" "${TMP_FILENAME}")
 
 foreground_upload() {
@@ -49,7 +72,7 @@ background_upload() {
 }
 
 if [ "$DAEMON" == "0" ]; then
-	log "Uploading ${FILE_SIZE} bytes to dsym server"
+	log "Uploading ${FILE_SIZE} bytes to dsym server in foreground"
 	foreground_upload "${TMP_FILENAME}"
 else
 	log "Uploading ${FILE_SIZE} bytes to dsym server in background"
@@ -57,3 +80,4 @@ else
 fi
 
 log "TestFairy .dSYM upload script ends"
+
