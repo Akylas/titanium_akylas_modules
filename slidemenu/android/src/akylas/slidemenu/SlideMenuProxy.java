@@ -7,6 +7,7 @@ package akylas.slidemenu;
 
 import java.lang.ref.WeakReference;
 
+import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiActivityWindow;
@@ -397,7 +398,7 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	public boolean realUpdateOrientationModes()
 	{
 	    TiViewProxy proxy = getCenterView();
-        if (proxy != null && proxy instanceof TiWindowProxy)
+        if (proxy instanceof TiWindowProxy)
         {
             if (((TiWindowProxy) proxy).realUpdateOrientationModes())
                 return true;
@@ -408,6 +409,16 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	@Override
 	public KrollProxy getParentForBubbling(TiWindowProxy proxy) {
 		return this;
+	}
+	
+	@Override
+	public TiWindowProxy getTopWindow() {
+	    TiViewProxy proxy = getCenterView();
+        if (proxy instanceof TiWindowProxy)
+        {
+                return (TiWindowProxy) proxy;
+        }
+        return null;
 	}
 
 //    @Override
