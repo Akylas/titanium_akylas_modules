@@ -139,7 +139,6 @@
 
 -(void)setCenter:(id)arg
 {
-    ENSURE_SINGLE_ARG_OR_NIL(arg, NSDictionary);
     RELEASE_TO_NIL(_center)
     _center = [[TiUtils tiPointValue:arg def:[self defaultCenter]] retain];
 	[self replaceValue:arg forKey:kAnimCenter notification:NO];
@@ -376,7 +375,7 @@
 -(NSMutableArray*)animationsForShapeAnimation:(AkylasShapesAnimation*)animation
 {
     NSMutableArray* animations = [ NSMutableArray array];
-    [self prepareAnimation:animation.animationProxy holder:animations animProps:[animation animationProperties]];
+    [self prepareAnimation:animation.animationProxy holder:animations animProps:[animation toProperties]];
     return animations;
 }
 

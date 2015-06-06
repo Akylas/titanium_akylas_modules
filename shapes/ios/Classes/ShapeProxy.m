@@ -69,7 +69,7 @@ parentBounds = _parentBounds;
 	static TiPoint *defaultCenter = nil;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
-		defaultCenter = [[TiPoint alloc] initWithObject:[NSDictionary dictionaryWithObjectsAndKeys:@"0%", @"x", @"0%", @"y", nil]];
+		defaultCenter = [[TiPoint alloc] initWithObject:[NSArray arrayWithObjects:@"0%", @"0%", nil]];
 	});
 	return defaultCenter;
 }

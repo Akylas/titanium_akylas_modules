@@ -28,4 +28,5 @@
 -(CABasicAnimation *)addAnimationForKeyPath:(NSString*)keyPath_ restartFromBeginning:(BOOL)restartFromBeginning_ animation:(TiAnimation*)animation holder:(NSMutableArray*)animations animProps:(NSDictionary*)animProps;
 -(CALayer*)getLayer;
 -(NSMutableArray*)animationsForShapeAnimation:(AkylasShapesAnimation*)animation;
+-(CGPoint) computeCenterInSize:(CGSize)size_ decale:(CGSize)decale_;
 @end
