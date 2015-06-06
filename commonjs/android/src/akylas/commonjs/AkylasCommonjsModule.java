@@ -80,18 +80,14 @@ public class AkylasCommonjsModule extends KrollModule
         Log.d(TAG, "AkylasCommonjsModule", Log.DEBUG_MODE);
 	}
 	public static void showError(final String message) {
-	    (new TiExceptionHandler()).handleException(new KrollExceptionHandler.ExceptionMessage(message, null, null,0,null, 0));
+	    (new TiExceptionHandler()).handleException(new KrollExceptionHandler.ExceptionMessage(message, null, null,0,null, 0, null));
 	    new Timer().schedule(new TimerTask() {
 	        @Override
 	        public void run() {
-	         // Kill Process
-	            ActivityManager am = (ActivityManager) TiApplication.getInstance().getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-	            if (am != null) {
-	                am.killBackgroundProcesses(TiApplication.getInstance().getAppInfo().getId());
-	            }
-                Process.killProcess(Process.myPid());
+             TiApplication.getAppRootOrCurrentActivity().finish();
+             System.exit(0);
 	        }
-	    }, 4000);
+	    }, 10000);
 	}
 
 	@Kroll.onAppCreate

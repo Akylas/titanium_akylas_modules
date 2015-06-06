@@ -7,5 +7,8 @@
 }
 - (NSData*) moduleAsset;
 - (NSData*) resolveModuleAsset:(NSString*)path;
+- (BOOL) assetExists:(NSString*) path;
+- (NSArray *) resolveModuleDirectory:(NSString*)path;
+
 
 @end
