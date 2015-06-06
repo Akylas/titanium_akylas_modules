@@ -18,13 +18,13 @@ import ti.modules.titanium.audio.streamer.AudioStreamerService;
 import com.tritondigital.player.CuePoint;
 import com.tritondigital.player.MediaPlayer.OnCuePointReceivedListener;
 import com.tritondigital.player.MediaPlayer.OnStateChangedListener;
-import com.tritondigital.player.StreamUrlBuilder;
 import com.tritondigital.player.TritonPlayer;
 
 /**
  * A backbround {@link Service} used to keep music playing between activities
  * and when the user moves Apollo into the background.
  */
+@SuppressWarnings("serial")
 public class TritonAudioService extends AudioStreamerService {
     
     private static final String TAG = "TritonAudioService";
@@ -102,6 +102,12 @@ public class TritonAudioService extends AudioStreamerService {
                 result.put((realKey != null) ? realKey : key, value.toString());
             }
         }
+        if (result.get(CuePoint.CUE_TYPE).equals(CuePoint.CUE_TYPE_VALUE_AD)) {
+            String title = (String) result.get("title");
+            if (title == null || title.length() == 0) {
+                result.put("title", "ad");
+            }
+        }
         return result;
     }
     
@@ -164,7 +170,7 @@ public class TritonAudioService extends AudioStreamerService {
     public class BroadcastPlayingItem extends AudioStreamerService.PlayingItem {
         private final Bundle mSettings;
         protected BroadcastPlayingItem(Bundle settings) {
-            super(settings.getString(TritonPlayer.SETTINGS_BROADCASTER));
+            super(settings.getString(TritonPlayer.SETTINGS_STATION_BROADCASTER));
             mSettings = settings;
         }
     }
@@ -181,7 +187,7 @@ public class TritonAudioService extends AudioStreamerService {
 
         public Bundle getLastReceivedCuePoint() {
             if (mPlayer != null) {
-                return mPlayer.getLastReceivedCuePoint();
+                return mPlayer.getLastCuePoint();
             }
             return null;
         }
@@ -232,11 +238,11 @@ public class TritonAudioService extends AudioStreamerService {
             for (Map.Entry<String, Object> entry : props.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if (key.equals(TritonPlayer.SETTINGS_STREAM_PARAMS) && value instanceof HashMap) {
+                if (key.equals(TritonPlayer.SETTINGS_TARGETING_PARAMS) && value instanceof HashMap) {
                     for (Map.Entry<String, Object> entry2 : ((HashMap<String, Object>) value)
                             .entrySet()) {
-                        String key2 = entry.getKey();
-                        Object value2 = entry.getValue();
+                        String key2 = entry2.getKey();
+                        Object value2 = entry2.getValue();
                         streamParams.put(key2, TiConvert.toString(value2));
                     }
                 } else {
@@ -244,18 +250,21 @@ public class TritonAudioService extends AudioStreamerService {
                     if (value instanceof Boolean) {
                         settings.putBoolean(key, TiConvert.toBoolean(value));
                     } else if (value instanceof String) {
-                        String str = TiConvert.toString(value);
-                        if (key.equals(TritonPlayer.SETTINGS_MOUNT)) {
-                            settings.putBoolean("is_preprod", str.startsWith("BASIC_CONFIG"));
-                        }
-                        settings.putString(key, str);
+                        settings.putString(key, (String) value);
                     } else if (value instanceof Float) {
                         settings.putFloat(key, TiConvert.toFloat(value));
                     }
                 }
             }
+            if ("BASIC_CONFIG".equals(settings.getString(TritonPlayer.SETTINGS_STATION_NAME)) && 
+                    "Triton Digital".equals(settings.getString(TritonPlayer.SETTINGS_STATION_BROADCASTER))) {
+                String mount = settings.getString(TritonPlayer.SETTINGS_STATION_MOUNT);
+                if (!mount.endsWith("preprod")) {
+                    settings.putString(TritonPlayer.SETTINGS_STATION_MOUNT, mount + ".preprod");
+                }
+            }
             
-            settings.putSerializable(TritonPlayer.SETTINGS_STREAM_PARAMS,
+            settings.putSerializable(TritonPlayer.SETTINGS_TARGETING_PARAMS,
                     streamParams);
 
 //            settings.putBoolean(TritonPlayer.SETTINGS_ENABLE_LOCATION_TRACKING,
@@ -265,14 +274,23 @@ public class TritonAudioService extends AudioStreamerService {
 //            settings.putString(TritonPlayer.SETTINGS_STATION_NAME, STATION_NAME);
 //            settings.putSerializable(TritonPlayer.SETTINGS_STREAM_PARAMS,
 //                    streamParams);
-            mPlayingItem = new BroadcastPlayingItem(settings);
-            mPlayer = new TritonPlayer(service, settings);
-            mPlayer.setOnCuePointReceivedListener(this);
-            mPlayer.setOnStateChangedListener(this);
-            mIsInitialized = true;
-            mIsPreparing = false;
-            start();
-            mService.get().onStartPlaying(mPlayingItem);
+            try {
+                mPlayingItem = new BroadcastPlayingItem(settings);
+                mPlayer = new TritonPlayer(service, settings);
+                mPlayer.setOnCuePointReceivedListener(this);
+                mPlayer.setOnStateChangedListener(this);
+                mIsInitialized = true;
+                mIsPreparing = false;
+                start();
+                mService.get().onStartPlaying(mPlayingItem);
+            } catch (Exception e) {
+                mPlayingItem = null;
+                mPlayer = null;
+                mIsInitialized = false;
+                mIsPreparing = false;
+                onError(-1, e.getLocalizedMessage());
+            }
+            
 
             return mIsInitialized;
         }

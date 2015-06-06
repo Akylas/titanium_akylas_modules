@@ -11,6 +11,7 @@
 
 #import "TDInterstitialAdDelegate.h"
 #import "TDAd.h"
+#import "TDAdRequestURLBuilder.h"
 
 /**
  * The TDInterstitialAd class is used to request and display Triton interstitial ads. 
@@ -36,19 +37,37 @@
 @property (nonatomic, readonly) BOOL loaded;
 
 /**
- * @discussion Prepare an interstitial ad for playing. It will be prefetched if needed.
+ * Prepare an interstitial ad for playing. It will be prefetched if needed.
+ * 
  * @param ad The TDAd to be loaded.
  */
 
--(void) loadAd:(TDAd*)ad;
+-(void)loadAd:(TDAd*) ad;
+
+/**
+ * Request and prepare an interstitial ad for playing. It will be prefetched if needed.
+ * 
+ * @param requestBuilder A TDAdRequestURLBuilder object representing the interstitial request.
+ */
+
+-(void)loadRequestBuilder:(TDAdRequestURLBuilder *) requestBuilder;
+
+/**
+ * Request and prepare an interstitial ad for playing. It will be prefetched if needed.
+ *
+ * @param stringRequest A NSString representing the interstitial request. It can be build manually or by TDAdRequestURLBuilder.
+ */
+
+-(void)loadStringRequest:(NSString *) stringRequest;
+
 
 /// @name Presenting an Interstitial ad
 
 /**
- * @discussion Presents the interstitial ad which takes over the entire screen until it finishes or the user dismisses it. This method only has effect if loaded returns YES and/or if the delegate’s interstitialDidReceiveAd: has been called.
+ * Presents the interstitial ad which takes over the entire screen until it finishes or the user dismisses it. This method only has effect if loaded returns YES and/or if the delegate’s interstitialDidReceiveAd: has been called.
  * @param rootViewController The current view controller which will be used to present the full screen ad.
  */
 
--(void) presentFromViewController:(UIViewController *) rootViewController;
+-(void)presentFromViewController:(UIViewController *) rootViewController;
 
 @end

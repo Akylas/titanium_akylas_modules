@@ -360,9 +360,9 @@ void tritonAudioRouteChangeListenerCallback (void *inUserData, AudioSessionPrope
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         paramsConvert = [@{
-                             @"mount":SettingsMountKey,
+                             @"station_mount":SettingsMountKey,
                              @"station_name":SettingsStationNameKey,
-                             @"broadcaster":SettingsBroadcasterKey,
+                             @"station_broadcaster":SettingsBroadcasterKey,
                              @"enable_location_tracking":SettingsEnableLocationTrackingKey,
                              @"stream_params":SettingsStreamParamsExtraKey
                              }retain];
@@ -375,16 +375,18 @@ void tritonAudioRouteChangeListenerCallback (void *inUserData, AudioSessionPrope
     [[self paramsConvert] enumerateKeysAndObjectsUsingBlock:^(NSString* key, id obj, BOOL *stop) {
         id value = [realSettings objectForKey:key];
         if (value) {
-            if ([key isEqualToString:@"mount"] && IS_OF_CLASS(value, NSString) && [value rangeOfString:@"BASIC_CONFIG"].location == 0) {
-                [realSettings setObject:[value stringByAppendingString:@".preprod"] forKey:obj];
-            } else {
-                [realSettings setObject:value forKey:obj];
-            }
+            
+            [realSettings setObject:value forKey:obj];
             [realSettings removeObjectForKey:key];
         }
     }];
+    if ([[realSettings objectForKey:SettingsBroadcasterKey] isEqualToString:@"Triton Digital"]) {
+        if ([[realSettings objectForKey:SettingsMountKey] rangeOfString:@"preprod"].location == NSNotFound) {
+            [realSettings setObject:[[realSettings objectForKey:SettingsMountKey] stringByAppendingString:@".preprod"] forKey:SettingsMountKey];
+        }
+    }
     if (!player) {
-        player = [[TritonPlayer alloc] initWithDelegate:self andSettings:realSettings];
+        player = [[TritonPlayer alloc] initWithDelegate:(id<TritonPlayerDelegate>)self andSettings:realSettings];
     } else {
         [player updateSettings:realSettings];
     }
@@ -1022,10 +1024,68 @@ MAKE_SYSTEM_PROP(STATE_PAUSED,STATE_PAUSED);
  * @param player The TritonPlayer object that is playing.
  */
 
-- (void)playerDidStartPlaying:(TritonPlayer *) player {
+- (void)playerDidStartPlaying:(TritonPlayer *) thePlayer {
     [self updateState:STATE_PLAYING];
 }
 
+- (void) player:(TritonPlayer *) thePlayer didChangeState:(TDPlayerState) state {
+    switch(state) {
+    case kTDPlayerStateCompleted:
+            [self handlePlayeEndedTrack];
+        break;
+        
+    case kTDPlayerStateConnecting:
+            [self updateState:STATE_CONNECTING];
+        break;
+        
+    case kTDPlayerStateError: {
+        [self updateState:STATE_ERROR];
+        if ([self _hasListeners:@"error"])
+        {
+            NSError *error = thePlayer.error;
+            [self fireEvent:@"error" withObject:@{
+                                                  @"track":_currentItem?_currentItem:[NSNull null],
+                                                  @"index":@(self.indexOfNowPlayingItem)
+                                                  } errorCode:[error code] message:[TiUtils messageFromError:error]];
+        }
+        break;
+    }
+    case kTDPlayerStatePlaying:
+            [self updateState:STATE_PLAYING];
+        break;
+        
+    case kTDPlayerStateStopped:
+            [self updateState:STATE_STOPPED];
+        break;
+        
+    case kTDPlayerStatePaused:
+            [self updateState:STATE_PAUSED];
+        break;
+        
+    default:
+        break;
+    }
 
+}
+
+-(void)player:(TritonPlayer *)thePlayer didReceiveInfo:(TDPlayerInfo)info andExtra:(NSDictionary *)extra {
+    
+    switch (info) {
+        case kTDPlayerInfoConnectedToStream:
+            break;
+            
+        case kTDPlayerInfoBuffering:
+            if ([self _hasListeners:@"buffering"])
+            {
+                [self fireEvent:@"buffering" withObject:@{
+                                                          @"progress":extra[InfoBufferingPercentageKey]
+                                                          } checkForListener:NO];
+            }
+            break;
+            
+        case kTDPlayerInfoForwardedToAlternateMount:
+            break;
+    }
+}
 
 @end

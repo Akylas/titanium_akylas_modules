@@ -96,6 +96,9 @@ extern NSString *const LegacyBuyURLKey;
 
 /// @name Cue Point Properties
 
+/// Timestamp The *timestamp* in which the cuepoint event should be executed.
+@property (readonly, nonatomic) NSTimeInterval timestamp;
+
 /// Contains all cue point data, which can be accessed by the constants declare in CuePointEvent.h.
 @property (readonly, strong) NSDictionary		*data;
 
@@ -108,13 +111,25 @@ extern NSString *const LegacyBuyURLKey;
 /// @name Creating a CuePointEvent
 
 /**
- * Initializes a CuePoitEvent object.
+ * Initializes a CuePoitEvent object. This is the designated initializer.
  *
  * @param inAMFData Dictionary containing *data* in AMF format.
  * @param inTimestamp The *timestamp* in which the cuepoint event should be executed.
  *
  * @return The newly-initialized CuePointEvent object
  */
-- (id)initEventWithAMFObjectData:(NSDictionary *)inAMFData andTimestamp:(NSTimeInterval)inTimestamp;
+
+-(instancetype)initEventWithAMFObjectData:(NSDictionary *)inAMFData andTimestamp:(NSTimeInterval)inTimestamp;
+
+/**
+ * Initializes a CuePoitEvent object.
+ *
+ * @param data Dictionary containing *data* in AMF format.
+ * @param timestamp The *timestamp* in which the cuepoint event should be executed.
+ *
+ * @return The newly-initialized CuePointEvent object
+ */
+
+-(instancetype)initWithData:(NSDictionary *)data andTimestamp:(NSTimeInterval)timestamp;
 
 @end

@@ -15,6 +15,13 @@
 @optional
 
 /**
+ * Called when the interstital ad was loaded suceesfully. From this point, it is able to be presented.
+ *
+ * @param ad The TDInterstitialAf object that loaded an ad.
+ */
+- (void)interstitialDidLoadAd:(TDInterstitialAd *)ad;
+
+/**
  * Called when an interstitial ad loading failed.
  *
  * @param ad The TDInterstitialAd object that failed to load ad
