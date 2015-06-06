@@ -3,9 +3,9 @@
 # ScriptPath=$(cd "$(dirname "$0")"; pwd)
 Directory=$(pwd)
 Platform="all"
-MODULES_REGEX=".*(shapes|googlemap|mapbox|map|slidemenu|commonjs|charts|admob|testfairy|triton)"
+MODULES_REGEX=".*(shapes|googlemap|mapbox|slidemenu|commonjs|charts|admob|testfairy|triton|tiws|alarm)"
 IPHONE_REGEX=$MODULES_REGEX".*titanium\.xcconfig"
-ANDROID_REGEX=$MODULES_REGEX".*build\.properties"
+ANDROID_REGEX=$MODULES_REGEX".*build\.xml"
 OutputDir="/Volumes/data/dev/titanium/dist_modules"
 Usage()
 {
@@ -96,10 +96,11 @@ if ([ "$Platform" = "all" -o "$Platform" = "android" ]); then
     do
         dir=$(dirname "${file}")
         cd $dir
-        ant
-        version=$(grep -oEi "(?:^version\s*:\s*)(([0-9])+(\.{0,1}([0-9]))*)+" manifest  | awk '{print $2}')
         moduleid=$(grep -oEi "(?:^moduleid\s*:\s*)(.*)" manifest  | awk '{print $2}')
-        cp "dist/$moduleid-android-$version.zip" $OutputDir
+        version=$(grep -oEi "(?:^version\s*:\s*)(([0-9])+(\.{0,1}([0-9]))*)+" manifest  | awk '{print $2}')
+        echo "Building android module ${moduleid} version ${version} in ${dir}"
+        ant clean;ant
+        cp "./dist/$moduleid-android-$version.zip" "$OutputDir"
         cd -
     done
 fi
