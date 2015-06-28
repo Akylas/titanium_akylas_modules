@@ -6,20 +6,24 @@
  */
 
 
-#ifdef USE_TI_BLUETOOTHDEVICE
-#import "TiBluetoothDeviceProxy.h"
+#import "AkylasBluetoothDeviceProxy.h"
 #import "TiUtils.h"
 #import "TiBlob.h"
 
 #define DATA_CHUNK_SIZE     (1024)
 #define BUFSIZE 65536U
 
-@implementation TiBluetoothDeviceProxy
+@implementation AkylasBluetoothDeviceProxy
 {
     EASession *_session;
     NSMutableData *_outbuf;
     NSString* _protocolString;
     EAAccessory* _accessory;
+}
+
+-(NSString*)apiName
+{
+    return @"Akylas.Bluetooth.Device";
 }
 
 -(void)_initWithProperties:(NSDictionary *)properties
@@ -323,4 +327,3 @@
 
 
 @end
-#endif

@@ -5,12 +5,16 @@
  * Please see the LICENSE included with this distribution for details.
  */
 
-#ifdef USE_TI_BLUETOOTH
 
 #import <Foundation/Foundation.h>
 #import "TiModule.h"
+#import <CoreBluetooth/CoreBluetooth.h>
 
-@interface BluetoothModule : TiModule
-
+@class AkylasBluetoothBLEDeviceProxy;
+@interface AkylasBluetoothModule : TiModule<CBCentralManagerDelegate>
+//+(void)addManagedBLEDevice:(AkylasBluetoothBLEDeviceProxy*)device;
+//+(void)removeManagedBLEDevice:(AkylasBluetoothBLEDeviceProxy*)device ;
++(void)connectBLEDevice:(CBPeripheral*)peripheral;
++(void)disconnectBLEDevice:(CBPeripheral*)peripheral;
++(CBCentralManager*) btManager;
 @end
-#endif

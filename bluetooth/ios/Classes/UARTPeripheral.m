@@ -62,7 +62,6 @@
 - (void) didConnect
 {
     [_peripheral discoverServices:@[self.class.uartServiceUUID, self.class.deviceInformationServiceUUID]];
-    NSLog(@"Did start service discovery.");
 }
 
 - (void) didDisconnect
@@ -70,9 +69,18 @@
     
 }
 
+-(BOOL)isConnected {
+    return [_peripheral state] == CBPeripheralStateConnected;
+}
+
 - (void) writeString:(NSString *) string
 {
     NSData *data = [NSData dataWithBytes:string.UTF8String length:string.length];
+    [self writeRawData:data];
+}
+
+- (void) writeRawData:(NSData *) data
+{
     if ((self.txCharacteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) != 0)
     {
         [self.peripheral writeValue:data forCharacteristic:self.txCharacteristic type:CBCharacteristicWriteWithoutResponse];
@@ -83,13 +91,8 @@
     }
     else
     {
-        NSLog(@"No write property on TX characteristic, %d.", self.txCharacteristic.properties);
+        NSLog(@"No write property on TX characteristic, %lu.", (unsigned long)self.txCharacteristic.properties);
     }
-}
-
-- (void) writeRawData:(NSData *) data
-{
-    
 }
 
 - (void) peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
@@ -104,7 +107,6 @@
     {
         if ([s.UUID isEqual:self.class.uartServiceUUID])
         {
-            NSLog(@"Found correct service");
             self.uartService = s;
             
             [self.peripheral discoverCharacteristics:@[self.class.txCharacteristicUUID, self.class.rxCharacteristicUUID] forService:self.uartService];
@@ -128,19 +130,16 @@
     {
         if ([c.UUID isEqual:self.class.rxCharacteristicUUID])
         {
-            NSLog(@"Found RX characteristic");
             self.rxCharacteristic = c;
             
             [self.peripheral setNotifyValue:YES forCharacteristic:self.rxCharacteristic];
         }
         else if ([c.UUID isEqual:self.class.txCharacteristicUUID])
         {
-            NSLog(@"Found TX characteristic");
             self.txCharacteristic = c;
         }
         else if ([c.UUID isEqual:self.class.hardwareRevisionStringUUID])
         {
-            NSLog(@"Found Hardware Revision String characteristic");
             [self.peripheral readValueForCharacteristic:c];
         }
     }
@@ -154,13 +153,10 @@
         return;
     }
     
-    NSLog(@"Received data on a characteristic.");
-    
     if (characteristic == self.rxCharacteristic)
     {
         
-        NSString *string = [NSString stringWithUTF8String:[[characteristic value] bytes]];
-        [self.delegate didReceiveData:string];
+        [self.delegate didReceiveData:[characteristic value]];
     }
     else if ([characteristic.UUID isEqual:self.class.hardwareRevisionStringUUID])
     {
@@ -168,7 +164,6 @@
         const uint8_t *bytes = characteristic.value.bytes;
         for (int i = 0; i < characteristic.value.length; i++)
         {
-            NSLog(@"%x", bytes[i]);
             hwRevision = [hwRevision stringByAppendingFormat:@"0x%02x, ", bytes[i]];
         }
         

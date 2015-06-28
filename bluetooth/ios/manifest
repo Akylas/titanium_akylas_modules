@@ -1,0 +1,17 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+description: bluetooth module
+author: Martin Guillon
+license: Proprietary
+copyright: Copyright (c) 2014-2015 by Akylas
+
+
+# these should not be edited
+name: bluetooth
+moduleid: akylas.bluetooth
+guid: 0d005e93-9980-4739-9e41-fd1129c8ff32
+platform: iphone
+minsdk: 4.1.0.AKYLAS

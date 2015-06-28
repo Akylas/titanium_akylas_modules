@@ -7,8 +7,21 @@
 
 
 #import "TiProxy.h"
-#import <ExternalAccessory/ExternalAccessory.h>
+#import "UARTPeripheral.h"
 
-@interface AkylasBluetoothDeviceProxy : TiProxy<NSStreamDelegate, EAAccessoryDelegate>
+@class AkylasBluetoothBLEDeviceProxy;
+@interface CBPeripheral (AkylasBluetoothBLEDeviceProxy)
+- (void)setProxy:(AkylasBluetoothBLEDeviceProxy *)proxy;
+- (AkylasBluetoothBLEDeviceProxy*)proxy;
+-(void)didConnect;
+-(void)didDisconnect;
+@end
 
+@interface AkylasBluetoothBLEDeviceProxy : TiProxy<UARTPeripheralDelegate>
+
+
+-(NSString*)identifier;
+-(CBPeripheral*)peripheral;
+-(void)didConnect;
+-(void)didDisconnect;
 @end

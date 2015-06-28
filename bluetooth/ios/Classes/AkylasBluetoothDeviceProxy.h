@@ -6,11 +6,9 @@
  */
 
 
-#ifdef USE_TI_BLUETOOTHDEVICE
 #import "TiProxy.h"
 #import <ExternalAccessory/ExternalAccessory.h>
 
-@interface TiBluetoothDeviceProxy : TiProxy<NSStreamDelegate, EAAccessoryDelegate>
+@interface AkylasBluetoothDeviceProxy : TiProxy<NSStreamDelegate, EAAccessoryDelegate>
 
 @end
-#endif

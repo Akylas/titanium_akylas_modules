@@ -6,10 +6,9 @@
 //  Copyright (c) 2013 Nordic Semiconductor. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
 
 @protocol UARTPeripheralDelegate
-- (void) didReceiveData:(NSString *) string;
+- (void) didReceiveData:(NSData *) string;
 @optional
 - (void) didReadHardwareRevisionString:(NSString *) string;
 @end
@@ -24,7 +23,9 @@
 - (UARTPeripheral *) initWithPeripheral:(CBPeripheral*)peripheral delegate:(id<UARTPeripheralDelegate>) delegate;
 
 - (void) writeString:(NSString *) string;
+- (void) writeRawData:(NSData *) data;
 
 - (void) didConnect;
 - (void) didDisconnect;
+- (BOOL) isConnected;
 @end
