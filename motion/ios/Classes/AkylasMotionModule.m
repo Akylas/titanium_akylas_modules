@@ -9,8 +9,27 @@
 #import "TiHost.h"
 #import "TiUtils.h"
 #import "Ti3DMatrix.h"
+#import <CoreMotion/CMMotionManager.h>
+#import <CoreMotion/CMAltimeter.h>
 
-@implementation AkylasMotionModule
+@implementation AkylasMotionModule {
+    NSRecursiveLock* lock;
+    CMMotionManager *motionManager;
+    CMAltimeter *altitudeManager;
+    CMDeviceMotionHandler motionHandler;
+    CMAltitudeHandler altitudeHandler;
+//    NSOperationQueue* motionQueue;
+    BOOL accelerometerRegistered;
+    BOOL gyroscopeRegistered;
+    BOOL magnetometerRegistered;
+    BOOL orientationRegistered;
+    BOOL motionRegistered;
+    BOOL computeRotationMatrix;
+    float updateInterval;
+    NSTimeInterval bootTimestamp;
+    //    BOOL usingReference;
+    BOOL altitudeRegistered;
+}
 
 #pragma mark Internal
 
@@ -27,6 +46,59 @@
 }
 
 #pragma mark Lifecycle
+
+-(CMMotionManager*)motionManager
+{
+    [lock lock];
+    if (motionManager==nil)
+    {
+        motionManager = [[CMMotionManager alloc] init];
+        motionManager.deviceMotionUpdateInterval = updateInterval;
+        motionManager.gyroUpdateInterval = updateInterval;
+        motionManager.accelerometerUpdateInterval = updateInterval;
+        motionManager.magnetometerUpdateInterval = updateInterval;
+        motionHandler = Block_copy(^(CMDeviceMotion *motion, NSError *error){
+            [self processMotionData:motion withError:error];});
+    }
+    [lock unlock];
+    return motionManager;
+}
+    
+-(void)shutdownMotionManager
+{
+    [lock lock];
+    if (motionManager == nil) {
+        [lock unlock];
+        return;
+    }
+    [motionManager stopDeviceMotionUpdates];
+
+    RELEASE_TO_NIL_AUTORELEASE(motionManager);
+    RELEASE_TO_NIL(motionHandler);
+    [lock unlock];
+}
+
+-(CMAltimeter*)altitudeManager
+{
+    if (altitudeManager==nil && [CMAltimeter isRelativeAltitudeAvailable])
+    {
+        altitudeManager = [[CMAltimeter alloc] init];
+        altitudeHandler = Block_copy(^(CMAltitudeData *data, NSError *error){
+            [self processAltitudeData:data withError:error];});
+
+    }
+    return altitudeManager;
+}
+
+-(void)shutdownAltitudeManager
+{
+    if (altitudeManager) {
+        [altitudeManager stopRelativeAltitudeUpdates];
+        RELEASE_TO_NIL_AUTORELEASE(motionManager);
+    }
+    RELEASE_TO_NIL(altitudeHandler);
+}
+
 
 -(void)startup
 {
@@ -45,43 +117,32 @@
     orientationRegistered = FALSE;
     gyroscopeRegistered = FALSE;
     magnetometerRegistered = FALSE;
+    altitudeRegistered = FALSE;
     updateInterval = 0.030; // time between 2 data in seconds
     computeRotationMatrix = TRUE;
-    
-    //        usingReference = false;
-    
-    motionManager = [[CMMotionManager alloc] init];
-    
-    motionManager.deviceMotionUpdateInterval = updateInterval;
-    motionManager.gyroUpdateInterval = updateInterval;
-    motionManager.accelerometerUpdateInterval = updateInterval;
-    motionManager.magnetometerUpdateInterval = updateInterval;
-    motionHandler = Block_copy(^(CMDeviceMotion *motion, NSError *error){
-        [self processMotionData:motion withError:error];});
 	
 	NSLog(@"[INFO] %@ loaded",self);
 }
 
--(void)shutdown:(id)sender
-{
-	// this method is called when the module is being unloaded
-	// typically this is during shutdown. make sure you don't do too
-	// much processing here or the app will be quit forceably
-	
-	// you *must* call the superclass
-	[super shutdown:sender];
-}
+//-(void)shutdown:(id)sender
+//{
+//	// this method is called when the module is being unloaded
+//	// typically this is during shutdown. make sure you don't do too
+//	// much processing here or the app will be quit forceably
+//	
+//	// you *must* call the superclass
+//	[super shutdown:sender];
+//}
 
 #pragma mark Cleanup 
 
--(void)dealloc
+-(void)_destroy
 {
-    RELEASE_TO_NIL(motionManager);
-	RELEASE_TO_NIL(motionHandler);
-	RELEASE_TO_NIL(motionQueue);
-    
-	// release any resources that have been retained by the module
-	[super dealloc];
+    [self shutdownMotionManager];
+    RELEASE_TO_NIL(lock);
+    [self shutdownAltitudeManager];
+//    RELEASE_TO_NIL(motionQueue);
+    [super _destroy];
 }
 
 #pragma mark Internal Memory Management
@@ -95,12 +156,18 @@
 
 #pragma mark Listener Notifications
 
--(void)_listenerAdded:(NSString *)type count:(int)count
+-(void)_listenerAdded:(NSString *)type count:(NSInteger)count
 {
 	if (count == 1)
 	{
 		BOOL needsStart = FALSE;
-		if ([type isEqualToString:@"motion"])
+        if ([type isEqualToString:@"altitude"] && [CMAltimeter isRelativeAltitudeAvailable])
+        {
+            altitudeRegistered = TRUE;
+            TiThreadPerformBlockOnMainThread(^{
+                [[self altitudeManager] startRelativeAltitudeUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:altitudeHandler];
+            }, NO);
+        } else if ([type isEqualToString:@"motion"])
 		{
 			needsStart = TRUE;
 			motionRegistered = TRUE;
@@ -125,10 +192,10 @@
 			needsStart = TRUE;
 			magnetometerRegistered = TRUE;
 		}
-		if (needsStart && motionManager.deviceMotionAvailable
-			&& !motionManager.deviceMotionActive)
+		if (needsStart && [self motionManager].deviceMotionAvailable
+			&& ![self motionManager].deviceMotionActive)
 		{
-            TiThreadPerformOnMainThread(^{
+            TiThreadPerformBlockOnMainThread(^{
                 //                if (([CMMotionManager availableAttitudeReferenceFrames] & CMAttitudeReferenceFrameXTrueNorthZVertical) != 0)
                 //                {
                 //                    [motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXTrueNorthZVertical toQueue:[NSOperationQueue currentQueue]
@@ -145,15 +212,20 @@
 	}
 }
 
--(void)_listenerRemoved:(NSString *)type count:(int)count
+-(void)_listenerRemoved:(NSString *)type count:(NSInteger)count
 {
 	if (count == 0)
 	{
-		if ([type isEqualToString:@"motion"])
-		{
-			motionRegistered = FALSE;
-		}
-		else if ([type isEqualToString:@"accelerometer"])
+        if ([type isEqualToString:@"altitude"])
+        {
+            altitudeRegistered = FALSE;
+            [self shutdownAltitudeManager];
+        }
+        else if ([type isEqualToString:@"motion"])
+        {
+            motionRegistered = FALSE;
+        }
+        else if ([type isEqualToString:@"accelerometer"])
 		{
 			accelerometerRegistered = FALSE;
 		}
@@ -185,6 +257,14 @@
     accRef.z = acc.x*rot.m31 + acc.y*rot.m32 + acc.z*rot.m33;
     
     return accRef;
+}
+
+-(void) processAltitudeData: (CMAltitudeData *) data withError:(NSError *) error
+{
+    [self fireEvent:@"altitude" withObject:@{
+                                             @"relativeAltitude":data.relativeAltitude,
+                                             @"pressure":data.pressure
+                                             }];
 }
 
 -(void) processMotionData: (CMDeviceMotion *) motion withError:(NSError *) error
@@ -351,10 +431,13 @@ MAKE_SYSTEM_PROP(STANDARD_GRAVITY,9.80665);
 -(void)setUpdateInterval:(NSNumber *)interval //in ms
 {
     updateInterval = [interval intValue] / 1000.0; // in seconds
-    motionManager.deviceMotionUpdateInterval = updateInterval;
-    motionManager.accelerometerUpdateInterval = updateInterval;
-    motionManager.gyroUpdateInterval = updateInterval;
-    motionManager.magnetometerUpdateInterval = updateInterval;
+    if (motionManager) {
+        motionManager.deviceMotionUpdateInterval = updateInterval;
+        motionManager.accelerometerUpdateInterval = updateInterval;
+        motionManager.gyroUpdateInterval = updateInterval;
+        motionManager.magnetometerUpdateInterval = updateInterval;
+    }
+    
 }
 
 //-(NSNumber*)useReference
@@ -384,22 +467,29 @@ MAKE_SYSTEM_PROP(STANDARD_GRAVITY,9.80665);
 
 -(NSNumber*)hasAccelerometer
 {
-	return NUMBOOL(motionManager.accelerometerAvailable);
+	return NUMBOOL([self motionManager].accelerometerAvailable);
 }
 
 -(NSNumber*)hasGyroscope
 {
-	return NUMBOOL(motionManager.gyroAvailable);
+	return NUMBOOL([self motionManager].gyroAvailable);
 }
 
 -(NSNumber*)hasMagnetometer
 {
-	return NUMBOOL(motionManager.magnetometerAvailable);
+	return NUMBOOL([self motionManager].magnetometerAvailable);
 }
 
 -(NSNumber*)hasOrientation
 {
-	return NUMBOOL(motionManager.deviceMotionAvailable);
+	return NUMBOOL([self motionManager].deviceMotionAvailable);
 }
+
+
+-(NSNumber*)hasAltimeter
+{
+    return NUMBOOL([CMAltimeter isRelativeAltitudeAvailable]);
+}
+
 
 @end
