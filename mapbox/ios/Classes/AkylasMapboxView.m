@@ -391,7 +391,7 @@
 -(void)setUserTrackingMode_:(id)value
 {
     ENSURE_SINGLE_ARG(value,NSNumber);
-    TiThreadPerformOnMainThread(^{
+    TiThreadPerformBlockOnMainThread(^{
         [self map].userTrackingMode = [TiUtils intValue:value def:RMUserTrackingModeNone];
     }, NO);
 }
@@ -435,20 +435,8 @@
 
 -(void)setCenterCoordinate_:(id)center
 {
-    CLLocationCoordinate2D coord;
-    if ([center isKindOfClass:[NSArray class]]) {
-        coord = CLLocationCoordinate2DMake([TiUtils floatValue:[center objectAtIndex:0]],[TiUtils floatValue:[center objectAtIndex:1]]);
-    }
-    else {
-        ENSURE_SINGLE_ARG(center,NSDictionary);
-        if (center) {
-            coord = [AkylasMapboxModule locationFromDict:center];
-        }
-        else {
-            coord = [self map].userLocation.location.coordinate;
-        }
-        
-    }
+    CLLocationCoordinate2D coord = center?[AkylasMapboxModule locationFromObject:center]:[self map].userLocation.location.coordinate;
+
     [[self map] setCenterCoordinate:coord animated:[self shouldAnimate]];
 }
 
@@ -532,14 +520,16 @@
         }];
     } else {
         RMMapView* mapView = [self map];
+        id<RMTileSource> source = [(AkylasMapboxTileSourceProxy*)tileSource getMPTileSourceForMapView:mapView];
         if (_userStackTileSource) {
-            [[self getTileSourceContainer] addTileSource:[(AkylasMapboxTileSourceProxy*)tileSource getMPTileSourceForMapView:mapView] atIndex:realIndex];
+            [[self getTileSourceContainer] addTileSource:source atIndex:realIndex];
             if ([[mapView tileSources] count] == 0) {
                 [mapView setTileSource:_tileSourceContainer];
             }
         } else {
-            [mapView addTileSource:[(AkylasMapboxTileSourceProxy*)tileSource getMPTileSourceForMapView:mapView] atIndex:realIndex];
+            [mapView addTileSource:source atIndex:realIndex];
         }
+        [mapView setAlpha:((AkylasMapboxTileSourceProxy*)tileSource).opacity forTileSource:source];
     }
 }
 

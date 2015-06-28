@@ -56,9 +56,10 @@
 		D55C826D1AD6C75600339334 /* libSMCalloutView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D55C826A1AD6C75600339334 /* libSMCalloutView.a */; };
 		D55C826E1AD6C75600339334 /* SMCalloutView.h in Headers */ = {isa = PBXBuildFile; fileRef = D55C826B1AD6C75600339334 /* SMCalloutView.h */; };
 		D55C826F1AD6C75600339334 /* SMClassicCalloutView.h in Headers */ = {isa = PBXBuildFile; fileRef = D55C826C1AD6C75600339334 /* SMClassicCalloutView.h */; };
-		D55C82951AD6CECF00339334 /* Mapbox.bundle in Headers */ = {isa = PBXBuildFile; fileRef = D55C82941AD6CECF00339334 /* Mapbox.bundle */; settings = {ATTRIBUTES = (Public, ); }; };
 		D59D15341AD981400099788F /* libMapbox.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D51B7DE81AD97F5B0041A357 /* libMapbox.a */; };
 		D5B4A8FB1ACAD15D003B8608 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */; };
+		D5C8459A1B2318B40086AC32 /* AkylasWebSource.h in Headers */ = {isa = PBXBuildFile; fileRef = D5C845981B2318B40086AC32 /* AkylasWebSource.h */; };
+		D5C8459B1B2318B40086AC32 /* AkylasWebSource.m in Sources */ = {isa = PBXBuildFile; fileRef = D5C845991B2318B40086AC32 /* AkylasWebSource.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -145,9 +146,10 @@
 		D55C826A1AD6C75600339334 /* libSMCalloutView.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libSMCalloutView.a; sourceTree = "<group>"; };
 		D55C826B1AD6C75600339334 /* SMCalloutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMCalloutView.h; sourceTree = "<group>"; };
 		D55C826C1AD6C75600339334 /* SMClassicCalloutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMClassicCalloutView.h; sourceTree = "<group>"; };
-		D55C82941AD6CECF00339334 /* Mapbox.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; name = Mapbox.bundle; path = "/Volumes/data/dev/titanium/titanium_mobile/iphone/iphone/build/Products/Debug-iphoneos/Mapbox.bundle"; sourceTree = "<absolute>"; };
 		D578CAE919234C880019CA5A /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		D5C845981B2318B40086AC32 /* AkylasWebSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasWebSource.h; path = Classes/AkylasWebSource.h; sourceTree = "<group>"; };
+		D5C845991B2318B40086AC32 /* AkylasWebSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasWebSource.m; path = Classes/AkylasWebSource.m; sourceTree = "<group>"; };
 		D5FBE0BB1AA997B000EB35E8 /* module.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -178,7 +180,6 @@
 			isa = PBXGroup;
 			children = (
 				D51B7DE11AD97F5A0041A357 /* Mapbox.xcodeproj */,
-				D55C82941AD6CECF00339334 /* Mapbox.bundle */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
@@ -216,6 +217,8 @@
 				D55C82221AD6B9B900339334 /* AkylasMapboxViewProxy.m */,
 				D55C82231AD6B9B900339334 /* RMIgnMapSource.h */,
 				D55C82241AD6B9B900339334 /* RMIgnMapSource.m */,
+				D5C845981B2318B40086AC32 /* AkylasWebSource.h */,
+				D5C845991B2318B40086AC32 /* AkylasWebSource.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -280,7 +283,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D55C82951AD6CECF00339334 /* Mapbox.bundle in Headers */,
 				D55C822D1AD6B9B900339334 /* AkylasMapboxView.h in Headers */,
 				D55C82471AD6B9C000339334 /* AkylasMapBaseRouteProxy.h in Headers */,
 				D55C826F1AD6C75600339334 /* SMClassicCalloutView.h in Headers */,
@@ -295,6 +297,7 @@
 				D55C822B1AD6B9B900339334 /* AkylasMapboxTileSourceProxy.h in Headers */,
 				D55C82311AD6B9B900339334 /* RMIgnMapSource.h in Headers */,
 				D55C824F1AD6B9C100339334 /* ReusableViewProtocol.h in Headers */,
+				D5C8459A1B2318B40086AC32 /* AkylasWebSource.h in Headers */,
 				D55C82271AD6B9B900339334 /* AkylasMapboxModule.h in Headers */,
 				D55C824B1AD6B9C100339334 /* AkylasMapBaseView.h in Headers */,
 				D55C826E1AD6C75600339334 /* SMCalloutView.h in Headers */,
@@ -437,6 +440,7 @@
 				D55C82301AD6B9B900339334 /* AkylasMapboxViewProxy.m in Sources */,
 				D55C82511AD6B9C100339334 /* ReusableViewProxy.m in Sources */,
 				D55C824C1AD6B9C100339334 /* AkylasMapBaseView.m in Sources */,
+				D5C8459B1B2318B40086AC32 /* AkylasWebSource.m in Sources */,
 				D55C82461AD6B9C000339334 /* AkylasMapBaseModule.m in Sources */,
 				D55C82261AD6B9B900339334 /* AkylasMapboxAnnotationProxy.m in Sources */,
 				D55C82481AD6B9C000339334 /* AkylasMapBaseRouteProxy.m in Sources */,

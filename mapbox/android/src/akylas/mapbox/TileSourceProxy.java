@@ -87,7 +87,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 return null;
             }
             float minZoom = (mMinZoom >= 0) ? mMinZoom : 1.0f;
-            float maxZoom = (mMaxZoom >= 0) ? mMaxZoom : 18.0f;
+            float maxZoom = (mMaxZoom >= 0) ? mMaxZoom : 22.0f;
             if (sSource.toLowerCase().endsWith("mbtiles")) {
                 try {
                     mDb = TiDatabaseHelper.getDatabase(this, sSource, false);
@@ -98,6 +98,14 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 }
             } else {
                 switch (sSource.toLowerCase()) {
+                case "websource":
+                {
+                    mLayer = new WebSourceTileLayer(TiConvert.toString(getProperty("id")),
+                            TiConvert.toString(getProperty("url")))
+                            .setName(TiConvert.toString(getProperty("name"))).setAttribution(
+                                    TiConvert.toString(getProperty("attribution")));
+                    break;
+                }
                 case "openstreetmap":
                     mLayer = new WebSourceTileLayer("openstreetmap",
                             "http://tile.openstreetmap.org/{z}/{x}/{y}.png")

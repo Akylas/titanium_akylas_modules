@@ -1,0 +1,347 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
+		D507202B1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = D507202A1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch */; };
+		D50720301B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D507202C1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h */; };
+		D50720311B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D507202D1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m */; };
+		D50720321B344D9E005B31E5 /* AkylasBluetoothModule.h in Headers */ = {isa = PBXBuildFile; fileRef = D507202E1B344D9E005B31E5 /* AkylasBluetoothModule.h */; };
+		D50720331B344D9E005B31E5 /* AkylasBluetoothModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D507202F1B344D9E005B31E5 /* AkylasBluetoothModule.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		24DD6D1B1134B66800162E58 /* titanium.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = titanium.xcconfig; sourceTree = "<group>"; };
+		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		D2AAC07E0554694100DB518D /* libakylas.bluetooth.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.bluetooth.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D507202A1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = akylas.bluetooth_Prefix.pch; sourceTree = "<group>"; };
+		D507202C1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasBluetoothDeviceProxy.h; path = Classes/AkylasBluetoothDeviceProxy.h; sourceTree = "<group>"; };
+		D507202D1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasBluetoothDeviceProxy.m; path = Classes/AkylasBluetoothDeviceProxy.m; sourceTree = "<group>"; };
+		D507202E1B344D9E005B31E5 /* AkylasBluetoothModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasBluetoothModule.h; path = Classes/AkylasBluetoothModule.h; sourceTree = "<group>"; };
+		D507202F1B344D9E005B31E5 /* AkylasBluetoothModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasBluetoothModule.m; path = Classes/AkylasBluetoothModule.m; sourceTree = "<group>"; };
+		D5FBE0BA1AA9979F00EB35E8 /* module.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D2AAC07C0554694100DB518D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2AAC07E0554694100DB518D /* libakylas.bluetooth.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* triton */ = {
+			isa = PBXGroup;
+			children = (
+				08FB77AEFE84172EC02AAC07 /* Classes */,
+				32C88DFF0371C24200C91783 /* Other Sources */,
+				0867D69AFE84028FC02AAC07 /* Frameworks */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = triton;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AACBBE490F95108600F1A2B1 /* Foundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				D507202C1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h */,
+				D507202D1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m */,
+				D507202E1B344D9E005B31E5 /* AkylasBluetoothModule.h */,
+				D507202F1B344D9E005B31E5 /* AkylasBluetoothModule.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		32C88DFF0371C24200C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D507202A1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch */,
+				D5FBE0BA1AA9979F00EB35E8 /* module.xcconfig */,
+				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D2AAC07A0554694100DB518D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D50720321B344D9E005B31E5 /* AkylasBluetoothModule.h in Headers */,
+				D507202B1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch in Headers */,
+				D50720301B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D2AAC07D0554694100DB518D /* akylas.bluetooth */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.bluetooth" */;
+			buildPhases = (
+				D2AAC07A0554694100DB518D /* Headers */,
+				D2AAC07B0554694100DB518D /* Sources */,
+				D2AAC07C0554694100DB518D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = akylas.bluetooth;
+			productName = triton;
+			productReference = D2AAC07E0554694100DB518D /* libakylas.bluetooth.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+			};
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.bluetooth" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 0867D691FE84028FC02AAC07 /* triton */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D2AAC07D0554694100DB518D /* akylas.bluetooth */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D2AAC07B0554694100DB518D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D50720311B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m in Sources */,
+				D50720331B344D9E005B31E5 /* AkylasBluetoothModule.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB921F08733DC00010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/platform",
+				);
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)/**",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+				);
+				OTHER_CFLAGS = (
+					"-DDEBUG",
+					"-DTI_POST_1_2",
+				);
+				PRODUCT_NAME = akylas.bluetooth;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				PUBLIC_HEADERS_FOLDER_PATH = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		1DEB922008733DC00010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/platform",
+				);
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)/**",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+				);
+				OTHER_CFLAGS = "-DTI_POST_1_2";
+				PRODUCT_NAME = akylas.bluetooth;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				PUBLIC_HEADERS_FOLDER_PATH = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+		1DEB922308733DC00010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/platform",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "${PROJECT_NAME}_Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"-DDEBUG",
+					"-DTI_POST_1_2",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = akylas.triton;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		1DEB922408733DC00010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/platform",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "${PROJECT_NAME}_Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				OTHER_CFLAGS = "-DTI_POST_1_2";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = akylas.triton;
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.bluetooth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB921F08733DC00010E9CD /* Debug */,
+				1DEB922008733DC00010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.bluetooth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB922308733DC00010E9CD /* Debug */,
+				1DEB922408733DC00010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

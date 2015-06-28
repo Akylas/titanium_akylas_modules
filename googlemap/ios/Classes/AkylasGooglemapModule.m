@@ -86,6 +86,17 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 //    [self replaceValue:value forKey:@"mapboxAccessToken" notification:NO];
 //}
 
+-(void)didReceiveMemoryWarning:(NSNotification*)notification
+{
+    RELEASE_TO_NIL(mapTypes);
+    [super didReceiveMemoryWarning:notification];
+}
+
+-(void)dealloc
+{
+    RELEASE_TO_NIL(mapTypes);
+    [super dealloc];
+}
 
 -(void)setGoogleMapAPIKey:(id)value
 {
@@ -111,5 +122,20 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     return [GMSServices SDKVersion];
 }
 
+static NSDictionary* mapTypes = nil;
+-(id)MapType
+{
+    if (mapTypes==nil)
+    {
+        mapTypes = [@{
+                      @"none":@(kAkMapTypeNone),
+                      @"normal":@(kAkMapTypeNormal),
+                      @"hybrid":@(kAkMapTypeHybrid),
+                      @"satellite":@(kAkMapTypeSatellite),
+                      @"terrain":@(kAkMapTypeTerrain)
+            } retain];
+    }
+    return mapTypes;
+}
 
 @end

@@ -20,25 +20,25 @@
     [super dealloc];
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    [super touchesBegan:touches withEvent:event];
-}
-
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    [super touchesMoved:touches withEvent:event];
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    [super touchesEnded:touches withEvent:event];
-}
-
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    [super touchesCancelled:touches withEvent:event];
-}
+//- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+//{
+//    [super touchesBegan:touches withEvent:event];
+//}
+//
+//- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+//{
+//    [super touchesMoved:touches withEvent:event];
+//}
+//
+//- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+//{
+//    [super touchesEnded:touches withEvent:event];
+//}
+//
+//- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+//{
+//    [super touchesCancelled:touches withEvent:event];
+//}
 @end
 
 
@@ -55,8 +55,10 @@
     SMCalloutView* _calloutView;
     UIView* calloutTouchedView;
     UIView* _emptyCalloutView;
-    UIView* _gestureView;
+//    UIView* _gestureView;
     AkMapDragState _dragState;
+    
+    BOOL _firstLayout;
 }
 
 - (id)init
@@ -64,6 +66,7 @@
     if ((self = [super init])) {
         _shouldFollowUserLocation = YES;
         _inUserAction = NO;
+        _firstLayout = YES;
         _forwarding = NO;
         _userTrackingMode = AkUserTrackingModeNone;
         _emptyCalloutView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -131,10 +134,11 @@
         [map addObserver:self forKeyPath:@"selectedMarker" options:0 context:nil];
         [map setTileCache:[[TiCache alloc] initWithConfig:@[@{@"type":@"db-cache", @"name":@"AkGMSCache"}] expiryPeriod:0]];
         [self addSubview:map];
-        NSArray* subs = [map subviews];
-        _gestureView = [[map subviews] objectAtIndex:0];
+//        NSArray* subs = [map subviews];
+//        _gestureView = [[map subviews] objectAtIndex:0];
         map.delegate = self;
         map.networkConnected = [[TiApp app] networkConnected];
+//        map.settings.allowScrollGesturesDuringRotateOrZoom = YES;
         //Initialize loaded state to YES. This will automatically go to NO if the map needs to download new data
         loaded = YES;
         [[map settings] setConsumesGesturesInView:NO];
@@ -209,6 +213,18 @@
     //if we are animating it means we want to keep the zoom for sure...
     [[self map] setFrame:bounds];
     [super frameSizeChanged:frame bounds:bounds];
+    if (_firstLayout) {
+        _firstLayout = NO;
+        id prop = [[self proxy] valueForUndefinedKey:@"region"];
+        if (prop) {
+            [self setRegion_:prop];
+        } else {
+            prop = [[self proxy] valueForUndefinedKey:@"centerCoordinate"];
+            if (prop) {
+                [self setCenterCoordinate_:prop];
+            }
+        }
+    }
 //    if (_cameraUpdate) {
 //        [self handleCameraUpdate];
 //        _needsRegionUpdate = NO;
@@ -378,7 +394,7 @@
         }
 
     } else {
-        [self setShouldFollowUserLocation:YES];
+        [self setShouldFollowUserLocation:_userTrackingMode != AkUserTrackingModeNone];
     }
 }
 
@@ -406,6 +422,7 @@
             break;
         case kAkMapTypeNone:
             type = kGMSTypeNone;
+            break;
         case kAkMapTypeTerrain:
             type = kGMSTypeTerrain;
             break;
@@ -425,7 +442,7 @@
     //        _needsCameraUpdate = YES;
     //        return;
     //    }
-    if (animate || !configurationSet) {
+    if ([self shouldAnimate]) {
         [[self map] animateToZoom:newValue];
     } else {
         [[self map] moveCamera:[GMSCameraUpdate zoomTo:newValue]];
@@ -436,7 +453,7 @@
 {
     CGFloat newValue = [TiUtils floatValue:value def:0];
     ENSURE_UI_THREAD_1_ARG(value)
-    if (animate || !configurationSet) {
+    if ([self shouldAnimate]) {
         [[self map] animateToBearing:newValue];
     } else {
         GMSCameraPosition* pos = [self map].camera;
@@ -448,7 +465,7 @@
 {
     CGFloat newValue = [TiUtils floatValue:value def:0];
     ENSURE_UI_THREAD_1_ARG(value)
-    if (animate || !configurationSet) {
+    if ([self shouldAnimate]) {
         [[self map] animateToViewingAngle:newValue];
     } else {
         GMSCameraPosition* pos = [self map].camera;
@@ -461,11 +478,7 @@
     ENSURE_UI_THREAD_1_ARG(value)
 //    [self setShouldFollowUserLocation:!configurationSet];
     CLLocationCoordinate2D coord = [AkylasGooglemapModule locationFromObject:value];
-    if (animate || !configurationSet) {
-        [[self map] animateToLocation:coord];
-    } else {
-        [[self map] moveCamera:[GMSCameraUpdate setTarget:coord]];
-    }
+    [self setCenterCoordinate:coord animated:[self shouldAnimate]];
 }
 
 -(id)centerCoordinate_
@@ -622,6 +635,7 @@
         {
             [self.proxy fireEvent:@"usertracking" withObject:@{@"mode":NUMINTEGER(_shouldFollowUserLocation?_userTrackingMode : AkUserTrackingModeNone), @"animated":NUMBOOL(animate)} propagate:NO checkForListener:NO];
         }
+        [self selectUserAnnotation];
     }
 }
 
@@ -648,7 +662,7 @@
 
 -(BOOL)shouldAnimate
 {
-    return [self viewInitialized] && animate;
+    return ([self viewInitialized] &&(animate || !configurationSet));
 }
 
 -(void)selectUserAnnotation
@@ -774,6 +788,7 @@
             
             position.target = location.coordinate;
             if (_userTrackingMode == AkUserTrackingModeFollowWithHeading) {
+                CGFloat bearing  = location.course;
                 position.bearing = location.course;
             }
             
@@ -807,11 +822,12 @@
                 position.viewingAngle = [self map].camera.viewingAngle;
             }
             
-            if (animate || !configurationSet) {
+            if (animate && configurationSet) {
                 [[self map] animateToCameraPosition:position];
             } else {
                 [[self map] setCamera:position];
             }
+            [position release];
         }
         if ([self.viewProxy _hasListeners:@"location" checkParent:NO])
         {
@@ -842,7 +858,6 @@
     } else {
         GMSMapView* mapView = [self map];
         GMSTileLayer* layer = [(AkylasGooglemapTileSourceProxy*)tileSource getGTileLayerForMapView:mapView];
-        [layer setMap:mapView];
         if (((AkylasMapBaseTileSourceProxy*)tileSource).zIndex == -1) {
             layer.zIndex = (int)realIndex;
         } else {
@@ -1329,7 +1344,7 @@
  */
 - (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker {
 
-    return nil;
+    return _emptyCalloutView;
 }
 
 /**

@@ -20,6 +20,15 @@
 }
 
 
+-(void)_configure
+{
+    [super _configure];
+    _mAnchorPoint = CGPointMake(0.5, 1.0);
+    _calloutAnchorPoint = CGPointMake(0, 1.0f);
+}
+
+
+
 -(NSString*)apiName
 {
     return @"Akylas.GoogleMap.Annotation";
@@ -28,7 +37,11 @@
 -(void)refreshCoords {
     if (_gmarker) {
         [CATransaction begin];
+        if (![self shouldAnimate]) {
+            [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+        }
         _gmarker.position = self.coordinate;
+        _gmarker.opacity = self.visible?self.opacity:0;
         [CATransaction commit];
     }
     [super refreshCoords];
@@ -99,7 +112,7 @@
 -(void)setVisible:(BOOL)visible
 {
     [super setVisible:visible];
-    if (_gmarker) {
+    if (configurationSet && _gmarker) {
         TiThreadPerformBlockOnMainThread(^{
             _gmarker.opacity = self.visible?self.opacity:0;
         }, NO);
@@ -151,15 +164,6 @@
     if (_gmarker) {
         TiThreadPerformBlockOnMainThread(^{
             _gmarker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
-        }, NO);
-    }
-}
-
--(void)setInternalImage:(UIImage*)image {
-    [super setInternalImage:image];
-    if (_gmarker) {
-        TiThreadPerformBlockOnMainThread(^{
-            _gmarker.icon = _internalImage;
         }, NO);
     }
 }

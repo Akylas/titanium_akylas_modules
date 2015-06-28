@@ -14,7 +14,8 @@ import android.app.Activity;
 import android.os.Message;
 
 @Kroll.proxy(creatableInModule = AkylasGooglemapModule.class, propertyAccessors = {
-    TiC.PROPERTY_PADDING
+    TiC.PROPERTY_PADDING,
+    TiC.PROPERTY_MAP_TYPE
 })
 public class ViewProxy extends MapDefaultViewProxy {
     private static final String TAG = "GoogleMapViewProxy";

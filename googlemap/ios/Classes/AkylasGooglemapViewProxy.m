@@ -47,5 +47,4 @@
     return [AkylasGooglemapGroundOverlayProxy class];
 }
 
-
 @end

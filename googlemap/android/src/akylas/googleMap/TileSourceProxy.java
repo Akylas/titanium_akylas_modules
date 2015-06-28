@@ -18,7 +18,10 @@ import com.google.android.gms.maps.model.TileProvider;
 import akylas.map.common.BaseTileSourceProxy;
 import android.database.sqlite.SQLiteDatabase;
 
-@Kroll.proxy(creatableInModule = AkylasGooglemapModule.class)
+@Kroll.proxy(creatableInModule = AkylasGooglemapModule.class, propertyAccessors = {
+    TiC.PROPERTY_VISIBLE,
+    TiC.PROPERTY_OPACITY
+})
 public class TileSourceProxy extends BaseTileSourceProxy {
     private static final String TAG = "TileSourceProxy";
     private TileOverlay mOverlay;
@@ -26,7 +29,10 @@ public class TileSourceProxy extends BaseTileSourceProxy {
     private TileProvider mTileProvider;
     public static final String MAPBOX_BASE_URL_V4 = "https://a.tiles.mapbox.com/v4/";
     public static final String MAPBOX_BRANDED_JSON_URL_V4 = MAPBOX_BASE_URL_V4 + "%s.json?access_token=%s&secure=1";
-      
+    private boolean fadeIn = true;
+    private boolean visible = true;
+    private float opacity = 1.0f;
+    
     public static class MapBoxOnlineTileProvider extends TileJsonProvider {
         private String mToken;
         
@@ -77,6 +83,17 @@ public class TileSourceProxy extends BaseTileSourceProxy {
     public String getApiName() {
         return "Akylas.GoogleMap.TileSource";
     }
+    
+    private void updateTileLayerVisibility() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mOverlay != null) {
+                    mOverlay.setVisible(visible && opacity > 0.0f);
+                }
+            }
+        });
+    }
 
     @Override
     public void propertySet(String key, Object newValue, Object oldValue,
@@ -84,9 +101,32 @@ public class TileSourceProxy extends BaseTileSourceProxy {
         super.propertySet(key, newValue, oldValue, changedProperty);
         switch (key) {
         case TiC.PROPERTY_VISIBLE:
-            if (mOverlay != null) {
-                mOverlay.setVisible(TiConvert.toBoolean(newValue));
+            visible = TiConvert.toBoolean(newValue);
+            if (mTileProvider instanceof WebTileProvider) {
+                ((WebTileProvider) mTileProvider).setVisible(visible);
             }
+            updateTileLayerVisibility();
+            break;
+        case TiC.PROPERTY_OPACITY:
+            if (mTileProvider instanceof WebTileProvider) {
+                opacity = TiConvert.toFloat(newValue, 1.0f);
+                ((WebTileProvider) mTileProvider).setOpacity(opacity);
+            }
+            updateTileLayerVisibility();
+            break;
+        case "fadeIn":
+            fadeIn = TiConvert.toBoolean(newValue);
+            if (mOverlay != null) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mOverlay != null) {
+                            mOverlay.setFadeIn(fadeIn);
+                        }
+                    }
+                });
+            }
+            updateTileLayerVisibility();
             break;
         default:
             break;
@@ -126,8 +166,6 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             if (sSource == null) {
                 return null;
             }
-            float minZoom = (mMinZoom >= 0) ? mMinZoom : 1.0f;
-            float maxZoom = (mMaxZoom >= 0) ? mMaxZoom : 18.0f;
             if (sSource.toLowerCase().endsWith("mbtiles")) {
                 try {
                     mTileProvider = new MBTilesProvider(TiDatabaseHelper.getDatabase(this, sSource, false));
@@ -138,29 +176,38 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             } else if (URL_PATTERN.matcher(sSource).matches()) {
                 mTileProvider = new WebTileProvider(sSource, sSource);
             } else {
+                final int tileSize = TiConvert.toInt(getProperty("tileSize"), 256);
                 switch (sSource.toLowerCase()) {
+                case "websource":
+                {
+                    mTileProvider = new WebTileProvider(TiConvert.toString(getProperty("id")),
+                            TiConvert.toString(getProperty("url")),tileSize)
+                            .setName(TiConvert.toString(getProperty("name"))).setAttribution(
+                                    TiConvert.toString(getProperty("attribution")));
+                    break;
+                }
                 case "openstreetmap":
                     mTileProvider = new WebTileProvider("openstreetmap",
-                            "http://tile.openstreetmap.org/{z}/{x}/{y}.png")
+                            "http://tile.openstreetmap.org/{z}/{x}/{y}.png", tileSize)
                             .setName("OpenStreetMap").setAttribution(
                                     "© OpenStreetMap Contributors");
                     break;
                 case "openseamap":
                     mTileProvider = new WebTileProvider("openseamap",
-                            "http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png")
+                            "http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png", tileSize)
                             .setName("OpenSeaMap").setAttribution(
                                     "© Map data © OpenStreetMap, licensed under Creative Commons Share Alike By Attribution.");
                     break;
                 case "mapquest":
                     mTileProvider = new WebTileProvider("mapquest",
-                            "http://otile1.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png")
+                            "http://otile1.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png", tileSize)
                             .setName("MapQuest Open Aerial")
                             .setAttribution(
                                     "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
                     break;
                 case "mapquest-sat":
                     mTileProvider = new WebTileProvider("mapquest-sat",
-                            "http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png")
+                            "http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png", tileSize)
                             .setName("MapQuest Open Aerial")
                             .setAttribution(
                                     "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
@@ -186,11 +233,10 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                     }
                     final String url  = "http://gpp3-wxs.ign.fr/" + key + "/geoportail/wmts?LAYER=" + realLayer + "&EXCEPTIONS=text/xml&FORMAT=" + format + "&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
                     mTileProvider = new WebTileProvider("ign",
-                            url)
+                            url, tileSize)
                             .setName("IGN")
                             .setAttribution(
                                     "Copyright (c) 2008-2014, Institut National de l'Information Géographique et Forestière France");
-                    ((WebTileProvider) mTileProvider).setUserAgent(TiConvert.toString(getProperty("userAgent")));
                     break;
                 }
                 case "mapbox":
@@ -205,6 +251,14 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                     break;
                 }
             }
+            
+            if (mTileProvider instanceof WebTileProvider) {
+                ((WebTileProvider) mTileProvider).setUserAgent(TiConvert.toString(getProperty("userAgent")));
+                ((WebTileProvider) mTileProvider).setMinimumZoomLevel(mMinZoom);
+                ((WebTileProvider) mTileProvider).setMaximumZoomLevel(mMaxZoom);
+                ((WebTileProvider) mTileProvider).setVisible(TiConvert.toBoolean(getProperty(TiC.PROPERTY_VISIBLE), true));
+                ((WebTileProvider) mTileProvider).setOpacity(TiConvert.toFloat(getProperty(TiC.PROPERTY_OPACITY), 1.0f));
+            }
         }
         if (mTileProvider != null && hasListeners(TiC.EVENT_LOAD, false)) {
             fireEvent(TiC.EVENT_LOAD, null, false, false);
@@ -217,6 +271,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             getTileProvider();
             if (mTileProvider != null) {
                 mOverlayOptions = new TileOverlayOptions()
+                .fadeIn(fadeIn)
                 .tileProvider(mTileProvider);
             }
         }

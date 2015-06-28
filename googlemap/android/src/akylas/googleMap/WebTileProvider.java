@@ -8,6 +8,9 @@ import org.appcelerator.titanium.util.TiImageHelper;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -29,30 +32,42 @@ public class WebTileProvider implements TileProvider {
     protected String mLegend;
     protected String mUserAgent = null;
 
-    protected float mMinimumZoomLevel = 0;
-    protected float mMaximumZoomLevel = 22;
+    protected float mMinimumZoomLevel = -1.0f;
+    protected float mMaximumZoomLevel = -1.0f;
     protected LatLngBounds mBoundingBox = AkylasGooglemapModule.WORLD_BOUNDING_BOX;
     protected LatLng mCenter = new LatLng(0, 0);
-    private final static int mTileSizePixels = 256;
+    private final int mTileSizePixels;
 
     protected boolean mEnableSSL = false;
     protected boolean mHdpi = false;
     
     private float mScale = 1.0f;
+    private boolean mVisible = true;
+    private float mOpacity = 1.0f;
     Picasso picasso;
+    private Paint tilePaint = new Paint(Paint.FILTER_BITMAP_FLAG);
     
     public WebTileProvider(final String pId, final String url, final boolean enableSSL) {
         this(pId, url, enableSSL, true);
     }
     public WebTileProvider(final String pId, final String url, final boolean enableSSL, final boolean shouldInit) {
+        this(pId, url, enableSSL, shouldInit, 256);
+    }
+    
+    public WebTileProvider(final String pId, final String url, final boolean enableSSL, final boolean shouldInit, final int tileSize) {
         mEnableSSL = enableSSL;
         mHdpi = TiApplication.getAppDensity() >= 2;
-        
-//        mScale = Math.round(TiApplication.getAppDensity() + .3f);
+        mTileSizePixels = tileSize;
         mId = pId;
         if (shouldInit) {
             initialize(pId, url, enableSSL);
         }
+    }
+    public WebTileProvider(final String pId, final String url) {
+        this(pId, url, false);
+    }
+    public WebTileProvider(final String pId, final String url, final int tileSize) {
+        this(pId, url, false, true, tileSize);
     }
     
     protected void initialize(String pId, String aUrl, boolean enableSSL) {
@@ -62,24 +77,31 @@ public class WebTileProvider implements TileProvider {
         client.interceptors().add(new com.squareup.okhttp.Interceptor() {
             @Override public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                 com.squareup.okhttp.Request.Builder builder = chain.request().newBuilder();
-                builder.addHeader("User-Agent", mUserAgent);
+                if (mUserAgent != null) {
+                    builder.addHeader("User-Agent", mUserAgent);
+                }
                 return chain.proceed(builder.build());
             }
           });
         picasso = new Picasso.Builder(context).downloader(new OkHttpDownloader(client)).build();
     }
    
-    public WebTileProvider(final String pId, final String url) {
-        this(pId, url, false);
-    }
+    
  
     @Override
     public Tile getTile(int x, int y, int z) {
+        if ((mMinimumZoomLevel >=0 && z < mMinimumZoomLevel) || 
+                (mMaximumZoomLevel >=0 && z > mMaximumZoomLevel)) {
+            return NO_TILE;
+        }
+        if (mVisible == false || mOpacity == 0.0f) {
+            return null;
+        }
         byte[] tileImage = getTileImage(x, y, z);
         if (tileImage != null) {
             return new Tile(mTileSizePixels, mTileSizePixels, tileImage);
         }
-        return NO_TILE;
+        return null;
     }
     
     
@@ -109,11 +131,8 @@ public class WebTileProvider implements TileProvider {
         Bitmap bitmap = null;
         try {
             final String url = getTileUrl(x, y, z);
-            bitmap = picasso.load(url).get();
-            if (mScale != 1) {
-                bitmap = TiImageHelper.imageScaled(bitmap, mScale);
-            }
-        } catch (IOException e) {
+            bitmap = resizeForTile(picasso.load(url).get());
+        } catch (Exception e) {
             bitmap = null;
         }
         if (bitmap == null) {
@@ -123,6 +142,31 @@ public class WebTileProvider implements TileProvider {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return stream.toByteArray();
     }
+    
+    private Bitmap resizeForTile(Bitmap bitmap) {
+
+        if (bitmap == null) {
+          return null;
+        }
+        Bitmap target = bitmap;
+//        float ratioX = mTileSizePixels / (float) bitmap.getWidth();
+//        float ratioY = mTileSizePixels / (float) bitmap.getHeight();
+//        if (ratioX != 1.0f || ratioY != 1.0f) {
+//            target = Bitmap.createBitmap(mTileSizePixels, mTileSizePixels, Bitmap.Config.ARGB_8888);
+//            float middleX = mTileSizePixels / 2.0f;
+//            float middleY = mTileSizePixels / 2.0f;
+//
+//            Matrix scaleMatrix = new Matrix();
+//            scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
+//
+//            Canvas canvas = new Canvas(target);
+//            canvas.setMatrix(scaleMatrix);
+//            canvas.drawBitmap(bitmap, middleX - bitmap.getWidth() / 2, middleY - bitmap.getHeight() / 2, tilePaint);
+//            bitmap.recycle();
+//            bitmap = null;
+//        }
+        return target;
+      }
  
     /**
      * Return the url to your tiles. For example:
@@ -207,6 +251,18 @@ public String getTileUrl(int x, int y, int z) {
         this.mMaximumZoomLevel = aMaximumZoomLevel;
         return this;
     }
+    
+    public WebTileProvider setVisible(final boolean visible) {
+        mVisible = visible;
+        return this;
+    }
+    
+    public WebTileProvider setOpacity(final float opacity) {
+        mOpacity = opacity;
+        tilePaint.setAlpha((int) (mOpacity * 255));
+        return this;
+    }
+
     
     public float getMinimumZoomLevel() {
         return mMinimumZoomLevel;

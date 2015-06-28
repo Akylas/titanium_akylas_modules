@@ -25,4 +25,4 @@
 //
 // IMPORTANT NOTE: always use $(inherited) in your overrides
 // 
-OTHER_LDFLAGS=$(inherited) -F$(SRCROOT)/platform -framework GoogleMaps -framework GLKit
+OTHER_LDFLAGS=$(inherited) -F$(SRCROOT)/platform -framework GoogleMaps -framework GLKit -framework CoreBluetooth

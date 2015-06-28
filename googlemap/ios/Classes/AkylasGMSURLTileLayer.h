@@ -11,7 +11,10 @@
 
 /** The network timeout for each attempt to download a tile image. */
 @property (nonatomic, assign) NSTimeInterval requestTimeoutSeconds;
+@property (nonatomic, assign) CGFloat minZoom;
+@property (nonatomic, assign) CGFloat maxZoom;
 
+@property (nonatomic, readwrite, copy) NSString* cacheKey;
 @property (nonatomic, readwrite, copy) NSString* userAgent;
 
 @property (nonatomic, assign) BOOL cacheable;

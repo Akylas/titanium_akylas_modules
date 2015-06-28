@@ -216,11 +216,12 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             }
             return;
         }
+        final boolean shouldAnimate = proxy.shouldAnimate();
         runInUiThread(new CommandNoReturn() {
             public void execute() {
                 GoogleMapView mapView = (GoogleMapView) proxy.getMapView();
                 if (mapView != null) {
-                    mapView.updateMarkerPosition(marker, point);
+                    mapView.updateMarkerPosition(marker, point, shouldAnimate);
                 }
             }
         });

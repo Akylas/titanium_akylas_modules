@@ -16,6 +16,7 @@
 #import <Mapbox/RMTileMillSource.h>
 #import <Mapbox/RMMapQuestOSMSource.h>
 #import "RMIgnMapSource.h"
+#import "AkylasWebSource.h"
 
 AkRegion AkRegionFromMBBox(RMSphericalTrapezium box) {
     return (AkRegion){
@@ -36,11 +37,13 @@ RMSphericalTrapezium MBBoxFromAkRegion(AkRegion box) {
     id<RMTileSource> _mpTileSource;
     
     RMTileCache* _tileCache;
+    RMMapView* _mapView;
 }
 -(void)dealloc
 {
     RELEASE_TO_NIL(_mpTileSource);
     RELEASE_TO_NIL(_tileCache);
+    _mapView = nil;
     [super dealloc];
 }
 
@@ -62,6 +65,21 @@ RMSphericalTrapezium MBBoxFromAkRegion(AkRegion box) {
         [_mpTileSource setCacheable:self.cacheable];
     }
 }
+
+-(void)setOpacity:(CGFloat)opacity
+{
+    [super setOpacity:opacity];
+    
+    if (_mpTileSource)  {
+//        _mpTileSource.opacity = self.opacity;
+        if (_mapView) {
+            TiThreadPerformBlockOnMainThread(^{
+                [_mapView setAlpha:self.opacity forTileSource:_mpTileSource];
+            }, NO);
+        }
+    }
+}
+
 
 -(RMTileCache*)tileCache
 {
@@ -172,8 +190,14 @@ RMSphericalTrapezium MBBoxFromAkRegion(AkRegion box) {
         }
     }
     NSString* typeLower = [source lowercaseString];
+    CGFloat minZoom = [TiUtils floatValue:[self valueForKey:@"minZoom"] def:1.0f];
+    CGFloat maxZoom = [TiUtils floatValue:[self valueForKey:@"maxZoom"] def:22.0f];
     id<RMTileSource> result = nil;
-    if ([typeLower isEqualToString:@"openstreetmap"])
+    if ([typeLower isEqualToString:@"websource"])
+    {
+        result = [[AkylasWebSource alloc] initWithDictionary:[self allProperties]];
+    }
+    else if ([typeLower isEqualToString:@"openstreetmap"])
     {
         result = [[RMOpenStreetMapSource alloc] init];
     }
@@ -189,7 +213,7 @@ RMSphericalTrapezium MBBoxFromAkRegion(AkRegion box) {
     {
         NSString* name = [TiUtils stringValue:[self valueForKey:@"mapId"]];
         NSString* cacheKey = [TiUtils stringValue:[self valueForKey:@"cacheKey"]];
-        result = [[RMTileMillSource alloc] initWithHost:[TiUtils stringValue:[self valueForKey:@"host"]] mapName:name tileCacheKey:cacheKey minZoom:[TiUtils floatValue:[self valueForKey:@"minZoom"]] maxZoom:[TiUtils floatValue:[self valueForKey:@"maxZoom"]]];
+        result = [[RMTileMillSource alloc] initWithHost:[TiUtils stringValue:[self valueForKey:@"host"]] mapName:name tileCacheKey:cacheKey minZoom:minZoom maxZoom:maxZoom];
     }
     else if ([typeLower hasSuffix:@"mbtiles"])
     {
@@ -226,6 +250,8 @@ RMSphericalTrapezium MBBoxFromAkRegion(AkRegion box) {
     }
     
     if (result) {
+        result.minZoom = minZoom;
+        result.maxZoom = maxZoom;
         result.cacheable = [TiUtils boolValue:[self valueForKey:@"cacheable"] def:YES];
         if (IS_OF_CLASS(result, RMAbstractWebMapSource)) {
             ((RMAbstractWebMapSource*)result).userAgent = [TiUtils stringValue:[self valueForKey:@"userAgent"]];
@@ -244,6 +270,7 @@ RMSphericalTrapezium MBBoxFromAkRegion(AkRegion box) {
         if (!_mpTileSource) return nil;
         [_mpTileSource setCacheable:self.cacheable];
     }
+    _mapView = mapView;
     return _mpTileSource;
 }
 

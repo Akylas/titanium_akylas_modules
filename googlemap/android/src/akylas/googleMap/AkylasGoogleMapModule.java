@@ -1,5 +1,6 @@
 package akylas.googlemap;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
@@ -13,6 +14,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
 import akylas.map.common.AkylasMapBaseModule;
+import android.app.Activity;
 
 @Kroll.module(name = "AkylasGooglemap", id = "akylas.googlemap", parentModule = AkylasMapBaseModule.class)
 public class AkylasGooglemapModule extends
@@ -53,8 +55,6 @@ public class AkylasGooglemapModule extends
 
     public static LatLngBounds WORLD_BOUNDING_BOX = (LatLngBounds) getFactory().createRegion(90, 180, -90, -180);
     public static LatLngBounds MIN_BOUNDING_BOX = (LatLngBounds) getFactory().createRegion(-90, -180, -90, -180);
-    private static int googlePlayServicesState;
-    private static boolean googlePlayServicesAvailable = false;
     
     public static Factory getFactory() {
         if (mFactory == null) {
@@ -183,8 +183,6 @@ public class AkylasGooglemapModule extends
     
     public AkylasGooglemapModule() {
         super();
-        googlePlayServicesState = TiApplication.getGooglePlayServicesState();
-        googlePlayServicesAvailable = googlePlayServicesState == 0;
     }
 
     @Kroll.onAppCreate
@@ -196,36 +194,29 @@ public class AkylasGooglemapModule extends
         map.put("Akylas.Googlemap.TileSource", TileSourceProxy.class.getName());
         APIMap.addMapping(map);
     }
-
-    static public final String getGoogleServiceStateMessage(final int state) {
-        switch (state) {
-
-        case 1:
-            return "SERVICE_MISSING";
-        case 2:
-            return "SERVICE_VERSION_UPDATE_REQUIRED";
-        case 3:
-            return "SERVICE_DISABLED";
-        case 4:
-            return "CANT_INVOKE_AVAILABLE";
-        case 9:
-            return "SERVICE_INVALID";
-        default:
-        case 0:
-            return "SUCCESS";
+    
+    @Override
+    protected void initActivity(Activity activity) {
+        super.initActivity(activity);
+        if (!TiApplication.isGooglePlayServicesAvailable()) {
+            if (hasListeners(TiC.EVENT_ERROR)) {
+                KrollDict data = new KrollDict();
+                data.putCodeAndMessage(TiApplication.getGooglePlayServicesState(), TiApplication.getGooglePlayServicesErrorString());
+                fireEvent(TiC.EVENT_ERROR, data);
+            }
         }
     }
     
-    static public final String getGoogleServiceStateMessage() {
-        return getGoogleServiceStateMessage(googlePlayServicesState);
-    }
-    
-    static public final int getGoogleServiceState() {
-        return googlePlayServicesState;
-    }
-
-    public static final boolean googlePlayServicesAvailable() {
-        return googlePlayServicesAvailable;
+    public static String getGooglePlayServicesErrorString(int code) {
+        try {
+            Class<?> c = Class.forName("com.google.android.gms.common.GooglePlayServicesUtil");
+            Method  method = c.getDeclaredMethod ("getErrorString", int.class);
+            return (String) method.invoke(null, new Object[] {code});
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
 }

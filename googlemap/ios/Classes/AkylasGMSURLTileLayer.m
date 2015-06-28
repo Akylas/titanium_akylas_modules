@@ -19,6 +19,7 @@
 {
     NSOperationQueue* _queue;
     id<GMSTileReceiver>  _tileReceiver;
+    NSString* _cacheKey;
 }
 
 @synthesize requestTimeoutSeconds;
@@ -31,19 +32,22 @@
     self.urlBlock = constructor;
     self.cacheable = YES;
     self.requestTimeoutSeconds = 15;
+    self.minZoom = -1;
+    self.maxZoom = -1;
     _queue = [NSOperationQueue new];
     [_queue setMaxConcurrentOperationCount:10];
     return self;
 }
 
-+(NSString*)cacheKey {
-    return NSStringFromClass([self class]);
+-(NSString*)cacheKey {
+    return _cacheKey;
 }
 
 -(void)dealloc
 {
     [_queue release];
     [_userAgent release];
+    [_cacheKey release];
     [super dealloc];
 }
 
@@ -78,15 +82,20 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
     
     NSURL *url = self.urlBlock(x, y, zoom);
     
-    NSNumber* key = [NSNumber numberWithUnsignedLongLong:TileKey(x, y, zoom)];
     if (!url)
     {
-        return kGMSTileLayerNoTile;
-         [receiver receiveTileWithX:x y:y zoom:zoom image:kGMSTileLayerNoTile];
+        [receiver receiveTileWithX:x y:y zoom:zoom image:kGMSTileLayerNoTile];
+        return;
     }
+    if (self.opacity == 0 || (_minZoom >= 0 && zoom < _minZoom)
+         || (_maxZoom >= 0 && zoom > _maxZoom)) {
+        [receiver receiveTileWithX:x y:y zoom:zoom image:nil];
+        return;
+    }
+    NSNumber* key = [NSNumber numberWithUnsignedLongLong:TileKey(x, y, zoom)];
     if (self.cacheable && [self.map isKindOfClass:[AkylasGMSMapView class]]) {
         TiCache* cache = ((AkylasGMSMapView*)self.map).tileCache;
-        UIImage* image = [cache cachedImage:key withCacheKey:[[self class] cacheKey]];
+        UIImage* image = [cache cachedImage:key withCacheKey:[self cacheKey]];
         if (image) {
             [receiver receiveTileWithX:x y:y zoom:zoom image:image];
             return;
@@ -94,6 +103,7 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
     }
     if (!((AkylasGMSMapView*)self.map).networkConnected) {
         [receiver receiveTileWithX:x y:y zoom:zoom image:nil];
+        return;
     }
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -106,7 +116,7 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
     [NSURLConnection sendAsynchronousRequest:request queue:_queue completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
         UIImage *image = nil;
         NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
-        int responseStatusCode = [httpResponse statusCode];
+        NSInteger responseStatusCode = [httpResponse statusCode];
         if (responseStatusCode == HTTP_404_NOT_FOUND ) {
             image = kGMSTileLayerNoTile;
             
@@ -114,7 +124,7 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
             image = [UIImage imageWithData:data];
             if (image && self.cacheable && [self.map isKindOfClass:[AkylasGMSMapView class]]) {
                 TiCache* cache = ((AkylasGMSMapView*)self.map).tileCache;
-                [cache addImage:image forKey:key withCacheKey:[[self class] cacheKey]];
+                [cache addImage:image forKey:key withCacheKey:[self cacheKey]];
             }
         }
         dispatch_async(dispatch_get_main_queue(), ^(void)
