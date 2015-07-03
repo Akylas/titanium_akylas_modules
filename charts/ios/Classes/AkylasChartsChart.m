@@ -105,12 +105,13 @@
 	graph.title = [TiUtils stringValue:@"text" properties:properties def:nil];
 }
 	
--(void)configurePadding:(NSDictionary*)properties
-{	
-	[self graph].paddingLeft = [TiUtils floatValue:@"left" properties:properties def:0];
-	graph.paddingTop = [TiUtils floatValue:@"top" properties:properties def: 0];
-	graph.paddingRight = [TiUtils floatValue:@"right" properties:properties def:0];
-	graph.paddingBottom = [TiUtils floatValue:@"bottom" properties:properties def:0];
+-(void)configurePadding:(id)arg
+{
+    UIEdgeInsets inset = [TiUtils insetValue:arg];
+	[self graph].paddingLeft = inset.left;
+	graph.paddingTop = inset.top;
+	graph.paddingRight = inset.right;
+	graph.paddingBottom = inset.bottom;
 }
 
 -(void)configureThemeWithName:(NSString*)themeName
