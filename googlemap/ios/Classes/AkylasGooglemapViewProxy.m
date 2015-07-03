@@ -11,6 +11,7 @@
 #import "AkylasGooglemapTileSourceProxy.h"
 #import "AkylasGooglemapRouteProxy.h"
 #import "AkylasGooglemapGroundOverlayProxy.h"
+#import "AkylasGooglemapClusterProxy.h"
 #import "AkylasGooglemapView.h"
 
 @implementation AkylasGooglemapViewProxy
@@ -46,5 +47,11 @@
 {
     return [AkylasGooglemapGroundOverlayProxy class];
 }
+
+-(Class)clusterClass
+{
+    return [AkylasGooglemapClusterProxy class];
+}
+
 
 @end

@@ -117,7 +117,7 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
         UIImage *image = nil;
         NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
         NSInteger responseStatusCode = [httpResponse statusCode];
-        if (responseStatusCode == HTTP_404_NOT_FOUND ) {
+        if (responseStatusCode >= 400 && responseStatusCode < 500) {
             image = kGMSTileLayerNoTile;
             
         } else if (!error) {

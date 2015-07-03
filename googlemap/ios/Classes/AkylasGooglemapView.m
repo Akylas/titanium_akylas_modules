@@ -10,8 +10,10 @@
 #import "AkylasGooglemapAnnotationProxy.h"
 #import "AkylasGooglemapTileSourceProxy.h"
 #import "AkylasGooglemapRouteProxy.h"
+#import "AkylasGooglemapClusterProxy.h"
 #import "AkylasGooglemapModule.h"
 #import "TiApp.h"
+
 
 @implementation AkylasGMSMapView
 -(void)dealloc
@@ -59,6 +61,8 @@
     AkMapDragState _dragState;
     
     BOOL _firstLayout;
+    
+    GClusterManager* _clusterManager;
 }
 
 - (id)init
@@ -68,6 +72,7 @@
         _inUserAction = NO;
         _firstLayout = YES;
         _forwarding = NO;
+        
         _userTrackingMode = AkUserTrackingModeNone;
         _emptyCalloutView = [[UIView alloc] initWithFrame:CGRectZero];
         _dragState = AkMapDragStateNone;
@@ -95,6 +100,7 @@
         RELEASE_TO_NIL(_calloutView)
     }
     RELEASE_TO_NIL(_emptyCalloutView)
+    RELEASE_TO_NIL(_clusterManager)
 	[super dealloc];
 }
 
@@ -145,6 +151,21 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkChanged:) name:kTiNetworkChangedNotification object:nil];
     }
     return map;
+}
+
+-(GClusterManager*)clusterManager {
+    if (_clusterManager==nil)
+    {
+        [self map];
+        _clusterManager = [[GClusterManager managerWithMapView:map renderer:[[[AkylasGooglemapClusterRenderer alloc] initWithMapView:map] autorelease]] retain];
+        _clusterManager.delegate = self;
+        map.delegate = _clusterManager;
+    }
+    return _clusterManager;
+}
+
+-(AkylasGooglemapClusterRenderer*) clusterRenderer{
+    return [_clusterManager clusterRenderer];
 }
 
 -(UIView *)hitTest:(CGPoint) point withEvent:(UIEvent *)event
@@ -656,8 +677,11 @@
 
 -(AkRegion) getCurrentRegion
 {
-    GMSVisibleRegion visible = [self map].projection.visibleRegion;
-    return ((AkRegion){.northEast = {.latitude = visible.farRight.latitude, .longitude = visible.farRight.longitude}, .southWest = {.latitude = visible.nearLeft.latitude, .longitude = visible.nearLeft.longitude}});
+    __block GMSCoordinateBounds* bounds;
+    TiThreadPerformBlockOnMainThread(^{
+        bounds = [[GMSCoordinateBounds alloc] initWithRegion: [self map].projection.visibleRegion];
+    }, YES);
+    return ((AkRegion){.northEast = bounds.northEast, .southWest = bounds.southWest});
 }
 
 -(BOOL)shouldAnimate
@@ -770,10 +794,8 @@
     GMSMapView* mapView = [self map];
     GMSOverlay *marker = [annotation getGOverlayForMapView:mapView];
     if (!IS_OF_CLASS(marker, GMSMarker)) return;
-    mapView.selectedMarker = (GMSMarker*)marker;
-    //    if (!annotation.marker.canShowCallout) {
-    //        map.centerCoordinate = an.coordinate;
-    //    }
+    GMSMarker* theMarker = (GMSMarker*)marker;
+    [self mapView:mapView didTapMarker:theMarker];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -878,6 +900,37 @@
     }
 }
 
+- (BOOL)internalAddClusters:(id)cluster atIndex:(NSInteger)index
+{
+    __block NSInteger realIndex = index;
+    if (IS_OF_CLASS(cluster, NSArray)) {
+        [cluster enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [self internalAddClusters:obj atIndex:(realIndex >= 0)?realIndex++:realIndex];
+        }];
+    } else {
+        AkylasGooglemapClusterProxy* clusterProxy = (AkylasGooglemapClusterProxy*)cluster;
+        clusterProxy.delegate = (id<AkylasMapBaseAnnotationProxyDelegate>)self;
+        [[self clusterManager] addClusterAlgorithm:[clusterProxy algorithm]];
+    }
+    TiThreadPerformBlockOnMainThread(^{
+        [_clusterManager cluster];
+    }, NO);
+}
+
+- (BOOL)internalRemoveClusters:(id)cluster
+{
+    if (IS_OF_CLASS(cluster, NSArray)) {
+        [cluster enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [self internalRemoveClusters:obj];
+        }];
+    } else {
+        AkylasGooglemapClusterProxy* clusterProxy = (AkylasGooglemapClusterProxy*)cluster;
+        clusterProxy.delegate = nil;
+        [((AkylasGooglemapClusterRenderer*)[_clusterManager clusterRenderer]) clearCacheForId:[clusterProxy uniqueId]];
+        [_clusterManager removeClusterAlgorithm:[clusterProxy algorithm]];
+    }
+}
+
 
 #pragma mark Event generation
 
@@ -910,7 +963,7 @@
     } else {
         [event setObject:annotProxy forKey:@"annotation"];
         [event setObject:NUMINTEGER([annotProxy tag]) forKey:@"index"];
-        if ([annotProxy title] == nil)
+        if ([annotProxy title] != nil)
         {
             [event setObject:[annotProxy title] forKey:@"title"];
         }

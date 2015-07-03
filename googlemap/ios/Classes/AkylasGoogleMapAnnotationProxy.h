@@ -7,9 +7,12 @@
 //
 
 #import "AkylasMapBaseAnnotationProxy.h"
+#import "GClusterItem.h"
+
 @class GMSOverlay;
 @class GMSMapView;
-@interface AkylasGooglemapAnnotationProxy : AkylasMapBaseAnnotationProxy
+
+@interface AkylasGooglemapAnnotationProxy : AkylasMapBaseAnnotationProxy<GClusterItem>
 
 +(int)gZIndexDelta;
 

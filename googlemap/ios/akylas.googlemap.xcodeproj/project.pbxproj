@@ -31,6 +31,33 @@
 		D55C825C1AD6BAF400339334 /* libSMCalloutView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D55C82591AD6BAF400339334 /* libSMCalloutView.a */; };
 		D55C825D1AD6BAF400339334 /* SMCalloutView.h in Headers */ = {isa = PBXBuildFile; fileRef = D55C825A1AD6BAF400339334 /* SMCalloutView.h */; };
 		D55C825E1AD6BAF400339334 /* SMClassicCalloutView.h in Headers */ = {isa = PBXBuildFile; fileRef = D55C825B1AD6BAF400339334 /* SMClassicCalloutView.h */; };
+		D56F8F3F1B43D56B00570916 /* GCluster.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F341B43D52C00570916 /* GCluster.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F401B43D56B00570916 /* GClusterItem.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F351B43D52C00570916 /* GClusterItem.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F411B43D56B00570916 /* GClusterManager.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F361B43D52C00570916 /* GClusterManager.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F421B43D56B00570916 /* GClusterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F371B43D52C00570916 /* GClusterManager.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F431B43D57400570916 /* GClusterRenderer.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F391B43D52C00570916 /* GClusterRenderer.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F461B43D58800570916 /* GClusterAlgorithm.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F2D1B43D52C00570916 /* GClusterAlgorithm.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F471B43D58800570916 /* GQuadItem.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F2E1B43D52C00570916 /* GQuadItem.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F481B43D58800570916 /* GQuadItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F2F1B43D52C00570916 /* GQuadItem.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F491B43D58800570916 /* GStaticCluster.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F301B43D52C00570916 /* GStaticCluster.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F4A1B43D58800570916 /* GStaticCluster.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F311B43D52C00570916 /* GStaticCluster.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F4B1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F321B43D52C00570916 /* NonHierarchicalDistanceBasedAlgorithm.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F4C1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F331B43D52C00570916 /* NonHierarchicalDistanceBasedAlgorithm.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F4D1B43D58800570916 /* SphericalMercatorProjection.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F3D1B43D52C00570916 /* SphericalMercatorProjection.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F4E1B43D58800570916 /* SphericalMercatorProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F3E1B43D52C00570916 /* SphericalMercatorProjection.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F4F1B43D58800570916 /* GQTBounds.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F241B43D52100570916 /* GQTBounds.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F501B43D58800570916 /* GQTPoint.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F251B43D52100570916 /* GQTPoint.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F511B43D58800570916 /* GQTPointQuadTree.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F261B43D52100570916 /* GQTPointQuadTree.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F521B43D58800570916 /* GQTPointQuadTree.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F271B43D52100570916 /* GQTPointQuadTree.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F531B43D58800570916 /* GQTPointQuadTreeChild.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F281B43D52100570916 /* GQTPointQuadTreeChild.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F541B43D58800570916 /* GQTPointQuadTreeChild.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F291B43D52100570916 /* GQTPointQuadTreeChild.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F551B43D58800570916 /* GQTPointQuadTreeItem.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F2A1B43D52100570916 /* GQTPointQuadTreeItem.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F581B43D8A900570916 /* AkylasGooglemapClusterRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = D56F8F561B43D8A900570916 /* AkylasGooglemapClusterRenderer.h */; };
+		D56F8F591B43D8A900570916 /* AkylasGooglemapClusterRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F571B43D8A900570916 /* AkylasGooglemapClusterRenderer.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D56F8F5C1B43D95300570916 /* AkylasMapBaseClusterProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D56F8F5A1B43D95300570916 /* AkylasMapBaseClusterProxy.h */; };
+		D56F8F5D1B43D95300570916 /* AkylasMapBaseClusterProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F5B1B43D95300570916 /* AkylasMapBaseClusterProxy.m */; };
+		D56F8F601B43DA3300570916 /* AkylasGooglemapClusterProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D56F8F5E1B43DA3300570916 /* AkylasGooglemapClusterProxy.h */; };
+		D56F8F611B43DA3300570916 /* AkylasGooglemapClusterProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F5F1B43DA3300570916 /* AkylasGooglemapClusterProxy.m */; };
 		D578CAF619234D2B0019CA5A /* AkylasGooglemapModule.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAEE19234D2B0019CA5A /* AkylasGooglemapModule.h */; };
 		D594D1711AD55FE300EA6005 /* AkylasGMSMBTilesLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = D594D15A1AD55FE300EA6005 /* AkylasGMSMBTilesLayer.h */; };
 		D594D1721AD55FE300EA6005 /* AkylasGMSMBTilesLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D594D15B1AD55FE300EA6005 /* AkylasGMSMBTilesLayer.m */; };
@@ -105,6 +132,35 @@
 		D55C82591AD6BAF400339334 /* libSMCalloutView.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libSMCalloutView.a; sourceTree = "<group>"; };
 		D55C825A1AD6BAF400339334 /* SMCalloutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMCalloutView.h; sourceTree = "<group>"; };
 		D55C825B1AD6BAF400339334 /* SMClassicCalloutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMClassicCalloutView.h; sourceTree = "<group>"; };
+		D56F8F241B43D52100570916 /* GQTBounds.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GQTBounds.h; sourceTree = "<group>"; };
+		D56F8F251B43D52100570916 /* GQTPoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GQTPoint.h; sourceTree = "<group>"; };
+		D56F8F261B43D52100570916 /* GQTPointQuadTree.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GQTPointQuadTree.h; sourceTree = "<group>"; };
+		D56F8F271B43D52100570916 /* GQTPointQuadTree.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GQTPointQuadTree.m; sourceTree = "<group>"; };
+		D56F8F281B43D52100570916 /* GQTPointQuadTreeChild.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GQTPointQuadTreeChild.h; sourceTree = "<group>"; };
+		D56F8F291B43D52100570916 /* GQTPointQuadTreeChild.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GQTPointQuadTreeChild.m; sourceTree = "<group>"; };
+		D56F8F2A1B43D52100570916 /* GQTPointQuadTreeItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GQTPointQuadTreeItem.h; sourceTree = "<group>"; };
+		D56F8F2D1B43D52C00570916 /* GClusterAlgorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GClusterAlgorithm.h; sourceTree = "<group>"; };
+		D56F8F2E1B43D52C00570916 /* GQuadItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GQuadItem.h; sourceTree = "<group>"; };
+		D56F8F2F1B43D52C00570916 /* GQuadItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GQuadItem.m; sourceTree = "<group>"; };
+		D56F8F301B43D52C00570916 /* GStaticCluster.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GStaticCluster.h; sourceTree = "<group>"; };
+		D56F8F311B43D52C00570916 /* GStaticCluster.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GStaticCluster.m; sourceTree = "<group>"; };
+		D56F8F321B43D52C00570916 /* NonHierarchicalDistanceBasedAlgorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NonHierarchicalDistanceBasedAlgorithm.h; sourceTree = "<group>"; };
+		D56F8F331B43D52C00570916 /* NonHierarchicalDistanceBasedAlgorithm.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NonHierarchicalDistanceBasedAlgorithm.m; sourceTree = "<group>"; };
+		D56F8F341B43D52C00570916 /* GCluster.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GCluster.h; sourceTree = "<group>"; };
+		D56F8F351B43D52C00570916 /* GClusterItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GClusterItem.h; sourceTree = "<group>"; };
+		D56F8F361B43D52C00570916 /* GClusterManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GClusterManager.h; sourceTree = "<group>"; };
+		D56F8F371B43D52C00570916 /* GClusterManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GClusterManager.m; sourceTree = "<group>"; };
+		D56F8F391B43D52C00570916 /* GClusterRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GClusterRenderer.h; sourceTree = "<group>"; };
+		D56F8F3A1B43D52C00570916 /* GDefaultClusterRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GDefaultClusterRenderer.h; sourceTree = "<group>"; };
+		D56F8F3B1B43D52C00570916 /* GDefaultClusterRenderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GDefaultClusterRenderer.m; sourceTree = "<group>"; };
+		D56F8F3D1B43D52C00570916 /* SphericalMercatorProjection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SphericalMercatorProjection.h; sourceTree = "<group>"; };
+		D56F8F3E1B43D52C00570916 /* SphericalMercatorProjection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SphericalMercatorProjection.m; sourceTree = "<group>"; };
+		D56F8F561B43D8A900570916 /* AkylasGooglemapClusterRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGooglemapClusterRenderer.h; path = Classes/AkylasGooglemapClusterRenderer.h; sourceTree = "<group>"; };
+		D56F8F571B43D8A900570916 /* AkylasGooglemapClusterRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapClusterRenderer.m; path = Classes/AkylasGooglemapClusterRenderer.m; sourceTree = "<group>"; };
+		D56F8F5A1B43D95300570916 /* AkylasMapBaseClusterProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapBaseClusterProxy.h; path = Classes/AkylasMapBaseClusterProxy.h; sourceTree = "<group>"; };
+		D56F8F5B1B43D95300570916 /* AkylasMapBaseClusterProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapBaseClusterProxy.m; path = Classes/AkylasMapBaseClusterProxy.m; sourceTree = "<group>"; };
+		D56F8F5E1B43DA3300570916 /* AkylasGooglemapClusterProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGooglemapClusterProxy.h; path = Classes/AkylasGooglemapClusterProxy.h; sourceTree = "<group>"; };
+		D56F8F5F1B43DA3300570916 /* AkylasGooglemapClusterProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapClusterProxy.m; path = Classes/AkylasGooglemapClusterProxy.m; sourceTree = "<group>"; };
 		D578CAE919234C880019CA5A /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		D578CAEE19234D2B0019CA5A /* AkylasGooglemapModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGooglemapModule.h; path = Classes/AkylasGooglemapModule.h; sourceTree = "<group>"; };
 		D578CAEF19234D2B0019CA5A /* AkylasGooglemapModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapModule.m; path = Classes/AkylasGooglemapModule.m; sourceTree = "<group>"; };
@@ -197,6 +253,7 @@
 		08FB77AEFE84172EC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				D56F8F221B43D51600570916 /* clustering */,
 				D594D17B1AD55FF300EA6005 /* common */,
 				D594D15A1AD55FE300EA6005 /* AkylasGMSMBTilesLayer.h */,
 				D594D15B1AD55FE300EA6005 /* AkylasGMSMBTilesLayer.m */,
@@ -216,6 +273,10 @@
 				D59988611AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m */,
 				D5BD8AE51AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h */,
 				D5BD8AE61AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.m */,
+				D56F8F561B43D8A900570916 /* AkylasGooglemapClusterRenderer.h */,
+				D56F8F571B43D8A900570916 /* AkylasGooglemapClusterRenderer.m */,
+				D56F8F5E1B43DA3300570916 /* AkylasGooglemapClusterProxy.h */,
+				D56F8F5F1B43DA3300570916 /* AkylasGooglemapClusterProxy.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -241,6 +302,79 @@
 			path = Classes/common/SMCalloutView;
 			sourceTree = "<group>";
 		};
+		D56F8F221B43D51600570916 /* clustering */ = {
+			isa = PBXGroup;
+			children = (
+				D56F8F2B1B43D52C00570916 /* Clustering */,
+				D56F8F3C1B43D52C00570916 /* Projection */,
+				D56F8F231B43D52100570916 /* QuadTree */,
+			);
+			name = clustering;
+			sourceTree = "<group>";
+		};
+		D56F8F231B43D52100570916 /* QuadTree */ = {
+			isa = PBXGroup;
+			children = (
+				D56F8F241B43D52100570916 /* GQTBounds.h */,
+				D56F8F251B43D52100570916 /* GQTPoint.h */,
+				D56F8F261B43D52100570916 /* GQTPointQuadTree.h */,
+				D56F8F271B43D52100570916 /* GQTPointQuadTree.m */,
+				D56F8F281B43D52100570916 /* GQTPointQuadTreeChild.h */,
+				D56F8F291B43D52100570916 /* GQTPointQuadTreeChild.m */,
+				D56F8F2A1B43D52100570916 /* GQTPointQuadTreeItem.h */,
+			);
+			name = QuadTree;
+			path = "../../../../../ios/google-maps-ios-utils/QuadTree";
+			sourceTree = "<group>";
+		};
+		D56F8F2B1B43D52C00570916 /* Clustering */ = {
+			isa = PBXGroup;
+			children = (
+				D56F8F2C1B43D52C00570916 /* Algorithms */,
+				D56F8F341B43D52C00570916 /* GCluster.h */,
+				D56F8F351B43D52C00570916 /* GClusterItem.h */,
+				D56F8F361B43D52C00570916 /* GClusterManager.h */,
+				D56F8F371B43D52C00570916 /* GClusterManager.m */,
+				D56F8F381B43D52C00570916 /* View */,
+			);
+			name = Clustering;
+			path = "../../../../../ios/google-maps-ios-utils/Clustering";
+			sourceTree = "<group>";
+		};
+		D56F8F2C1B43D52C00570916 /* Algorithms */ = {
+			isa = PBXGroup;
+			children = (
+				D56F8F2D1B43D52C00570916 /* GClusterAlgorithm.h */,
+				D56F8F2E1B43D52C00570916 /* GQuadItem.h */,
+				D56F8F2F1B43D52C00570916 /* GQuadItem.m */,
+				D56F8F301B43D52C00570916 /* GStaticCluster.h */,
+				D56F8F311B43D52C00570916 /* GStaticCluster.m */,
+				D56F8F321B43D52C00570916 /* NonHierarchicalDistanceBasedAlgorithm.h */,
+				D56F8F331B43D52C00570916 /* NonHierarchicalDistanceBasedAlgorithm.m */,
+			);
+			path = Algorithms;
+			sourceTree = "<group>";
+		};
+		D56F8F381B43D52C00570916 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				D56F8F391B43D52C00570916 /* GClusterRenderer.h */,
+				D56F8F3A1B43D52C00570916 /* GDefaultClusterRenderer.h */,
+				D56F8F3B1B43D52C00570916 /* GDefaultClusterRenderer.m */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		D56F8F3C1B43D52C00570916 /* Projection */ = {
+			isa = PBXGroup;
+			children = (
+				D56F8F3D1B43D52C00570916 /* SphericalMercatorProjection.h */,
+				D56F8F3E1B43D52C00570916 /* SphericalMercatorProjection.m */,
+			);
+			name = Projection;
+			path = "../../../../../ios/google-maps-ios-utils/Projection";
+			sourceTree = "<group>";
+		};
 		D594D17B1AD55FF300EA6005 /* common */ = {
 			isa = PBXGroup;
 			children = (
@@ -262,6 +396,8 @@
 				D594D19B1AD560EB00EA6005 /* AkylasMapBaseModule.m */,
 				D5BD8AE11AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h */,
 				D5BD8AE21AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m */,
+				D56F8F5A1B43D95300570916 /* AkylasMapBaseClusterProxy.h */,
+				D56F8F5B1B43D95300570916 /* AkylasMapBaseClusterProxy.m */,
 			);
 			name = common;
 			sourceTree = "<group>";
@@ -287,8 +423,11 @@
 				AA747D9F0F9514B9006C5449 /* akylas.googlemap_Prefix.pch in Headers */,
 				D594D1A01AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.h in Headers */,
 				D594D1931AD5600700EA6005 /* ReusableViewProtocol.h in Headers */,
+				D56F8F601B43DA3300570916 /* AkylasGooglemapClusterProxy.h in Headers */,
+				D56F8F581B43D8A900570916 /* AkylasGooglemapClusterRenderer.h in Headers */,
 				D594D1941AD5600700EA6005 /* ReusableViewProxy.h in Headers */,
 				D594D1911AD5600700EA6005 /* AkylasMapBaseViewProxy.h in Headers */,
+				D56F8F5C1B43D95300570916 /* AkylasMapBaseClusterProxy.h in Headers */,
 				D578CAF619234D2B0019CA5A /* AkylasGooglemapModule.h in Headers */,
 				D594D1711AD55FE300EA6005 /* AkylasGMSMBTilesLayer.h in Headers */,
 				D55C825E1AD6BAF400339334 /* SMClassicCalloutView.h in Headers */,
@@ -400,6 +539,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D56F8F431B43D57400570916 /* GClusterRenderer.h in Sources */,
+				D56F8F611B43DA3300570916 /* AkylasGooglemapClusterProxy.m in Sources */,
 				D594D1A11AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.m in Sources */,
 				D594D1A51AD5648800EA6005 /* AkylasGooglemapRouteProxy.m in Sources */,
 				D55B299F1ACBFBEC008C0279 /* AkylasGooglemapModule.m in Sources */,
@@ -417,6 +558,28 @@
 				D594D19D1AD560EB00EA6005 /* AkylasMapBaseModule.m in Sources */,
 				D594D17A1AD55FE300EA6005 /* AkylasGooglemapViewProxy.m in Sources */,
 				D594D18E1AD5600700EA6005 /* AkylasMapBaseTileSourceProxy.m in Sources */,
+				D56F8F3F1B43D56B00570916 /* GCluster.h in Sources */,
+				D56F8F5D1B43D95300570916 /* AkylasMapBaseClusterProxy.m in Sources */,
+				D56F8F401B43D56B00570916 /* GClusterItem.h in Sources */,
+				D56F8F411B43D56B00570916 /* GClusterManager.h in Sources */,
+				D56F8F421B43D56B00570916 /* GClusterManager.m in Sources */,
+				D56F8F461B43D58800570916 /* GClusterAlgorithm.h in Sources */,
+				D56F8F471B43D58800570916 /* GQuadItem.h in Sources */,
+				D56F8F481B43D58800570916 /* GQuadItem.m in Sources */,
+				D56F8F491B43D58800570916 /* GStaticCluster.h in Sources */,
+				D56F8F4A1B43D58800570916 /* GStaticCluster.m in Sources */,
+				D56F8F591B43D8A900570916 /* AkylasGooglemapClusterRenderer.m in Sources */,
+				D56F8F4B1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.h in Sources */,
+				D56F8F4C1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.m in Sources */,
+				D56F8F4D1B43D58800570916 /* SphericalMercatorProjection.h in Sources */,
+				D56F8F4E1B43D58800570916 /* SphericalMercatorProjection.m in Sources */,
+				D56F8F4F1B43D58800570916 /* GQTBounds.h in Sources */,
+				D56F8F501B43D58800570916 /* GQTPoint.h in Sources */,
+				D56F8F511B43D58800570916 /* GQTPointQuadTree.h in Sources */,
+				D56F8F521B43D58800570916 /* GQTPointQuadTree.m in Sources */,
+				D56F8F531B43D58800570916 /* GQTPointQuadTreeChild.h in Sources */,
+				D56F8F541B43D58800570916 /* GQTPointQuadTreeChild.m in Sources */,
+				D56F8F551B43D58800570916 /* GQTPointQuadTreeItem.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

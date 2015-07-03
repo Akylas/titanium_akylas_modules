@@ -3,6 +3,10 @@
 #import "SMCalloutView.h"
 #import "TiCache.h"
 
+#import "GClusterManager.h"
+
+#import "AkylasGooglemapClusterRenderer.h"
+
 @interface AkylasGMSMapView : GMSMapView
 @property (nonatomic, readwrite, retain) TiCache *tileCache;
 @property (nonatomic, readwrite, assign) BOOL networkConnected;
@@ -13,5 +17,6 @@
 }
 
 -(AkylasGMSMapView*)map;
-
+-(GClusterManager*)clusterManager;
+-(AkylasGooglemapClusterRenderer*) clusterRenderer;
 @end

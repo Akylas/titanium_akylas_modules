@@ -7,6 +7,9 @@
 //
 
 #import "AkylasGooglemapAnnotationProxy.h"
+#import "GClusterManager.h"
+#import "AkylasGooglemapView.h"
+#import "AkylasGooglemapClusterProxy.h"
 
 @implementation AkylasGooglemapAnnotationProxy
 {
@@ -47,6 +50,14 @@
     [super refreshCoords];
 }
 
+-(CLLocationCoordinate2D)position {
+    return self.coordinate;
+}
+
+-(GMSMarker *)marker {
+    return [self getMarker];
+}
+
 -(void)setTitle:(id)value
 {
     [super setTitle:value];
@@ -83,11 +94,11 @@
 -(void)setShowInfoWindow:(BOOL)showInfoWindow
 {
     [super setShowInfoWindow:showInfoWindow];
-    if (_gmarker) {
-        TiThreadPerformBlockOnMainThread(^{
-            _gmarker.tappable = self.showInfoWindow;
-        }, NO);
-    }
+//    if (_gmarker) {
+//        TiThreadPerformBlockOnMainThread(^{
+//            _gmarker.tappable = self.showInfoWindow;
+//        }, NO);
+//    }
 }
 
 
@@ -129,9 +140,36 @@
     }
 }
 
--(void)setColor:(id)color
+
+-(void)setTouchable:(BOOL)touchable
 {
-    [super setColor:color];
+    [super setTouchable:touchable];
+    if (_gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.tappable = self.touchable;
+        }, NO);
+    }
+}
+-(void)setCanBeClustered:(BOOL)canBeClustered
+{
+    [super setCanBeClustered:canBeClustered];
+    if (_gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.canBeClustered = self.canBeClustered;
+            if (IS_OF_CLASS(self.delegate, AkylasGooglemapView)) {
+                [[((AkylasGooglemapView*)self.delegate) clusterManager] cluster];
+            } else if (IS_OF_CLASS(self.delegate, AkylasGooglemapClusterProxy)) {
+                [((AkylasGooglemapView*)self.delegate) cluster];
+            }
+        }, NO);
+        
+    }
+    
+}
+
+-(void)setTintColor:(id)color
+{
+    [super setTintColor:color];
 //    [self replaceValue:color forKey:@"color" notification:NO];
 //    if ([color isKindOfClass:[NSNumber class]]) {
 //        self.pinColor = [TiUtils intValue:color];
@@ -139,9 +177,9 @@
 //    }
 //    else {
 //        self.tintColor = [[TiUtils colorValue:color] _color];
-        if (_gmarker) {
+        if (_gmarker && !_internalImage) {
             TiThreadPerformBlockOnMainThread(^{
-                _gmarker.icon = [GMSMarker markerImageWithColor:self.tintColor];
+                _gmarker.icon = [GMSMarker markerImageWithColor:[self nGetTintColor]];
             }, NO);
         }
 //    }
@@ -154,6 +192,15 @@
     if (_gmarker) {
         TiThreadPerformBlockOnMainThread(^{
             _gmarker.groundAnchor = [self nGetAnchorPoint];
+        }, NO);
+    }
+}
+
+-(void)setInternalImage:(UIImage*)image {
+    [super setInternalImage:image];
+    if (_gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.icon = _internalImage;
         }, NO);
     }
 }
@@ -183,36 +230,35 @@
     return 1000;
 }
 
-
--(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
-{
+-(GMSMarker*)getMarker {
     if (_gmarker == nil) {
         
-        _gmarker = [GMSMarker markerWithPosition:self.coordinate];
+        _gmarker = [[GMSMarker markerWithPosition:self.coordinate] retain];
         _gmarker.appearAnimation = kGMSMarkerAnimationPop;
-        _gmarker.map = mapView;
         _gmarker.title = [self title];
         _gmarker.snippet = [self subtitle];
         _gmarker.flat = self.flat;
         _gmarker.userData = self;
         if (_internalImage) {
             _gmarker.icon = _internalImage;
-        } else if (self.tintColor){
-            if (_gmarker) {
-                _gmarker.icon = [GMSMarker markerImageWithColor:self.tintColor];
-            }
+        } else if ([self nGetTintColor]){
+                _gmarker.icon = [GMSMarker markerImageWithColor:[self nGetTintColor]];
         }
         _gmarker.draggable = self.draggable;
-        _gmarker.tappable = self.showInfoWindow;
+        _gmarker.tappable = self.touchable;
         _gmarker.opacity = self.visible?self.opacity:0;
         _gmarker.rotation = self.heading;
+        _gmarker.canBeClustered = self.canBeClustered;
         _gmarker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
         _gmarker.groundAnchor = [self nGetAnchorPoint];
     }
-    else if (_gmarker.map != mapView) {
-        RELEASE_TO_NIL(_gmarker)
-        return [self getGOverlayForMapView:mapView];
-    }
+    return _gmarker;
+}
+
+-(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
+{
+    [self getMarker];
+    _gmarker.map = mapView;
     return _gmarker;
 }
 
