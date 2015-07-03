@@ -59,7 +59,7 @@ static NSArray *supportedEvents;
 
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
-    if (CGSizeEqualToSize(bounds.size,CGSizeZero)) return;
+    if (bounds.size.width == 0 || bounds.size.height == 0) return;
     for (ShapeProxy* shape in [self shapes]) {
         [shape boundsChanged:bounds];
     }
