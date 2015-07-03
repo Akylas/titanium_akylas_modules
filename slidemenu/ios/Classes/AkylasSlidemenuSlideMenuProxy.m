@@ -29,10 +29,33 @@
 	}
 	return self;
 }
-
--(void) dealloc {
-    [super dealloc];
+-(void)viewDidAttach
+{
+    [super viewDidAttach];
+    [self dirtyItAll];
 }
+
+-(void)layoutChild:(TiViewProxy*)child optimize:(BOOL)optimize withMeasuredBounds:(CGRect)bounds
+{
+    [super layoutChild:child optimize:optimize withMeasuredBounds:bounds];
+}
+//
+//-(void)refreshViewIfNeeded:(BOOL)recursive
+//{
+//    if ([self viewAttached]==NO) {
+//        return;
+//    }
+//   [super refreshViewIfNeeded:recursive];
+//}
+//
+//-(void)windowWillOpen
+//{
+//    [super windowWillOpen];
+//}
+//
+//-(void) dealloc {
+//    [super dealloc];
+//}
 
 -(void)viewWillDetach
 {

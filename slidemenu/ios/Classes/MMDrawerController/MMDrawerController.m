@@ -1282,7 +1282,7 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
 -(UIPanGestureRecognizer*)panGesture {
     if (_panGesture == nil) {
         _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureCallback:)];
-        _panGesture.delaysTouchesBegan = YES;
+//        _panGesture.delaysTouchesBegan = YES;
         [_panGesture setDelegate:self];
     }
     return _panGesture;
