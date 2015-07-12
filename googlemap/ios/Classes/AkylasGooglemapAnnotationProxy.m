@@ -37,17 +37,42 @@
     return @"Akylas.GoogleMap.Annotation";
 }
 
--(void)refreshCoords {
-    if (_gmarker) {
-        [CATransaction begin];
-        if (![self shouldAnimate]) {
-            [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+-(void)updateMarker
+{
+    _gmarker.flat = self.flat;
+//    _gmarker.draggable = self.draggable;
+    _gmarker.tappable = self.visible?self.touchable:NO;
+    _gmarker.opacity = self.visible?self.opacity:0;
+    _gmarker.rotation = self.heading;
+    _gmarker.position = self.position;
+}
+
+-(void)setConfigurationSet:(BOOL)value
+{
+    [super setConfigurationSet:value];
+    if (configurationSet) {
+        if (_gmarker) {
+            [CATransaction begin];
+            if (![self shouldAnimate]) {
+                [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+            }
+            [self updateMarker];
+            [CATransaction commit];
         }
-        _gmarker.position = self.coordinate;
-        _gmarker.opacity = self.visible?self.opacity:0;
-        [CATransaction commit];
     }
-    [super refreshCoords];
+}
+
+-(void)refreshCoords {
+//    if (_gmarker) {
+//        [CATransaction begin];
+//        if (![self shouldAnimate]) {
+//            [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
+//        }
+//        _gmarker.position = self.coordinate;
+//        _gmarker.opacity = self.visible?self.opacity:0;
+//        [CATransaction commit];
+//    }
+//    [super refreshCoords];
 }
 
 -(CLLocationCoordinate2D)position {
@@ -66,7 +91,7 @@
             _gmarker.title = self.title;
         }, NO);
     }
-    [self setNeedsRefreshingWithSelection:NO];
+//    [self setNeedsRefreshingWithSelection:NO];
 }
 
 -(void)setSubtitle:(id)value
@@ -78,18 +103,18 @@
             _gmarker.snippet = self.subtitle;
         }, NO);
     }
-    [self setNeedsRefreshingWithSelection:NO];
+//    [self setNeedsRefreshingWithSelection:NO];
 }
 
--(void)setFlat:(BOOL)flat
-{
-    [super setFlat:flat];
-    if (_gmarker) {
-        TiThreadPerformBlockOnMainThread(^{
-            _gmarker.flat = self.flat;
-        }, NO);
-    }
-}
+//-(void)setFlat:(BOOL)flat
+//{
+//    [super setFlat:flat];
+//    if (_gmarker) {
+//        TiThreadPerformBlockOnMainThread(^{
+//            _gmarker.flat = self.flat;
+//        }, NO);
+//    }
+//}
 
 -(void)setShowInfoWindow:(BOOL)showInfoWindow
 {
@@ -102,33 +127,37 @@
 }
 
 
--(void)setHeading:(CGFloat)heading
-{
-    [super setHeading:heading];
-    if (_gmarker) {
-        TiThreadPerformBlockOnMainThread(^{
-            _gmarker.rotation = self.heading;
-        }, NO);
-    }
-}
+//-(void)setHeading:(CGFloat)heading
+//{
+//    [super setHeading:heading];
+//    if (_gmarker) {
+//        TiThreadPerformBlockOnMainThread(^{
+//            _gmarker.rotation = self.heading;
+//        }, NO);
+//    }
+//}
 
--(void)setOpacity:(CGFloat)opacity
-{
-    [super setOpacity:opacity];
-    if (_gmarker) {
-        
-    }
-}
+//-(void)setOpacity:(CGFloat)opacity
+//{
+//    [super setOpacity:opacity];
+//    if (_gmarker) {
+//        TiThreadPerformBlockOnMainThread(^{
+//            _gmarker.opacity = self.visible?self.opacity:0;
+//        }, NO);
+//    }
+//}
 
--(void)setVisible:(BOOL)visible
-{
-    [super setVisible:visible];
-    if (configurationSet && _gmarker) {
-        TiThreadPerformBlockOnMainThread(^{
-            _gmarker.opacity = self.visible?self.opacity:0;
-        }, NO);
-    }
-}
+
+//-(void)setVisible:(BOOL)visible
+//{
+//    [super setVisible:visible];
+//    if (configurationSet && _gmarker) {
+//        TiThreadPerformBlockOnMainThread(^{
+//            _gmarker.tappable = self.visible?self.touchable:NO;
+//            _gmarker.opacity = self.visible?self.opacity:0;
+//        }, NO);
+//    }
+//}
 
 -(void)setDraggable:(BOOL)draggable
 {
@@ -141,15 +170,15 @@
 }
 
 
--(void)setTouchable:(BOOL)touchable
-{
-    [super setTouchable:touchable];
-    if (_gmarker) {
-        TiThreadPerformBlockOnMainThread(^{
-            _gmarker.tappable = self.touchable;
-        }, NO);
-    }
-}
+//-(void)setTouchable:(BOOL)touchable
+//{
+//    [super setTouchable:touchable];
+//    if (_gmarker) {
+//        TiThreadPerformBlockOnMainThread(^{
+//            _gmarker.tappable = self.visible?self.touchable:NO;
+//        }, NO);
+//    }
+//}
 -(void)setCanBeClustered:(BOOL)canBeClustered
 {
     [super setCanBeClustered:canBeClustered];
@@ -230,6 +259,17 @@
     return 1000;
 }
 
+
+-(void)removeFromMap {
+     if (_gmarker != nil && _gmarker.map) {
+         if (_gmarker.map.selectedMarker = _gmarker) {
+             _gmarker.map.selectedMarker = nil;
+         }
+         _gmarker.map = nil;
+     }
+}
+
+
 -(GMSMarker*)getMarker {
     if (_gmarker == nil) {
         
@@ -237,7 +277,6 @@
         _gmarker.appearAnimation = kGMSMarkerAnimationPop;
         _gmarker.title = [self title];
         _gmarker.snippet = [self subtitle];
-        _gmarker.flat = self.flat;
         _gmarker.userData = self;
         if (_internalImage) {
             _gmarker.icon = _internalImage;
@@ -245,9 +284,9 @@
                 _gmarker.icon = [GMSMarker markerImageWithColor:[self nGetTintColor]];
         }
         _gmarker.draggable = self.draggable;
-        _gmarker.tappable = self.touchable;
-        _gmarker.opacity = self.visible?self.opacity:0;
-        _gmarker.rotation = self.heading;
+        
+        [self updateMarker];
+
         _gmarker.canBeClustered = self.canBeClustered;
         _gmarker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
         _gmarker.groundAnchor = [self nGetAnchorPoint];

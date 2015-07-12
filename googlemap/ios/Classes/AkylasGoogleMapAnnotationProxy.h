@@ -18,4 +18,5 @@
 
 -(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView;
 -(GMSOverlay*)gOverlay;
+-(void)removeFromMap;
 @end

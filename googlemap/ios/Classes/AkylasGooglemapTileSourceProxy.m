@@ -278,6 +278,11 @@
     return [result autorelease];
 }
 
+-(void)removeFromMap {
+    if (_gTileLayer != nil && _gTileLayer.map) {
+        _gTileLayer.map = nil;
+    }
+}
 
 -(GMSTileLayer*)getGTileLayerForMapView:(GMSMapView*)mapView
 {

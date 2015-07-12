@@ -122,6 +122,7 @@
     }
     pthread_rwlock_unlock(&routeLineLock);
     _gBounds = [[GMSCoordinateBounds alloc] initWithPath:path];
+    [path release];
 }
 
 -(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView

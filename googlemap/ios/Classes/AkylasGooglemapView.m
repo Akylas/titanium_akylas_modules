@@ -61,6 +61,7 @@
     AkMapDragState _dragState;
     
     BOOL _firstLayout;
+    BOOL _dragging;
     
     GClusterManager* _clusterManager;
 }
@@ -72,6 +73,7 @@
         _inUserAction = NO;
         _firstLayout = YES;
         _forwarding = NO;
+        _dragging = NO;
         
         _userTrackingMode = AkUserTrackingModeNone;
         _emptyCalloutView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -137,8 +139,9 @@
     if (map==nil)
     {
         map = [[AkylasGMSMapView alloc] initWithFrame:self.bounds];
-        [map addObserver:self forKeyPath:@"selectedMarker" options:0 context:nil];
-        [map setTileCache:[[TiCache alloc] initWithConfig:@[@{@"type":@"db-cache", @"name":@"AkGMSCache"}] expiryPeriod:0]];
+        [map addObserver:self forKeyPath:@"selectedMarker" options:(NSKeyValueObservingOptionNew |
+                                                                    NSKeyValueObservingOptionOld) context:nil];
+        [map setTileCache:[[[TiCache alloc] initWithConfig:@[@{@"type":@"db-cache", @"name":@"AkGMSCache"}] expiryPeriod:0] autorelease]];
         [self addSubview:map];
 //        NSArray* subs = [map subviews];
 //        _gestureView = [[map subviews] objectAtIndex:0];
@@ -178,7 +181,7 @@
     else {
         calloutTouchedView = nil;
     }
-    BOOL test = [hitView isUserInteractionEnabled];
+//    BOOL test = [hitView isUserInteractionEnabled];
     
     return hitView;
 }
@@ -228,7 +231,7 @@
 
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
-    BOOL animating = [self animating];
+//    BOOL animating = [self animating];
     
     
     //if we are animating it means we want to keep the zoom for sure...
@@ -536,6 +539,7 @@
 -(void)setPadding_:(id)value
 {
     [self map].padding = [TiUtils insetValue:value];
+    [self updateCalloutPosition];
 }
 
 -(void)setConsumesGesturesInView_:(id)value
@@ -613,7 +617,7 @@
     ENSURE_UI_THREAD(selectAnnotation,args);
     
     if (args == nil) {
-        [self map].selectedMarker = nil;
+        map.selectedMarker = nil;
     }
     
     if ([args isKindOfClass:[AkylasMapBaseAnnotationProxy class]])
@@ -627,10 +631,16 @@
     ENSURE_SINGLE_ARG(args,NSObject);
     ENSURE_UI_THREAD(deselectAnnotation,args);
     
-    [self map].selectedMarker = nil;
-    
+    map.selectedMarker = nil;
 }
 
+-(id)selectedAnnotation_
+{
+    if ([map selectedMarker]) {
+        return [map selectedMarker].userData;
+    }
+    return nil;
+}
 -(void)zoomTo:(id)args
 {
     ENSURE_SINGLE_ARG(args,NSObject);
@@ -728,7 +738,7 @@
 -(void)internalAddAnnotations:(id)annotations atIndex:(NSInteger)index
 {
     __block NSInteger realIndex = index;
-    GMSMapView* mapView = [self map];
+//    GMSMapView* mapView = [self map];
     if (IS_OF_CLASS(annotations, NSArray)) {
         [annotations enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             [self internalAddAnnotations:obj atIndex:(realIndex >= 0)?realIndex++:realIndex];
@@ -755,16 +765,12 @@
 -(void)internalRemoveAnnotations:(id)annotations
 {
     if ([annotations isKindOfClass:[NSArray class]]) {
-        for (AkylasMapBaseAnnotationProxy* annotProxy in annotations) {
-            if ([annotProxy respondsToSelector:@selector(gOverlay)]) {
-                GMSOverlay* overlay = [(id)annotProxy gOverlay];
-                [overlay setMap:nil];
-            }
+        for (AkylasGooglemapAnnotationProxy* annotProxy in annotations) {
+            [annotProxy removeFromMap];
         }
     }
-    else if ([annotations respondsToSelector:@selector(gOverlay)]) {
-        GMSOverlay* overlay = [annotations gOverlay];
-        [overlay setMap:nil];
+    else if (IS_OF_CLASS(annotations, AkylasGooglemapAnnotationProxy)) {
+        [(AkylasGooglemapAnnotationProxy*)annotations removeFromMap];
     }
 }
 
@@ -795,6 +801,9 @@
     GMSOverlay *marker = [annotation getGOverlayForMapView:mapView];
     if (!IS_OF_CLASS(marker, GMSMarker)) return;
     GMSMarker* theMarker = (GMSMarker*)marker;
+    if (!theMarker.tappable) {
+        return;
+    }
     [self mapView:mapView didTapMarker:theMarker];
 }
 
@@ -810,7 +819,7 @@
             
             position.target = location.coordinate;
             if (_userTrackingMode == AkUserTrackingModeFollowWithHeading) {
-                CGFloat bearing  = location.course;
+//                CGFloat bearing  = location.course;
                 position.bearing = location.course;
             }
             
@@ -857,15 +866,108 @@
         }
     } else if([keyPath isEqualToString:@"selectedMarker"]) {
 
-        GMSMarker *test = [object selectedMarker];
         GMSMarker *oldMarker = [change objectForKey:NSKeyValueChangeOldKey];
         GMSMarker *newMarker = [change objectForKey:NSKeyValueChangeNewKey];
-        if (oldMarker) {
+        if (newMarker == oldMarker) {
+            return;
+        }
+
+        if (IS_OF_CLASS(oldMarker, GMSMarker)) {
+            AkylasMapBaseAnnotationProxy *annProxy = oldMarker.userData;
+            oldMarker.canBeClustered = annProxy.canBeClustered;
+            oldMarker.zIndex = (int)annProxy.zIndex;
+            [self dismissCalloutView];
             [self fireEvent:@"blur" onOverlay:oldMarker source:@"pin"];
         }
-        if (newMarker)
-        {
+        if (IS_OF_CLASS(newMarker, GMSMarker)) {
+            newMarker.zIndex = 10000;
+            newMarker.canBeClustered = NO;
+            BOOL canShowCallout = YES;
+            AkylasMapBaseAnnotationProxy *annProxy = newMarker.userData;
+            if (annProxy) {
+                canShowCallout = annProxy.showInfoWindow;
+            }
+            if (canShowCallout) {
+                if (!_calloutView) {
+                    _calloutView = [[SMCalloutView platformCalloutView] retain];
+                    _calloutView.delegate = self;
+                    if (PostVersion7) {
+                        _calloutView.tintColor = self.tintColor;
+                    }
+                } else {
+                }
+                // apply the MKAnnotationView's basic properties
+                _calloutView.title = annProxy.title;
+                _calloutView.subtitle = annProxy.subtitle;
+                
+                // Apply the desired calloutOffset (from the top-middle of the view)
+                CGPoint calloutOffset = newMarker.infoWindowAnchor;
+                CGSize size = newMarker.layer.frame.size;
+                if (CGSizeEqualToSize(size, CGSizeZero)) {
+                    size = [annProxy getSize];
+                }
+                calloutOffset.x *= size.width;
+                calloutOffset.y *= -size.height;
+                
+                _calloutView.calloutOffset = calloutOffset;
+                
+                SMCalloutMaskedBackgroundView* backView = (SMCalloutMaskedBackgroundView*)_calloutView.backgroundView;
+                backView.alpha = [annProxy nGetCalloutAlpha];
+                if (_calloutUseTemplates) {
+                    _calloutView.leftAccessoryView = [self reusableViewForProxy:annProxy objectKey:@"leftView"];
+                    _calloutView.rightAccessoryView = [self reusableViewForProxy:annProxy objectKey:@"rightView"];
+                    _calloutView.contentView = [self reusableViewForProxy:annProxy objectKey:@"customView"];
+                }
+                else {
+                    _calloutView.leftAccessoryView = [annProxy nGetLeftViewAccessory];
+                    _calloutView.rightAccessoryView = [annProxy nGetRightViewAccessory];
+                    _calloutView.contentView = [annProxy nGetCustomViewAccessory];
+                }
+                if (annProxy) {
+                    _calloutView.contentViewInset = [annProxy nGetCalloutPadding];
+                    backView.backgroundColor = [annProxy nGetCalloutBackgroundColor];
+                    backView.cornerRadius = [annProxy nGetCalloutBorderRadius];
+                    backView.arrowHeight = [annProxy nGetCalloutArrowHeight];
+                }
+                else {
+                    backView.backgroundColor = [UIColor whiteColor];
+                    backView.cornerRadius = DEFAULT_CALLOUT_CORNER_RADIUS;
+                    backView.arrowHeight = DEFAULT_CALLOUT_ARROW_HEIGHT;
+                    _calloutView.contentViewInset = DEFAULT_CALLOUT_PADDING;
+                }
+                
+                
+                CGRect calloutRect = CGRectZero;
+                CGPoint point = [map.projection pointForCoordinate:newMarker.position];
+                calloutRect.origin = point;
+                
+                _calloutView.constrainedInsets = map.padding;
+                //        __block NSArray* subviews  = [map subviews];
+                //        UIView* vectorMap  = [subviews objectAtIndex:0];
+                // This does all the magic.
+                //        [_calloutView presentCalloutFromRect:calloutRect inLayer:marker.layer constrainedToLayer:map.layer animated:YES];
+                [_calloutView presentCalloutFromRect:calloutRect inView:map constrainedToView:map animated:YES];
+                
+            }
             [self fireEvent:@"focus" onOverlay:oldMarker source:@"pin"];
+        }
+        if ([self.viewProxy _hasListeners:@"selected" checkParent:NO])
+        {
+            CLLocationCoordinate2D coords;
+            id userData = nil;
+            if (IS_OF_CLASS(newMarker, GMSMarker)) {
+                coords = newMarker.position;
+                userData = newMarker.userData;
+            } else if (IS_OF_CLASS(oldMarker, GMSMarker)) {
+                coords = oldMarker.position;
+            }
+            
+            NSMutableDictionary *event = [TiUtils dictionaryFromPoint:[[map projection] pointForCoordinate:coords] inView:map];
+            [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:coords]];
+            if (userData) {
+                [event setObject:userData forKey:@"annotation"];
+            }
+            [self.proxy fireEvent:@"selected" withObject:event propagate:NO checkForListener:NO];
         }
     }
 }
@@ -1161,6 +1263,51 @@
     _inUserAction = configurationSet && gesture;
 }
 
+-(void)dismissCalloutView {
+    [_calloutView dismissCalloutAnimated:YES];
+    if (_calloutUseTemplates) {
+        [self reuseIfNecessary:_calloutView.leftAccessoryView];
+        [self reuseIfNecessary:_calloutView.rightAccessoryView];
+        [self reuseIfNecessary:_calloutView.contentView];
+        _calloutView.leftAccessoryView = nil;
+        _calloutView.rightAccessoryView = nil;
+        _calloutView.contentView = nil;
+    }
+    _calloutView.delegate = nil;
+    RELEASE_TO_NIL(_calloutView)
+}
+
+-(void)updateCalloutPosition {
+    if (_calloutView) {
+        GMSMarker* marker = map.selectedMarker;
+        if (marker != nil) {
+            CLLocationCoordinate2D anchor = [map.selectedMarker position];
+            AkylasMapBaseAnnotationProxy *annProxy = marker.userData;
+            
+            // Apply the desired calloutOffset (from the top-middle of the view)
+            CGPoint calloutOffset = marker.infoWindowAnchor;
+            CGSize size = marker.layer.frame.size;
+            if (CGSizeEqualToSize(size, CGSizeZero)) {
+                size = [annProxy getSize];
+            }
+            calloutOffset.x *= size.width;
+            calloutOffset.y *= -size.height;
+            
+            //        _calloutView.calloutOffset = calloutOffset;
+            
+            CGPoint arrowPt = _calloutView.backgroundView.arrowPoint;
+            CGPoint pt = [map.projection pointForCoordinate:anchor];
+            
+            pt.x -= arrowPt.x - calloutOffset.x;
+            pt.y -= arrowPt.y - calloutOffset.y;
+            
+            
+            _calloutView.frame = (CGRect) {.origin = pt, .size = _calloutView.frame.size };
+        } else {
+            [self dismissCalloutView];
+        }
+    }
+}
 /**
  * Called repeatedly during any animations or gestures on the map (or once, if
  * the camera is explicitly set). This may not be called for all intermediate
@@ -1172,41 +1319,9 @@
     if (_inUserAction) {
         [self setShouldFollowUserLocation:NO];
     }
-    if (mapView.selectedMarker != nil && _calloutView && !_calloutView.hidden) {
-        CLLocationCoordinate2D anchor = [mapView.selectedMarker position];
-        GMSMarker* marker = mapView.selectedMarker;
-        AkylasMapBaseAnnotationProxy *annProxy = marker.userData;
-       
-        // Apply the desired calloutOffset (from the top-middle of the view)
-        CGPoint calloutOffset = marker.infoWindowAnchor;
-        CGSize size = marker.layer.frame.size;
-        if (CGSizeEqualToSize(size, CGSizeZero)) {
-            size = [annProxy getSize];
-        }
-        calloutOffset.x *= size.width;
-        calloutOffset.y *= -size.height;
-        
-//        _calloutView.calloutOffset = calloutOffset;
-        
-        CGPoint arrowPt = _calloutView.backgroundView.arrowPoint;
-        CGPoint pt = [mapView.projection pointForCoordinate:anchor];
-        
-        pt.x -= arrowPt.x - calloutOffset.x;
-        pt.y -= arrowPt.y - calloutOffset.y;
-        
-
-        _calloutView.frame = (CGRect) {.origin = pt, .size = _calloutView.frame.size };
-    } else {
-        [_calloutView dismissCalloutAnimated:YES];
-        if (_calloutUseTemplates) {
-            [self reuseIfNecessary:_calloutView.leftAccessoryView];
-            [self reuseIfNecessary:_calloutView.rightAccessoryView];
-            [self reuseIfNecessary:_calloutView.contentView];
-            _calloutView.leftAccessoryView = nil;
-            _calloutView.rightAccessoryView = nil;
-            _calloutView.contentView = nil;
-        }
-    }
+    
+    [self updateCalloutPosition];
+   
     _internalZoom = position.zoom;
     if (ignoreRegionChanged) {
         return;
@@ -1244,7 +1359,7 @@
  * marker (the implicit action for tapping on the map).
  */
 - (void)mapView:(GMSMapView *)mapView didTapAtCoordinate:(CLLocationCoordinate2D)coordinate {
-    [_calloutView dismissCalloutAnimated:YES];
+    map.selectedMarker = nil;
     [self fireEventOnMap:@"click" atCoordinate:coordinate];
     [self fireEventOnMap:@"singletap" atCoordinate:coordinate];
 }
@@ -1256,9 +1371,10 @@
  * @param coordinate The location that was pressed.
  */
 - (void)mapView:(GMSMapView *)mapView didLongPressAtCoordinate:(CLLocationCoordinate2D)coordinate {
-    [self fireEventOnMap:@"longpress" atCoordinate:coordinate];
+    if (!_dragging) {
+        [self fireEventOnMap:@"longpress" atCoordinate:coordinate];
+    }
 }
-
 
 /**
  * Called after a marker has been tapped.
@@ -1273,78 +1389,17 @@
     /* don't move map camera to center marker on tap */
     if (map.selectedMarker == marker) {
         map.selectedMarker = nil;
-        [_calloutView dismissCalloutAnimated:YES];
+        [self fireEvent:@"click" onOverlay:marker source:@"pin"];
         return;
     }
+    
     mapView.selectedMarker = marker;
+    
     if (calloutTouchedView) {
         calloutTouchedView = nil;
         return YES;
     }
-    BOOL canShowCallout = YES;
-    AkylasMapBaseAnnotationProxy *annProxy = marker.userData;
-    if (annProxy) {
-        canShowCallout = annProxy.showInfoWindow;
-    }
-    if (canShowCallout) {
-        if (!_calloutView) {
-            _calloutView = [[SMCalloutView platformCalloutView] retain];
-            _calloutView.delegate = self;
-            if (PostVersion7) {
-                _calloutView.tintColor = self.tintColor;
-            }
-        }
-        // apply the MKAnnotationView's basic properties
-        _calloutView.title = annProxy.title;
-        _calloutView.subtitle = annProxy.subtitle;
-        
-        // Apply the desired calloutOffset (from the top-middle of the view)
-        CGPoint calloutOffset = marker.infoWindowAnchor;
-        CGSize size = marker.layer.frame.size;
-        if (CGSizeEqualToSize(size, CGSizeZero)) {
-            size = [annProxy getSize];
-        }
-        calloutOffset.x *= size.width;
-        calloutOffset.y *= -size.height;
-        
-        _calloutView.calloutOffset = calloutOffset;
-        
-        SMCalloutMaskedBackgroundView* backView = (SMCalloutMaskedBackgroundView*)_calloutView.backgroundView;
-        backView.alpha = [annProxy nGetCalloutAlpha];
-        if (_calloutUseTemplates) {
-            _calloutView.leftAccessoryView = [self reusableViewForProxy:annProxy objectKey:@"leftView"];
-            _calloutView.rightAccessoryView = [self reusableViewForProxy:annProxy objectKey:@"rightView"];
-            _calloutView.contentView = [self reusableViewForProxy:annProxy objectKey:@"customView"];
-        }
-        else {
-            _calloutView.leftAccessoryView = [annProxy nGetLeftViewAccessory];
-            _calloutView.rightAccessoryView = [annProxy nGetRightViewAccessory];
-            _calloutView.contentView = [annProxy nGetCustomViewAccessory];
-        }
-        if (annProxy) {
-            _calloutView.constrainedInsets = [annProxy nGetCalloutPadding];
-            backView.backgroundColor = [annProxy nGetCalloutBackgroundColor];
-            backView.cornerRadius = [annProxy nGetCalloutBorderRadius];
-            backView.arrowHeight = [annProxy nGetCalloutArrowHeight];
-        }
-        else {
-            backView.backgroundColor = [UIColor whiteColor];
-            backView.cornerRadius = DEFAULT_CALLOUT_CORNER_RADIUS;
-            backView.arrowHeight = DEFAULT_CALLOUT_ARROW_HEIGHT;
-            _calloutView.constrainedInsets = DEFAULT_CALLOUT_PADDING;
-        }
-        
-        
-        CGRect calloutRect = CGRectZero;
-        CGPoint point = [map.projection pointForCoordinate:marker.position];
-        calloutRect.origin = point;
-//        __block NSArray* subviews  = [map subviews];
-//        UIView* vectorMap  = [subviews objectAtIndex:0];
-        // This does all the magic.
-//        [_calloutView presentCalloutFromRect:calloutRect inLayer:marker.layer constrainedToLayer:map.layer animated:YES];
-        [_calloutView presentCalloutFromRect:calloutRect inView:map constrainedToView:map animated:YES];
-
-    }
+    
     [self fireEvent:@"click" onOverlay:marker source:@"pin"];
     return YES;
 }
@@ -1355,7 +1410,7 @@
 - (void)mapView:(GMSMapView *)mapView didTapInfoWindowOfMarker:(GMSMarker *)marker {
     if ([marker.userData isKindOfClass:[AkylasMapBaseAnnotationProxy class]])
     {
-        AkylasMapBaseAnnotationProxy* proxy = marker.userData;
+//        AkylasMapBaseAnnotationProxy* proxy = marker.userData;
 //        NSString * clickSource = @"unknown";
 //        if (marker.leftCalloutAccessoryView == control)
 //        {
@@ -1461,6 +1516,7 @@
  * Called when dragging has been initiated on a marker.
  */
 - (void)mapView:(GMSMapView *)mapView didBeginDraggingMarker:(GMSMarker *)marker {
+    _dragging = YES;
     [self didDragMarker:marker withState:AkMapDragStateStarting];
 }
 
@@ -1468,6 +1524,7 @@
  * Called after dragging of a marker ended.
  */
 - (void)mapView:(GMSMapView *)mapView didEndDraggingMarker:(GMSMarker *)marker {
+    _dragging = NO;
     [self didDragMarker:marker withState:AkMapDragStateEnding];
 }
 

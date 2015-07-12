@@ -60,6 +60,9 @@
         NSMutableArray* cache = [_markerCache objectForKey:@(theId)];
         if (cache) {
             for (GMSMarker *marker in cache) {
+                if (_map.selectedMarker == marker) {
+                    _map.selectedMarker = nil;
+                }
                 marker.map = nil;
             }
             [cache removeAllObjects];
@@ -71,6 +74,9 @@
     @synchronized(_markerCache) {
         for (NSMutableArray *cache in _markerCache) {
             for (GMSMarker *marker in cache) {
+                if (_map.selectedMarker == marker) {
+                    _map.selectedMarker = nil;
+                }
                 marker.map = nil;
             }
         }

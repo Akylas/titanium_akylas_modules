@@ -143,6 +143,12 @@
     return _gPath;
 }
 
+-(void)removeFromMap {
+    if (_gPoly != nil && _gPoly.map) {
+        _gPoly.map = nil;
+    }
+}
+
 -(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
 {
     if (_gPoly == nil) {

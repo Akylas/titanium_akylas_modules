@@ -114,10 +114,18 @@ static NSInteger idIncrement = 0;
 
 -(void)removeAllAnnotations:(id)unused
 {
-    [super removeAllAnnotations:nil];
-    [[self algorithm] removeItems];
-    [self cluster];
+    TiThreadPerformBlockOnMainThread(^{
+        [super removeAllAnnotations:nil];
+        [[self algorithm] removeItems];
+        [self cluster];
+    }, YES);
 
+}
+
+-(void)internalRemoveAnnotation:(AkylasGooglemapAnnotationProxy*)annot
+{
+    TiThreadPerformBlockOnMainThread(^{[annot removeFromMap];}, NO);
+    [super internalRemoveAnnotation:annot];
 }
 
 -(Class)annotationClass
