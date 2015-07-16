@@ -167,6 +167,7 @@
 
 -(void)resignFocus
 {
+    if (!view) return;
     UIViewController* topVC = [[self _controller] centerViewController];
     if ([topVC isKindOfClass:[TiViewController class]]) {
         TiViewProxy* theProxy = [(TiViewController*)topVC proxy];
@@ -317,14 +318,14 @@
 
 -(void)setLeftViewWidth:(id)value withObject:(id)object
 {
-    TiThreadPerformOnMainThread(^{
+    TiThreadPerformBlockOnMainThread(^{
         [(AkylasSlidemenuSlideMenu*)[self view] setLeftViewWidth_:value withObject:object];
     }, NO);
 }
 
 -(void)setRightViewWidth:(id)value withObject:(id)object
 {
-    TiThreadPerformOnMainThread(^{
+    TiThreadPerformBlockOnMainThread(^{
         [(AkylasSlidemenuSlideMenu*)[self view] setRightViewWidth_:value withObject:object];
     }, NO);
 }
