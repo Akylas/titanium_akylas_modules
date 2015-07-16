@@ -8,11 +8,13 @@
 
 #import "AkylasGooglemapClusterProxy.h"
 #import "GClusterAlgorithm.h"
+#import "GClusterManager.h"
 #import "AkylasGooglemapAnnotationProxy.h"
-#import "AkylasGooglemapView.h"
+#import "AkylasGooglemapViewProxy.h"
 #import "GCluster.h"
 #import <CoreText/CoreText.h>
 #import "DTCoreTextFunctions.h"
+#import "AkylasMapBaseViewProxy.h"
 
 @implementation AkylasClusterAlgorithm
 static NSInteger idIncrement = 0;
@@ -94,39 +96,53 @@ static NSInteger idIncrement = 0;
 
 -(void)internalAddAnnotations:(NSArray*)annots {
     __block id<GClusterAlgorithm> algo = [self algorithm];
-    [annots enumerateObjectsUsingBlock:^(AkylasGooglemapAnnotationProxy* anno, NSUInteger idx, BOOL *stop) {
+    [annots enumerateObjectsUsingBlock:^(AkylasMapBaseAnnotationProxy* anno, NSUInteger idx, BOOL *stop) {
         anno.delegate = self;
         [algo addItem:anno];
     }];
     [self cluster];
 }
--(void)internalRemoveAnnotations:(id)annots {
-    if (IS_OF_CLASS(NSArray, annots)) {
-        __block id<GClusterAlgorithm> algo = [self algorithm];
-        [annots enumerateObjectsUsingBlock:^(AkylasGooglemapAnnotationProxy* anno, NSUInteger idx, BOOL *stop) {
-            [algo removeItem:anno];
-        }];
-    } else {
-        [[self algorithm] removeItem:annots];
-    }
-    [self cluster];
-}
+//-(void)internalRemoveAnnotations:(id)annots {
+//    if (IS_OF_CLASS(NSArray, annots)) {
+//        __block id<GClusterAlgorithm> algo = [self algorithm];
+//        [annots enumerateObjectsUsingBlock:^(AkylasGooglemapAnnotationProxy* anno, NSUInteger idx, BOOL *stop) {
+//            [algo removeItem:anno];
+//        }];
+//    } else {
+//        [[self algorithm] removeItem:annots];
+//    }
+//    [self cluster];
+//}
 
 -(void)removeAllAnnotations:(id)unused
 {
+    [super removeAllAnnotations:nil];
     TiThreadPerformBlockOnMainThread(^{
-        [super removeAllAnnotations:nil];
-        [[self algorithm] removeItems];
+        [[self algorithm] removeItemsFromMap:[(AkylasGooglemapViewProxy*)self.delegate map]];
         [self cluster];
     }, YES);
 
 }
 
--(void)internalRemoveAnnotation:(AkylasGooglemapAnnotationProxy*)annot
+-(void)removeAnnotation:(id)args
 {
-    TiThreadPerformBlockOnMainThread(^{[annot removeFromMap];}, NO);
-    [super internalRemoveAnnotation:annot];
+    PREPARE_ARRAY_ARGS(args)
+    if (!IS_OF_CLASS(args, NSArray)) {
+        [self removeAnnotation:@[args]];
+        return;
+    }
+    [super removeAnnotation:args];
+    
+    TiThreadPerformBlockOnMainThread(^{
+        [[self algorithm] removeClusterItemsInSet:[NSSet setWithArray:args] fromMap:[(AkylasGooglemapViewProxy*)self.delegate map]];
+        [self cluster];
+    }, YES);
 }
+
+//-(void)internalRemoveAnnotation:(AkylasGooglemapAnnotationProxy*)annot
+//{
+//    [super internalRemoveAnnotation:annot];
+//}
 
 -(Class)annotationClass
 {
@@ -145,6 +161,9 @@ static NSInteger idIncrement = 0;
     marker.userData = self;
     marker.tappable = false;
     marker.position = cluster.position;
+    marker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
+    marker.groundAnchor = [self nGetAnchorPoint];
+    marker.zIndex = (int)self.zIndex;
     return [marker autorelease];
 }
 
@@ -158,9 +177,9 @@ static NSInteger idIncrement = 0;
 
 
 -(void)cluster {
-    if (IS_OF_CLASS(self.delegate, AkylasGooglemapView)) {
+    if (IS_OF_CLASS(self.delegate, AkylasGooglemapViewProxy)) {
         TiThreadPerformBlockOnMainThread(^{
-            [[((AkylasGooglemapView*)self.delegate) clusterManager] clusterAlgo:[self algorithm]];
+            [[(AkylasGooglemapViewProxy*)self.delegate clusterManager] clusterAlgo:[self algorithm]];
         }, YES);
     }
 }

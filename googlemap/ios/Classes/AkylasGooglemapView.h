@@ -16,7 +16,7 @@
 {
 }
 
--(AkylasGMSMapView*)map;
+-(GMSMapView*)map;
 -(GClusterManager*)clusterManager;
 -(AkylasGooglemapClusterRenderer*) clusterRenderer;
 @end

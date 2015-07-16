@@ -7,6 +7,9 @@
 //
 
 #import "AkylasMapBaseRouteProxy.h"
+@interface TIGMSPolyline : GMSPolyline
+@property(nonatomic, strong) id userData;
+@end
 
 @interface AkylasGooglemapRouteProxy : AkylasMapBaseRouteProxy
 -(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView;

@@ -8,9 +8,18 @@
 
 #import "AkylasGooglemapRouteProxy.h"
 
+@implementation TIGMSPolyline
+
+-(void)dealloc
+{
+    RELEASE_TO_NIL(_userData);
+    [super dealloc];
+}
+@end
+
 @implementation AkylasGooglemapRouteProxy
 {
-    GMSPolyline* _gPoly;
+    TIGMSPolyline* _gPoly;
     GMSMutablePath *_gPath;
     NSArray * _spans;
 }
@@ -19,8 +28,8 @@
 {
     RELEASE_TO_NIL(_gPath);
     RELEASE_TO_NIL(_spans);
+    [_gPoly setUserData:nil];
     RELEASE_TO_NIL(_gPoly);
-    
     [super dealloc];
 }
 
@@ -28,6 +37,15 @@
 {
     return @"Akylas.GoogleMap.Route";
 }
+
+//-(void)updateMarker
+//{
+//    //    _gmarker.flat = self.flat;
+//    //    _gmarker.draggable = self.draggable;
+//    _gPoly.tappable = self.touchable:NO;
+////    _gPoly.opacity = self.visible?self.opacity:0;
+//}
+
 
 -(void)setColor:(id)value
 {
@@ -73,6 +91,16 @@
 
     if (_gPoly != nil)  {
         _gPoly.strokeWidth =_lineWidth;
+    }
+}
+
+-(void)setTouchable:(BOOL)touchable
+{
+    [super setTouchable:touchable];
+    if (configurationSet && _gPoly) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gPoly.tappable = self.touchable;
+        }, NO);
     }
 }
 
@@ -149,24 +177,27 @@
     }
 }
 
--(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
-{
+-(GMSOverlay*)getOverlay {
     if (_gPoly == nil) {
-        _gPoly = [[GMSPolyline polylineWithPath:[self getGPath]] retain];
+        _gPoly = [[TIGMSPolyline polylineWithPath:[self getGPath]] retain];
         if (_spans) {
             _gPoly.spans = _spans;
         } else {
             _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
         }
         _gPoly.strokeWidth = _lineWidth;
-    }
-    else if (_gPoly.map != mapView) {
-        RELEASE_TO_NIL(_gPoly)
-        return [self getGOverlayForMapView:mapView];
+        _gPoly.tappable = self.touchable;
+        _gPoly.userData = self;
     }
     return _gPoly;
 }
 
+-(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
+{
+    [self getOverlay];
+    _gPoly.map = mapView;
+    return _gPoly;
+}
 
 -(GMSOverlay*)gOverlay
 {

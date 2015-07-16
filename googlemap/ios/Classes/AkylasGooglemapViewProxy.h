@@ -8,6 +8,9 @@
 
 #import "AkylasMapBaseViewProxy.h"
 
+@class GMSMapView, GClusterManager, AkylasGooglemapClusterRenderer;
 @interface AkylasGooglemapViewProxy : AkylasMapBaseViewProxy
-
+-(GMSMapView*)map;
+-(GClusterManager*)clusterManager;
+-(AkylasGooglemapClusterRenderer*) clusterRenderer;
 @end

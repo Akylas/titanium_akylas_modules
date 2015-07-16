@@ -357,7 +357,7 @@
 
 -(void)setRegion_:(id)value
 {
-    ENSURE_SINGLE_ARG_OR_NIL(value, NSDictionary)
+//    ENSURE_SINGLE_ARG_OR_NIL(value, NSDictionary)
     ENSURE_UI_THREAD_1_ARG(value)
 //    [self setShouldFollowUserLocation:NO];
 	if (value==nil)
@@ -764,13 +764,16 @@
 
 -(void)internalRemoveAnnotations:(id)annotations
 {
+    SEL selector = @selector(removeFromMap);
     if ([annotations isKindOfClass:[NSArray class]]) {
-        for (AkylasGooglemapAnnotationProxy* annotProxy in annotations) {
-            [annotProxy removeFromMap];
+        for (AkylasMapBaseAnnotationProxy* annotProxy in annotations) {
+            if ([annotProxy respondsToSelector:selector]) {
+                [(id)annotProxy performSelector:selector];
+            }
         }
     }
-    else if (IS_OF_CLASS(annotations, AkylasGooglemapAnnotationProxy)) {
-        [(AkylasGooglemapAnnotationProxy*)annotations removeFromMap];
+    else if ([annotations respondsToSelector:selector]) {
+        [(id)annotations performSelector:selector];
     }
 }
 
@@ -804,7 +807,11 @@
     if (!theMarker.tappable) {
         return;
     }
-    [self mapView:mapView didTapMarker:theMarker];
+    if (map.selectedMarker == marker) {
+        map.selectedMarker = theMarker;
+    } else {
+        mapView.selectedMarker = theMarker;
+    }
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -1011,7 +1018,6 @@
         }];
     } else {
         AkylasGooglemapClusterProxy* clusterProxy = (AkylasGooglemapClusterProxy*)cluster;
-        clusterProxy.delegate = (id<AkylasMapBaseAnnotationProxyDelegate>)self;
         [[self clusterManager] addClusterAlgorithm:[clusterProxy algorithm]];
     }
     TiThreadPerformBlockOnMainThread(^{
@@ -1027,7 +1033,6 @@
         }];
     } else {
         AkylasGooglemapClusterProxy* clusterProxy = (AkylasGooglemapClusterProxy*)cluster;
-        clusterProxy.delegate = nil;
         [((AkylasGooglemapClusterRenderer*)[_clusterManager clusterRenderer]) clearCacheForId:[clusterProxy uniqueId]];
         [_clusterManager removeClusterAlgorithm:[clusterProxy algorithm]];
     }
@@ -1043,26 +1048,29 @@
         return;
     }
     
-    AkylasMapBaseAnnotationProxy *annotProxy = IS_OF_CLASS(overlay, GMSMarker)? ((GMSMarker*)overlay).userData: nil;
+    AkylasMapBaseAnnotationProxy *annotProxy = ([overlay respondsToSelector:@selector(userData)])? [(id)overlay userData]: nil;
     if (annotProxy == nil)
     {
         return NO;
     }
     
     TiViewProxy * ourProxy = [self viewProxy];
-    BOOL parentWants = [ourProxy _hasListeners:type checkParent:NO];
-    BOOL viewWants = [annotProxy _hasListeners:type checkParent:NO];
-    if(!parentWants && !viewWants)
+    BOOL propagate = [type isEqualToString:@"click"];
+    BOOL viewWants = [annotProxy _hasListeners:type checkParent:propagate];
+    if(!viewWants)
     {
         return NO;
     }
     
-    CGPoint point = [[map projection] pointForCoordinate:((GMSMarker*)overlay).position];
-    NSMutableDictionary *event = [TiUtils dictionaryFromPoint:point inView:map];
-    [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:[[map projection] coordinateForPoint:point]]];
+    
+    NSMutableDictionary *event;
     if (IS_OF_CLASS(annotProxy, AkylasMapBaseRouteProxy)) {
+        event = [NSMutableDictionary dictionary];
         [event setObject:annotProxy forKey:@"route"];
     } else {
+        CGPoint point = [[map projection] pointForCoordinate:((GMSMarker*)overlay).position];
+        event = [TiUtils dictionaryFromPoint:point inView:map];
+        [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:[[map projection] coordinateForPoint:point]]];
         [event setObject:annotProxy forKey:@"annotation"];
         [event setObject:NUMINTEGER([annotProxy tag]) forKey:@"index"];
         if ([annotProxy title] != nil)
@@ -1074,14 +1082,7 @@
         [event setObject:source forKey:@"clicksource"];
     }
     [event setObject:ourProxy forKey:@"map"];
-    if (parentWants)
-    {
-        [ourProxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
-    }
-    if (viewWants)
-    {
-        [annotProxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
-    }
+    [annotProxy fireEvent:type withObject:event propagate:propagate checkForListener:NO];
     return YES;
 }
 
@@ -1092,10 +1093,11 @@
         return;
     }
     
-    if ([self.viewProxy _hasListeners:type checkParent:NO]) {
+    BOOL propagate = [type isEqualToString:@"click"];
+    if ([self.viewProxy _hasListeners:type checkParent:propagate]) {
         NSMutableDictionary *event = [TiUtils dictionaryFromPoint:[[map projection] pointForCoordinate:coordinate] inView:map];
         [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:coordinate]];
-        [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
+        [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:propagate];
     }
 }
 
@@ -1432,7 +1434,7 @@
  * @param overlay The overlay that was pressed.
  */
 - (void)mapView:(GMSMapView *)mapView didTapOverlay:(GMSOverlay *)overlay {
-    
+    [self fireEvent:@"click" onOverlay:overlay source:nil];
 }
 
 /**

@@ -21,11 +21,18 @@
     return @"AkylasGoogleMap.View";
 }
 
--(GMSMapView*)getMap
+-(GMSMapView*)map
 {
     return [(AkylasGooglemapView*)[self getOrCreateView] map];
 }
-
+-(GClusterManager*)clusterManager
+{
+    return [(AkylasGooglemapView*)[self getOrCreateView] clusterManager];
+}
+-(AkylasGooglemapClusterRenderer*) clusterRenderer
+{
+    return [(AkylasGooglemapView*)[self getOrCreateView] clusterRenderer];
+}
 
 -(Class)annotationClass
 {

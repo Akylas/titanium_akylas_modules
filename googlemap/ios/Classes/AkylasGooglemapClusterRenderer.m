@@ -63,6 +63,7 @@
                 if (_map.selectedMarker == marker) {
                     _map.selectedMarker = nil;
                 }
+                marker.userData = nil;
                 marker.map = nil;
             }
             [cache removeAllObjects];
@@ -77,6 +78,7 @@
                 if (_map.selectedMarker == marker) {
                     _map.selectedMarker = nil;
                 }
+                marker.userData = nil;
                 marker.map = nil;
             }
         }

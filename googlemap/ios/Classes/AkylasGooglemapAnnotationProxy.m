@@ -18,6 +18,7 @@
 
 -(void)dealloc
 {
+    [_gmarker setUserData:nil];
     RELEASE_TO_NIL(_gmarker);
     [super dealloc];
 }
@@ -39,7 +40,7 @@
 
 -(void)updateMarker
 {
-    _gmarker.flat = self.flat;
+//    _gmarker.flat = self.flat;
 //    _gmarker.draggable = self.draggable;
     _gmarker.tappable = self.visible?self.touchable:NO;
     _gmarker.opacity = self.visible?self.opacity:0;
@@ -106,15 +107,15 @@
 //    [self setNeedsRefreshingWithSelection:NO];
 }
 
-//-(void)setFlat:(BOOL)flat
-//{
-//    [super setFlat:flat];
-//    if (_gmarker) {
-//        TiThreadPerformBlockOnMainThread(^{
-//            _gmarker.flat = self.flat;
-//        }, NO);
-//    }
-//}
+-(void)setFlat:(BOOL)flat
+{
+    [super setFlat:flat];
+    if (_gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.flat = self.flat;
+        }, NO);
+    }
+}
 
 -(void)setShowInfoWindow:(BOOL)showInfoWindow
 {
@@ -127,37 +128,36 @@
 }
 
 
-//-(void)setHeading:(CGFloat)heading
-//{
-//    [super setHeading:heading];
-//    if (_gmarker) {
-//        TiThreadPerformBlockOnMainThread(^{
-//            _gmarker.rotation = self.heading;
-//        }, NO);
-//    }
-//}
+-(void)setHeading:(CGFloat)heading
+{
+    [super setHeading:heading];
+    if (configurationSet && _gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.rotation = self.heading;
+        }, NO);
+    }
+}
 
-//-(void)setOpacity:(CGFloat)opacity
-//{
-//    [super setOpacity:opacity];
-//    if (_gmarker) {
-//        TiThreadPerformBlockOnMainThread(^{
-//            _gmarker.opacity = self.visible?self.opacity:0;
-//        }, NO);
-//    }
-//}
+-(void)setOpacity:(CGFloat)opacity
+{
+    [super setOpacity:opacity];
+    if (configurationSet && _gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            [self updateMarker];
+        }, NO);
+    }
+}
 
 
-//-(void)setVisible:(BOOL)visible
-//{
-//    [super setVisible:visible];
-//    if (configurationSet && _gmarker) {
-//        TiThreadPerformBlockOnMainThread(^{
-//            _gmarker.tappable = self.visible?self.touchable:NO;
-//            _gmarker.opacity = self.visible?self.opacity:0;
-//        }, NO);
-//    }
-//}
+-(void)setVisible:(BOOL)visible
+{
+    [super setVisible:visible];
+    if (configurationSet && _gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            [self updateMarker];
+        }, NO);
+    }
+}
 
 -(void)setDraggable:(BOOL)draggable
 {
@@ -169,16 +169,15 @@
     }
 }
 
-
-//-(void)setTouchable:(BOOL)touchable
-//{
-//    [super setTouchable:touchable];
-//    if (_gmarker) {
-//        TiThreadPerformBlockOnMainThread(^{
-//            _gmarker.tappable = self.visible?self.touchable:NO;
-//        }, NO);
-//    }
-//}
+-(void)setTouchable:(BOOL)touchable
+{
+    [super setTouchable:touchable];
+    if (configurationSet && _gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            [self updateMarker];
+        }, NO);
+    }
+}
 -(void)setCanBeClustered:(BOOL)canBeClustered
 {
     [super setCanBeClustered:canBeClustered];
@@ -284,7 +283,8 @@
                 _gmarker.icon = [GMSMarker markerImageWithColor:[self nGetTintColor]];
         }
         _gmarker.draggable = self.draggable;
-        
+        _gmarker.flat = self.flat;
+       
         [self updateMarker];
 
         _gmarker.canBeClustered = self.canBeClustered;
