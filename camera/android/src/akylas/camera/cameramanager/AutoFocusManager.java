@@ -24,8 +24,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import akylas.common.executor.AsyncTaskExecInterface;
-import akylas.common.executor.AsyncTaskExecManager;
 
 final class AutoFocusManager implements Camera.AutoFocusCallback {
 
@@ -36,18 +34,16 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
   static {
     FOCUS_MODES_CALLING_AF = new ArrayList<String>(2);
     FOCUS_MODES_CALLING_AF.add(Camera.Parameters.FOCUS_MODE_AUTO);
-    FOCUS_MODES_CALLING_AF.add(Camera.Parameters.FOCUS_MODE_MACRO);
+    FOCUS_MODES_CALLING_AF.add(Camera.Parameters.FOCUS_MODE_MACRO); 
   }
 
   private boolean active;
   private final boolean useAutoFocus;
   private final Camera camera;
-  private AutoFocusTask outstandingTask;
-  private final AsyncTaskExecInterface taskExec;
+  private AutoFocusTask outstandingTask; 
 
   AutoFocusManager(Context context, Camera camera) {
     this.camera = camera;
-    taskExec = new AsyncTaskExecManager().build();
     String currentFocusMode = camera.getParameters().getFocusMode();
     useAutoFocus = FOCUS_MODES_CALLING_AF.contains(currentFocusMode);
     Log.i(TAG, "Current focus mode '" + currentFocusMode + "'; use auto focus? " + useAutoFocus);
@@ -58,7 +54,7 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
   public synchronized void onAutoFocus(boolean success, Camera theCamera) {
     if (active) {
       outstandingTask = new AutoFocusTask();
-      taskExec.execute(outstandingTask);
+      outstandingTask.execute();
     }
   }
 

@@ -1,41 +1,36 @@
 package akylas.camera;
 
-//import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollObject;
-import org.appcelerator.kroll.common.Log;
-//import org.appcelerator.titanium.TiApplication;
-//import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.proxy.TiViewProxy;
-import org.appcelerator.titanium.view.TiCompositeLayout;
-import org.appcelerator.titanium.view.TiUIView;
-
-//import ti.modules.titanium.media.MediaModule;
+import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.view.TiUINonViewGroupView;
 
 import akylas.camera.cameramanager.CameraManager;
+import akylas.camera.cameramanager.CameraManager.OnPreviewStartedListener;
 import android.content.Context;
 import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.FrameLayout.LayoutParams;
 
-public class CameraView extends TiUIView implements SurfaceHolder.Callback
+@SuppressWarnings("deprecation")
+public class CameraView extends TiUINonViewGroupView implements SurfaceHolder.Callback, OnPreviewStartedListener
 {
 	private static final String TAG = "TiUICameraPreview";
+	private float camRatio = -1;
 
-	private TiCompositeLayout overlayLayout;
 	private int cameraPosition = Camera.CameraInfo.CAMERA_FACING_BACK;
 	private SurfaceHolder previewHolder;
 	private PreviewLayout previewLayout;
 	public static KrollObject callbackContext;
 	public static KrollFunction successCallback, errorCallback, cancelCallback;
+    private boolean ignoreSurfaceChanged = false;
 	
-	private static class PreviewLayout extends FrameLayout {
-//		private double aspectRatio;
+	private class PreviewLayout extends FrameLayout {
+//		private double aspectRatio = -1;
 
 		public PreviewLayout(Context context) {
 			super(context);
@@ -45,22 +40,34 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 //		public void setAspectRatio(double aspectRatio) {
 //			this.aspectRatio = aspectRatio;
 //		}
-
+//
 //		@Override
 //		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//			int previewWidth = MeasureSpec.getSize(widthMeasureSpec);
-//			int previewHeight = MeasureSpec.getSize(heightMeasureSpec);
+//            super.onMeasure(widthMeasureSpec, heightMeasureSpec);      
+//            if (camRatio == -1) {
+//                 return;
+//            }
+//            int width = getMeasuredWidth();
+//            int height = getMeasuredHeight();
+////		    float camHeight = (int) (width * camRatio);
+////		    float newCamHeight;
+//		    float viewRatio = (float)height / width;
+//		    
+//		    float newratio = viewRatio/camRatio;
+//		    if (camRatio < viewRatio) {
+//                setMeasuredDimension(width, (int) (height * newratio));
+//	        } else {
+//                setMeasuredDimension((int) (width / newratio), height);
 //
-//			// Resize the preview frame with correct aspect ratio.
-//			if (previewWidth > previewHeight * aspectRatio) {
-//				previewWidth = (int) (previewHeight * aspectRatio + .5);
-//
-//			} else {
-//				previewHeight = (int) (previewWidth / aspectRatio + .5);
-//			}
-//
-//			super.onMeasure(MeasureSpec.makeMeasureSpec(previewWidth, MeasureSpec.EXACTLY),
-//					MeasureSpec.makeMeasureSpec(previewHeight, MeasureSpec.EXACTLY));
+//	        }
+////		    if (camHeight < height) {
+//////		        newHeightRatio = (float) height / (float) mPreviewSize.height;
+//////		        newCamHeight = (newHeightRatio * camHeight);
+////		        setMeasuredDimension((int) (width /camRatio), height);
+////		    } else {
+//////		        newCamHeight = camHeight;
+////		        setMeasuredDimension(width, (int) camHeight);
+////		    }
 //		}
 	}
 
@@ -68,8 +75,41 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 	public CameraView(TiViewProxy proxy)
 	{
 		super(proxy);
-		
-		SurfaceView preview = new SurfaceView(proxy.getActivity());
+		if (proxy.hasProperty("cameraPosition")) {
+		    cameraPosition =cameraPositionValue(proxy.getProperty("cameraPosition"));
+		}
+		SurfaceView preview = new SurfaceView(proxy.getActivity()) {
+		    @Override
+	        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+	            super.onMeasure(widthMeasureSpec, heightMeasureSpec);      
+	            if (camRatio == -1) {
+	                 return;
+	            }
+	            int width = getMeasuredWidth();
+	            int height = getMeasuredHeight();
+//	          float camHeight = (int) (width * camRatio);
+//	          float newCamHeight;
+	            float viewRatio = (float)height / width;
+	            
+	            float newratio = viewRatio/camRatio;
+	            if (camRatio < viewRatio) {
+	                ignoreSurfaceChanged = true;
+	                setMeasuredDimension(width, (int) (width / camRatio));
+	            } else {
+	                ignoreSurfaceChanged =  true;
+	                setMeasuredDimension((int) (height * camRatio), height);
+
+	            }
+//	          if (camHeight < height) {
+////	                newHeightRatio = (float) height / (float) mPreviewSize.height;
+////	                newCamHeight = (newHeightRatio * camHeight);
+//	              setMeasuredDimension((int) (width /camRatio), height);
+//	          } else {
+////	                newCamHeight = camHeight;
+//	              setMeasuredDimension(width, (int) camHeight);
+//	          }
+	        }
+		};
 		RelativeLayout.LayoutParams previewParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.MATCH_PARENT);
 		previewParams.getRules()[RelativeLayout.CENTER_IN_PARENT] = RelativeLayout.TRUE;
@@ -90,13 +130,12 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 		//tv.setTextColor(Color.RED);
 		//tv.setText("My overlay");
 		//previewLayout.addView(tv, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-
-		overlayLayout = new TiCompositeLayout(proxy.getActivity(), proxy);
-		previewLayout.addView(overlayLayout);
+		
+//		overlayLayout = new TiCompositeLayout(proxy.getActivity());
+//        previewLayout.addView(new TiCompositeLayout(proxy.getActivity()));
 
 		setNativeView(previewLayout);
-
-		Log.i(TAG, "Camera started");
+		CameraManager.get().setOnPreviewStartedListener(this);
 	}
 
 	public void surfaceChanged(SurfaceHolder previewHolder, int format, int width, int height) {
@@ -110,8 +149,14 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 //			param.setPreviewSize(previewSize.width, previewSize.height);
 //			camera.setParameters(param);
 //		}
-		CameraManager.get().updatePreviewSize(width, height);
-		startPreview();
+	    if (ignoreSurfaceChanged) {
+            ignoreSurfaceChanged =  false;
+
+	    } else {
+	        CameraManager.get().updatePreviewSize(width, height);
+	        startPreview();
+	    }
+		
 	}
 
 	public void surfaceCreated(SurfaceHolder previewHolder) {
@@ -131,7 +176,12 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 	}
 	
 	public void startPreview() {
-		CameraManager.get().startPreview();
+//	    if (!CameraManager.get().isOpen()) {
+//	        setCamera(cameraPosition);
+//	    } 
+//	    else {
+	        CameraManager.get().startPreview();
+//	    }
 	}
 	
 	public void stopPreview() {
@@ -142,35 +192,18 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 		return CameraManager.get().IsPreviewing();
 	}
 	
-	static public void takePicture() {
-//		camera.takePicture(null, null, jpegCallback);
-	}
+    public void swapCamera() {
+        if (cameraPosition == AkylasCameraModule.CAMERA_BACK)
+        {
+            cameraPosition = AkylasCameraModule.CAMERA_FRONT;
+        }
+        else
+        {
+            cameraPosition = AkylasCameraModule.CAMERA_BACK;
+        }
+        setCamera(cameraPosition);
+    }
 
-	static PictureCallback jpegCallback = new PictureCallback() {
-		public void onPictureTaken(byte[] data, Camera camera) {
-
-
-//			if (successCallback != null) {
-//				TiBlob imageData = TiBlob.blobFromData(data);
-//				KrollDict dict = MediaModule.createDictForImage((TiBlob)imageData, "image/jpeg");
-//				successCallback.callAsync(callbackContext, dict);
-//			}
-
-			cancelCallback = null;
-//			cameraActivity.finish();
-		}
-	};
-
-	@Override
-	public void add(TiUIView overlayItem)
-	{
-		if (overlayItem != null) {
-			View overlayItemView = overlayItem.getNativeView();
-			if (overlayItemView != null) {
-				overlayLayout.addView(overlayItemView, overlayItem.getLayoutParams());
-			}
-		}
-	}
 
 	public void setCamera(int cameraId)
 	{
@@ -185,7 +218,108 @@ public class CameraView extends TiUIView implements SurfaceHolder.Callback
 			{
 				CameraManager.get().updatePreviewSize();
 				startPreview();
+				
 			}
 		}
 	}
+	
+	private int cameraPositionValue(Object value)
+    {
+        int result = AkylasCameraModule.CAMERA_BACK;
+        String sValue = TiConvert.toString(value);
+        if (sValue != null)
+        {
+            if (value == "front")
+                result = AkylasCameraModule.CAMERA_FRONT;
+            else if (value == "back")
+                result = AkylasCameraModule.CAMERA_BACK;
+        }
+        else
+        {
+            int iValue = TiConvert.toInt(value);
+            if (iValue ==AkylasCameraModule.CAMERA_FRONT || iValue == AkylasCameraModule.CAMERA_BACK)
+                result = iValue;
+        }
+        return result;
+    }
+	
+//	@Override
+//    public void processProperties(KrollDict d) {
+//        if (!CameraManager.get().isOpen()) {
+//            needsPropsSet = true;
+//            return;
+//        }
+//        super.processProperties(d);
+//    }
+	
+	@Override
+    public void propertySet(String key, Object newValue, Object oldValue,
+            boolean changedProperty) {
+        switch (key) {
+        case "torch":
+            boolean current = CameraManager.get().getTorch();
+            boolean newTorch = TiConvert.toBoolean(newValue, current);
+            if (newTorch != current) {
+                CameraManager.get().setTorch(newTorch);
+            }
+            break;
+        case "flash":
+            CameraManager.get().setFlashMode(TiConvert.toString(newValue,
+                    Camera.Parameters.FLASH_MODE_AUTO));
+            break;
+        case "focus":
+            CameraManager.get().setFocusMode(TiConvert.toString(newValue,
+                    Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE));
+            break;
+        case "whichCamera":
+            int pos = cameraPositionValue(newValue);
+            if (pos != cameraPosition) {
+                setCamera(pos);
+            }
+            break;
+        case "quality":
+            break;
+        default:
+            super.propertySet(key, newValue, oldValue, changedProperty);
+            break;
+        }
+    }
+
+    @Override
+    public void onPreviewStarted() {
+////        if (needsPropsSet) {
+//            if (!TiApplication.isUIThread()) {
+//                proxy.getActivity().runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        onPreviewStarted();
+////                        processProperties(proxy.getProperties());
+//                    }
+//                });
+//                return;
+////            } else {
+////                processProperties(proxy.getProperties());
+//            }
+////        } .
+        Camera.Size res = CameraManager.get().getCameraResolution();
+        float newRatio = (float)res.height / res.width;
+        if (camRatio != newRatio) {
+            camRatio = newRatio;
+            previewLayout.requestLayout();
+        }
+//        float viewRatio = (float)previewLayout.getMeasuredWidth() / previewLayout.getMeasuredHeight();
+//        
+//        
+//        if (ratio < viewRatio) {
+//            float theRatio = viewRatio/ratio;
+//            previewHolder.setFixedSize(previewLayout.getMeasuredWidth(), (int) ((float)previewLayout.getMeasuredHeight() * theRatio));
+////            TiViewHelper.setPivotFloat(previewLayout, 0.5f, 0.5f);
+////            TiViewHelper.setScale(previewLayout, 1.0f, viewRatio/ratio);
+//        } else {
+//            previewHolder.setFixedSize((int) (previewLayout.getMeasuredWidth() * ratio/viewRatio), previewLayout.getMeasuredHeight());
+////           TiViewHelper.setPivotFloat(previewLayout, 0.5f, 0.0f);
+////            TiViewHelper.setScale(previewLayout, ratio/viewRatio, 1.0f);
+//        }
+//        previewLayout.setAspectRatio((float)res.x / res.y);
+    }
 }

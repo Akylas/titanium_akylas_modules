@@ -12,7 +12,7 @@ debug_project_subpath: camera/android
 
 
 # these should not be edited
-name: akylas_camera_android
+name: akylas-camera
 moduleid: akylas.camera
 guid: aecacc9f-e87b-47c3-9e65-5178e04320d8
 platform: android

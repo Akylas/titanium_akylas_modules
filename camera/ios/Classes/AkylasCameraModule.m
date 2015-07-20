@@ -6,13 +6,13 @@
  */
 #import "AkylasCameraModule.h"
 #import "TiBase.h"
-#import "TiHost.h"
-#import "TiUtils.h"
+#import "AkylasCameraViewProxy.h"
 #import <AVFoundation/AVFoundation.h>
 
 @implementation AkylasCameraModule
 
 #pragma mark Internal
+MAKE_SYSTEM_STR(QUALITY_BEST,AVCaptureSessionPresetPhoto);
 MAKE_SYSTEM_STR(QUALITY_HIGH,AVCaptureSessionPresetHigh);
 MAKE_SYSTEM_STR(QUALITY_MEDIUM,AVCaptureSessionPresetMedium);
 MAKE_SYSTEM_STR(QUALITY_LOW,AVCaptureSessionPresetLow);
@@ -20,6 +20,17 @@ MAKE_SYSTEM_STR(QUALITY_LOW,AVCaptureSessionPresetLow);
 MAKE_SYSTEM_PROP(CAMERA_FRONT,AVCaptureDevicePositionFront);
 MAKE_SYSTEM_PROP(CAMERA_BACK,AVCaptureDevicePositionBack);
 
+MAKE_SYSTEM_PROP(FLASH_ON,AVCaptureFlashModeOn);
+MAKE_SYSTEM_PROP(FLASH_OFF,AVCaptureFlashModeOff);
+MAKE_SYSTEM_PROP(FLASH_AUTO,AVCaptureFlashModeAuto);
+
+MAKE_SYSTEM_PROP(WHITE_BALANCE_LOCKED,AVCaptureWhiteBalanceModeLocked);
+MAKE_SYSTEM_PROP(WHITE_BALANCE_AUTO,AVCaptureWhiteBalanceModeAutoWhiteBalance);
+MAKE_SYSTEM_PROP(WHITE_BALANCE_CONTINUOUS,AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance);
+
+MAKE_SYSTEM_PROP(EXPOSURE_LOCKED,AVCaptureExposureModeLocked);
+MAKE_SYSTEM_PROP(EXPOSURE_AUTO,AVCaptureExposureModeAutoExpose);
+MAKE_SYSTEM_PROP(EXPOSURE_CONTINUOUS,AVCaptureExposureModeContinuousAutoExposure);
 // this is generated for your module, please do not change it
 -(id)moduleGUID
 {
@@ -36,78 +47,9 @@ MAKE_SYSTEM_PROP(CAMERA_BACK,AVCaptureDevicePositionBack);
 
 -(void)startup
 {
-	// this method is called when the module is first loaded
-	// you *must* call the superclass
-	[super startup];
-	
-	NSLog(@"[INFO] %@ loaded",self);
+    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Camera.View", [AkylasCameraViewProxy class]);
+    [super startup];
 }
 
--(void)shutdown:(id)sender
-{
-	// this method is called when the module is being unloaded
-	// typically this is during shutdown. make sure you don't do too
-	// much processing here or the app will be quit forceably
-	
-	// you *must* call the superclass
-	[super shutdown:sender];
-}
-
-#pragma mark Cleanup 
-
--(void)dealloc
-{
-	// release any resources that have been retained by the module
-	[super dealloc];
-}
-
-#pragma mark Internal Memory Management
-
--(void)didReceiveMemoryWarning:(NSNotification*)notification
-{
-	// optionally release any resources that can be dynamically
-	// reloaded once memory is available - such as caches
-	[super didReceiveMemoryWarning:notification];
-}
-
-#pragma mark Listener Notifications
-
--(void)_listenerAdded:(NSString *)type count:(int)count
-{
-	if (count == 1 && [type isEqualToString:@"my_event"])
-	{
-		// the first (of potentially many) listener is being added 
-		// for event named 'my_event'
-	}
-}
-
--(void)_listenerRemoved:(NSString *)type count:(int)count
-{
-	if (count == 0 && [type isEqualToString:@"my_event"])
-	{
-		// the last listener called for event named 'my_event' has
-		// been removed, we can optionally clean up any resources
-		// since no body is listening at this point for that event
-	}
-}
-
-#pragma Public APIs
-
--(id)example:(id)args
-{
-	// example method
-	return @"hello world";
-}
-
--(id)exampleProp
-{
-	// example property getter
-	return @"hello world";
-}
-
--(void)setExampleProp:(id)value
-{
-	// example property setter
-}
 
 @end

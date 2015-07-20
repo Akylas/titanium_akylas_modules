@@ -8,35 +8,51 @@
  */
 package akylas.camera;
 
+import java.util.HashMap;
+
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
-
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
 
+import akylas.camera.cameramanager.CameraManager;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.Parameters;
 
 
+@SuppressWarnings("deprecation")
 @Kroll.module(name="AkylasCamera", id="akylas.camera")
 public class AkylasCameraModule extends KrollModule
 {
 
 	// Standard Debugging variables
 	private static final String LCAT = "AkylasCameraModule";
-	private static final boolean DBG = TiConfig.LOGD;
 	
-	@Kroll.constant
-	public static final int CAMERA_FRONT = CameraInfo.CAMERA_FACING_BACK;
-	@Kroll.constant
-	public static final int CAMERA_BACK = CameraInfo.CAMERA_FACING_FRONT;
+    @Kroll.constant public static final int CAMERA_FRONT = CameraInfo.CAMERA_FACING_BACK;
+	@Kroll.constant public static final int CAMERA_BACK = CameraInfo.CAMERA_FACING_FRONT;
 	
-	@Kroll.constant
-	public static final int QUALITY_HIGH = 2;
-	@Kroll.constant
-	public static final int QUALITY_MEDIUM = 1;
-	@Kroll.constant
-	public static final int QUALITY_LOW = 0;
+	@Kroll.constant public static final int QUALITY_BEST = 2;
+	@Kroll.constant public static final int QUALITY_HIGH = 2;
+	@Kroll.constant public static final int QUALITY_MEDIUM = 1;
+	@Kroll.constant public static final int QUALITY_LOW = 0;
+	
+	@Kroll.constant public static final String FLASH_OFF = Parameters.FLASH_MODE_OFF;
+    @Kroll.constant public static final String FLASH_ON = Parameters.FLASH_MODE_ON;
+    @Kroll.constant public static final String FLASH_AUTO = Parameters.FLASH_MODE_AUTO;
+    
+    @Kroll.constant public static final String FOCUS_FIXED = Parameters.FOCUS_MODE_FIXED;
+    @Kroll.constant public static final String FOCUS_AUTO = Parameters.FOCUS_MODE_AUTO;
+    @Kroll.constant public static final String FOCUS_CONTINUOUS = Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
+    
+    @Kroll.constant public static final int WHITE_BALANCE_LOCKED = 0;
+    @Kroll.constant public static final int WHITE_BALANCE_AUTO = 1;
+    @Kroll.constant public static final int WHITE_BALANCE_CONTINUOUS = 2;
+
+    @Kroll.constant public static final int EXPOSURE_LOCKED = 0;
+    @Kroll.constant public static final int EXPOSURE_AUTO = 1;
+    @Kroll.constant public static final int EXPOSURE_CONTINUOUS = 2;
 
 	// You can define constants with @Kroll.constant, for example:
 	// @Kroll.constant public static final String EXTERNAL_NAME = value;
@@ -47,11 +63,12 @@ public class AkylasCameraModule extends KrollModule
 	}
 
 	@Kroll.onAppCreate
-	public static void onAppCreate(TiApplication app)
-	{
-		Log.d(LCAT, "inside onAppCreate");
-		// put module init code that needs to run when the application is created
-	}
-
+    public static void onAppCreate(TiApplication app)
+    {
+        HashMap<String, String> map = new HashMap();
+        map.put("Akylas.Camera.View", akylas.camera.ViewProxy.class.getName());
+        APIMap.addMapping(map);
+        CameraManager.init(app.getApplicationContext());
+    }
 }
 

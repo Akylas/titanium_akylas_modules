@@ -1,16 +1,9 @@
 
 #import "TiViewProxy.h"
 
-#import "AkylasCameraViewController.h"
-@interface AkylasCameraViewProxy : TiViewProxy<AkylasCameraViewControllerDelegate>{
+@interface AkylasCameraViewProxy : TiViewProxy
 
-    AkylasCameraViewController* _controller;
-    // OK, this is ridiculous.  Sometimes (always?) views which are made invisible and removed are relayed.
-	// This means their views are recreated.  For movie players, this means the movie is reloaded and plays.
-	// We need some internal way whether or not to check if it's OK to create a view - this is it.
-	BOOL reallyAttached;
-    KrollCallback* takePictureCallback;
-}
-- (void)setTorch_:(BOOL)status;
-- (void) setCameraPosition_:(id)value;
+
+- (void) didTakePicture:(UIImage*)image withRotation:(CGFloat)rotation metaData:(NSDictionary*)dict;
+
 @end

@@ -8,274 +8,290 @@
  */
 package akylas.camera;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.HashMap;
+
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
+import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiBaseActivity.ConfigurationChangedListener;
 import org.appcelerator.titanium.TiBlob;
-import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
-//import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent;
+import org.appcelerator.titanium.io.TiFile;
+import org.appcelerator.titanium.io.TiFileFactory;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
-import org.appcelerator.titanium.view.TiCompositeLayout;
+import org.appcelerator.titanium.util.TiFileHelper;
 import org.appcelerator.titanium.view.TiUIView;
 
-import akylas.camera.cameramanager.CameraManager;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
+
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
-import android.hardware.Camera.CameraInfo;
-import android.os.Handler;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.hardware.Camera;
+import android.hardware.Camera.PictureCallback;
+import android.net.Uri;
+import android.os.AsyncTask;
 import akylas.camera.AkylasCameraModule;
+import akylas.camera.cameramanager.CameraManager;
 
 // This proxy can be created by calling AkylasCameraAndroid.createExample({message: "hello world"})
-@Kroll.proxy(creatableInModule=AkylasCameraModule.class)
-public class ViewProxy extends TiViewProxy implements  OnLifecycleEvent, ConfigurationChangedListener 
-{
-	// Standard Debugging variables
-	private static final String LCAT = "AkylasCameraViewProxy";
-	private Boolean needsStartOnResume = true;
+@SuppressWarnings("deprecation")
+@Kroll.proxy(creatableInModule = AkylasCameraModule.class, propertyAccessors = {
+        "torch", "flash", "focus", "whichCamera", "exposure" })
+public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
+        ConfigurationChangedListener {
+    // Standard Debugging variables
+    private static final String LCAT = "AkylasCameraViewProxy";
+    private Boolean needsStartOnResume = false;
+    private static final String IMG_PREFIX = "ak_camera_image";
 
-	// Constructor
-	private CaptureActivityHandler mHandler;
-	/**
-	 * @return current handler
-	 */
-	public Handler getHandler() {
-		return mHandler;
-	}
-	
-	
-	private int cameraPosition = AkylasCameraModule.CAMERA_BACK;
-	
-	public ViewProxy()
-	{
-		super();
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] creating proxy ");
-	}
+    public static KrollFunction pictureCallback;
 
-	public ViewProxy(TiContext tiContext)
-	{
-		this();
-		CameraManager.init(tiContext.getActivity().getApplication());
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] creating proxy from context");
-	}
-	
-	private int cameraPositionValue(Object value)
-	{
-		int result = AkylasCameraModule.CAMERA_BACK;
-		String sValue = TiConvert.toString(value);
-		if (sValue != null)
-		{
-			if (value == "front")
-				result = AkylasCameraModule.CAMERA_FRONT;
-			else if (value == "back")
-				result = AkylasCameraModule.CAMERA_BACK;
-		}
-		else
-		{
-			int iValue = TiConvert.toInt(value);
-			if (iValue ==AkylasCameraModule.CAMERA_FRONT || iValue == AkylasCameraModule.CAMERA_BACK)
-				result = iValue;
-		}
-		return result;
-	}
-	
-	@Override
-	public void setActivity(Activity activity)
-	{
-		super.setActivity(activity);
-//		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] set activity");
-		if (activity instanceof TiBaseActivity) {
-			((TiBaseActivity) activity).addOnLifecycleEventListener(this);
-		}
-		
-		TiBaseActivity.registerOrientationListener (new TiBaseActivity.OrientationChangedListener()
-		{
-			@Override
-			public void onOrientationChanged (int configOrientationMode)
-			{
-				Log.d(LCAT, "onOrientationChanged");
-				
-				CameraManager.get().updateCameraDisplayOrientation();
-			}
-		});
-		Log.d(LCAT, "[PROXY CONTEXT LIFECYCLE EVENT] set activity");
-		
-		CameraManager.get().setActivity(activity);
-		
-		if (mHandler == null) {
-			mHandler = new CaptureActivityHandler(this);
-		}
-	}
+    public ViewProxy() {
+        super();
+    }
 
-	@Override
-	public TiUIView createView(Activity activity)
-	{
-		CameraView view = new CameraView(this);
-		view.getLayoutParams().autoFillsHeight = true;
-		view.getLayoutParams().autoFillsWidth = true;
-		if (hasProperty("cameraPosition")) {
-			int pos = cameraPositionValue(getProperty("cameraPosition"));
-			((CameraView)view).setCamera(pos);
-		}
-		Log.d(LCAT, "createView");
-		return (TiUIView)view;
-	}
+    public ViewProxy(TiContext tiContext) {
+        this();
+    }
 
-	// Handle creation options
-	@Override
-	public void handleCreationDict(KrollDict options)
-	{
-		super.handleCreationDict(options);
-		
-		if (options.containsKey("torch")) {
-			 CameraManager.get().setTorch((Boolean) options.get("torch"));
-			Log.d(LCAT, "example created with torch: " + options.get("torch"));
-		}
-		if (options.containsKey("quality")) {
-			 CameraManager.get().setQuality((Integer) options.get("quality"));
-			Log.d(LCAT, "example created with quality: " + options.get("quality"));
-		}
-	}
+    @Override
+    public TiUIView createView(Activity activity) {
+        CameraView view = new CameraView(this);
+        view.getLayoutParams().sizeOrFillWidthEnabled = true;
+        view.getLayoutParams().sizeOrFillHeightEnabled = true;
+        view.getLayoutParams().autoFillsHeight = true;
+        view.getLayoutParams().autoFillsWidth = true;
+        return (TiUIView) view;
+    }
 
-	@Override
-	public void onDestroy(Activity arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void onDestroy(Activity activity) {
+    }
 
-	@Override
-	public void onPause(Activity arg0) {
-		if (view != null)
-		{
-			needsStartOnResume = ((CameraView)view).isPreviewStarted();
-			((CameraView)view).stopPreview();
-		}
-	}
+    @Override
+    public void onPause(Activity activity) {
+        if (view != null) {
+            needsStartOnResume = ((CameraView) view).isPreviewStarted();
+            ((CameraView) view).stopPreview();
+        }
+    }
 
-	@Override
-	public void onResume(Activity arg0) {
-		if (view != null && needsStartOnResume)
-			((CameraView)view).startPreview();
-		
-	}
+    @Override
+    public void onResume(Activity activity) {
+        if (view != null && needsStartOnResume)
+            needsStartOnResume = false;
+        ((CameraView) view).startPreview();
 
-	@Override
-	public void onStart(Activity activity) {
-		
-	}
+    }
 
-	@Override
-	public void onStop(Activity arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void onStart(Activity activity) {
+    }
 
-	@Kroll.method
-	public void stop()
-	{
-		Log.d(LCAT, "stop");
-		if (view != null)
-			((CameraView)view).stopPreview();
-	}
+    @Override
+    public void onStop(Activity activity) {
 
-	@Kroll.method
-	public void start()
-	{
-		Log.d(LCAT, "start");
-		if (view != null)
-			((CameraView)view).startPreview();
-	}
-	
-	@Kroll.method
-	public Boolean isStarted()
-	{
-		if (view != null)
-			return ((CameraView)view).isPreviewStarted();
-		else return false;
-	}
-	
-	@Kroll.method
-	public void swapCamera()
-	{
-		if (cameraPosition == AkylasCameraModule.CAMERA_BACK)
-		{
-			cameraPosition = AkylasCameraModule.CAMERA_FRONT;
-		}
-		else
-		{
-			cameraPosition = AkylasCameraModule.CAMERA_BACK;
-		}
-		if (view != null) {
-			((CameraView)view).setCamera(cameraPosition);
-		}
+    }
 
-	}
+    @Kroll.method
+    public void stop() {
+        Log.d(LCAT, "stop");
+        if (view != null)
+            ((CameraView) view).stopPreview();
+    }
 
-	@Kroll.method
-	public void focus()
-	{
-		if (mHandler != null) {
-			mHandler.requestFocus();
-		}
-	}
-	
-	@Kroll.method
-	public void autoFocus()
-	{
-		if (mHandler != null) {
-			mHandler.requestAutoFocus();
-		}
-	}
-	
-	// Properties
-	
-	@Kroll.setProperty @Kroll.method
-	public void setCameraPosition(Object value)
-	{
-		int pos = cameraPositionValue(value);
-		if (view != null) {
-			((CameraView)view).setCamera(pos);
-		}
-	}
+    @Kroll.method
+    public void start() {
+        Log.d(LCAT, "start");
+        if (view != null)
+            ((CameraView) view).startPreview();
+    }
 
-	@Kroll.setProperty @Kroll.method
-	public void setTorch(Boolean value)
-	{
-//	    Log.d(LCAT, "setTorch3 to: " + value);
-	    CameraManager.get().setTorch(value);
-	    KrollDict data = new KrollDict();
-        data.put("on", CameraManager.get().getTorch());
-        fireEvent("torch", data);
-	}
-	
-	@Kroll.getProperty @Kroll.method
-	public Boolean getTorch()
-	{
-	    return CameraManager.get().getTorch();
-	}
+    @Kroll.method
+    public Boolean isStarted() {
+        if (view != null)
+            return ((CameraView) view).isPreviewStarted();
+        else
+            return false;
+    }
 
-	@Override
-	public void onConfigurationChanged(TiBaseActivity arg0, Configuration arg1) {
-		Log.d(LCAT, "onConfigurationChanged");
-		
-		CameraManager.get().updateCameraDisplayOrientation();
-	}
-	
-	@Kroll.setProperty @Kroll.method
-	public void setQuality(int value)
-	{
-//	    Log.d(LCAT, "setTorch3 to: " + value);
-	    CameraManager.get().setQuality(value);
-	}
-	
-	@Kroll.getProperty @Kroll.method
-	public int getQuality()
-	{
-	    return CameraManager.get().getQuality();
-	}
-	
+    @Kroll.method
+    public void swapCamera() {
+        if (view != null) {
+            ((CameraView) view).swapCamera();
+        }
+
+    }
+
+    private static File writeToFile(Bitmap bitmap, boolean saveToGallery)
+            throws Throwable {
+        try {
+            File imageFile = null;
+            if (saveToGallery) {
+                imageFile = TiFileHelper.createGalleryImageFile();
+            } else {
+                // Save the picture in the internal data directory so it is
+                // private to this application.
+                imageFile = TiFileFactory.createDataFile(IMG_PREFIX, ".jpg");
+            }
+
+            FileOutputStream imageOut = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, imageOut);
+            imageOut.close();
+
+            if (saveToGallery) {
+                Intent mediaScanIntent = new Intent(
+                        Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                Uri contentUri = Uri.fromFile(imageFile);
+                mediaScanIntent.setData(contentUri);
+                Activity activity = TiApplication.getAppCurrentActivity();
+                activity.sendBroadcast(mediaScanIntent);
+            }
+            return imageFile;
+
+        } catch (Throwable t) {
+            throw t;
+        }
+    }
+
+    private class SaveImageTask extends AsyncTask<byte[], Void, Void> {
+        private final HashMap options;
+
+        public SaveImageTask(HashMap options) {
+            super();
+            this.options = options;
+        }
+
+        @Override
+        protected Void doInBackground(byte[]... data) {
+            byte[] realdata = data[0];
+            File file = null;
+            
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            int cameraOrientation = CameraManager.get()
+                    .getCameraOrientation();
+            Bitmap bm = BitmapFactory.decodeByteArray(realdata, 0,
+                    realdata.length, opts);
+
+            if (cameraOrientation != 0) {
+                Matrix mtx = new Matrix();
+                mtx.postRotate(cameraOrientation);
+
+                bm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(),
+                        bm.getHeight(), mtx, true);
+            }
+            KrollFunction callback = (KrollFunction) options.get("callback");
+            try {
+                if (TiConvert.toBoolean(options, "save", false)
+                        || TiConvert.toBoolean(options, "saveToGallery", false)) {
+                    file = writeToFile(bm, TiConvert.toBoolean(options,
+                            "saveToGallery", false));
+                }
+
+                if (callback != null) {
+                    KrollDict result = new KrollDict();
+                    if (TiConvert.toBoolean(options, "metadata", false)) {
+                        InputStream in = new ByteArrayInputStream(realdata);
+                        Metadata metadata = ImageMetadataReader
+                                .readMetadata(in);
+                        KrollDict info = new KrollDict();
+                        for (Directory directory : metadata.getDirectories()) {
+                            for (Tag tag : directory.getTags()) {
+                                info.put(tag.getTagName(), tag.getDescription());
+                            }
+                        }
+                        result.put("metadata", info);
+                    }
+                    if (bm != null) {
+                        result.put("image",
+                                TiBlob.blobFromObject(bm, opts.outMimeType));
+                        result.put("mimeType", opts.outMimeType);
+                        result.put("width", bm.getWidth());
+                        result.put("height", bm.getHeight());
+                    }
+                    if (file != null) {
+                        TiFile theFile = new TiFile(file, file.toURI().toURL()
+                                .toExternalForm(), false);
+                        result.put("file", TiBlob.blobFromObject(theFile));
+                    }
+
+                    ((KrollFunction) callback).callAsync(getKrollObject(),
+                            new Object[] { result });
+                }
+            } catch (Throwable t) {
+                if (callback != null) {
+                    KrollDict response = new KrollDict();
+                    response.putCodeAndMessage(-1, t.getMessage());
+                    ((KrollFunction) callback).callAsync(getKrollObject(),
+                            new Object[] { response });
+                }
+            }
+            return null;
+        }
+    }
+
+    @Kroll.method
+    public void takePicture(final HashMap options) {
+        CameraManager.get().takePicture(new PictureCallback() {
+            public void onPictureTaken(byte[] data, Camera camera) {
+                new SaveImageTask(options).execute(data);
+            }
+        }, TiConvert.toBoolean(options, "shutterSound", false));
+    }
+
+    @Kroll.method
+    public void cameraFocus(KrollDict options) {
+        CameraManager.get().requestFocus();
+    }
+
+    @Kroll.method
+    public void cameraAutoFocus(KrollDict options) {
+        CameraManager.get().requestAutoFocus(null, 0);
+    }
+
+    @Override
+    public void setActivity(Activity activity) {
+        if (this.activity != null) {
+            TiBaseActivity tiActivity = (TiBaseActivity) this.activity.get();
+            if (tiActivity != null) {
+                tiActivity.removeOnLifecycleEventListener(this);
+                tiActivity.removeConfigurationChangedListener(this);
+            }
+        }
+        super.setActivity(activity);
+        CameraManager.get().setActivity(activity);
+        if (this.activity != null) {
+            TiBaseActivity tiActivity = (TiBaseActivity) this.activity.get();
+            if (tiActivity != null) {
+                tiActivity.addOnLifecycleEventListener(this);
+                tiActivity.addConfigurationChangedListener(this);
+            }
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(TiBaseActivity activity,
+            Configuration newConfig) {
+        // if (CameraManager.get().needCameraDisplayChange()) {
+        CameraManager.get().updateCameraDisplayOrientation();
+        // }
+
+    }
 }

@@ -40,6 +40,20 @@ static inline CGFloat rotationForInterfaceOrientation (int orient)
     return(0);
 }
 
+-(void)setBounds:(CGRect)bounds
+{
+    [super setBounds:bounds];
+    // orient view bounds to match camera image
+    if (_prevLayer) {
+        CGRect bounds = self.bounds;
+        bounds.origin = CGPointZero;
+        self.prevLayer.bounds = bounds;
+        self.prevLayer.position = CGPointMake(bounds.size.width / 2,
+                                              bounds.size.height / 2);
+    }
+    [self layoutSubviews];
+}
+
 -(void)layoutSubviews
 {
     [super layoutSubviews];
@@ -53,16 +67,16 @@ static inline CGFloat rotationForInterfaceOrientation (int orient)
         psize = CGSizeMake(bounds.size.height, bounds.size.width);
     else
         psize = bounds.size;
-    [CATransaction begin];
-    if (animationDuration)
-    {
-        [CATransaction setAnimationDuration: animationDuration];
-        [CATransaction setAnimationTimingFunction:
-         [CAMediaTimingFunction functionWithName:
-          kCAMediaTimingFunctionEaseInEaseOut]];
-    }
-    else
-        [CATransaction setDisableActions: YES];
+//    [CATransaction begin];
+//    if (animationDuration)
+//    {
+//        [CATransaction setAnimationDuration: animationDuration];
+//        [CATransaction setAnimationTimingFunction:
+//         [CAMediaTimingFunction functionWithName:
+//          kCAMediaTimingFunctionEaseInEaseOut]];
+//    }
+//    else
+//        [CATransaction setDisableActions: YES];
     
     self.prevLayer.bounds = CGRectMake(0, 0, psize.height, psize.width);
     // center preview in view
@@ -73,23 +87,23 @@ static inline CGFloat rotationForInterfaceOrientation (int orient)
     CATransform3D xform = CATransform3DMakeAffineTransform(previewTransform);
     self.prevLayer.transform = CATransform3DRotate(xform, angle, 0, 0, 1);
     
-    [CATransaction commit];
-    animationDuration = 0;
+//    [CATransaction commit];
+//    animationDuration = 0;
 }
 
 
--(void)setFrame:(CGRect)frame
-{
-    [super setFrame:frame];
-    if (_prevLayer) {
-        CGRect bounds = self.bounds;
-        bounds.origin = CGPointZero;
-        self.prevLayer.bounds = bounds;
-        self.prevLayer.position = CGPointMake(bounds.size.width / 2,
-                                              bounds.size.height / 2);
-    }
-    [self setNeedsLayout];
-}
+//-(void)setFrame:(CGRect)frame
+//{
+//    [super setFrame:frame];
+//    if (_prevLayer) {
+//        CGRect bounds = self.bounds;
+//        bounds.origin = CGPointZero;
+//        self.prevLayer.bounds = bounds;
+//        self.prevLayer.position = CGPointMake(bounds.size.width / 2,
+//                                              bounds.size.height / 2);
+//    }
+//    [self setNeedsLayout];
+//}
 
 - (void) setPreviewTransform: (CGAffineTransform) xfrm
 {
@@ -120,7 +134,6 @@ static inline CGFloat rotationForInterfaceOrientation (int orient)
 {
     if(self.interfaceOrientation != orient) {
         self.interfaceOrientation = orient;
-        animationDuration = duration;
     }
 }
 

@@ -19,14 +19,15 @@ package akylas.camera.cameramanager;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-import org.appcelerator.kroll.annotations.Kroll;
-
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.hardware.Camera;
+import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.Parameters;
+import android.hardware.Camera.PictureCallback;
+import android.hardware.Camera.ShutterCallback;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
@@ -39,14 +40,19 @@ import android.view.SurfaceHolder;
  * 
  * @author dswitkin@google.com (Daniel Switkin)
  */
+@SuppressWarnings("deprecation")
 public final class CameraManager {
-
+    
+    public interface OnPreviewStartedListener {
+        public void onPreviewStarted();
+    }
+    private OnPreviewStartedListener listener = null;
 	private static final String TAG = CameraManager.class.getSimpleName();
 
-	private static final int MIN_FRAME_WIDTH = 240;
-	private static final int MIN_FRAME_HEIGHT = 240;
-	private static final int MAX_FRAME_WIDTH = 600;
-	private static final int MAX_FRAME_HEIGHT = 400;
+//	private static final int MIN_FRAME_WIDTH = 240;
+//	private static final int MIN_FRAME_HEIGHT = 240;
+//	private static final int MAX_FRAME_WIDTH = 600;
+//	private static final int MAX_FRAME_HEIGHT = 400;
 
 	private static CameraManager cameraManager;
 	
@@ -56,10 +62,8 @@ public final class CameraManager {
 	private final CameraConfigurationManager configManager;
 	private Camera camera;
 	private int cameraId;
-	// private int cameraFacing = Camera.CameraInfo.CAMERA_FACING_BACK;
 
 	public Boolean needsFlip = false;
-	private Boolean ninetydegreesFromCamera = false;
 	
 	public int currentFlippedRotation;
 
@@ -70,17 +74,19 @@ public final class CameraManager {
 	// private SurfaceHolder previewDisplay;
 	public boolean previewing;
 	private Activity activity = null;
-//	private final boolean useOneShotPreviewCallback;
 	private int currentOrientation = -1000;
 	private int currentImageRotation = 0;
-//	private OrientationEventListener myOrientationEventListener;
 
 	private AutoFocusManager autoFocusManager;
 
 	private int currentPreviewWidth;
 
 	private int currentPreviewHeight;
-	private Boolean torch = false;
+    private Boolean torch = false;
+    private String mFlashMode = null;
+    private String mExposure = null;
+    private String mFocusMode = null;
+    
 
 	/**
 	 * Initializes this static object with the Context of the calling Activity.
@@ -152,10 +158,30 @@ public final class CameraManager {
 			updateCameraDisplayOrientation();
 			if (!initialized) {
 				initialized = true;
-				configManager.initFromCameraParameters(camera);
+//				configManager.initFromCameraParameters(camera);
 			}
-			configManager.setDesiredCameraParameters(camera);
-			
+            Camera.Parameters parameters = camera.getParameters();
+			Camera.Size cameraResolution = configManager.getCameraResolution();
+		        // Log.d(TAG, "Setting preview size: " + cameraResolution);
+	        if (cameraResolution != null) {
+	            parameters.setPreviewSize(cameraResolution.width, cameraResolution.height);
+	        }
+	        if (torch) {
+	            configManager.doSetTorch(parameters, torch);
+	        } else if (mFlashMode != null) {
+	            configManager.setFlashMode(parameters, mFlashMode);
+	        }
+	        if (mFlashMode == null) {
+	            mFlashMode = parameters.getFlashMode();
+	            torch = mFlashMode == Camera.Parameters.FLASH_MODE_TORCH;
+            }
+	        if (mFocusMode != null) {
+                configManager.setFocusMode(parameters, mFocusMode);
+            } else {
+                mFocusMode = parameters.getFocusMode();
+            }
+		    camera.setParameters(parameters);
+
 		}
 	}
 
@@ -169,6 +195,13 @@ public final class CameraManager {
 	public void updatePreviewSize() {
 		if (camera != null) {
 			configManager.updatePreviewSize(camera, currentPreviewWidth, currentPreviewHeight);
+			Camera.Parameters parameters = camera.getParameters();
+            Camera.Size cameraResolution = configManager.getCameraResolution();
+            Camera.Size current = parameters.getPreviewSize();
+            if (cameraResolution != null && !current.equals(cameraResolution)) {
+                parameters.setPreviewSize(cameraResolution.width, cameraResolution.height);
+            }
+            camera.setParameters(parameters);
 		}
 	}
 
@@ -192,10 +225,13 @@ public final class CameraManager {
 	 * Asks the camera hardware to begin drawing preview frames to the screen.
 	 */
 	public void startPreview() {
-
+	    
 		if (camera != null && !previewing) {
 			Log.d(TAG, "startPreview");
 			camera.startPreview();
+			if (listener != null) {
+			    listener.onPreviewStarted();
+			}
 			previewing = true;
 			if (torch)
 			{
@@ -224,26 +260,59 @@ public final class CameraManager {
 			previewing = false;
 		}
 	}
+	
+	public synchronized void setFlashMode(String flashMode) {
+        if (mFlashMode == flashMode) {
+            return;
+        }
+        mFlashMode = flashMode;
+        if (camera != null) {
+            configManager.setFlashMode(camera, mFlashMode);
+        }
+        torch = mFlashMode == Camera.Parameters.FLASH_MODE_TORCH;
+    }
+	
+	public synchronized void setFocusMode(String mode) {
+        if (mFocusMode == mode) {
+            return;
+        }
+        mFocusMode = mode;
+        if (camera != null) {
+            configManager.setFocusMode(camera, mFocusMode);
+        }
+    }
 
 	public synchronized void setTorch(boolean newSetting) {
 		Log.d(TAG, "set torch " + newSetting);
+		if (torch == newSetting) {
+		    return;
+		}
 		torch = newSetting;
 		if (camera != null) {
 			boolean isActive =(autoFocusManager != null && autoFocusManager.isActive());
 			if ( isActive) {
 				autoFocusManager.stop();
 			}
+//			if (newSetting) {
+//	            configManager.setTorch(camera, newSetting);
+//			} else {
+//			    if (mFlashMode != null) {
+//	                configManager.setFlashMode(camera, mFlashMode);
+//			    } else {
+//	                configManager.setTorch(camera, newSetting);
+//			    }
+//			}
 			configManager.setTorch(camera, newSetting);
+			if (!newSetting) {
+//		        configManager.setFlashMode(camera, mFlashMode);
+			}
 			if (isActive) {
-				autoFocusManager.start();
+				autoFocusManager.start(); 
 			}
 		}
 	}
 
 	public Boolean getTorch() {
-		if (camera != null) {
-			return configManager.isTorchOn(camera.getParameters());
-		}
 		return torch;
 	}
 
@@ -307,6 +376,7 @@ public final class CameraManager {
 							"Camera failed to open: " + e.getLocalizedMessage());
 				}
 			}
+			
 		}
 		return null;
 	}
@@ -323,17 +393,47 @@ public final class CameraManager {
 		return orientation != currentOrientation;
 	}
 	
-	protected void setDisplayOrientation(Camera camera, int angle){
-	    Method downPolymorphic;
-	    try
-	    {
-	        downPolymorphic = camera.getClass().getMethod("setDisplayOrientation", new Class[] { int.class });
-	        if (downPolymorphic != null)
-	            downPolymorphic.invoke(camera, new Object[] { angle });
+//	protected void setDisplayOrientation(Camera camera, int angle){
+//	    Method downPolymorphic;
+//	    try
+//	    {
+//	        downPolymorphic = camera.getClass().getMethod("setDisplayOrientation", new Class[] { int.class });
+//	        if (downPolymorphic != null)
+//	            downPolymorphic.invoke(camera, new Object[] { angle });
+//	    }
+//	    catch (Exception e1)
+//	    {
+//	    }
+//	}
+	
+	public void setOnPreviewStartedListener(final OnPreviewStartedListener listener) {
+	    this.listener = listener;
+	}
+	
+	public int getCameraOrientation() {
+	    if (camera == null) {
+	        return 0;
 	    }
-	    catch (Exception e1)
-	    {
-	    }
+	    CameraInfo info = new CameraInfo();
+        Camera.getCameraInfo(cameraId, info);
+        currentOrientation = activity.getWindowManager().getDefaultDisplay()
+                .getRotation();
+        int degrees = 0;
+        switch (currentOrientation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+//            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        return result;
 	}
 	
 	public void setCameraDisplayOrientation(Activity activity,
@@ -358,7 +458,8 @@ public final class CameraManager {
 	         result = (info.orientation - degrees + 360) % 360;
 	     }
 		Log.d(TAG, "setDisplayOrientation:" + result);
-	     setDisplayOrientation(camera, result);
+//	     setDisplayOrientation(camera, result);
+	     camera.setDisplayOrientation(result);
 	 }
 
 	public void updateCameraDisplayOrientation() {
@@ -387,4 +488,52 @@ public final class CameraManager {
 			return configManager.getQuality();
 //		}
 	}
+	
+	static ShutterCallback shutterCallback = new ShutterCallback()
+    {
+        // Just the presence of a shutter callback will
+        // allow the shutter click sound to occur (at least
+        // on Jelly Bean on a stock Google phone, which
+        // was remaining silent without this.)
+        @Override
+        public void onShutter()
+        {
+            // No-op
+        }
+    };
+    public void takePicture(final PictureCallback callback, final boolean withSound){
+        if (IsPreviewing()) {
+            
+            final PictureCallback ourCallback  = new PictureCallback() {
+                
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    camera.startPreview();
+                    callback.onPictureTaken(data, camera);
+                }
+            };
+            String focusMode = camera.getParameters().getFocusMode();
+            if (!(focusMode.equals(Parameters.FOCUS_MODE_EDOF) || focusMode.equals(Parameters.FOCUS_MODE_FIXED) || focusMode
+                .equals(Parameters.FOCUS_MODE_INFINITY))) {
+                AutoFocusCallback focusCallback = new AutoFocusCallback()
+                {
+                    public void onAutoFocus(boolean success, Camera camera)
+                    {
+                        camera.takePicture(withSound?shutterCallback:null, null, ourCallback);
+                        if (!success) {
+                            Log.w(TAG, "Unable to focus.");
+                        }
+                        camera.cancelAutoFocus();
+                    }
+                };
+                camera.autoFocus(focusCallback);
+            } else {
+                camera.takePicture(withSound?shutterCallback:null, null, ourCallback);
+            }
+        }
+    }
+    
+    public Camera.Size getCameraResolution() {
+        return configManager.getCameraResolution();
+    }
 }

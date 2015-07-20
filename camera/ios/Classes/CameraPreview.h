@@ -4,7 +4,6 @@
 
 @interface CameraPreview : UIView
 {
-    NSTimeInterval animationDuration;
     AVCaptureVideoPreviewLayer *_prevLayer;
     CGAffineTransform previewTransform;
 }

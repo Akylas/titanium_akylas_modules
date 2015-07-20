@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -30,8 +30,6 @@
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 		D55FF54A164168190082EA73 /* AkylasCameraView.h in Headers */ = {isa = PBXBuildFile; fileRef = D55FF544164168190082EA73 /* AkylasCameraView.h */; };
 		D55FF54B164168190082EA73 /* AkylasCameraView.m in Sources */ = {isa = PBXBuildFile; fileRef = D55FF545164168190082EA73 /* AkylasCameraView.m */; };
-		D55FF54C164168190082EA73 /* AkylasCameraViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = D55FF546164168190082EA73 /* AkylasCameraViewController.h */; };
-		D55FF54D164168190082EA73 /* AkylasCameraViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D55FF547164168190082EA73 /* AkylasCameraViewController.mm */; };
 		D55FF54E164168190082EA73 /* AkylasCameraViewProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D55FF548164168190082EA73 /* AkylasCameraViewProxy.h */; };
 		D55FF54F164168190082EA73 /* AkylasCameraViewProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D55FF549164168190082EA73 /* AkylasCameraViewProxy.m */; };
 		D55FF55C16416AB40082EA73 /* CameraPreview.h in Headers */ = {isa = PBXBuildFile; fileRef = D55FF55A16416AB40082EA73 /* CameraPreview.h */; };
@@ -56,11 +54,10 @@
 		24DE9E1011C5FE74003F90F6 /* AkylasCameraModuleAssets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasCameraModuleAssets.m; path = Classes/AkylasCameraModuleAssets.m; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* AkylasCamera_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasCamera_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		D2AAC07E0554694100DB518D /* libAkylasCamera.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAkylasCamera.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2AAC07E0554694100DB518D /* libakylas.camera.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.camera.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D52674521B58E69700D442E5 /* module.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
 		D55FF544164168190082EA73 /* AkylasCameraView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasCameraView.h; path = Classes/AkylasCameraView.h; sourceTree = "<group>"; };
 		D55FF545164168190082EA73 /* AkylasCameraView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasCameraView.m; path = Classes/AkylasCameraView.m; sourceTree = "<group>"; };
-		D55FF546164168190082EA73 /* AkylasCameraViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasCameraViewController.h; path = Classes/AkylasCameraViewController.h; sourceTree = "<group>"; };
-		D55FF547164168190082EA73 /* AkylasCameraViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AkylasCameraViewController.mm; path = Classes/AkylasCameraViewController.mm; sourceTree = "<group>"; };
 		D55FF548164168190082EA73 /* AkylasCameraViewProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasCameraViewProxy.h; path = Classes/AkylasCameraViewProxy.h; sourceTree = "<group>"; };
 		D55FF549164168190082EA73 /* AkylasCameraViewProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasCameraViewProxy.m; path = Classes/AkylasCameraViewProxy.m; sourceTree = "<group>"; };
 		D55FF55A16416AB40082EA73 /* CameraPreview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CameraPreview.h; path = Classes/CameraPreview.h; sourceTree = "<group>"; };
@@ -82,7 +79,7 @@
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D2AAC07E0554694100DB518D /* libAkylasCamera.a */,
+				D2AAC07E0554694100DB518D /* libakylas.camera.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,8 +112,6 @@
 				24DD6CF81134B3F500162E58 /* AkylasCameraModule.m */,
 				D55FF544164168190082EA73 /* AkylasCameraView.h */,
 				D55FF545164168190082EA73 /* AkylasCameraView.m */,
-				D55FF546164168190082EA73 /* AkylasCameraViewController.h */,
-				D55FF547164168190082EA73 /* AkylasCameraViewController.mm */,
 				D55FF548164168190082EA73 /* AkylasCameraViewProxy.h */,
 				D55FF549164168190082EA73 /* AkylasCameraViewProxy.m */,
 				D55FF55A16416AB40082EA73 /* CameraPreview.h */,
@@ -128,6 +123,7 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				D52674521B58E69700D442E5 /* module.xcconfig */,
 				AA747D9E0F9514B9006C5449 /* AkylasCamera_Prefix.pch */,
 				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
 			);
@@ -145,7 +141,6 @@
 				24DD6CF91134B3F500162E58 /* AkylasCameraModule.h in Headers */,
 				24DE9E1111C5FE74003F90F6 /* AkylasCameraModuleAssets.h in Headers */,
 				D55FF54A164168190082EA73 /* AkylasCameraView.h in Headers */,
-				D55FF54C164168190082EA73 /* AkylasCameraViewController.h in Headers */,
 				D55FF54E164168190082EA73 /* AkylasCameraViewProxy.h in Headers */,
 				D55FF55C16416AB40082EA73 /* CameraPreview.h in Headers */,
 			);
@@ -154,9 +149,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D2AAC07D0554694100DB518D /* akylas_camera_ios */ = {
+		D2AAC07D0554694100DB518D /* akylas.camera */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas_camera_ios" */;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.camera" */;
 			buildPhases = (
 				D2AAC07A0554694100DB518D /* Headers */,
 				D2AAC07B0554694100DB518D /* Sources */,
@@ -166,9 +161,9 @@
 			);
 			dependencies = (
 			);
-			name = akylas_camera_ios;
+			name = akylas.camera;
 			productName = akylas_camera_ios;
-			productReference = D2AAC07E0554694100DB518D /* libAkylasCamera.a */;
+			productReference = D2AAC07E0554694100DB518D /* libakylas.camera.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -176,8 +171,11 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas_camera_ios" */;
-			compatibilityVersion = "Xcode 3.1";
+			attributes = {
+				LastUpgradeCheck = 0630;
+			};
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.camera" */;
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -191,7 +189,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D2AAC07D0554694100DB518D /* akylas_camera_ios */,
+				D2AAC07D0554694100DB518D /* akylas.camera */,
 				24416B8111C4CA220047AFDD /* Build & Test */,
 			);
 		};
@@ -221,7 +219,6 @@
 				24DD6CFA1134B3F500162E58 /* AkylasCameraModule.m in Sources */,
 				24DE9E1211C5FE74003F90F6 /* AkylasCameraModuleAssets.m in Sources */,
 				D55FF54B164168190082EA73 /* AkylasCameraView.m in Sources */,
-				D55FF54D164168190082EA73 /* AkylasCameraViewController.mm in Sources */,
 				D55FF54F164168190082EA73 /* AkylasCameraViewProxy.m in Sources */,
 				D55FF55D16416AB40082EA73 /* CameraPreview.m in Sources */,
 			);
@@ -232,7 +229,7 @@
 /* Begin PBXTargetDependency section */
 		24416B8511C4CA280047AFDD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D2AAC07D0554694100DB518D /* akylas_camera_ios */;
+			target = D2AAC07D0554694100DB518D /* akylas.camera */;
 			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -242,25 +239,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
-				ARCHS = (
-					armv6,
-					armv7,
-				);
-				"ARCHS[sdk=iphoneos*]" = (
-					armv6,
-					armv7,
-				);
-				"ARCHS[sdk=iphonesimulator*]" = i386;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DSTROOT = /tmp/AkylasCamera.dst;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = AkylasCamera_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
-				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
 				GCC_WARN_SHADOW = NO;
@@ -269,19 +255,18 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				INSTALL_PATH = /usr/local/lib;
-				LIBRARY_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)/**",
+				);
 				OTHER_CFLAGS = (
 					"-DDEBUG",
 					"-DTI_POST_1_2",
 				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasCamera;
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -290,23 +275,11 @@
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv6,
-					armv7,
-				);
-				"ARCHS[sdk=iphoneos*]" = (
-					armv6,
-					armv7,
-				);
-				"ARCHS[sdk=iphonesimulator*]" = i386;
-				DSTROOT = /tmp/AkylasCamera.dst;
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = AkylasCamera_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
-				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
 				GCC_WARN_SHADOW = NO;
@@ -315,15 +288,14 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				INSTALL_PATH = /usr/local/lib;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)/**",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
-				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CFLAGS = "-DTI_POST_1_2";
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasCamera;
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};
@@ -331,25 +303,19 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
-				ARCHS = (
-					armv6,
-					armv7,
-				);
-				"ARCHS[sdk=iphoneos*]" = (
-					armv6,
-					armv7,
-				);
-				"ARCHS[sdk=iphonesimulator*]" = i386;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DSTROOT = /tmp/AkylasCamera.dst;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/platform",
+				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = AkylasCamera_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
-				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
 				GCC_WARN_SHADOW = NO;
@@ -358,18 +324,24 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				INSTALL_PATH = /usr/local/lib;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)/**",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-DDEBUG",
 					"-DTI_POST_1_2",
 				);
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasCamera;
+				PRODUCT_NAME = akylas.camera;
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -378,23 +350,16 @@
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = (
-					armv6,
-					armv7,
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/platform",
 				);
-				"ARCHS[sdk=iphoneos*]" = (
-					armv6,
-					armv7,
-				);
-				"ARCHS[sdk=iphonesimulator*]" = i386;
-				DSTROOT = /tmp/AkylasCamera.dst;
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = AkylasCamera_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
-				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
 				GCC_WARN_SHADOW = NO;
@@ -403,14 +368,19 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				INSTALL_PATH = /usr/local/lib;
+				HEADER_SEARCH_PATHS = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)/**",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+				);
 				OTHER_CFLAGS = "-DTI_POST_1_2";
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = AkylasCamera;
+				PRODUCT_NAME = akylas.camera;
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
-				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};
@@ -440,7 +410,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas_camera_ios" */ = {
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.camera" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB921F08733DC00010E9CD /* Debug */,
@@ -449,7 +419,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas_camera_ios" */ = {
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.camera" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB922308733DC00010E9CD /* Debug */,

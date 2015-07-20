@@ -1,12 +1,22 @@
 
 #import "TiUIView.h"
+#import <AVFoundation/AVFoundation.h>
 
-@interface AkylasCameraView : TiUIView {
-    UIView *_scanview;
+#if !TARGET_IPHONE_SIMULATOR
+#define HAS_AVFF 1
+#endif
+@interface AkylasCameraView : TiUIView
+#if HAS_AVFF
+<AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate>
+#endif
+{
 
 }
-@property (nonatomic, retain ) UIView *scanview;
 
--(void) cleanup;
-
+-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
+- (void) start;
+- (void) stop;
+-(void)focusAtPoint:(CGPoint)point;
+-(void)autoFocusAtPoint:(CGPoint)point;
+-(void)takePicture:(NSDictionary*)options;
 @end
