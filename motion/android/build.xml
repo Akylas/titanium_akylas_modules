@@ -1,4 +1,4 @@
-<project name="akylas_motion_android" default="dist">
+<project name="akylas-motion" default="dist">
 	<description>
 		Ant build script for Titanium Android module akylas_motion_android
 	</description>

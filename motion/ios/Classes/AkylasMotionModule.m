@@ -18,9 +18,10 @@
     CMAltimeter *altitudeManager;
     CMDeviceMotionHandler motionHandler;
     CMAltitudeHandler altitudeHandler;
-//    NSOperationQueue* motionQueue;
+    NSOperationQueue* _motionQueue;
     BOOL accelerometerRegistered;
     BOOL gyroscopeRegistered;
+    BOOL rotationRegistered;
     BOOL magnetometerRegistered;
     BOOL orientationRegistered;
     BOOL motionRegistered;
@@ -59,6 +60,7 @@
         motionManager.magnetometerUpdateInterval = updateInterval;
         motionHandler = Block_copy(^(CMDeviceMotion *motion, NSError *error){
             [self processMotionData:motion withError:error];});
+        _motionQueue = [[NSOperationQueue alloc] init];
     }
     [lock unlock];
     return motionManager;
@@ -74,6 +76,7 @@
     [motionManager stopDeviceMotionUpdates];
 
     RELEASE_TO_NIL_AUTORELEASE(motionManager);
+    RELEASE_TO_NIL_AUTORELEASE(_motionQueue);
     RELEASE_TO_NIL(motionHandler);
     [lock unlock];
 }
@@ -119,7 +122,7 @@
     magnetometerRegistered = FALSE;
     altitudeRegistered = FALSE;
     updateInterval = 0.030; // time between 2 data in seconds
-    computeRotationMatrix = TRUE;
+    computeRotationMatrix = NO;
 	
 	NSLog(@"[INFO] %@ loaded",self);
 }
@@ -182,6 +185,11 @@
 			needsStart = TRUE;
 			gyroscopeRegistered = TRUE;
 		}
+        else if ([type isEqualToString:@"rotation"])
+        {
+            needsStart = TRUE;
+            rotationRegistered = TRUE;
+        }
         else if ([type isEqualToString:@"orientation"])
 		{
 			needsStart = TRUE;
@@ -203,7 +211,7 @@
                 //                }
                 //                else
                 //                {
-                [motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue currentQueue]
+                [motionManager startDeviceMotionUpdatesToQueue:_motionQueue
                                                    withHandler:motionHandler];
                 //                }
                 
@@ -229,10 +237,14 @@
 		{
 			accelerometerRegistered = FALSE;
 		}
-		else if ([type isEqualToString:@"gyroscope"])
-		{
-			gyroscopeRegistered = FALSE;
-		}
+        else if ([type isEqualToString:@"gyroscope"])
+        {
+            gyroscopeRegistered = FALSE;
+        }
+        else if ([type isEqualToString:@"rotation"])
+        {
+            rotationRegistered = FALSE;
+        }
         else if ([type isEqualToString:@"orientation"])
 		{
 			orientationRegistered = FALSE;
@@ -288,119 +300,104 @@
 //        CMAcceleration accRef = [self userAccelerationInReferenceFrame:motion.userAcceleration withRot:currentAttitude.rotationMatrix];
         //        NSLog(@"yaw: %f, %f",currentAttitude.yaw,currentAttitude.yaw*currentAttitude.rotationMatrix.m11);
         //        NSLog(@"obtaining: %f, %f, %f",currentAttitude.yaw,currentAttitude.pitch,currentAttitude.roll);
+        CMQuaternion quat = currentAttitude.quaternion;
         NSMutableDictionary *event = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                       [NSDictionary dictionaryWithObjectsAndKeys:
                                        [NSDictionary dictionaryWithObjectsAndKeys:
-                                        NUMFLOAT(motion.gravity.x), @"x",
-                                        NUMFLOAT(motion.gravity.y), @"y",
-                                        NUMFLOAT(motion.gravity.z), @"z", nil], @"gravity",
+                                        @(motion.gravity.x), @"x",
+                                        @(motion.gravity.y), @"y",
+                                        @(motion.gravity.z), @"z", nil], @"gravity",
                                        [NSDictionary dictionaryWithObjectsAndKeys:
-                                        NUMFLOAT(motion.userAcceleration.x), @"x",
-                                        NUMFLOAT(motion.userAcceleration.y), @"y",
-                                        NUMFLOAT(motion.userAcceleration.z), @"z", nil], @"user",
-//                                       [NSDictionary dictionaryWithObjectsAndKeys:
-//                                        NUMFLOAT(accRef.x), @"x",
-//                                        NUMFLOAT(accRef.y), @"y",
-//                                        NUMFLOAT(accRef.z), @"z", nil], @"userref",
-                                       NUMFLOAT(motion.gravity.x + motion.userAcceleration.x), @"x",
-                                       NUMFLOAT(motion.gravity.y + motion.userAcceleration.y), @"y",
-                                       NUMFLOAT(motion.gravity.z + motion.userAcceleration.z), @"z", nil], @"accelerometer",
+                                        @(motion.userAcceleration.x), @"x",
+                                        @(motion.userAcceleration.y), @"y",
+                                        @(motion.userAcceleration.z), @"z", nil], @"user",
+                                       @(motion.gravity.x + motion.userAcceleration.x), @"x",
+                                       @(motion.gravity.y + motion.userAcceleration.y), @"y",
+                                       @(motion.gravity.z + motion.userAcceleration.z), @"z", nil], @"accelerometer",
                                       [NSDictionary dictionaryWithObjectsAndKeys:
-                                       NUMFLOAT(radiansToDegrees(currentAttitude.yaw)), @"yaw",
-                                       NUMFLOAT(radiansToDegrees(currentAttitude.pitch)), @"pitch",
-                                       NUMFLOAT(radiansToDegrees(currentAttitude.roll)), @"roll", nil], @"orientation",
+                                       @(radiansToDegrees(currentAttitude.yaw)), @"yaw",
+                                       @(radiansToDegrees(currentAttitude.pitch)), @"pitch",
+                                       @(radiansToDegrees(currentAttitude.roll)), @"roll", nil], @"orientation",
                                       [NSDictionary dictionaryWithObjectsAndKeys:
-                                       NUMDOUBLE(motion.magneticField.accuracy), @"accuracy",
-                                       NUMDOUBLE(motion.magneticField.field.x), @"x",
-                                       NUMDOUBLE(motion.magneticField.field.y), @"y",
-                                       NUMDOUBLE(motion.magneticField.field.z), @"z", nil], @"magnetometer",
-                                      [NSDictionary dictionaryWithObjectsAndKeys:
-                                       NUMDOUBLE(motion.rotationRate.x), @"x",
-                                       NUMDOUBLE(motion.rotationRate.y), @"y",
-                                       NUMDOUBLE(motion.rotationRate.z), @"z", nil], @"gyroscope",
-                                      NUMLONGLONG(realTimestamp), @"timestamp",
+                                       @(motion.magneticField.accuracy), @"accuracy",
+                                       @(motion.magneticField.field.x), @"x",
+                                       @(motion.magneticField.field.y), @"y",
+                                       @(motion.magneticField.field.z), @"z", nil], @"magnetometer",
+                                       @[@(motion.rotationRate.x),
+                                       @(motion.rotationRate.y),
+                                       @(motion.rotationRate.z)], @"gyroscope",
+                                      @[@(quat.x), @(quat.y), @(quat.z), @(quat.w) ], @"quaternion",
+                                      @(realTimestamp), @"timestamp",
                                       nil];
         if (computeRotationMatrix)
         {
             CMRotationMatrix rotation = currentAttitude.rotationMatrix;
-            Ti3DMatrix *timatrix = [[Ti3DMatrix alloc] init];
-            [timatrix setM11:[NSNumber numberWithFloat:rotation.m11]];
-            [timatrix setM12:[NSNumber numberWithFloat:rotation.m21]];
-            [timatrix setM13:[NSNumber numberWithFloat:rotation.m31]];
-            
-            [timatrix setM21:[NSNumber numberWithFloat:rotation.m12]];
-            [timatrix setM22:[NSNumber numberWithFloat:rotation.m22]];
-            [timatrix setM23:[NSNumber numberWithFloat:rotation.m32]];
-            
-            [timatrix setM31:[NSNumber numberWithFloat:rotation.m13]];
-            [timatrix setM32:[NSNumber numberWithFloat:rotation.m23]];
-            [timatrix setM33:[NSNumber numberWithFloat:rotation.m33]];
-            [event setObject:[timatrix autorelease] forKey:@"invertedRotationMatrix"];
-            timatrix = [[Ti3DMatrix alloc] init];
-            [timatrix setM11:[NSNumber numberWithFloat:rotation.m11]];
-            [timatrix setM12:[NSNumber numberWithFloat:rotation.m12]];
-            [timatrix setM13:[NSNumber numberWithFloat:rotation.m13]];
-            
-            [timatrix setM21:[NSNumber numberWithFloat:rotation.m21]];
-            [timatrix setM22:[NSNumber numberWithFloat:rotation.m22]];
-            [timatrix setM23:[NSNumber numberWithFloat:rotation.m23]];
-            
-            [timatrix setM31:[NSNumber numberWithFloat:rotation.m31]];
-            [timatrix setM32:[NSNumber numberWithFloat:rotation.m32]];
-            [timatrix setM33:[NSNumber numberWithFloat:rotation.m33]];
-            [event setObject:[timatrix autorelease] forKey:@"rotationMatrix"];
+             [event setObject:@[@(rotation.m11),@(rotation.m12),@(rotation.m13),
+                                @(rotation.m21),
+                                @(rotation.m22),
+                                @(rotation.m23),
+                                @(rotation.m31),
+                                @(rotation.m32),
+                                @(rotation.m33)] forKey:@"rotationMatrix"];
         }
- 		[self fireEvent:@"motion" withObject:event];
+ 		[self fireEvent:@"motion" withObject:event propagate:NO checkForListener:NO];
 	}
     else{
         if (accelerometerRegistered)
         {
             NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
                                    [NSDictionary dictionaryWithObjectsAndKeys:
-                                    NUMFLOAT(motion.gravity.x), @"x",
-                                    NUMFLOAT(motion.gravity.y), @"y",
-                                    NUMFLOAT(motion.gravity.z), @"z", nil], @"gravity",
+                                    @(motion.gravity.x), @"x",
+                                    @(motion.gravity.y), @"y",
+                                    @(motion.gravity.z), @"z", nil], @"gravity",
                                    [NSDictionary dictionaryWithObjectsAndKeys:
-                                    NUMFLOAT(motion.userAcceleration.x), @"x",
-                                    NUMFLOAT(motion.userAcceleration.y), @"y",
-                                    NUMFLOAT(motion.userAcceleration.z), @"z", nil], @"user",
-                                   NUMFLOAT(motion.gravity.x + motion.userAcceleration.x), @"x",
-                                   NUMFLOAT(motion.gravity.y + motion.userAcceleration.y), @"y",
-                                   NUMFLOAT(motion.gravity.z + motion.userAcceleration.z), @"z",
-                                   NUMLONGLONG(realTimestamp), @"timestamp",
+                                    @(motion.userAcceleration.x), @"x",
+                                    @(motion.userAcceleration.y), @"y",
+                                    @(motion.userAcceleration.z), @"z", nil], @"user",
+                                   @(motion.gravity.x + motion.userAcceleration.x), @"x",
+                                   @(motion.gravity.y + motion.userAcceleration.y), @"y",
+                                   @(motion.gravity.z + motion.userAcceleration.z), @"z",
+                                   @(realTimestamp), @"timestamp",
                                    nil];
-            [self fireEvent:@"accelerometer" withObject:event];
+            [self fireEvent:@"accelerometer" withObject:event propagate:NO checkForListener:NO];
         }
         if (orientationRegistered)
         {
             NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-                                   NUMFLOAT(radiansToDegrees(currentAttitude.yaw)), @"yaw",
-                                   NUMFLOAT(radiansToDegrees(currentAttitude.pitch)), @"pitch",
-                                   NUMFLOAT(radiansToDegrees(currentAttitude.roll)), @"roll",
-                                   NUMLONGLONG(realTimestamp), @"timestamp",
+                                   @(radiansToDegrees(currentAttitude.yaw)), @"yaw",
+                                   @(radiansToDegrees(currentAttitude.pitch)), @"pitch",
+                                   @(radiansToDegrees(currentAttitude.roll)), @"roll",
+                                   @(realTimestamp), @"timestamp",
                                    nil];
-            [self fireEvent:@"orientation" withObject:event];
+            [self fireEvent:@"orientation" withObject:event propagate:NO checkForListener:NO];
         }
         if (gyroscopeRegistered)
         {
             NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-                                   NUMFLOAT(motion.rotationRate.x), @"x",
-                                   NUMFLOAT(motion.rotationRate.y), @"y",
-                                   NUMFLOAT(motion.rotationRate.z), @"z",
-                                   NUMLONGLONG(realTimestamp), @"timestamp",
+                                   @(motion.rotationRate.x), @"x",
+                                   @(motion.rotationRate.y), @"y",
+                                   @(motion.rotationRate.z), @"z",
+                                   @(realTimestamp), @"timestamp",
                                    nil];
-            [self fireEvent:@"gyroscope" withObject:event];
+            [self fireEvent:@"gyroscope" withObject:event propagate:NO checkForListener:NO];
         }
         if (magnetometerRegistered)
         {
             NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-                                   NUMFLOAT(motion.magneticField.field.x), @"x",
-                                   NUMFLOAT(motion.magneticField.field.y), @"y",
-                                   NUMFLOAT(motion.magneticField.field.z), @"z",
-                                   NUMFLOAT(motion.magneticField.accuracy), @"accuracy",
-                                   NUMLONGLONG(realTimestamp), @"timestamp",
+                                   @(motion.magneticField.field.x), @"x",
+                                   @(motion.magneticField.field.y), @"y",
+                                   @(motion.magneticField.field.z), @"z",
+                                   @(motion.magneticField.accuracy), @"accuracy",
+                                   @(realTimestamp), @"timestamp",
                                    nil];
-            [self fireEvent:@"magnetometer" withObject:event];
+            [self fireEvent:@"magnetometer" withObject:event propagate:NO checkForListener:NO];
+        }
+        
+        if (rotationRegistered)
+        {
+            CMQuaternion quat = currentAttitude.quaternion;
+            [self fireEvent:@"rotation" withObject:@{@"quaternion":@[@(quat.x), @(quat.y), @(quat.z), @(quat.w) ],
+                                                     @"timestamp": @(realTimestamp)} propagate:NO checkForListener:NO];
         }
     }
 }

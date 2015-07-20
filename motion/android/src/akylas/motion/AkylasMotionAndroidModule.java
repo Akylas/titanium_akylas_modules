@@ -33,584 +33,618 @@ import android.hardware.SensorManager;
 //import android.opengl.Matrix;
 //import android.text.TextUtils;
 
-@Kroll.module(name = "AkylasMotionAndroid", id = "akylas.motion")
+@Kroll.module(name = "AkylasMotion", id = "akylas.motion")
 public class AkylasMotionAndroidModule extends KrollModule implements
-		SensorEventListener {
-	private static final Object valuesLock = new Object();
-//	private static Boolean working = false;
-	// Standard Debugging variables
-	private static final String LCAT = "AkylasMotionAndroidModule";
-	private static final String EVENT_ACC = "accelerometer";
-	private static final String EVENT_GYRO = "gyroscope";
-	private static final String EVENT_ORIENTATION = "orientation";
-	private static final String EVENT_MAG = "magnetometer";
-	private static final String EVENT_MOTION = "motion";
-	static List<String> POSSIBLE_MOTION_SENSORS= Arrays.asList(EVENT_ACC,EVENT_GYRO,EVENT_ORIENTATION,EVENT_MAG);
-	private static final String PROPERTY_GRAVITY = "gravity";
-	private static final String PROPERTY_USER = "user";
-	private static final String PROPERTY_YAW = "yaw";
-	private static final String PROPERTY_PITCH = "pitch";
-	private static final String PROPERTY_ROLL = "roll";
-	
-	
-	private List<String> motionSensors = new ArrayList<String>(POSSIBLE_MOTION_SENSORS);
-//	private static final String PROPERTY_RMATRIX = "rotationMatrix";
+        SensorEventListener {
+    private static final Object valuesLock = new Object();
+    // private static Boolean working = false;
+    // Standard Debugging variables
+    private static final String LCAT = "AkylasMotionAndroidModule";
+    private static final String EVENT_ACC = "accelerometer";
+    private static final String EVENT_GYRO = "gyroscope";
+    private static final String EVENT_ORIENTATION = "orientation";
+    private static final String EVENT_MAG = "magnetometer";
+    private static final String EVENT_MOTION = "motion";
+    private static final String EVENT_ROTATION = "rotation";
+    static List<String> POSSIBLE_MOTION_SENSORS = Arrays.asList(EVENT_ACC,
+            EVENT_GYRO, EVENT_ORIENTATION, EVENT_MAG, EVENT_ROTATION);
+    private static final String PROPERTY_GRAVITY = "gravity";
+    private static final String PROPERTY_USER = "user";
+    private static final String PROPERTY_YAW = "yaw";
+    private static final String PROPERTY_PITCH = "pitch";
+    private static final String PROPERTY_ROLL = "roll";
 
-	@Kroll.constant
-	public static final int ACCURACY_HIGH = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
-	@Kroll.constant
-	public static final int ACCURACY_MEDIUM = SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM;
-	@Kroll.constant
-	public static final int ACCURACY_LOW = SensorManager.SENSOR_STATUS_ACCURACY_LOW;
-	@Kroll.constant
-	public static final int ACCURACY_UNCALIBRATED = SensorManager.SENSOR_STATUS_UNRELIABLE;
-	@Kroll.constant
-	public static final float STANDARD_GRAVITY = SensorManager.STANDARD_GRAVITY;
+    private List<String> motionSensors = new ArrayList<String>(
+            POSSIBLE_MOTION_SENSORS);
+    // private static final String PROPERTY_RMATRIX = "rotationMatrix";
 
-	private int currentMagnetometerAccuracy = ACCURACY_UNCALIBRATED;
+    @Kroll.constant
+    public static final int ACCURACY_HIGH = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+    @Kroll.constant
+    public static final int ACCURACY_MEDIUM = SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM;
+    @Kroll.constant
+    public static final int ACCURACY_LOW = SensorManager.SENSOR_STATUS_ACCURACY_LOW;
+    @Kroll.constant
+    public static final int ACCURACY_UNCALIBRATED = SensorManager.SENSOR_STATUS_UNRELIABLE;
+    @Kroll.constant
+    public static final float STANDARD_GRAVITY = SensorManager.STANDARD_GRAVITY;
 
-	private float[] gravity = new float[3];
+    private int currentMagnetometerAccuracy = ACCURACY_UNCALIBRATED;
 
-	final int matrix_size = 16;
-	float[] R = new float[matrix_size];
-	float[] outR = new float[matrix_size];
-	float[] I = new float[matrix_size];
-	float[] values = new float[3];
-	boolean isReady = false;
+    private float[] gravity = new float[3];
 
-	float[] filteredAcc = new float[3];
-	float[] filteredMag = new float[3];
-	
-	private int motionRealNbSensors = motionSensors.size() + 1;
+    final int matrix_size = 16;
+    float[] R = new float[matrix_size];
+    float[] outR = new float[matrix_size];
+    float[] I = new float[matrix_size];
+    float[] values = new float[3];
+    boolean isReady = false;
 
-	private HashMap<Integer, float[]> mCurrentValues = new HashMap<Integer, float[]>();
-	private long lastTimeStamp = -1;
-	private boolean accelerometerRegistered = false;
-	private boolean orientationRegistered = false;
-	private boolean gyroscopeRegistered = false;
-	private boolean magnetometerRegistered = false;
-	private boolean motionRegistered = false;
-	private int updateInterval = 30; // time between data in MILLI SECONDS
-	private int sensorDelay = SensorManager.SENSOR_DELAY_GAME;
-	private boolean computeRotationMatrix = true;
+    float[] mRotationMatrix;
+    float[] filteredAcc = new float[3];
+    float[] filteredMag = new float[3];
 
-	@Override
-	public void eventListenerAdded(String type, int count,
-			final KrollProxy proxy) {
-		if (EVENT_ACC.equals(type)) {
-			if (!accelerometerRegistered) {
-				TiSensorHelper.registerListener(Sensor.TYPE_LINEAR_ACCELERATION,
-						this, sensorDelay);
-				 TiSensorHelper.registerListener(Sensor.TYPE_GRAVITY, this,
-						 sensorDelay);
-				accelerometerRegistered = true;
-			}
-		} else if (EVENT_GYRO.equals(type)) {
-			if (!gyroscopeRegistered) {
-				TiSensorHelper.registerListener(Sensor.TYPE_GYROSCOPE, this,
-						sensorDelay);
-				gyroscopeRegistered = true;
-			}
-		} else if (EVENT_MAG.equals(type)) {
-			if (!magnetometerRegistered) {
-				TiSensorHelper.registerListener(Sensor.TYPE_MAGNETIC_FIELD,
-						this, sensorDelay);
-				magnetometerRegistered = true;
-			}
-		} else if (EVENT_ORIENTATION.equals(type)) {
-			if (!orientationRegistered) {
-				TiSensorHelper.registerListener(Sensor.TYPE_ORIENTATION, this,
-						sensorDelay);
-				orientationRegistered = true;
-			}
-		} else if (EVENT_MOTION.equals(type)) {
-			if (!motionRegistered) {
-				Log.w(LCAT, "registering motion: " + updateInterval + "(" + sensorDelay + ")");
-				
-				if (!magnetometerRegistered && motionSensors.contains(EVENT_MAG))
-					TiSensorHelper.registerListener(Sensor.TYPE_MAGNETIC_FIELD,
-							this, sensorDelay);
-				
-				if (!gyroscopeRegistered && motionSensors.contains(EVENT_GYRO))
-					TiSensorHelper.registerListener(Sensor.TYPE_GYROSCOPE,
-							this, sensorDelay);
-				
-				if (!orientationRegistered  && motionSensors.contains(EVENT_ORIENTATION))
-					TiSensorHelper.registerListener(Sensor.TYPE_ORIENTATION, this,
-							sensorDelay);
-				
-				if (!accelerometerRegistered && motionSensors.contains(EVENT_ACC)) 
-				{
-					TiSensorHelper.registerListener(Sensor.TYPE_LINEAR_ACCELERATION,
-							this, sensorDelay);
-					TiSensorHelper.registerListener(Sensor.TYPE_GRAVITY, this,
-							sensorDelay);
-				}
-				motionRegistered = true;
-			}
-		}
-		super.eventListenerAdded(type, count, proxy);
-	}
+    private int motionRealNbSensors = motionSensors.size() + 1;
 
-	@Override
-	public void eventListenerRemoved(String type, int count, KrollProxy proxy) {
-		if (EVENT_ACC.equals(type)) {
-			if (accelerometerRegistered) {
-//				TiSensorHelper.unregisterListener(Sensor.TYPE_ACCELEROMETER,
-//						this);
-				 TiSensorHelper.unregisterListener(Sensor.TYPE_GRAVITY, this);
-				 TiSensorHelper.unregisterListener(Sensor.TYPE_LINEAR_ACCELERATION, this);
-				accelerometerRegistered = false;
-			}
-		} else if (EVENT_GYRO.equals(type)) {
-			if (gyroscopeRegistered) {
-				TiSensorHelper.unregisterListener(Sensor.TYPE_GYROSCOPE, this);
-				gyroscopeRegistered = false;
-			}
-		} else if (EVENT_ORIENTATION.equals(type)) {
-			if (orientationRegistered) {
-				TiSensorHelper
-						.unregisterListener(Sensor.TYPE_ORIENTATION, this);
-				orientationRegistered = false;
-			}
-		} else if (EVENT_MAG.equals(type)) {
-			if (magnetometerRegistered) {
-				TiSensorHelper.unregisterListener(Sensor.TYPE_MAGNETIC_FIELD,
-						this);
-				magnetometerRegistered = false;
-			}
-		} else if (EVENT_MOTION.equals(type)) {
-			if (motionRegistered) {
-				if (!magnetometerRegistered) {
-					TiSensorHelper.unregisterListener(
-							Sensor.TYPE_MAGNETIC_FIELD, this);
-				}
-					
-				if (!accelerometerRegistered) {
-					TiSensorHelper.unregisterListener(
-							Sensor.TYPE_LINEAR_ACCELERATION, this);
-					 TiSensorHelper.unregisterListener(Sensor.TYPE_GRAVITY,
-					 this);
-				}
-				if (!orientationRegistered){
-					TiSensorHelper.unregisterListener(Sensor.TYPE_ORIENTATION,
-							this);
-				}
-				if (!gyroscopeRegistered){
-					TiSensorHelper.unregisterListener(Sensor.TYPE_GYROSCOPE,
-							this);
-				}
-					
-				motionRegistered = false;
-			}
-		}
-		super.eventListenerRemoved(type, count, proxy);
-	}
+    private HashMap<Integer, float[]> mCurrentValues = new HashMap<Integer, float[]>();
+    private long lastTimeStamp = -1;
+    private boolean accelerometerRegistered = false;
+    private boolean orientationRegistered = false;
+    private boolean gyroscopeRegistered = false;
+    private boolean magnetometerRegistered = false;
+    private boolean motionRegistered = false;
+    private boolean rotationRegistered = false;
+    private int updateInterval = 30; // time between data in MILLI SECONDS
+    private int sensorDelay = SensorManager.SENSOR_DELAY_GAME;
+    private boolean computeRotationMatrix = true;
 
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
-			currentMagnetometerAccuracy = accuracy;
-	}
+    @Override
+    public void eventListenerAdded(String type, int count,
+            final KrollProxy proxy) {
+        if (EVENT_ACC.equals(type)) {
+            if (!accelerometerRegistered) {
+                TiSensorHelper.registerListener(
+                        Sensor.TYPE_LINEAR_ACCELERATION, this, sensorDelay);
+                TiSensorHelper.registerListener(Sensor.TYPE_GRAVITY, this,
+                        sensorDelay);
+                accelerometerRegistered = true;
+            }
+        } else if (EVENT_GYRO.equals(type)) {
+            if (!gyroscopeRegistered) {
+                TiSensorHelper.registerListener(Sensor.TYPE_GYROSCOPE, this,
+                        sensorDelay);
+                gyroscopeRegistered = true;
+            }
+        } else if (EVENT_MAG.equals(type)) {
+            if (!magnetometerRegistered) {
+                TiSensorHelper.registerListener(Sensor.TYPE_MAGNETIC_FIELD,
+                        this, sensorDelay);
+                magnetometerRegistered = true;
+            }
+        } else if (EVENT_ROTATION.equals(type)) {
+            if (!rotationRegistered) {
+                TiSensorHelper.registerListener(
+                        Sensor.TYPE_GAME_ROTATION_VECTOR, this, sensorDelay);
+                rotationRegistered = true;
+            }
+        } else if (EVENT_ORIENTATION.equals(type)) {
+            if (!orientationRegistered) {
+                TiSensorHelper.registerListener(Sensor.TYPE_ORIENTATION, this,
+                        sensorDelay);
+                orientationRegistered = true;
+            }
+        } else if (EVENT_MOTION.equals(type)) {
+            if (!motionRegistered) {
+                Log.w(LCAT, "registering motion: " + updateInterval + "("
+                        + sensorDelay + ")");
 
-	private KrollDict eventToDict(int type, float[] values) {
-		KrollDict sensordata = new KrollDict();
-		float x = values[0];
-		float y = values[1];
-		float z = values[2];
+                if (!magnetometerRegistered
+                        && motionSensors.contains(EVENT_MAG)) {
+                    TiSensorHelper.registerListener(Sensor.TYPE_MAGNETIC_FIELD,
+                            this, sensorDelay);
+                    }
 
-		switch (type) 
-		{
-			case Sensor.TYPE_ACCELEROMETER: {
-				// float[] gravs = mCurrentValues.get(Sensor.TYPE_GRAVITY);
-				final float alpha = (float) 0.8;
-				x /= -STANDARD_GRAVITY; 
-				y /= -STANDARD_GRAVITY;
-				z /= -STANDARD_GRAVITY;
-	
-				gravity[0] = alpha * gravity[0] + (1 - alpha) * x;
-				gravity[1] = alpha * gravity[1] + (1 - alpha) * y;
-				gravity[2] = alpha * gravity[2] + (1 - alpha) * z;
-	
-				sensordata.put(TiC.PROPERTY_X, x);
-				sensordata.put(TiC.PROPERTY_Y, y);
-				sensordata.put(TiC.PROPERTY_Z, z);
-				KrollDict useracc = new KrollDict();
-				useracc.put(TiC.PROPERTY_X, x - gravity[0]);
-				useracc.put(TiC.PROPERTY_Y, y - gravity[1]);
-				useracc.put(TiC.PROPERTY_Z, z - gravity[2]);
-				KrollDict gacc = new KrollDict();
-				gacc.put(TiC.PROPERTY_X, gravity[0]);
-				gacc.put(TiC.PROPERTY_Y, gravity[1]);
-				gacc.put(TiC.PROPERTY_Z, gravity[2]);
-				sensordata.put(PROPERTY_USER, useracc);
-				sensordata.put(PROPERTY_GRAVITY, gacc);
-			}
-			break;
-			case Sensor.TYPE_LINEAR_ACCELERATION: {
-				// float[] gravs = mCurrentValues.get(Sensor.TYPE_GRAVITY);
-//				final float alpha = (float) 0.8;
-				x /= STANDARD_GRAVITY;
-				y /= STANDARD_GRAVITY;
-				z /= STANDARD_GRAVITY;
-				
-				float[] gravity = mCurrentValues.get(Sensor.TYPE_GRAVITY);
-				 float gx = gravity[0] / STANDARD_GRAVITY;
-				 float gy = gravity[1] / STANDARD_GRAVITY;
-				 float gz = gravity[2] / STANDARD_GRAVITY;
-	
-				sensordata.put(TiC.PROPERTY_X, x + gx);
-				sensordata.put(TiC.PROPERTY_Y, y + gy);
-				sensordata.put(TiC.PROPERTY_Z, z + gz);
-				KrollDict useracc = new KrollDict();
-				useracc.put(TiC.PROPERTY_X, x);
-				useracc.put(TiC.PROPERTY_Y, y);
-				useracc.put(TiC.PROPERTY_Z, z);
-				KrollDict gacc = new KrollDict();
-				gacc.put(TiC.PROPERTY_X, gx);
-				gacc.put(TiC.PROPERTY_Y, gy);
-				gacc.put(TiC.PROPERTY_Z, gz);
-				sensordata.put(PROPERTY_USER, useracc);
-				sensordata.put(PROPERTY_GRAVITY, gacc);
-			}
-			break;
-			case Sensor.TYPE_MAGNETIC_FIELD: {
-				sensordata.put(TiC.PROPERTY_X, x);
-				sensordata.put(TiC.PROPERTY_Y, y);
-				sensordata.put(TiC.PROPERTY_Z, z);
-				sensordata.put(TiC.PROPERTY_ACCURACY, currentMagnetometerAccuracy);
-			}
-			break;
-			case Sensor.TYPE_ORIENTATION: {
-				sensordata.put(PROPERTY_YAW, x);
-				sensordata.put(PROPERTY_PITCH, y);
-				sensordata.put(PROPERTY_ROLL, z);
-			}
-			break;
-			case Sensor.TYPE_GYROSCOPE: {
-				sensordata.put(TiC.PROPERTY_X, x);
-				sensordata.put(TiC.PROPERTY_Y, y);
-				sensordata.put(TiC.PROPERTY_Z, z);
-			}
-			break;
-			default:
-			break;
-		}
-		return sensordata;
-	}
+                if (!gyroscopeRegistered && motionSensors.contains(EVENT_GYRO)) {
+                    TiSensorHelper.registerListener(Sensor.TYPE_GYROSCOPE,
+                            this, sensorDelay);
+                }
+                if (!orientationRegistered
+                        && motionSensors.contains(EVENT_ORIENTATION)) {
+                    TiSensorHelper.registerListener(Sensor.TYPE_ORIENTATION,
+                            this, sensorDelay);
+                }
+                if (!accelerometerRegistered
+                        && motionSensors.contains(EVENT_ACC)) {
+                    TiSensorHelper.registerListener(
+                            Sensor.TYPE_LINEAR_ACCELERATION, this, sensorDelay);
+                    TiSensorHelper.registerListener(Sensor.TYPE_GRAVITY, this,
+                            sensorDelay);
+                }
+                if (!rotationRegistered && motionSensors.contains(EVENT_ROTATION)) {
+                    TiSensorHelper
+                            .registerListener(Sensor.TYPE_GAME_ROTATION_VECTOR,
+                                    this, sensorDelay);
 
-	private String eventProperty(int type) {
-		switch (type) {
-		case Sensor.TYPE_ACCELEROMETER:
-		case Sensor.TYPE_LINEAR_ACCELERATION:
-			return EVENT_ACC;
-		case Sensor.TYPE_MAGNETIC_FIELD:
-			return EVENT_MAG;
-		case Sensor.TYPE_GYROSCOPE:
-			return EVENT_GYRO;
-		case Sensor.TYPE_ORIENTATION:
-			return EVENT_ORIENTATION;
-		default:
-			return null;
-		}
-	}
+                }
+                motionRegistered = true;
+            }
+        }
+        super.eventListenerAdded(type, count, proxy);
+    }
 
-	public void onSensorChanged(SensorEvent event) {
-		synchronized (valuesLock)
-		{
-//			long newSensorEventTimestamp = System.nanoTime() / 1000L; // MICRO SECONDS
-			long newSensorEventTimestamp = (new Date()).getTime() 
-            	+ (event.timestamp - System.nanoTime()) / 1000000L;// MILLI SECONDS
-//			long newSensorEventTimestamp = event.timestamp / 1000;// MICRO SECONDS
-			if (!motionRegistered) {
-				
-				KrollDict sensordata = null;
-	
-				if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION
-						&& accelerometerRegistered) {
-					 if (!mCurrentValues.containsKey(Sensor.TYPE_GRAVITY)) return;
-					sensordata = eventToDict(event.sensor.getType(), event.values);
-					mCurrentValues.remove(Sensor.TYPE_GRAVITY);
-				} else if (event.sensor.getType() == Sensor.TYPE_GRAVITY
-						&& accelerometerRegistered) {
-					 if (!mCurrentValues.containsKey(Sensor.TYPE_GRAVITY));
-					 {
-						 //gravity values are inversed!
-						float[] gravs = event.values.clone();
-						gravs[0] *= -1;
-						gravs[1] *= -1;
-						gravs[2] *= -1;
-						mCurrentValues.put(event.sensor.getType(), gravs);
-					 }
-				} else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD
-						&& magnetometerRegistered) {
-					sensordata = eventToDict(event.sensor.getType(), event.values);
-				} else if (event.sensor.getType() == Sensor.TYPE_ORIENTATION
-						&& orientationRegistered) {
-					sensordata = eventToDict(event.sensor.getType(), event.values);
-				} else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE
-						&& gyroscopeRegistered) {
-					sensordata = eventToDict(event.sensor.getType(), event.values);
-				}
-	
-				if (sensordata != null) {
-					String type = eventProperty(event.sensor.getType());
-					sensordata.put(TiC.EVENT_PROPERTY_TYPE, type);
-					sensordata.put(TiC.PROPERTY_TIMESTAMP, newSensorEventTimestamp);
-					fireEvent(type, sensordata);
-				}
-				return;
-			}
-	
-			if (mCurrentValues.containsKey(event.sensor.getType()))
-				return;
-			
-			float[] values = event.values.clone();
-			if (event.sensor.getType() == Sensor.TYPE_GRAVITY)
-			{
-				 //gravity values are inversed!
-				values[0] *= -1;
-				values[1] *= -1;
-				values[2] *= -1;
-			}
-			mCurrentValues.put(event.sensor.getType(), values);
-			
-			if (mCurrentValues.size() != motionRealNbSensors)
-				return;
-			
-			long deltaTime = (newSensorEventTimestamp - lastTimeStamp); //MILLI SECONDS
-			if (lastTimeStamp != -1 && deltaTime < updateInterval)
-			{
-				mCurrentValues.clear();
-				return;
-			}
-	
-			if (computeRotationMatrix) {
-				// SensorManager.getRotationMatrix(R, I,
-				// filteredAcc,
-				// filteredMag);
-				//
-				// SensorManager.remapCoordinateSystem(R, SensorManager.AXIS_Y,
-				// SensorManager.AXIS_MINUS_X, outR);
-				//
-				// /*
-				// * Calculate the current orientation of the screen
-				// */
-				// float[] orientationVector = new float[4];
-				// float[] zVec = sZVector;
-				// Matrix.multiplyMV(orientationVector, 0, outR, 0, zVec, 0);
-				// float orientation = (float)
-				// Math.toDegrees(-Math.atan2(orientationVector[0],
-				// orientationVector[1]));
-				//
-				// /*
-				// * Calculate the azimuth angle (deviation from north)
-				// */
-				// float[] azimuthVector = new float[4];
-				// Matrix.invertM(R, 0, outR, 0);
-				// Matrix.multiplyMV(azimuthVector, 0, R, 0, zVec, 0);
-				// float azimuth = 180 + (float)
-				// Math.toDegrees(Math.atan2(azimuthVector[0],
-				// azimuthVector[1]));
-				// Log.w(LCAT, "azimuth " + azimuth);
-				//
-				// SensorManager.getOrientation(outR, values);
-				// int[] v = new int[3];
-				//
-				// v[0] = filter[0].average(values[0] * 100);
-				// v[1] = filter[1].average(values[1] * 100);
-				// v[2] = filter[2].average(values[2] * 100);
-				// Log.w(LCAT, "v " + v[0] + "," + v[1] + "," + v[2]);
-			}
-	
-			KrollDict data = new KrollDict();
-			data.put(TiC.PROPERTY_TIMESTAMP, newSensorEventTimestamp);
-			data.put(TiC.EVENT_PROPERTY_TYPE, EVENT_MOTION);
-	
-			KrollDict sensordata;
-	
-			// ACCELEROMETER
-			if (motionSensors.contains(EVENT_ACC))
-			{
-				sensordata = eventToDict(Sensor.TYPE_LINEAR_ACCELERATION,
-					mCurrentValues.get(Sensor.TYPE_LINEAR_ACCELERATION));
-				data.put(EVENT_ACC, sensordata);
-			}
-	
-			// GYROSCOPE
-			if (motionSensors.contains(EVENT_GYRO))
-			{
-				sensordata = eventToDict(Sensor.TYPE_GYROSCOPE,
-						mCurrentValues.get(Sensor.TYPE_GYROSCOPE));
-				data.put(EVENT_GYRO, sensordata);
-			}
-	
-			// ORIENTATION
-			if (motionSensors.contains(EVENT_ORIENTATION))
-			{
-				sensordata = eventToDict(Sensor.TYPE_ORIENTATION,
-						mCurrentValues.get(Sensor.TYPE_ORIENTATION));
-				data.put(EVENT_ORIENTATION, sensordata);
-			}
-	
-			// MAGNETIC_FIELD
-			if (motionSensors.contains(EVENT_MAG))
-			{
-				sensordata = eventToDict(Sensor.TYPE_MAGNETIC_FIELD,
-						mCurrentValues.get(Sensor.TYPE_MAGNETIC_FIELD));
-				data.put(EVENT_MAG, sensordata);
-			}
-	
-			lastTimeStamp = newSensorEventTimestamp;
-			mCurrentValues.clear();
-			fireEvent(EVENT_MOTION, data);
-		}
-	}
+    @Override
+    public void eventListenerRemoved(String type, int count, KrollProxy proxy) {
+        if (EVENT_ACC.equals(type)) {
+            if (accelerometerRegistered) {
+                // TiSensorHelper.unregisterListener(Sensor.TYPE_ACCELEROMETER,
+                // this);
+                TiSensorHelper.unregisterListener(Sensor.TYPE_GRAVITY, this);
+                TiSensorHelper.unregisterListener(
+                        Sensor.TYPE_LINEAR_ACCELERATION, this);
+                accelerometerRegistered = false;
+            }
+        } else if (EVENT_GYRO.equals(type)) {
+            if (gyroscopeRegistered) {
+                TiSensorHelper.unregisterListener(Sensor.TYPE_GYROSCOPE, this);
+                gyroscopeRegistered = false;
+            }
+        } else if (EVENT_ORIENTATION.equals(type)) {
+            if (orientationRegistered) {
+                TiSensorHelper
+                        .unregisterListener(Sensor.TYPE_ORIENTATION, this);
+                orientationRegistered = false;
+            }
+        } else if (EVENT_ROTATION.equals(type)) {
+            if (rotationRegistered) {
+                TiSensorHelper.unregisterListener(
+                        Sensor.TYPE_GAME_ROTATION_VECTOR, this);
+                rotationRegistered = false;
+            }
+        } else if (EVENT_MAG.equals(type)) {
+            if (magnetometerRegistered) {
+                TiSensorHelper.unregisterListener(Sensor.TYPE_MAGNETIC_FIELD,
+                        this);
+                magnetometerRegistered = false;
+            }
+        } else if (EVENT_MOTION.equals(type)) {
+            if (motionRegistered) {
+                if (!magnetometerRegistered) {
+                    TiSensorHelper.unregisterListener(
+                            Sensor.TYPE_MAGNETIC_FIELD, this);
+                }
 
-	@Kroll.getProperty
-	@Kroll.method
-	public int getUpdateInterval() {
-		return updateInterval;
-	}
+                if (!accelerometerRegistered) {
+                    TiSensorHelper.unregisterListener(
+                            Sensor.TYPE_LINEAR_ACCELERATION, this);
+                    TiSensorHelper
+                            .unregisterListener(Sensor.TYPE_GRAVITY, this);
+                }
+                if (!orientationRegistered) {
+                    TiSensorHelper.unregisterListener(Sensor.TYPE_ORIENTATION,
+                            this);
+                }
+                if (!gyroscopeRegistered) {
+                    TiSensorHelper.unregisterListener(Sensor.TYPE_GYROSCOPE,
+                            this);
+                }
+                if (!rotationRegistered) {
+                    TiSensorHelper.unregisterListener(
+                            Sensor.TYPE_GAME_ROTATION_VECTOR, this);
+                }
+                motionRegistered = false;
+            }
+        }
+        super.eventListenerRemoved(type, count, proxy);
+    }
 
-	@Kroll.method
-	@Kroll.setProperty
-	public void setUpdateInterval(int interval) // in ms
-	{
-		int newSensorDelay;
-		updateInterval = interval;
-		if (updateInterval < 20)
-			newSensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
-		else if (updateInterval < 70)
-			newSensorDelay = SensorManager.SENSOR_DELAY_GAME;
-		else if (updateInterval < 200)
-			newSensorDelay = SensorManager.SENSOR_DELAY_UI;	
-		else 
-			newSensorDelay = SensorManager.SENSOR_DELAY_NORMAL;
-		
-		//we need to register again in that case
-		if (newSensorDelay != sensorDelay)
-		{
-			sensorDelay = newSensorDelay;
-			Log.w(LCAT, "updateInterval: " + updateInterval + "(" + sensorDelay + ")");
-			if (accelerometerRegistered) {
-				TiSensorHelper.unregisterListener(Sensor.TYPE_GRAVITY, this);
-				TiSensorHelper.registerListener(Sensor.TYPE_GRAVITY, this, sensorDelay);
-				TiSensorHelper.unregisterListener(Sensor.TYPE_LINEAR_ACCELERATION, this);
-				TiSensorHelper.registerListener(Sensor.TYPE_LINEAR_ACCELERATION, this, sensorDelay);
-			}
-			if (gyroscopeRegistered) {
-				TiSensorHelper.unregisterListener(Sensor.TYPE_GYROSCOPE, this);
-				TiSensorHelper.registerListener(Sensor.TYPE_GYROSCOPE, this, sensorDelay);
-			}
-			if (orientationRegistered) {
-				TiSensorHelper
-						.unregisterListener(Sensor.TYPE_ORIENTATION, this);
-				TiSensorHelper.registerListener(Sensor.TYPE_ORIENTATION, this, sensorDelay);
-			}
-			if (magnetometerRegistered) {
-				TiSensorHelper.unregisterListener(Sensor.TYPE_MAGNETIC_FIELD,
-						this);
-				TiSensorHelper.registerListener(Sensor.TYPE_MAGNETIC_FIELD, this, sensorDelay);
-			}
-		}
-	}
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+            currentMagnetometerAccuracy = accuracy;
+    }
 
-	@Kroll.getProperty
-	@Kroll.method
-	public boolean getComputeRotationMatrix() {
-		return computeRotationMatrix;
-	}
+    private KrollDict eventToDict(int type, float[] values) {
+        KrollDict sensordata = new KrollDict();
+        float x = values[0];
+        float y = values[1];
+        float z = values[2];
 
-	@Kroll.method
-	@Kroll.setProperty
-	public void setComputeRotationMatrix(boolean value) {
-		computeRotationMatrix = value;
-	}
-	
-	@Kroll.getProperty
-	@Kroll.method
-	public Object[] getMotionSensors() {
-		return motionSensors.toArray();
-	}
-	
-	@Kroll.method
-	@Kroll.setProperty
-	public void setMotionSensors(Object[] sensors) {
-		motionSensors = new ArrayList<String>();
-        for(int i=0; i < sensors.length; i++) {
-        	if (POSSIBLE_MOTION_SENSORS.contains(sensors[i]))
-        	{
-        		motionSensors.add((String) sensors[i]);
-        	}
+        switch (type) {
+        case Sensor.TYPE_ACCELEROMETER: {
+            // float[] gravs = mCurrentValues.get(Sensor.TYPE_GRAVITY);
+            final float alpha = (float) 0.8;
+            x /= -STANDARD_GRAVITY;
+            y /= -STANDARD_GRAVITY;
+            z /= -STANDARD_GRAVITY;
+
+            gravity[0] = alpha * gravity[0] + (1 - alpha) * x;
+            gravity[1] = alpha * gravity[1] + (1 - alpha) * y;
+            gravity[2] = alpha * gravity[2] + (1 - alpha) * z;
+
+            sensordata.put(TiC.PROPERTY_X, x);
+            sensordata.put(TiC.PROPERTY_Y, y);
+            sensordata.put(TiC.PROPERTY_Z, z);
+            KrollDict useracc = new KrollDict();
+            useracc.put(TiC.PROPERTY_X, x - gravity[0]);
+            useracc.put(TiC.PROPERTY_Y, y - gravity[1]);
+            useracc.put(TiC.PROPERTY_Z, z - gravity[2]);
+            KrollDict gacc = new KrollDict();
+            gacc.put(TiC.PROPERTY_X, gravity[0]);
+            gacc.put(TiC.PROPERTY_Y, gravity[1]);
+            gacc.put(TiC.PROPERTY_Z, gravity[2]);
+            sensordata.put(PROPERTY_USER, useracc);
+            sensordata.put(PROPERTY_GRAVITY, gacc);
+        }
+            break;
+        case Sensor.TYPE_LINEAR_ACCELERATION: {
+            // float[] gravs = mCurrentValues.get(Sensor.TYPE_GRAVITY);
+            // final float alpha = (float) 0.8;
+            x /= STANDARD_GRAVITY;
+            y /= STANDARD_GRAVITY;
+            z /= STANDARD_GRAVITY;
+
+            float[] gravity = mCurrentValues.get(Sensor.TYPE_GRAVITY);
+            float gx = gravity[0] / STANDARD_GRAVITY;
+            float gy = gravity[1] / STANDARD_GRAVITY;
+            float gz = gravity[2] / STANDARD_GRAVITY;
+
+            sensordata.put(TiC.PROPERTY_X, x + gx);
+            sensordata.put(TiC.PROPERTY_Y, y + gy);
+            sensordata.put(TiC.PROPERTY_Z, z + gz);
+            KrollDict useracc = new KrollDict();
+            useracc.put(TiC.PROPERTY_X, x);
+            useracc.put(TiC.PROPERTY_Y, y);
+            useracc.put(TiC.PROPERTY_Z, z);
+            KrollDict gacc = new KrollDict();
+            gacc.put(TiC.PROPERTY_X, gx);
+            gacc.put(TiC.PROPERTY_Y, gy);
+            gacc.put(TiC.PROPERTY_Z, gz);
+            sensordata.put(PROPERTY_USER, useracc);
+            sensordata.put(PROPERTY_GRAVITY, gacc);
+        }
+            break;
+        case Sensor.TYPE_MAGNETIC_FIELD: {
+            sensordata.put(TiC.PROPERTY_X, x);
+            sensordata.put(TiC.PROPERTY_Y, y);
+            sensordata.put(TiC.PROPERTY_Z, z);
+            sensordata.put(TiC.PROPERTY_ACCURACY, currentMagnetometerAccuracy);
+        }
+            break;
+        case Sensor.TYPE_ORIENTATION: {
+            sensordata.put(PROPERTY_YAW, x);
+            sensordata.put(PROPERTY_PITCH, y);
+            sensordata.put(PROPERTY_ROLL, z);
+        }
+            break;
+        case Sensor.TYPE_GYROSCOPE: {
+            sensordata.put(TiC.PROPERTY_X, x);
+            sensordata.put(TiC.PROPERTY_Y, y);
+            sensordata.put(TiC.PROPERTY_Z, z);
+        }
+            break;
+        case Sensor.TYPE_ROTATION_VECTOR:
+        case Sensor.TYPE_GAME_ROTATION_VECTOR: {
+            sensordata.put("quaternion", values);
+            if (computeRotationMatrix) {
+                if (mRotationMatrix == null) {
+                    mRotationMatrix = new float[9];
+                }
+                SensorManager.getRotationMatrixFromVector(mRotationMatrix,
+                        values);
+                sensordata.put("rotationMatrix", mRotationMatrix);
+            }
+
+        }
+        default:
+            break;
+        }
+        return sensordata;
+    }
+
+    private String eventProperty(int type) {
+        switch (type) {
+        case Sensor.TYPE_ACCELEROMETER:
+        case Sensor.TYPE_LINEAR_ACCELERATION:
+            return EVENT_ACC;
+        case Sensor.TYPE_GAME_ROTATION_VECTOR:
+        case Sensor.TYPE_ROTATION_VECTOR:
+            return EVENT_ROTATION;
+        case Sensor.TYPE_MAGNETIC_FIELD:
+            return EVENT_MAG;
+        case Sensor.TYPE_GYROSCOPE:
+            return EVENT_GYRO;
+        case Sensor.TYPE_ORIENTATION:
+            return EVENT_ORIENTATION;
+        default:
+            return null;
+        }
+    }
+
+    public void onSensorChanged(SensorEvent event) {
+        synchronized (valuesLock) {
+            // long newSensorEventTimestamp = System.nanoTime() / 1000L; //
+            // MICRO SECONDS
+            long newSensorEventTimestamp = (new Date()).getTime()
+                    + (event.timestamp - System.nanoTime()) / 1000000L;// MILLI
+                                                                       // SECONDS
+            // long newSensorEventTimestamp = event.timestamp / 1000;// MICRO
+            // SECONDS
+            if (!motionRegistered) {
+
+                KrollDict sensordata = null;
+
+                if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION
+                        && accelerometerRegistered) {
+                    if (!mCurrentValues.containsKey(Sensor.TYPE_GRAVITY))
+                        return;
+                    sensordata = eventToDict(event.sensor.getType(),
+                            event.values);
+                    mCurrentValues.remove(Sensor.TYPE_GRAVITY);
+                } else if (event.sensor.getType() == Sensor.TYPE_GRAVITY
+                        && accelerometerRegistered) {
+                    if (!mCurrentValues.containsKey(Sensor.TYPE_GRAVITY))
+                        ;
+                    {
+                        // gravity values are inversed!
+                        float[] gravs = event.values.clone();
+                        gravs[0] *= -1;
+                        gravs[1] *= -1;
+                        gravs[2] *= -1;
+                        mCurrentValues.put(event.sensor.getType(), gravs);
+                    }
+                } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD
+                        && magnetometerRegistered) {
+                    sensordata = eventToDict(event.sensor.getType(),
+                            event.values);
+                } else if (event.sensor.getType() == Sensor.TYPE_ORIENTATION
+                        && orientationRegistered) {
+                    sensordata = eventToDict(event.sensor.getType(),
+                            event.values);
+                } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE
+                        && gyroscopeRegistered) {
+                    sensordata = eventToDict(event.sensor.getType(),
+                            event.values);
+                } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR
+                        || event.sensor.getType() == Sensor.TYPE_GAME_ROTATION_VECTOR) {
+                    sensordata = eventToDict(event.sensor.getType(),
+                            event.values);
+                }
+
+                if (sensordata != null) {
+                    String type = eventProperty(event.sensor.getType());
+                    sensordata.put(TiC.EVENT_PROPERTY_TYPE, type);
+                    sensordata.put(TiC.PROPERTY_TIMESTAMP,
+                            newSensorEventTimestamp);
+                    fireEvent(type, sensordata);
+                }
+                return;
+            }
+
+            if (mCurrentValues.containsKey(event.sensor.getType()))
+                return;
+
+            float[] values = event.values.clone();
+            if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
+                // gravity values are inversed!
+                values[0] *= -1;
+                values[1] *= -1;
+                values[2] *= -1;
+            }
+            mCurrentValues.put(event.sensor.getType(), values);
+
+            if (mCurrentValues.size() != motionRealNbSensors)
+                return;
+
+            long deltaTime = (newSensorEventTimestamp - lastTimeStamp); // MILLI
+                                                                        // SECONDS
+            if (lastTimeStamp != -1 && deltaTime < updateInterval) {
+                mCurrentValues.clear();
+                return;
+            }
+
+            KrollDict data = new KrollDict();
+            data.put(TiC.PROPERTY_TIMESTAMP, newSensorEventTimestamp);
+            data.put(TiC.EVENT_PROPERTY_TYPE, EVENT_MOTION);
+
+            KrollDict sensordata;
+
+            // ACCELEROMETER
+            if (motionSensors.contains(EVENT_ACC)) {
+                sensordata = eventToDict(Sensor.TYPE_LINEAR_ACCELERATION,
+                        mCurrentValues.get(Sensor.TYPE_LINEAR_ACCELERATION));
+                data.put(EVENT_ACC, sensordata);
+            }
+
+            // GYROSCOPE
+            if (motionSensors.contains(EVENT_GYRO)) {
+//                sensordata = eventToDict(Sensor.TYPE_GYROSCOPE,
+//                        mCurrentValues.get(Sensor.TYPE_GYROSCOPE));
+                data.put(EVENT_GYRO, mCurrentValues.get(Sensor.TYPE_GYROSCOPE));
+            }
+
+            // ORIENTATION
+            if (motionSensors.contains(EVENT_ORIENTATION)) {
+                sensordata = eventToDict(Sensor.TYPE_ORIENTATION,
+                        mCurrentValues.get(Sensor.TYPE_ORIENTATION));
+                data.put(EVENT_ORIENTATION, sensordata);
+            }
+
+            // MAGNETIC_FIELD
+            if (motionSensors.contains(EVENT_MAG)) {
+                sensordata = eventToDict(Sensor.TYPE_MAGNETIC_FIELD,
+                        mCurrentValues.get(Sensor.TYPE_MAGNETIC_FIELD));
+                data.put(EVENT_MAG, sensordata);
+            }
+
+            if (motionSensors.contains(EVENT_ROTATION) && mCurrentValues.containsKey(Sensor.TYPE_GAME_ROTATION_VECTOR)) {
+                float [] quat = mCurrentValues.get(Sensor.TYPE_GAME_ROTATION_VECTOR);
+                data.put("quaternion", quat);
+                if (computeRotationMatrix) {
+                    if (mRotationMatrix == null) {
+                        mRotationMatrix = new float[9];
+                    }
+                    SensorManager.getRotationMatrixFromVector(mRotationMatrix, quat);
+                    data.put("rotationMatrix", mRotationMatrix);
+                }
+                
+            }
+
+            lastTimeStamp = newSensorEventTimestamp;
+            mCurrentValues.clear();
+            fireEvent(EVENT_MOTION, data, false, false);
+        }
+    }
+
+    @Kroll.getProperty
+    @Kroll.method
+    public int getUpdateInterval() {
+        return updateInterval;
+    }
+
+    @Kroll.method
+    @Kroll.setProperty
+    public void setUpdateInterval(int interval) // in ms
+    {
+        int newSensorDelay;
+        updateInterval = interval;
+        if (updateInterval < 20)
+            newSensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
+        else if (updateInterval < 70)
+            newSensorDelay = SensorManager.SENSOR_DELAY_GAME;
+        else if (updateInterval < 200)
+            newSensorDelay = SensorManager.SENSOR_DELAY_UI;
+        else
+            newSensorDelay = SensorManager.SENSOR_DELAY_NORMAL;
+
+        // we need to register again in that case
+        if (newSensorDelay != sensorDelay) {
+            sensorDelay = newSensorDelay;
+            Log.w(LCAT, "updateInterval: " + updateInterval + "(" + sensorDelay
+                    + ")");
+            if (accelerometerRegistered) {
+                TiSensorHelper.unregisterListener(Sensor.TYPE_GRAVITY, this);
+                TiSensorHelper.registerListener(Sensor.TYPE_GRAVITY, this,
+                        sensorDelay);
+                TiSensorHelper.unregisterListener(
+                        Sensor.TYPE_LINEAR_ACCELERATION, this);
+                TiSensorHelper.registerListener(
+                        Sensor.TYPE_LINEAR_ACCELERATION, this, sensorDelay);
+            }
+            if (gyroscopeRegistered) {
+                TiSensorHelper.unregisterListener(Sensor.TYPE_GYROSCOPE, this);
+                TiSensorHelper.registerListener(Sensor.TYPE_GYROSCOPE, this,
+                        sensorDelay);
+            }
+            if (orientationRegistered) {
+                TiSensorHelper
+                        .unregisterListener(Sensor.TYPE_ORIENTATION, this);
+                TiSensorHelper.registerListener(Sensor.TYPE_ORIENTATION, this,
+                        sensorDelay);
+            }
+            if (magnetometerRegistered) {
+                TiSensorHelper.unregisterListener(Sensor.TYPE_MAGNETIC_FIELD,
+                        this);
+                TiSensorHelper.registerListener(Sensor.TYPE_MAGNETIC_FIELD,
+                        this, sensorDelay);
+            }
+        }
+    }
+
+    @Kroll.getProperty
+    @Kroll.method
+    public boolean getComputeRotationMatrix() {
+        return computeRotationMatrix;
+    }
+
+    @Kroll.method
+    @Kroll.setProperty
+    public void setComputeRotationMatrix(boolean value) {
+        computeRotationMatrix = value;
+    }
+
+    @Kroll.getProperty
+    @Kroll.method
+    public Object[] getMotionSensors() {
+        return motionSensors.toArray();
+    }
+
+    @Kroll.method
+    @Kroll.setProperty
+    public void setMotionSensors(Object[] sensors) {
+        motionSensors = new ArrayList<String>();
+        for (int i = 0; i < sensors.length; i++) {
+            if (POSSIBLE_MOTION_SENSORS.contains(sensors[i])) {
+                motionSensors.add((String) sensors[i]);
+            }
         }
         motionRealNbSensors = motionSensors.size();
-        
-    	//+1 because accelerometer = gravity + linear acceleration
+
+        // +1 because accelerometer = gravity + linear acceleration
         if (motionSensors.contains(EVENT_ACC))
-        	motionRealNbSensors += 1;
-    	Log.w(LCAT, "motionSensors [" + motionRealNbSensors + "]" + motionSensors.toString());
-	}
+            motionRealNbSensors += 1;
+        Log.w(LCAT, "motionSensors [" + motionRealNbSensors + "]"
+                + motionSensors.toString());
+    }
 
-	private boolean hasSensor(int type) {
-		boolean sensor = false;
+    private boolean hasSensor(int type) {
+        boolean sensor = false;
 
-		SensorManager sensorManager = TiSensorHelper.getSensorManager();
-		if (sensorManager != null) {
-			sensor = sensorManager.getDefaultSensor(type) != null;
-		} else {
-			Activity activity = TiApplication.getInstance()
-					.getCurrentActivity();
-			sensor = TiSensorHelper.hasDefaultSensor(activity, type);
-		}
+        SensorManager sensorManager = TiSensorHelper.getSensorManager();
+        if (sensorManager != null) {
+            sensor = sensorManager.getDefaultSensor(type) != null;
+        } else {
+            Activity activity = TiApplication.getInstance()
+                    .getCurrentActivity();
+            sensor = TiSensorHelper.hasDefaultSensor(activity, type);
+        }
 
-		return sensor;
-	}
+        return sensor;
+    }
 
-	/**
-	 * Checks if the device has an orientation sensor sensor
-	 * 
-	 * @return <code>true</code> if the device has an orientation sensor,
-	 *         <code>false</code> if not
-	 */
-	@Kroll.method
-	@Kroll.getProperty
-	public boolean getHasOrientation() {
-		return hasSensor(Sensor.TYPE_ORIENTATION);
-	}
+    /**
+     * Checks if the device has an orientation sensor sensor
+     * 
+     * @return <code>true</code> if the device has an orientation sensor,
+     *         <code>false</code> if not
+     */
+    @Kroll.method
+    @Kroll.getProperty
+    public boolean getHasOrientation() {
+        return hasSensor(Sensor.TYPE_ORIENTATION);
+    }
 
-	/**
-	 * Checks if the device has a gyroscope sensor
-	 * 
-	 * @return <code>true</code> if the device has a gyroscope,
-	 *         <code>false</code> if not
-	 */
-	@Kroll.method
-	@Kroll.getProperty
-	public boolean getHasGyroscope() {
-		return hasSensor(Sensor.TYPE_GYROSCOPE);
-	}
+    /**
+     * Checks if the device has a gyroscope sensor
+     * 
+     * @return <code>true</code> if the device has a gyroscope,
+     *         <code>false</code> if not
+     */
+    @Kroll.method
+    @Kroll.getProperty
+    public boolean getHasGyroscope() {
+        return hasSensor(Sensor.TYPE_GYROSCOPE);
+    }
 
-	/**
-	 * Checks if the device has an accelerometer sensor
-	 * 
-	 * @return <code>true</code> if the device has an accelerometer,
-	 *         <code>false</code> if not
-	 */
-	@Kroll.method
-	@Kroll.getProperty
-	public boolean getHasAccelerometer() {
-		return hasSensor(Sensor.TYPE_ACCELEROMETER);
-	}
+    /**
+     * Checks if the device has an accelerometer sensor
+     * 
+     * @return <code>true</code> if the device has an accelerometer,
+     *         <code>false</code> if not
+     */
+    @Kroll.method
+    @Kroll.getProperty
+    public boolean getHasAccelerometer() {
+        return hasSensor(Sensor.TYPE_ACCELEROMETER);
+    }
 
-	/**
-	 * Checks if the device has a magnetometer sensor
-	 * 
-	 * @return <code>true</code> if the device has a magnetometer,
-	 *         <code>false</code> if not
-	 */
-	@Kroll.method
-	@Kroll.getProperty
-	public boolean getHasMagnetometer() {
-		return hasSensor(Sensor.TYPE_MAGNETIC_FIELD);
-	}
+    /**
+     * Checks if the device has a magnetometer sensor
+     * 
+     * @return <code>true</code> if the device has a magnetometer,
+     *         <code>false</code> if not
+     */
+    @Kroll.method
+    @Kroll.getProperty
+    public boolean getHasMagnetometer() {
+        return hasSensor(Sensor.TYPE_MAGNETIC_FIELD);
+    }
 }

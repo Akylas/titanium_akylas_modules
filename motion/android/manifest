@@ -12,7 +12,7 @@ debug_project_subpath: motion/android
 
 
 # these should not be edited
-name: akylas_motion_android
+name: akylas-motion
 moduleid: akylas.motion
 guid: 147f5a96-8bb6-4e7f-8e4d-de2942d05551
 platform: android
