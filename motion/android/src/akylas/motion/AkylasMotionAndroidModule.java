@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 //import java.util.Vector;
 
+
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollModule;
@@ -25,7 +26,6 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 
 import android.app.Activity;
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -646,5 +646,11 @@ public class AkylasMotionAndroidModule extends KrollModule implements
     @Kroll.getProperty
     public boolean getHasMagnetometer() {
         return hasSensor(Sensor.TYPE_MAGNETIC_FIELD);
+    }
+    
+    @Override
+    public void onDestroy(Activity activity) {
+        TiSensorHelper.unregisterListener(this);
+        super.onDestroy(activity);
     }
 }
