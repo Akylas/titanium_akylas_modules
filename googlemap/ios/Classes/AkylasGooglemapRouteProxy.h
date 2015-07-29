@@ -11,7 +11,8 @@
 @property(nonatomic, strong) id userData;
 @end
 
+@class AkylasGMSMapView;
 @interface AkylasGooglemapRouteProxy : AkylasMapBaseRouteProxy
--(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView;
+-(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView;
 -(GMSOverlay*)gOverlay;
 @end

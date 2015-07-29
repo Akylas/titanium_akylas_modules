@@ -23,15 +23,15 @@
 
 -(GMSMapView*)map
 {
-    return [(AkylasGooglemapView*)[self getOrCreateView] map];
+    return [(AkylasGooglemapView*)view map];
 }
 -(GClusterManager*)clusterManager
 {
-    return [(AkylasGooglemapView*)[self getOrCreateView] clusterManager];
+    return [(AkylasGooglemapView*)view clusterManager];
 }
 -(AkylasGooglemapClusterRenderer*) clusterRenderer
 {
-    return [(AkylasGooglemapView*)[self getOrCreateView] clusterRenderer];
+    return [(AkylasGooglemapView*)view clusterRenderer];
 }
 
 -(Class)annotationClass

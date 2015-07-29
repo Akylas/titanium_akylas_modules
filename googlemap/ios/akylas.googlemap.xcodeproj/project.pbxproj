@@ -26,6 +26,7 @@
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 		D50CEAE71B470B9F00A81023 /* AkylasMapBaseClusterProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D50CEAE51B470B9F00A81023 /* AkylasMapBaseClusterProxy.h */; };
 		D50CEAE81B470B9F00A81023 /* AkylasMapBaseClusterProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D50CEAE61B470B9F00A81023 /* AkylasMapBaseClusterProxy.m */; };
+		D513AA8B1B6774DE005448BF /* GClusterAlgorithm.m in Sources */ = {isa = PBXBuildFile; fileRef = D513AA8A1B6774DE005448BF /* GClusterAlgorithm.m */; };
 		D55B299F1ACBFBEC008C0279 /* AkylasGooglemapModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAEF19234D2B0019CA5A /* AkylasGooglemapModule.m */; };
 		D55C81871AD673C700339334 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D55C81861AD673C700339334 /* CoreLocation.framework */; };
 		D55C81FE1AD6B8B600339334 /* AkylasMapBaseView.h in Headers */ = {isa = PBXBuildFile; fileRef = D55C81FC1AD6B8B600339334 /* AkylasMapBaseView.h */; };
@@ -58,6 +59,8 @@
 		D56F8F601B43DA3300570916 /* AkylasGooglemapClusterProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D56F8F5E1B43DA3300570916 /* AkylasGooglemapClusterProxy.h */; };
 		D56F8F611B43DA3300570916 /* AkylasGooglemapClusterProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F5F1B43DA3300570916 /* AkylasGooglemapClusterProxy.m */; };
 		D578CAF619234D2B0019CA5A /* AkylasGooglemapModule.h in Headers */ = {isa = PBXBuildFile; fileRef = D578CAEE19234D2B0019CA5A /* AkylasGooglemapModule.h */; };
+		D58FC1D71B63ED2A0080C88B /* GridBasedAlgorithm.h in Headers */ = {isa = PBXBuildFile; fileRef = D58FC1D51B63ED2A0080C88B /* GridBasedAlgorithm.h */; };
+		D58FC1D81B63ED2A0080C88B /* GridBasedAlgorithm.m in Sources */ = {isa = PBXBuildFile; fileRef = D58FC1D61B63ED2A0080C88B /* GridBasedAlgorithm.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D594D1711AD55FE300EA6005 /* AkylasGMSMBTilesLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = D594D15A1AD55FE300EA6005 /* AkylasGMSMBTilesLayer.h */; };
 		D594D1721AD55FE300EA6005 /* AkylasGMSMBTilesLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D594D15B1AD55FE300EA6005 /* AkylasGMSMBTilesLayer.m */; };
 		D594D1731AD55FE300EA6005 /* AkylasGMSURLTileLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = D594D15C1AD55FE300EA6005 /* AkylasGMSURLTileLayer.h */; };
@@ -141,6 +144,7 @@
 		D2AAC07E0554694100DB518D /* libakylas.googlemap.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.googlemap.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D50CEAE51B470B9F00A81023 /* AkylasMapBaseClusterProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapBaseClusterProxy.h; path = Classes/common/AkylasMapBaseClusterProxy.h; sourceTree = "<group>"; };
 		D50CEAE61B470B9F00A81023 /* AkylasMapBaseClusterProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapBaseClusterProxy.m; path = Classes/common/AkylasMapBaseClusterProxy.m; sourceTree = "<group>"; };
+		D513AA8A1B6774DE005448BF /* GClusterAlgorithm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GClusterAlgorithm.m; sourceTree = "<group>"; };
 		D55B2DAF1ACC59DE008C0279 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		D55C81861AD673C700339334 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		D55C81FC1AD6B8B600339334 /* AkylasMapBaseView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapBaseView.h; path = Classes/common/AkylasMapBaseView.h; sourceTree = "<group>"; };
@@ -178,6 +182,8 @@
 		D578CAE919234C880019CA5A /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		D578CAEE19234D2B0019CA5A /* AkylasGooglemapModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGooglemapModule.h; path = Classes/AkylasGooglemapModule.h; sourceTree = "<group>"; };
 		D578CAEF19234D2B0019CA5A /* AkylasGooglemapModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapModule.m; path = Classes/AkylasGooglemapModule.m; sourceTree = "<group>"; };
+		D58FC1D51B63ED2A0080C88B /* GridBasedAlgorithm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GridBasedAlgorithm.h; sourceTree = "<group>"; };
+		D58FC1D61B63ED2A0080C88B /* GridBasedAlgorithm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GridBasedAlgorithm.m; sourceTree = "<group>"; };
 		D594D15A1AD55FE300EA6005 /* AkylasGMSMBTilesLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGMSMBTilesLayer.h; path = Classes/AkylasGMSMBTilesLayer.h; sourceTree = "<group>"; };
 		D594D15B1AD55FE300EA6005 /* AkylasGMSMBTilesLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGMSMBTilesLayer.m; path = Classes/AkylasGMSMBTilesLayer.m; sourceTree = "<group>"; };
 		D594D15C1AD55FE300EA6005 /* AkylasGMSURLTileLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGMSURLTileLayer.h; path = Classes/AkylasGMSURLTileLayer.h; sourceTree = "<group>"; };
@@ -360,7 +366,10 @@
 		D56F8F2C1B43D52C00570916 /* Algorithms */ = {
 			isa = PBXGroup;
 			children = (
+				D58FC1D51B63ED2A0080C88B /* GridBasedAlgorithm.h */,
+				D58FC1D61B63ED2A0080C88B /* GridBasedAlgorithm.m */,
 				D56F8F2D1B43D52C00570916 /* GClusterAlgorithm.h */,
+				D513AA8A1B6774DE005448BF /* GClusterAlgorithm.m */,
 				D56F8F2E1B43D52C00570916 /* GQuadItem.h */,
 				D56F8F2F1B43D52C00570916 /* GQuadItem.m */,
 				D56F8F301B43D52C00570916 /* GStaticCluster.h */,
@@ -435,6 +444,7 @@
 			files = (
 				D55C825D1AD6BAF400339334 /* SMCalloutView.h in Headers */,
 				D5B4A8F91ACAD0FA003B8608 /* GoogleMaps.framework in Headers */,
+				D58FC1D71B63ED2A0080C88B /* GridBasedAlgorithm.h in Headers */,
 				D594D1A41AD5648800EA6005 /* AkylasGooglemapRouteProxy.h in Headers */,
 				D594D18B1AD5600700EA6005 /* AkylasMapBaseRouteProxy.h in Headers */,
 				D594D1771AD55FE300EA6005 /* AkylasGooglemapView.h in Headers */,
@@ -595,7 +605,9 @@
 				D55C81FF1AD6B8B600339334 /* AkylasMapBaseView.m in Sources */,
 				D594D1951AD5600700EA6005 /* ReusableViewProxy.m in Sources */,
 				D594D18C1AD5600700EA6005 /* AkylasMapBaseRouteProxy.m in Sources */,
+				D58FC1D81B63ED2A0080C88B /* GridBasedAlgorithm.m in Sources */,
 				D594D1781AD55FE300EA6005 /* AkylasGooglemapView.m in Sources */,
+				D513AA8B1B6774DE005448BF /* GClusterAlgorithm.m in Sources */,
 				D594D1741AD55FE300EA6005 /* AkylasGMSURLTileLayer.m in Sources */,
 				D594D19D1AD560EB00EA6005 /* AkylasMapBaseModule.m in Sources */,
 				D594D17A1AD55FE300EA6005 /* AkylasGooglemapViewProxy.m in Sources */,

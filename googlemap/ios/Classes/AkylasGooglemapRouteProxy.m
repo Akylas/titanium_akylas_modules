@@ -7,6 +7,7 @@
 //
 
 #import "AkylasGooglemapRouteProxy.h"
+#import "AkylasGooglemapView.h"
 
 @implementation TIGMSPolyline
 
@@ -192,7 +193,7 @@
     return _gPoly;
 }
 
--(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
+-(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView
 {
     [self getOverlay];
     _gPoly.map = mapView;
@@ -204,4 +205,50 @@
     return _gPoly;
 }
 
+
+-(void)showInfo:(id)args
+{
+    if (self.showInfoWindow) {
+        if (_gPoly.map && IS_OF_CLASS(_gPoly.map.delegate, AkylasGooglemapView)) {
+            [ (AkylasGooglemapView*)(_gPoly.map.delegate) showCalloutForOverlay:_gPoly];
+        }
+    }
+    
+}
+
+-(void)hideInfo:(id)args
+{
+    if (_gPoly.map && IS_OF_CLASS(_gPoly.map.delegate, AkylasGooglemapView)) {
+        [ (AkylasGooglemapView*)(_gPoly.map.delegate) hideCalloutForOverlay:_gPoly];
+    }
+}
+
+-(void)onSelected:(GMSOverlay*)overlay {
+    if (overlay != _gPoly) {
+        return;
+    }
+    _gPoly.zIndex = 10000;
+    if (_selectedColor ) {
+        _gPoly.spans = @[[GMSStyleSpan spanWithColor:_selectedColor]];
+    }
+    if (_selectedLineWidth != _lineWidth ) {
+        _gPoly.strokeWidth =_selectedLineWidth;
+    }
+    [self showInfo:nil];
+}
+-(void)onDeselected:(GMSOverlay*)overlay {
+    if (overlay != _gPoly) {
+        return;
+    }
+    if (_selectedColor ) {
+        _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
+    }
+    if (_selectedLineWidth != _lineWidth ) {
+        _gPoly.strokeWidth =_lineWidth;
+    }
+    
+    _gPoly.zIndex = (int)self.zIndex;
+    [self hideInfo:nil];
+    
+}
 @end

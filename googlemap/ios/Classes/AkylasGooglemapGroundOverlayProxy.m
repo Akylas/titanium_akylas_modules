@@ -8,6 +8,7 @@
 
 #import "AkylasGooglemapGroundOverlayProxy.h"
 #import "AkylasGooglemapModule.h"
+#import "AkylasGooglemapView.h"
 
 @implementation UIImage (GoogleMaps)
 - (UIImage *)imageByApplyingAlpha:(CGFloat) alpha {
@@ -125,7 +126,7 @@
     [path release];
 }
 
--(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
+-(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView
 {
     if (_gOverlay == nil) {
         _gOverlay = [GMSGroundOverlay groundOverlayWithBounds:_gBounds icon:nil];

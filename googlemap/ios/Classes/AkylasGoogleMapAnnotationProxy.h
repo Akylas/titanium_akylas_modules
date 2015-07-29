@@ -10,13 +10,14 @@
 #import "GClusterItem.h"
 
 @class GMSOverlay;
-@class GMSMapView;
+@class AkylasGMSMapView;
 
 @interface AkylasGooglemapAnnotationProxy : AkylasMapBaseAnnotationProxy<GClusterItem>
 
 +(int)gZIndexDelta;
+@property (nonatomic, readwrite, assign) BOOL appearAnimation;
 
--(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView;
+-(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView;
 -(GMSOverlay*)gOverlay;
 -(void)removeFromMap;
 @end

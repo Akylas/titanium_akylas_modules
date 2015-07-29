@@ -18,7 +18,8 @@
 
 #define MODULE_ID @"akylas.googlemap"
 #define REGEX @"(?!"  MODULE_ID  @"/)(GoogleMaps)\\.bundle$"
-#define TEMPLATE @"modules/"  MODULE_ID  @"/$0"
+#define TOADD @"modules/"  MODULE_ID
+#define TEMPLATE TOADD @"/$0"
 
 GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 {
@@ -30,19 +31,36 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 + (void) swizzle
 {
     [NSBundle jr_swizzleMethod:@selector(initWithPath:) withMethod:@selector(initWithCorrectedPath:) error:nil];
+//    [NSBundle jr_swizzleMethod:@selector(URLForResource:withExtension:subdirectory:inBundleWithURL:) withMethod:@selector(URLForResource:withExtension:subdirectory:inBundleWithCorrectedURL:) error:nil];
+//    [NSBundle jr_swizzleMethod:@selector(URLsForResourcesWithExtension:subdirectory:inBundleWithURL:) withMethod:@selector(URLsForResourcesWithExtension:subdirectory:inBundleWithCorrectedURL:) error:nil];
 }
 
--(NSString*)fixPath:(NSString *)path
++(NSString*)fixPath:(NSString *)path
 {
+    if ([path containsString:TOADD]) {
+        return path;
+    }
     NSError *error = nil;
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:REGEX options:NSRegularExpressionCaseInsensitive error:&error];
     NSString *modifiedString = [regex stringByReplacingMatchesInString:path options:0 range:NSMakeRange(0, [path length]) withTemplate:TEMPLATE];
     return modifiedString;
 }
 
-- (instancetype)initWithCorrectedPath:(NSString *)path {
-    return [self initWithCorrectedPath:[self fixPath:path]];
++(NSURL*)fixURL:(NSURL *)url
+{
+    return [NSURL URLWithString:[NSBundle fixPath:url.absoluteString]];
 }
+
+- (instancetype)initWithCorrectedPath:(NSString *)path {
+    return [self initWithCorrectedPath:[NSBundle fixPath:path]];
+}
+//+ (NSURL *)URLForResource:(NSString *)name withExtension:(NSString *)ext subdirectory:(NSString *)subpath inBundleWithCorrectedURL:(NSURL *)bundleURL{
+//    return [self URLForResource:name withExtension:ext subdirectory:subpath inBundleWithCorrectedURL:[NSBundle fixURL:bundleURL]];
+//}
+//+ (NSArray *)URLsForResourcesWithExtension:(NSString *)ext subdirectory:(NSString *)subpath inBundleWithCorrectedURL:(NSURL *)bundleURL
+//{
+//    return [self URLsForResourcesWithExtension:ext subdirectory:subpath inBundleWithCorrectedURL:[NSBundle fixURL:bundleURL]];
+//}
 @end
 
 @implementation AkylasGooglemapModule
@@ -86,17 +104,6 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 //    [self replaceValue:value forKey:@"mapboxAccessToken" notification:NO];
 //}
 
--(void)didReceiveMemoryWarning:(NSNotification*)notification
-{
-    RELEASE_TO_NIL(mapTypes);
-    [super didReceiveMemoryWarning:notification];
-}
-
--(void)dealloc
-{
-    RELEASE_TO_NIL(mapTypes);
-    [super dealloc];
-}
 
 -(void)setGoogleMapAPIKey:(id)value
 {
@@ -122,20 +129,5 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     return [GMSServices SDKVersion];
 }
 
-static NSDictionary* mapTypes = nil;
--(id)MapType
-{
-    if (mapTypes==nil)
-    {
-        mapTypes = [@{
-                      @"none":@(kAkMapTypeNone),
-                      @"normal":@(kAkMapTypeNormal),
-                      @"hybrid":@(kAkMapTypeHybrid),
-                      @"satellite":@(kAkMapTypeSatellite),
-                      @"terrain":@(kAkMapTypeTerrain)
-            } retain];
-    }
-    return mapTypes;
-}
 
 @end

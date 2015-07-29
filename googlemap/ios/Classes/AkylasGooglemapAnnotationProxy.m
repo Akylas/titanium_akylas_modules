@@ -27,6 +27,7 @@
 -(void)_configure
 {
     [super _configure];
+    _appearAnimation = YES;
     _mAnchorPoint = CGPointMake(0.5, 1.0);
     _calloutAnchorPoint = CGPointMake(0, 1.0f);
 }
@@ -46,6 +47,9 @@
     _gmarker.opacity = self.visible?self.opacity:0;
     _gmarker.rotation = self.heading;
     _gmarker.position = self.position;
+    if (_gmarker.map && IS_OF_CLASS(_gmarker.map.delegate, AkylasGooglemapView)) {
+       [ (AkylasGooglemapView*)(_gmarker.map.delegate) markerDidUpdate:_gmarker ];
+    }
 }
 
 -(void)setConfigurationSet:(BOOL)value
@@ -64,6 +68,7 @@
 }
 
 -(void)refreshCoords {
+    
 //    if (_gmarker) {
 //        [CATransaction begin];
 //        if (![self shouldAnimate]) {
@@ -178,6 +183,17 @@
         }, NO);
     }
 }
+
+-(void)setAppearAnimation:(BOOL)value
+{
+    _appearAnimation = value;
+    if (configurationSet && _gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.appearAnimation = _appearAnimation?kGMSMarkerAnimationPop:kGMSMarkerAnimationNone;
+        }, NO);
+    }
+}
+
 -(void)setCanBeClustered:(BOOL)canBeClustered
 {
     [super setCanBeClustered:canBeClustered];
@@ -273,10 +289,10 @@
     if (_gmarker == nil) {
         
         _gmarker = [[GMSMarker markerWithPosition:self.coordinate] retain];
-        _gmarker.appearAnimation = kGMSMarkerAnimationPop;
         _gmarker.title = [self title];
         _gmarker.snippet = [self subtitle];
         _gmarker.userData = self;
+        _gmarker.appearAnimation = _appearAnimation?kGMSMarkerAnimationPop:kGMSMarkerAnimationNone;
         if (_internalImage) {
             _gmarker.icon = _internalImage;
         } else if ([self nGetTintColor]){
@@ -294,7 +310,7 @@
     return _gmarker;
 }
 
--(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView
+-(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView
 {
     [self getMarker];
     _gmarker.map = mapView;
@@ -307,5 +323,57 @@
     return _gmarker;
 }
 
+-(void)showInfo:(id)args
+{
+    if (self.showInfoWindow) {
+        GMSMapView* map = _gmarker.map;
+        id delegate = [map delegate];
+        if (map && IS_OF_CLASS(delegate, AkylasGooglemapView)) {
+            TiThreadPerformBlockOnMainThread(^{
+                [delegate showCalloutForOverlay:_gmarker];
+            }, NO);
+        }
+    }
+    
+}
 
+-(void)hideInfo:(id)args
+{
+    GMSMapView* map = _gmarker.map;
+    id delegate = [map delegate];
+    if (map && IS_OF_CLASS(delegate, AkylasGooglemapView)) {
+        TiThreadPerformBlockOnMainThread(^{
+        [delegate hideCalloutForOverlay:_gmarker];
+        }, NO);
+    }
+}
+
+-(void)onSelected:(GMSOverlay*)overlay {
+    if (overlay != _gmarker) {
+        return;
+    }
+    _gmarker.zIndex = 10000;
+    _gmarker.canBeClustered = NO;
+    if (_internalSelectedImage) {
+        _gmarker.icon = _internalSelectedImage;
+    }
+    [self showInfo:nil];
+}
+-(void)onDeselected:(GMSOverlay*)overlay {
+    if (overlay != _gmarker) {
+        return;
+    }
+    if (_internalSelectedImage) {
+        if (_internalImage) {
+            _gmarker.icon = _internalImage;
+        } else if ([self nGetTintColor]){
+            _gmarker.icon = [GMSMarker markerImageWithColor:[self nGetTintColor]];
+        }
+    }
+    
+    _gmarker.canBeClustered = self.canBeClustered;
+    _gmarker.zIndex = (int)self.zIndex;
+    [self hideInfo:nil];
+
+}
 @end

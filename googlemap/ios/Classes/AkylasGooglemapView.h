@@ -16,7 +16,10 @@
 {
 }
 
--(GMSMapView*)map;
+-(AkylasGMSMapView*)map;
 -(GClusterManager*)clusterManager;
 -(AkylasGooglemapClusterRenderer*) clusterRenderer;
+-(void)markerDidUpdate:(GMSMarker*)marker;
+-(void)showCalloutForOverlay:(GMSOverlay*)overlay;
+-(void)hideCalloutForOverlay:(GMSOverlay*)overlay;
 @end

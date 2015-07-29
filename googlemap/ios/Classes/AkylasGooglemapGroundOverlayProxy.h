@@ -8,7 +8,8 @@
 
 #import "AkylasMapBaseGroundOverlayProxy.h"
 
+@class AkylasGMSMapView;
 @interface AkylasGooglemapGroundOverlayProxy : AkylasMapBaseGroundOverlayProxy
--(GMSOverlay*)getGOverlayForMapView:(GMSMapView*)mapView;
+-(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView;
 -(GMSOverlay*)gOverlay;
 @end

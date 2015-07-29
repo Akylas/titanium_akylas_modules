@@ -15,23 +15,61 @@
 #import <CoreText/CoreText.h>
 #import "DTCoreTextFunctions.h"
 #import "AkylasMapBaseViewProxy.h"
+#import "AkylasGooglemapView.h"
+#import "AkylasGooglemapModule.h"
+
+
+@implementation AkylasClusterMarker
+@end
 
 @implementation AkylasClusterAlgorithm
 static NSInteger idIncrement = 0;
 
-- (id)initWithMaxDistanceAtZoom:(NSInteger)aMaxDistanceAtZoom {
-    if (self = [super initWithMaxDistanceAtZoom:aMaxDistanceAtZoom]) {
+- (id)init {
+    if (self = [super init]) {
         _uniqueId = idIncrement++;
+        _visible = YES;
     }
     return self;
+}
+
+-(void)setVisible:(BOOL)visible
+{
+    if (_visible == visible){
+        return;
+    }
+    _visible = visible;
+    if (!visible) {
+        GMSMapView* mapView =[(AkylasGooglemapViewProxy*)self.proxy.delegate map];
+        if (mapView) {
+            GMSMarker* selectedMarker = mapView.selectedMarker;
+            [self.items enumerateObjectsUsingBlock:^(GQuadItem* quadItem, NSUInteger idx, BOOL *stop) {
+                if (selectedMarker == quadItem.marker) {
+                    mapView.selectedMarker = nil;
+                }
+                quadItem.marker.map = nil;
+            }];
+        }
+        
+    }
 }
 
 
 @end
 @implementation AkylasGooglemapClusterProxy
 {
-    id<GClusterAlgorithm> _algorithm;
+    AkylasClusterAlgorithm* _algorithm;
     UIFont* _font;
+    CGFloat _strokeWidth;
+    UIColor *_color;
+    UIColor *_strokeColor;
+    
+    UIFont* _selectedFont;
+    CGFloat _selectedStrokeWidth;
+    UIColor *_selectedColor;
+    UIColor *_selectedStrokeColor;
+    UIColor *_selectedTintColor;
+    
 }
 @synthesize maxDistance;
 
@@ -42,7 +80,13 @@ static NSInteger idIncrement = 0;
         RELEASE_TO_NIL(_algorithm);
     }
     RELEASE_TO_NIL(_color)
+    RELEASE_TO_NIL(_strokeColor)
     RELEASE_TO_NIL(_font)
+    
+    RELEASE_TO_NIL(_selectedTintColor)
+    RELEASE_TO_NIL(_selectedColor)
+    RELEASE_TO_NIL(_selectedStrokeColor)
+    RELEASE_TO_NIL(_selectedFont)
 
     [super dealloc];
 }
@@ -50,11 +94,16 @@ static NSInteger idIncrement = 0;
 
 -(void)_configure
 {
-    maxDistance = 50;
+    maxDistance = 100;
     _showText = YES;
+    _strokeWidth = 2;
     _font  = [[UIFont boldSystemFontOfSize:14.0f] retain];
     _color  = [[UIColor whiteColor] retain];
-
+    _strokeColor = nil;
+    _selectedColor = nil;
+    _selectedStrokeColor = nil;
+    _selectedTintColor = nil;
+    _selectedFont = nil;
     [super _configure];
 }
 
@@ -65,12 +114,13 @@ static NSInteger idIncrement = 0;
     return -1;
 }
 
--(id<GClusterAlgorithm>)algorithm
+-(AkylasClusterAlgorithm*)algorithm
 {
     if (!_algorithm) {
         _algorithm = [[AkylasClusterAlgorithm alloc] init];
-        ((AkylasClusterAlgorithm*)_algorithm).maxDistanceAtZoom = self.maxDistance;
-        ((AkylasClusterAlgorithm*)_algorithm).proxy = self;
+        _algorithm.gridSize = self.maxDistance;
+        _algorithm.proxy = self;
+        _algorithm.visible = self.visible;
     }
     return _algorithm;
 }
@@ -80,7 +130,7 @@ static NSInteger idIncrement = 0;
     maxDistance = newValue;
     [self replaceValue:@(newValue) forKey:@"maxDistance" notification:NO];
     if (_algorithm) {
-        ((AkylasClusterAlgorithm*)_algorithm).maxDistanceAtZoom = maxDistance;
+        ((AkylasClusterAlgorithm*)_algorithm).gridSize = maxDistance;
     }
 }
 
@@ -95,12 +145,15 @@ static NSInteger idIncrement = 0;
 }
 
 -(void)internalAddAnnotations:(NSArray*)annots {
-    __block id<GClusterAlgorithm> algo = [self algorithm];
-    [annots enumerateObjectsUsingBlock:^(AkylasMapBaseAnnotationProxy* anno, NSUInteger idx, BOOL *stop) {
-        anno.delegate = self;
-        [algo addItem:anno];
-    }];
-    [self cluster];
+    GClusterManager* manager = [(AkylasGooglemapViewProxy*)self.delegate clusterManager];
+    if (manager) {
+        TiThreadPerformBlockOnMainThread(^{
+       [manager addItems:annots inAlgorithm:[self algorithm]];
+        [self cluster];
+        }, YES);
+    } else {
+        [[self algorithm] addItems:annots inBounds:nil];
+    }
 }
 //-(void)internalRemoveAnnotations:(id)annots {
 //    if (IS_OF_CLASS(NSArray, annots)) {
@@ -126,15 +179,16 @@ static NSInteger idIncrement = 0;
 
 -(void)removeAnnotation:(id)args
 {
-    PREPARE_ARRAY_ARGS(args)
     if (!IS_OF_CLASS(args, NSArray)) {
         [self removeAnnotation:@[args]];
         return;
     }
+    PREPARE_ARRAY_ARGS(args)
+
     [super removeAnnotation:args];
     
     TiThreadPerformBlockOnMainThread(^{
-        [[self algorithm] removeClusterItemsInSet:[NSSet setWithArray:args] fromMap:[(AkylasGooglemapViewProxy*)self.delegate map]];
+        [[self algorithm] removeClusterItemsInSet:[NSSet setWithArray:[args objectAtIndex:0]] fromMap:[(AkylasGooglemapViewProxy*)self.delegate map]];
         [self cluster];
     }, YES);
 }
@@ -153,13 +207,14 @@ static NSInteger idIncrement = 0;
     [self cluster];
 }
 
--(GMSMarker*)createClusterMarker:(id <GCluster>)cluster {
-    GMSMarker *marker = [[GMSMarker alloc] init];
+-(GMSMarker*)createClusterMarker:(GStaticCluster*) cluster {
+    AkylasClusterMarker *marker = [[AkylasClusterMarker alloc] init];
     
     NSUInteger count = cluster.items.count;
-    marker.icon = [self generateClusterIconWithCount:count];
+    marker.cluster = cluster;
+    marker.icon = [self generateClusterIconWithCount:count selected:NO];
     marker.userData = self;
-    marker.tappable = false;
+    marker.tappable = self.touchable;
     marker.position = cluster.position;
     marker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
     marker.groundAnchor = [self nGetAnchorPoint];
@@ -167,7 +222,7 @@ static NSInteger idIncrement = 0;
     return [marker autorelease];
 }
 
--(void)setFont_:(id)font
+-(void)setFont:(id)font
 {
     RELEASE_TO_NIL(_font)
     WebFont *f = [TiUtils fontValue:font def:nil];
@@ -175,14 +230,44 @@ static NSInteger idIncrement = 0;
     [self cluster];
 }
 
+-(void)setSelectedFont:(id)font
+{
+    RELEASE_TO_NIL(_selectedFont)
+    WebFont *f = [TiUtils fontValue:font def:nil];
+    _selectedFont = [[f font] retain];
+}
+
+-(void)setVisible:(BOOL)visible
+{
+    [super setVisible:visible];
+    if (_algorithm) {
+        TiThreadPerformBlockOnMainThread(^{
+        _algorithm.visible = self.visible;
+            [self cluster];
+        }, NO);
+    }
+}
 
 -(void)cluster {
     if (IS_OF_CLASS(self.delegate, AkylasGooglemapViewProxy)) {
         TiThreadPerformBlockOnMainThread(^{
             [[(AkylasGooglemapViewProxy*)self.delegate clusterManager] clusterAlgo:[self algorithm]];
-        }, YES);
+        }, NO);
     }
 }
+
+
+-(void)setSelectedTintColor:(id)color
+{
+    RELEASE_TO_NIL(_selectedTintColor)
+    [self replaceValue:color forKey:@"selectedTintColor" notification:NO];
+    _selectedTintColor = [[[TiUtils colorValue:color] _color] retain];
+}
+
+-(id)selectedTintColor {
+    return [self valueForUndefinedKey:@"selectedTintColor"];
+}
+
 
 -(void)setColor:(id)color
 {
@@ -192,42 +277,90 @@ static NSInteger idIncrement = 0;
     [self cluster];
 }
 
+-(id)color {
+    return [self valueForUndefinedKey:@"color"];
+}
 
-- (UIImage*)generateClusterIconWithCount:(NSUInteger)count {
+-(void)setSelectedColor:(id)color
+{
+    RELEASE_TO_NIL(_selectedColor)
+    [self replaceValue:color forKey:@"selectedColor" notification:NO];
+    _selectedColor = [[[TiUtils colorValue:color] _color] retain];
+//    [self cluster];
+}
+
+-(id)selectedColor {
+    return [self valueForUndefinedKey:@"selectedColor"];
+}
+
+
+-(void)setStrokeColor:(id)color
+{
+    RELEASE_TO_NIL(_strokeColor)
+    [self replaceValue:color forKey:@"strokeColor" notification:NO];
+    _strokeColor = [[[TiUtils colorValue:color] _color] retain];
+    [self cluster];
+}
+
+-(id)strokeColor {
+    return [self valueForUndefinedKey:@"strokeColor"];
+}
+
+
+-(void)setSelectedStrokeColor:(id)color
+{
+    RELEASE_TO_NIL(_selectedStrokeColor)
+    [self replaceValue:color forKey:@"selectedStrokeColor" notification:NO];
+    _selectedStrokeColor = [[[TiUtils colorValue:color] _color] retain];
+}
+
+-(id)selectedStrokeColor {
+    return [self valueForUndefinedKey:@"selectedStrokeColor"];
+}
+
+-(void)setStrokeWidth:(id)value
+{
+    [self replaceValue:value forKey:@"strokeWidth" notification:NO];
+    _strokeWidth = [TiUtils floatValue:value];
+    [self cluster];
+}
+
+-(void)setSelectedStrokeWidth:(id)value
+{
+    [self replaceValue:value forKey:@"selectedStrokeWidth" notification:NO];
+    _selectedStrokeWidth = [TiUtils floatValue:value];
+}
+
+
+- (UIImage*)generateClusterIconWithCount:(NSUInteger)count selected:(BOOL)selected {
     
     int diameter = 30;
     CGContextRef ctx;
-    UIColor* color = _color;
-
-    if (_internalImage) {
-        if (!_showText) {
-            return _internalImage;
+    UIImage* theImage = (selected && _internalSelectedImage) ? _internalSelectedImage : _internalImage;
+    BOOL showText = selected ? _selectedShowText : _showText;
+    if (theImage) {
+        if (!showText) {
+            return theImage;
         }
-        CGSize size = _internalImage.size;
+        CGSize size = theImage.size;
         //set the graphics context to be the size of the image
-        UIGraphicsBeginImageContextWithOptions(size, YES, 0.0);
+        UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
         diameter = size.width;
-        [_internalImage drawInRect:CGRectMake(0.0, 0.0, size.width, size.height)];
+        [theImage drawInRect:CGRectMake(0.0, 0.0, size.width, size.height)];
         ctx = UIGraphicsGetCurrentContext();
     } else {
-        float inset = 2;
+        float inset = selected ? _selectedStrokeWidth : _strokeWidth;
         CGRect rect = CGRectMake(0, 0, diameter, diameter);
         UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
         
         ctx = UIGraphicsGetCurrentContext();
         
-        [_color setStroke];
-        
-        if ([self nGetTintColor]) {
-            [[self nGetTintColor] setFill];
-        } else {
-            if (count > 100) [[UIColor orangeColor] setFill];
-            else if (count > 10) [[UIColor yellowColor] setFill];
-            else [[UIColor colorWithRed:0.0/255.0 green:100.0/255.0 blue:255.0/255.0 alpha:1] setFill];
+        UIColor* tintColor = (selected && _selectedTintColor) ? _selectedTintColor : [self nGetTintColor];
+        if (tintColor) {
+            [tintColor setFill];
         }
         
         
-        CGContextSetLineWidth(ctx, inset);
         
         // make circle rect 5 px from border
         CGRect circleRect = CGRectMake(0, 0, diameter, diameter);
@@ -235,18 +368,27 @@ static NSInteger idIncrement = 0;
         
         // draw circle
         CGContextFillEllipseInRect(ctx, circleRect);
-        CGContextStrokeEllipseInRect(ctx, circleRect);
+
+        
+        tintColor = (selected && _selectedStrokeColor) ? _selectedStrokeColor : _strokeColor;
+        if (tintColor && inset > 0) {
+            [tintColor setStroke];
+            CGContextSetLineWidth(ctx, inset);
+            CGContextStrokeEllipseInRect(ctx, circleRect);
+        }
     }
 
    
-    if (_showText && _color && _font) {
-        CGFloat fontHeight = _font.pointSize;
+    UIColor* color = (selected && _selectedColor) ? _selectedColor : _color;
+    UIFont* font = (selected && _selectedFont) ? _selectedFont : _font;
+    if (showText && color && font) {
+        CGFloat fontHeight = font.pointSize;
         CGFloat yOffset = (diameter - fontHeight) / 2.0f - 2.0f;
         
         CGRect textRect = CGRectMake(0, yOffset, diameter, fontHeight);
         CGContextSetFillColorWithColor(ctx, color.CGColor);
         [[NSString stringWithFormat:@"%lu", (unsigned long)count] drawInRect: textRect
-             withFont: _font
+             withFont: font
         lineBreakMode: UILineBreakModeClip
             alignment: UITextAlignmentCenter];
         
@@ -257,4 +399,41 @@ static NSInteger idIncrement = 0;
     
     return image;
 }
+
+
+-(void)onSelected:(GMSOverlay*)overlay {
+    if (IS_OF_CLASS(overlay, AkylasClusterMarker)) {
+        AkylasClusterMarker* theMarker = (AkylasClusterMarker*)overlay;
+        theMarker.zIndex = 10000;
+        theMarker.selected =(_internalSelectedImage ||
+                          _selectedFont ||
+                          _selectedStrokeColor ||
+                          _selectedTintColor ||
+                          _selectedColor ||
+                          (_selectedShowText != _showText) ||
+                          (_strokeWidth != _selectedStrokeWidth));
+        if (theMarker.selected) {
+            theMarker.icon = [self generateClusterIconWithCount:[[((AkylasClusterMarker*)theMarker) cluster] count] selected:YES];
+        }
+        if (self.showInfoWindow) {
+            if (theMarker.map && IS_OF_CLASS(theMarker.map.delegate, AkylasGooglemapView)) {
+                [ (AkylasGooglemapView*)(theMarker.map.delegate) showCalloutForOverlay:theMarker];
+            }
+        }
+    }
+}
+-(void)onDeselected:(GMSOverlay*)overlay {
+    if (IS_OF_CLASS(overlay, AkylasClusterMarker)) {
+        AkylasClusterMarker* theMarker = (AkylasClusterMarker*)overlay;
+        if (theMarker.selected) {
+            theMarker.icon = [self generateClusterIconWithCount:[[((AkylasClusterMarker*)theMarker) cluster] count] selected:NO];
+        }
+        
+        theMarker.zIndex = (int)self.zIndex;
+        if (theMarker.map && IS_OF_CLASS(theMarker.map.delegate, AkylasGooglemapView)) {
+            [ (AkylasGooglemapView*)(theMarker.map.delegate) hideCalloutForOverlay:theMarker];
+        }
+    }
+}
+
 @end
