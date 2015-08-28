@@ -335,7 +335,7 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 //			slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
 		} else{
 			slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_NONE);
-//			slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
+			slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
 		}
 	}
 	
