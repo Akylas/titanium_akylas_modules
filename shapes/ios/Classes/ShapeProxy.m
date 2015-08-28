@@ -657,8 +657,8 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 
 -(void)setLineOpacity:(id)arg
 {
+    [self replaceValue:arg forKey:@"lineOpacity" notification:NO];
     [self getOrCreateStrokeLayer].opacity = [TiUtils floatValue:arg def:1.0f];
-	[self replaceValue:arg forKey:@"lineOpacity" notification:NO];
 }
 
 -(void)setFillOpacity:(id)arg
@@ -666,6 +666,13 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
     [self getOrCreateFillLayer].opacity = [TiUtils floatValue:arg def:1.0f];
 	[self replaceValue:arg forKey:@"fillOpacity" notification:NO];
 }
+
+-(void)setVisible:(id)arg
+{
+    [self getOrCreateFillLayer].hidden = ![TiUtils boolValue:arg def:YES];
+    [self replaceValue:arg forKey:@"visible" notification:NO];
+}
+
 
 -(void)setLineShadow:(id)arg
 {

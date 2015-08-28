@@ -237,6 +237,26 @@
 }
 
 
+-(void)setLineOpacity:(id)arg
+{
+    [self setLayerValue:(arg!=nil)?arg:@(1.0f) forKey:kAnimLineOpacity];
+    [self replaceValue:arg forKey:kAnimLineOpacity notification:NO];
+}
+
+-(void)setFillOpacity:(id)arg
+{
+    [self setLayerValue:(arg!=nil)?arg:@(1.0f) forKey:kAnimFillOpacity];
+    [self replaceValue:arg forKey:kAnimFillOpacity notification:NO];
+}
+
+-(void)setVisible:(id)arg
+{
+    BOOL visible= [TiUtils boolValue:arg def:YES];
+    [self setLayerValue:@(!visible) forKey:@"hidden"];
+    [self replaceValue:arg forKey:@"visible" notification:NO];
+}
+
+
 -(UIImage*)loadImage:(id)arg
 {
     if (arg==nil) return nil;
