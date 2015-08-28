@@ -26,6 +26,7 @@ import org.appcelerator.titanium.util.TiActivityResultHandler;
 import org.appcelerator.titanium.util.TiActivitySupport;
 import org.appcelerator.titanium.util.TiConvert;
 
+import uk.co.alt236.bluetoothlelib.device.BluetoothLeDevice;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -45,7 +46,7 @@ public class AkylasBluetoothModule extends KrollModule {
     public static final int STATE_LISTEN = 1; // now listening for incoming
                                               // connections
     @Kroll.constant
-    public static final int STATE_CONNECTING = 2; // now initiating an outgoing
+    public static final int STATE_CONNECTING = 2 ; // now initiating an outgoing
                                                   // connection
     @Kroll.constant
     public static final int STATE_CONNECTED = 3; // now connected to a remote
@@ -57,12 +58,13 @@ public class AkylasBluetoothModule extends KrollModule {
     public static final int ERROR_BT_NOT_ENABLED = -3;
 
     // Intent request codes
-    private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
-    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
+//    private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
+//    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
     private static final int REQUEST_ENABLE_BT = 3;
 
     // Local Bluetooth adapter
     private static BluetoothAdapter sBluetoothAdapter = null;
+    private static AkylasBluetoothModule sInstance = null;
     // private List<BluetoothDevice> mPairedDevicesArrayAdapter;
     private HashMap<String, KrollDict> mNewDevicesArrayAdapter;
 
@@ -71,7 +73,6 @@ public class AkylasBluetoothModule extends KrollModule {
     private boolean discovering = false;
 
     KrollFunction fDiscoveryCallback = null;
-    private static final long SCAN_PERIOD = 10000; //10 seconds
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback = null;
     
@@ -83,9 +84,14 @@ public class AkylasBluetoothModule extends KrollModule {
         }
         return sBluetoothAdapter;
     }
+    
+    public static AkylasBluetoothModule getInstance() {
+        return sInstance;
+    }
 
     public AkylasBluetoothModule() {
         super();
+        sInstance = this;
         // mPairedDevicesArrayAdapter = new ArrayList<BluetoothDevice>();
         mNewDevicesArrayAdapter = new HashMap<String, KrollDict>();
 
@@ -97,14 +103,16 @@ public class AkylasBluetoothModule extends KrollModule {
                     
                     final String address = device.getAddress();
                     if (!mNewDevicesArrayAdapter.containsKey(address)) {
+                        BluetoothLeDevice leDevice = new BluetoothLeDevice(device, rssi, scanRecord, System.currentTimeMillis());
                         KrollDict dict = dictFromDevice(device);
-                        dict.put("rssi", rssi);
                         mNewDevicesArrayAdapter.put(address, dict);
                         if (hasListeners("found", false)) {
                             KrollDict data = new KrollDict();
                             data.put("device", dict);
                             data.put("discovering", true);
-                            fireEvent("found", data, false, false);
+                            data.put("advertising", leDevice.getAdRecordStore().humanReadableHashMap());
+                            data.put("rssi", rssi);
+                           fireEvent("found", data, false, false);
                         }
                     } else {
                         KrollDict dict = mNewDevicesArrayAdapter.get(address);
@@ -323,6 +331,17 @@ public class AkylasBluetoothModule extends KrollModule {
     }
 
     @Kroll.method
+    public void showBluetoothSettings() {
+        Activity activity = TiApplication.getAppCurrentActivity();
+        if (activity != null) {
+            TiActivitySupport activitySupport = (TiActivitySupport) activity;
+            final int code = activitySupport.getUniqueResultCode();
+            Intent pairIntent = new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+            activitySupport.launchActivityForResult(pairIntent, code, null);
+        }
+    }
+    
+    @Kroll.method
     public void discover(KrollFunction onDone) {
         fDiscoveryCallback = onDone;
         startDiscovery();
@@ -330,20 +349,19 @@ public class AkylasBluetoothModule extends KrollModule {
     
     @Kroll.method
     public void stopDiscover() {
-        fDiscoveryCallback = null;
         BluetoothAdapter adapter = getBTAdapter();
         if (adapter == null) {
             return;
         }
-        if (adapter.isDiscovering()) {
+        if (discovering) {
             adapter.cancelDiscovery();
+            handleFinishedScan();
         }
-        discovering = false;
     }
     
     @Kroll.method
-    public void discoverBLE(KrollFunction onDone) {
-        BluetoothAdapter adapter = getBTAdapter();
+    public void discoverBLE(KrollFunction onDone, @Kroll.argument(optional = true) final Object timeoutObj) {
+        final BluetoothAdapter adapter = getBTAdapter();
         if (adapter == null || !CAN_LTE) {
             return;
         }
@@ -352,23 +370,27 @@ public class AkylasBluetoothModule extends KrollModule {
             return;
         }
         handleStartScan();
-        getMainHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                handleFinishedScan();
-            }
-        }, SCAN_PERIOD);
+        if (timeoutObj != null) {
+            getMainHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.stopLeScan(mLeScanCallback);
+                    handleFinishedScan();
+                }
+            }, ((Number)timeoutObj).intValue());
+        }
+        
         adapter.startLeScan(mLeScanCallback);
     }
     
     @Kroll.method
     public void stopDiscoverBLE() {
-        fDiscoveryCallback = null;
         BluetoothAdapter adapter = getBTAdapter();
         if (adapter == null || !CAN_LTE) {
             return;
         }
         if (discovering) {
+            adapter.stopLeScan(mLeScanCallback);
             handleFinishedScan();
         }
     }
@@ -377,11 +399,9 @@ public class AkylasBluetoothModule extends KrollModule {
         discovering = true;
     }
     private void handleFinishedScan() {
-        BluetoothAdapter adapter = getBTAdapter();
-        if (adapter == null) {
+        if (discovering == false) {
             return;
         }
-        adapter.stopLeScan(mLeScanCallback);
         discovering = false;
         if (fDiscoveryCallback != null) {
             fDiscoveryCallback.callAsync(getKrollObject(),
@@ -624,8 +644,7 @@ public class AkylasBluetoothModule extends KrollModule {
     @Kroll.method
     @Kroll.getProperty
     public boolean getDiscovering() {
-        BluetoothAdapter adapter = getBTAdapter();
-        return adapter != null && adapter.isDiscovering();
+        return discovering;
     }
 
     @Kroll.method
@@ -633,5 +652,21 @@ public class AkylasBluetoothModule extends KrollModule {
     public boolean getEnabled() {
         BluetoothAdapter adapter = getBTAdapter();
         return adapter != null && adapter.isEnabled();
+    }
+
+    public void onDeviceConnected(KrollProxy bleDeviceProxy) {
+        if (hasListeners("connected")) {
+            KrollDict data = new KrollDict();
+            data.put("device", bleDeviceProxy);
+            fireEvent("connected", data, false, false);
+        }
+    }
+
+    public void onDeviceDisconnected(KrollProxy bleDeviceProxy) {
+        if (hasListeners("disconnected")) {
+            KrollDict data = new KrollDict();
+            data.put("device", bleDeviceProxy);
+            fireEvent("disconnected", data, false, false);
+        }
     }
 }

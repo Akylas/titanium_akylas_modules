@@ -11,6 +11,10 @@
 - (void) didReceiveData:(NSData *) string;
 @optional
 - (void) didReadHardwareRevisionString:(NSString *) string;
+- (void) didDiscoverUARTCharacteristics;
+- (void) peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristic:(CBCharacteristic *)c inService:(CBService *)service;
+- (void) peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic;
+- (void) peripheral:(CBPeripheral *)peripheral didDiscoverService:(CBService*)service;
 @end
 
 

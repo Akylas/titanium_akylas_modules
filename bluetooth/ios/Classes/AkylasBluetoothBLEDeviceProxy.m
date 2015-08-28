@@ -41,9 +41,52 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 
 @implementation AkylasBluetoothBLEDeviceProxy
 {
-    UARTPeripheral *_peripheral;
+    CBPeripheral *_peripheral;
     NSString* _identifier;
-    NSString* _hwRevision;
+    KrollCallback * _readRSSICallback;
+    
+    CBService *uartService;
+    CBCharacteristic *rxCharacteristic;
+    CBCharacteristic *txCharacteristic;
+    BOOL uartMode;
+}
++ (CBUUID *) uartServiceUUID
+{
+    return [CBUUID UUIDWithString:@"6e400001-b5a3-f393-e0a9-e50e24dcca9e"];
+}
+
++ (CBUUID *) txCharacteristicUUID
+{
+    return [CBUUID UUIDWithString:@"6e400002-b5a3-f393-e0a9-e50e24dcca9e"];
+}
+
++ (CBUUID *) rxCharacteristicUUID
+{
+    return [CBUUID UUIDWithString:@"6e400003-b5a3-f393-e0a9-e50e24dcca9e"];
+}
+
+//+ (CBUUID *) deviceInformationServiceUUID
+//{
+//    return [CBUUID UUIDWithString:@"180A"];
+//}
+//
+//+ (CBUUID *) hardwareRevisionStringUUID
+//{
+//    return [CBUUID UUIDWithString:@"2A27"];
+//}
+
+
+- (void)dealloc {
+    RELEASE_TO_NIL(_readRSSICallback)
+    RELEASE_TO_NIL(uartService)
+    RELEASE_TO_NIL(rxCharacteristic)
+    RELEASE_TO_NIL(txCharacteristic)
+    [self disconnect:nil];
+    if (_peripheral) {
+        [[self peripheral] setProxy:nil];
+        RELEASE_TO_NIL(_peripheral)
+    }
+    [super dealloc];
 }
 
 -(NSString*)apiName
@@ -53,6 +96,7 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 
 -(void)_initWithProperties:(NSDictionary *)properties
 {
+    uartMode = true;
     id arg = [properties valueForKey:@"identifier"];
     
     if (IS_NULL_OR_NIL(arg)) {
@@ -66,21 +110,18 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
     return _identifier;
 }
 
--(UARTPeripheral*)getUARTPeripheral {
+-(CBPeripheral*)peripheral {
     if (!_peripheral && _identifier) {
         NSUUID* uuid = [[NSUUID alloc] initWithUUIDString:_identifier];
         NSArray* devices = [[AkylasBluetoothModule btManager] retrievePeripheralsWithIdentifiers:@[uuid]];
         if ([devices count] > 0) {
-            _peripheral = [[UARTPeripheral alloc] initWithPeripheral:[devices objectAtIndex:0] delegate:self];
-            [[_peripheral peripheral] setProxy:self];
+            _peripheral = [[devices objectAtIndex:0] retain];
+            _peripheral.delegate = self;
+            [_peripheral setProxy:self];
         }
         [uuid release];
     }
     return _peripheral;
-}
-
--(CBPeripheral*)peripheral {
-    return [[self getUARTPeripheral] peripheral];
 }
 
 - (BOOL) isConnected {
@@ -89,13 +130,16 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 
 -(void)didConnect
 {
-    [self fireEvent:@"connected"];
-    [_peripheral didConnect];
+//    [_peripheral didConnect];
+    if (!uartMode) {
+        [self fireEvent:@"connected"];
+    }
+    [[self peripheral] discoverServices:nil];
 }
 -(void)didDisconnect
 {
     [self fireEvent:@"disconnected"];
-    [_peripheral didDisconnect];
+//    [_peripheral didDisconnect];
     [[self peripheral] setProxy:nil];
     RELEASE_TO_NIL(_peripheral)
 }
@@ -123,11 +167,6 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
     return NUMBOOL(YES);
 }
 
--(id)hardwareRevision
-{
-    return _hwRevision;
-}
-
 // This is called when we get an incoming data event. Notify the appDelegate that we have data to print.
 //- (void)handleIncoming:(NSInputStream*)stream {
 //    double timestamp = [[NSDate date] timeIntervalSince1970]*1000;
@@ -149,51 +188,363 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 //    //        }
 //}
 
-- (void)sendData:(NSData*)data {
-
-    [[self getUARTPeripheral] writeRawData:data];
+-(void)writeData:(NSData*)data toCharacteristic:(CBCharacteristic*)characteristic
+{
+    if (!characteristic || !data) {
+        return;
+    }
+    if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) != 0)
+    {
+        [_peripheral writeValue:data forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
+    }
+    else if ((characteristic.properties & CBCharacteristicPropertyWrite) != 0)
+    {
+        [_peripheral writeValue:data forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+    }
 }
 
--(void)send:(id)args
+-(void)writeToCharacteristic:(id)args
 {
+    CBCharacteristic* characteristic = [self internalGetCharacteristic:args];
     
+    if (!characteristic)
+    {
+        return;
+    }
+    ENSURE_ARG_COUNT(args,3);
+    NSData* data = [self dataFromArgs:[args objectAtIndex:0]];
+    if (!data)
+    {
+        return;
+    }
+    [self writeData:data toCharacteristic:characteristic];
+}
+
+-(NSData*)dataFromArgs:(id)args
+{
     ENSURE_SINGLE_ARG(args, NSObject)
     if (IS_OF_CLASS(args, NSString)) {
         // called within this class
-        [self sendData: [args dataUsingEncoding:NSUTF8StringEncoding]];
+        return [args dataUsingEncoding:NSUTF8StringEncoding];
     }else if (IS_OF_CLASS(args, NSArray)) {
         //supposed to be a byte array
-        [self sendData: [NSKeyedArchiver archivedDataWithRootObject:args]];
+        return [NSKeyedArchiver archivedDataWithRootObject:args];
     } else if ([args respondsToSelector:@selector(data)]) {
-        [self sendData:[args data]];
+       return [args data];
     }
 }
-
-
-- (void)dealloc {
-    [self disconnect:nil];
-    if (_peripheral) {
-        [[self peripheral] setProxy:nil];
-        RELEASE_TO_NIL(_peripheral)
-    }
-    [super dealloc];
-}
-
-- (void) didReadHardwareRevisionString:(NSString *)string
+-(void)send:(id)args
 {
-    _hwRevision = [string retain];
+    if (uartMode && txCharacteristic) {
+        ENSURE_SINGLE_ARG(args, NSObject)
+        NSData* data = [self dataFromArgs:args];
+        [self writeData:data toCharacteristic:txCharacteristic];
+    }
+}
+
+-(void)readRSSI:(id)args
+{
+    ENSURE_SINGLE_ARG_OR_NIL(args, KrollCallback);
+
+    RELEASE_TO_NIL(_readRSSICallback)
+    _readRSSICallback = [(KrollCallback*)args retain];
+    if (_peripheral) {
+        [[self peripheral] readRSSI];
+    }
+    //    [self performSelector:@selector(stopDiscoverBLE:) withObject:nil afterDelay:10];
+}
+
++(CBUUID*)uuidFromString:(NSString*)uuidString {
+//    if ([uuidString length] == 4) {
+//        return [CBUUID UUIDWithString:[NSString stringWithFormat:@"0000%@-0000-1000-8000-00805f9b34fb", uuidString]];
+//    }
+    return [CBUUID UUIDWithString:uuidString];
+}
+
+
+-(CBService*) serviceFromUUID:(NSString *)uuidString
+{
+    if (uuidString == nil || !_peripheral)
+    {
+        return nil;
+    }
+    CBPeripheral* peri = [self peripheral];
+    if (peri.services == nil)
+    {
+        return nil;
+    }
+    
+    CBUUID* uuid = [AkylasBluetoothBLEDeviceProxy uuidFromString:uuidString];
+    
+    if (uuid == nil)
+    {
+        return nil;
+    }
+    
+    for (CBService* item in peri.services)
+    {
+        NSLog(@"test %@", item.UUID.UUIDString);
+        if ([item.UUID isEqual: uuid])
+        {
+            return item;
+        }
+    }
+    
+    return nil;
+}
+
+-(CBCharacteristic*) getCharacteristic:(NSString *)uuidString forService:(CBService*) service
+{
+    if (service.characteristics == nil)
+    {
+        return nil;
+    }
+    
+    if (uuidString == nil)
+    {
+        return nil;
+    }
+    
+    if (![uuidString isKindOfClass:[NSString class]])
+    {
+        return nil;
+    }
+    
+    CBUUID* uuid = [AkylasBluetoothBLEDeviceProxy uuidFromString:uuidString];
+    
+    if (uuid == nil)
+    {
+        return nil;
+    }
+    
+    for (CBCharacteristic* item in service.characteristics)
+    {
+        if ([item.UUID isEqual: uuid])
+        {
+            return item;
+        }
+    }
+    
+    return nil;
+}
+
+-(CBDescriptor*) getDescriptor:(NSString *)uuidString forCharacteristic:(CBCharacteristic*) characteristic
+{
+    if (characteristic.descriptors == nil)
+    {
+        return nil;
+    }
+    
+    if (uuidString == nil)
+    {
+        return nil;
+    }
+    
+    if (![uuidString isKindOfClass:[NSString class]])
+    {
+        return nil;
+    }
+    
+    CBUUID* uuid = [AkylasBluetoothBLEDeviceProxy uuidFromString:uuidString];
+    
+    if (uuid == nil)
+    {
+        return nil;
+    }
+    
+    for (CBDescriptor* item in characteristic.descriptors)
+    {
+        if ([item.UUID isEqual: uuid])
+        {
+            return item;
+        }
+    }
+    return nil;
+}
+
+-(CBCharacteristic*)internalGetCharacteristic:(id)args
+{
+    if (!_peripheral)
+    {
+        return nil;
+    }
+    ENSURE_ARG_COUNT(args,2);
+    
+    CBService* service = [self serviceFromUUID:[args objectAtIndex:0]];
+    
+    if (!service)
+    {
+        return nil;
+    }
+    
+    CBCharacteristic* characteristic = [self getCharacteristic:[args objectAtIndex:1] forService:service];
+    
+    return characteristic;
+}
+
+- (void)startCharacteristicNotifications:(id)args
+{
+    
+    CBCharacteristic* characteristic = [self internalGetCharacteristic:args];
+    
+    if (!characteristic)
+    {
+        return;
+    }
+    [[self peripheral] setNotifyValue:YES forCharacteristic:characteristic];
+}
+
+- (void)stopCharacteristicNotifications:(id)args
+{
+    CBCharacteristic* characteristic = [self internalGetCharacteristic:args];
+    
+    if (!characteristic)
+    {
+        return;
+    }
+    [[self peripheral] setNotifyValue:NO forCharacteristic:characteristic];
+}
+
+- (void)readCharacteristicValue:(id)args
+{
+    CBCharacteristic* characteristic = [self internalGetCharacteristic:args];
+    
+    if (!characteristic)
+    {
+        return;
+    }
+    [[self peripheral] readValueForCharacteristic:characteristic];
+}
+
+-(void)fireDataEvent:(NSString*)type withData:(NSData *)data  extraData:(NSDictionary*)extraData {
+    if ([self _hasListeners:type]) {
+        double timestamp = [[NSDate date] timeIntervalSince1970]*1000;
+        NSMutableDictionary* eventDict = [NSMutableDictionary dictionaryWithDictionary:@{
+                                                                                   @"timestamp":NUMDOUBLE(timestamp),
+                                                                                   @"length":NUMUINTEGER([data length]),
+                                                                                   @"data":[[[TiBlob alloc] initWithData:data mimetype:@"application/octet-stream"] autorelease]}];
+        if (extraData) {
+            [eventDict addEntriesFromDictionary:extraData];
+        }
+        [self fireEvent:type withObject:eventDict];
+    }
 }
 
 - (void) didReceiveData:(NSData *)data
 {
-    if ([self _hasListeners:@"read"]) {
-        double timestamp = [[NSDate date] timeIntervalSince1970]*1000;
-        [self fireEvent:@"read" withObject:@{
-                                             @"timestamp":NUMDOUBLE(timestamp),
-                                             @"length":NUMUINTEGER([data length]),
-                                             @"data":[[[TiBlob alloc] initWithData:data mimetype:@"application/octet-stream"] autorelease]}];
+    [self fireDataEvent:@"uartread" withData:data extraData:nil];
+}
+
+- (void)peripheralDidUpdateName:(CBPeripheral *)peripheral{
+    if ([self _hasListeners:@"change"]) {
+        [self replaceValue:peripheral.name forKey:@"name" notification:NO];
+        [self fireEvent:@"change" withObject:@{
+                                             @"name":peripheral.name}];
+    }
+}
+
+/*!
+ *  @method peripheralDidUpdateRSSI:error:
+ *
+ *  @param peripheral	The peripheral providing this update.
+ *	@param error		If an error occurred, the cause of the failure.
+ *
+ *  @discussion			This method returns the result of a @link readRSSI: @/link call.
+ *
+ *  @deprecated			Use {@link peripheral:didReadRSSI:error:} instead.
+ */
+- (void)peripheralDidUpdateRSSI:(CBPeripheral *)peripheral error:(NSError *)error {
+    if (![TiUtils isIOS8OrGreater]) {
+        [self peripheral:peripheral didReadRSSI:peripheral.RSSI error:error];
     }
     
+}
+
+/*!
+ *  @method peripheral:didReadRSSI:error:
+ *
+ *  @param peripheral	The peripheral providing this update.
+ *  @param RSSI			The current RSSI of the link.
+ *  @param error		If an error occurred, the cause of the failure.
+ *
+ *  @discussion			This method returns the result of a @link readRSSI: @/link call.
+ */
+- (void)peripheral:(CBPeripheral *)peripheral didReadRSSI:(NSNumber *)RSSI error:(NSError *)error {
+    if (error) {
+        [self fireEvent:@"error" withObject:[TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]]];
+    } else if ([self _hasListeners:@"change"]) {
+        [self fireEvent:@"change" withObject:@{@"rssi":RSSI}];
+    }
+}
+
+- (void) peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
+{
+    if (error)
+    {
+        [self fireEvent:@"error" withObject:[TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]]];
+        return;
+    }
+    
+//    if (uartMode) {
+        for (CBService *s in [peripheral services])
+        {
+            DebugLog(@"didDiscoverService %@", s.UUID.UUIDString);
+            if ([s.UUID isEqual:self.class.uartServiceUUID] && uartMode)
+            {
+                uartService = [s retain];
+                
+//                [peripheral discoverCharacteristics:@[self.class.txCharacteristicUUID, self.class.rxCharacteristicUUID] forService:uartService];
+            }
+//            else if ([s.UUID isEqual:self.class.deviceInformationServiceUUID])
+//            {
+                [peripheral discoverCharacteristics:nil forService:s];
+//            }
+        }
+//    }
+}
+
+- (void) peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
+{
+    if (error)
+    {
+        [self fireEvent:@"error" withObject:[TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]]];
+        return;
+    }
+    if (uartMode && [service.UUID isEqual:self.class.uartServiceUUID]) {
+        for (CBCharacteristic *c in [service characteristics])
+        {
+            DebugLog(@"didDiscoverCharacteristics %@ ForService %@", c.UUID.UUIDString, service.UUID.UUIDString);
+            if ([c.UUID isEqual:self.class.rxCharacteristicUUID])
+            {
+                rxCharacteristic = [c retain];
+                [self.peripheral setNotifyValue:YES forCharacteristic:rxCharacteristic];
+            }
+            else if ([c.UUID isEqual:self.class.txCharacteristicUUID])
+            {
+                txCharacteristic = [c retain];
+            }
+//            else if ([c.UUID isEqual:self.class.hardwareRevisionStringUUID])
+//            {
+//                [self.peripheral readValueForCharacteristic:c];
+//            }
+        }
+        [self fireEvent:@"connected"];
+    }
+}
+
+- (void) peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if (error)
+    {
+        [self fireEvent:@"error" withObject:[TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]]];
+        return;
+    }
+    
+    [self fireDataEvent:@"read" withData:characteristic.value extraData:@{
+                                                                          @"notify":@(characteristic.isNotifying),
+                                                                          @"characteristic":characteristic.UUID.UUIDString,
+                                                                          @"service":characteristic.service.UUID.UUIDString
+                                                                          }];
 }
 
 @end

@@ -19,3 +19,6 @@
 [submodule "googlemap/android/src/akylas/map"]
 	path = googlemap/android/src/akylas/map
 	url = git@bitbucket.org:farfromrefuge/akylas.map.common.android.git
+[submodule "statusbarnotification/ios/CWStatusBarNotification"]
+	path = statusbarnotification/ios/CWStatusBarNotification
+	url = git@github.com:Akylas/CWStatusBarNotification.git

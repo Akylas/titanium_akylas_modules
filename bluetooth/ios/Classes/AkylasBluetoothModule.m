@@ -14,6 +14,17 @@
 
 
 
+#define PREPARE_ARRAY_ARGS(args) \
+ENSURE_TYPE(args, NSArray) \
+NSNumber* num = nil; \
+NSInteger index = -1; \
+NSObject* value = nil; \
+ENSURE_ARG_OR_NIL_AT_INDEX(value, args, 0, NSObject); \
+ENSURE_ARG_OR_NIL_AT_INDEX(num, args, 1, NSNumber); \
+if (num) { \
+index = [num integerValue]; \
+} \
+
 
 static AkylasBluetoothModule *_sharedInstance = nil;
 @implementation AkylasBluetoothModule
@@ -26,6 +37,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     CBCentralManager *_centralManager;
     NSMutableDictionary* _discoveredBLEDevices;
     KrollCallback * _discoveryCallback;
+    dispatch_queue_t _cbQueue;
 }
 
 +(AkylasBluetoothModule*)sharedInstance
@@ -40,11 +52,13 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     _registeredForNotifs = NO;
     _pairing = NO;
     _discovering = NO;
-    _enabled = [[self btManager] state] == CBCentralManagerStatePoweredOn;
+    _enabled = NO;
+    _cbQueue = dispatch_queue_create("akylas.bt.cbqueue", DISPATCH_QUEUE_SERIAL);
 }
 
 - (void)dealloc
 {
+    dispatch_release(_cbQueue);
     RELEASE_TO_NIL(_pairingAccessory)
     RELEASE_TO_NIL(_centralManager)
     RELEASE_TO_NIL(_discoveryCallback)
@@ -55,6 +69,16 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 -(NSString*)apiName
 {
     return @"Akylas.Bluetooth";
+}
+
+-(id)createBLEDevice:(id)args
+{
+    id value = nil;
+    ENSURE_ARG_OR_NIL_AT_INDEX(value, args, 0, NSObject);
+    if (IS_OF_CLASS(value, AkylasBluetoothBLEDeviceProxy)) {
+        return value;
+    }
+    return [[[AkylasBluetoothBLEDeviceProxy alloc] _initWithPageContext:[self executionContext] args:args] autorelease];
 }
 
 -(void)addDiscoveredBLEDevice:(CBPeripheral*)device {
@@ -81,7 +105,9 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 -(CBCentralManager*) btManager {
     if (!_centralManager) {
-        _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
+        
+        _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:_cbQueue options:@{CBCentralManagerOptionShowPowerAlertKey: @([TiUtils boolValue:[self valueForUndefinedKey:@"showPowerAlert"] def:YES])}];
+        _enabled = [_centralManager state] == CBCentralManagerStatePoweredOn;
     }
     return _centralManager;
 }
@@ -113,20 +139,131 @@ static AkylasBluetoothModule *_sharedInstance = nil;
              @"hardwareRevision" : accessory.hardwareRevision};
 }
 
--(NSDictionary*)dictFromPeripheral:(CBPeripheral*)peripheral
+-(id)dictFromPeripheral:(CBPeripheral*)peripheral
 {
+//    if (peripheral.proxy) {
+//        return peripheral.proxy;
+//    }
     return @{
              @"connected" : NUMBOOL([peripheral state] == CBPeripheralStateConnected),
-//             @"connectionID" : NUMUINTEGER(accessory.connectionID),
-//             @"manufacturer" : accessory.manufacturer,
              @"name" : peripheral.name,
-             @"identifier" : [[peripheral identifier] UUIDString],
-//             @"rssi" : peripheral.RSSI,
-//             @"modelNumber" : accessory.modelNumber,
-//             @"serialNumber" : accessory.serialNumber,
-//             @"firmwareRevision" : accessory.firmwareRevision,
-//             @"hardwareRevision" : accessory.hardwareRevision
+             @"identifier" : [[peripheral identifier] UUIDString]
              };
+}
+
+- (NSString *)stringFromCBUUID:(CBUUID *)cbuuid;
+{
+    NSData *data = [cbuuid data];
+    
+    NSUInteger bytesToConvert = [data length];
+    const unsigned char *uuidBytes = [data bytes];
+    NSMutableString *outputString = [NSMutableString stringWithCapacity:16];
+    
+    for (NSUInteger currentByteIndex = 0; currentByteIndex < bytesToConvert; currentByteIndex++)
+    {
+        switch (currentByteIndex)
+        {
+            case 3:
+            case 5:
+            case 7:
+            case 9:[outputString appendFormat:@"%02x-", uuidBytes[currentByteIndex]]; break;
+            default:[outputString appendFormat:@"%02x", uuidBytes[currentByteIndex]];
+        }
+        
+    }
+    
+    return outputString;
+}
+
+
+-(NSString*)advKeyNameForKey:(NSString*)key {
+    if([key isEqualToString:@"kCBAdvDataTxPowerLevel"]) {
+        return @"power_level";
+    }
+    if([key isEqualToString:@"kCBAdvDataLocalName"]) {
+        return @"local_name";
+    }
+    if([key isEqualToString:@"kCBAdvDataServiceUUIDs"]) {
+        return @"services";
+    }
+    if([key isEqualToString:@"kCBAdvDataIsConnectable"]) {
+        return @"connectable";
+    }
+    if([key isEqualToString:@"kCBAdvDataChannel"]) {
+        return @"channel";
+    }
+    if([key isEqualToString:@"kCBAdvDataManufacturerData"]) {
+        return @"manufacturer";
+    }
+    return key;
+}
+-(NSDictionary *)summarizeAdvertisement:(NSDictionary*)advertisementData
+{
+    DebugLog(@"[TRACE] advertisementData = %@", advertisementData);
+    
+    NSMutableDictionary *summary = [[NSMutableDictionary alloc] init];
+    NSMutableArray *services = [[NSMutableArray alloc] init];
+    
+    NSArray *keys = [advertisementData allKeys];
+    for (int i = 0; i < [keys count]; ++i) {
+        
+        id key = [keys objectAtIndex: i];
+        
+        NSString *keyName = [self advKeyNameForKey:(NSString *) key];
+        NSObject *value = [advertisementData objectForKey: key];
+        DebugLog(@"[TRACE] advertisementData handling %@=%@", keyName, value);
+        
+        if ([value isKindOfClass: [NSArray class]]) {
+            
+            NSArray *values = (NSArray *) value;
+            
+            for (int j = 0; j < [values count]; ++j) {
+                if ([[values objectAtIndex: j] isKindOfClass: [CBUUID class]]) {
+                    
+                    CBUUID *uuid = [values objectAtIndex: j];
+                    
+                    NSString *uuidString = [self stringFromCBUUID:uuid];
+                    [services addObject:uuidString];
+                    
+                }
+                else {
+                    if ([[values objectAtIndex: j] description]) {
+                        [services addObject:[[values objectAtIndex: j] description]];
+                    }
+                }
+            }
+        }
+        else if ([value isKindOfClass: [NSDictionary class]]) {
+            NSLog(@"skipping advertised NSDictionary %@", value);
+            /*
+             NSDictionary *subvalues = (NSDictionary *)value;
+             NSArray *subkeys = [subvalues allKeys];
+             for (int i = 0; i < [subkeys count]; ++i) {
+             id subkey = [keys objectAtIndex: i];
+             
+             NSString *subkeyName = (NSString *)subkey;
+             NSObject *subvalue = [subvalues objectForKey: subkey];
+             if ([[subvalues objectForKey:subkey] isKindOfClass: [CBUUID class]]) {
+             CBUUID *uuid = [subvalues objectForKey:subkey];
+             
+             NSString *uuidString = [self stringFromCBUUID:uuid];
+             [summary addObject:uuidString forKey:subkeyName];
+             }
+             else {
+             [summary addObject:[subvalues objectForKey:subkey] forKey:subkeyName];
+             }
+             }
+             */
+        }
+        else {
+            [summary setObject:[value description] forKey:keyName];
+        }
+    }
+    [summary setObject:services forKey:@"services"];
+    [services release];
+    
+    DebugLog(@"[TRACE] advertisementData return %@", summary);
+    return [summary autorelease];
 }
 
 -(void)_listenerAdded:(NSString*)type count:(NSInteger)count
@@ -235,13 +372,17 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 -(id)supported
 {
     //for android compat
+#if TARGET_IPHONE_SIMULATOR
+    return NUMBOOL(NO);
+#else
     return NUMBOOL(YES);
+#endif
 }
 
 -(id)enabled
 {
-    //for android compat
-    return NUMBOOL(YES);
+    [self btManager]; //ensure created
+    return NUMBOOL(_enabled);
 }
 
 
@@ -270,22 +411,35 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     return accs;
 }
 
+-(void)showBluetoothSettings:(id)args
+{
+    if ([TiUtils isIOS8OrGreater]) {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+    }
+}
+
+-(id)discovering {
+    return @(_discovering);
+}
+
 -(void)discoverBLE:(id)args
 {
+    PREPARE_ARRAY_ARGS(args)
+    ENSURE_TYPE_OR_NIL(value, KrollCallback);
     if (_discovering) {
         return;
     }
+    
     _discovering = YES;
-    ENSURE_SINGLE_ARG_OR_NIL(args, KrollCallback);
     RELEASE_TO_NIL(_discoveryCallback)
-    _discoveryCallback = [args retain];
-    [[self btManager] scanForPeripheralsWithServices:@[UARTPeripheral.uartServiceUUID] options:@{CBCentralManagerScanOptionAllowDuplicatesKey: [NSNumber numberWithBool:NO]}];
-//    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(stopDiscoverBLE:) object:nil];
-// Delay execution of my block for 10 seconds.
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 10 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [self stopDiscoverBLE:nil];
-    });
-//    [self performSelector:@selector(stopDiscoverBLE:) withObject:nil afterDelay:10];
+    _discoveryCallback = [(KrollCallback*)value retain];
+    [[self btManager] scanForPeripheralsWithServices:nil options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @(NO)}];
+    if (num) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, [num integerValue] * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+            [self stopDiscoverBLE:nil];
+        });
+    }
+    
 }
 
 -(void)stopDiscoverBLE:(id)args
@@ -293,7 +447,6 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     if (!_discovering) {
         return;
     }
-//    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(stopDiscoverBLE:) object:nil];
     _discovering = NO;
     if (_discoveryCallback) {
         NSMutableArray* result = [NSMutableArray arrayWithCapacity:[_discoveredBLEDevices count]];
@@ -329,10 +482,12 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 - (void) centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
 {
     if (_discovering) {
+        NSLog(@"found %@", peripheral.name);
         [self addDiscoveredBLEDevice:peripheral];
         if ([self _hasListeners:@"found"]) {
             [self fireEvent:@"found" withObject:@{
                                                   @"discovering":@(_discovering),
+                                                  @"advertising":[self summarizeAdvertisement:advertisementData],
                                                   @"device":[self dictFromPeripheral:peripheral],
                                                   @"rssi":RSSI} propagate:NO checkForListener:NO];
         }
@@ -362,8 +517,8 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 - (void) centralManagerDidUpdateState:(CBCentralManager *)central
 {
     BOOL _oldValue = _enabled;
-    _enabled = [[self btManager] state] == CBCentralManagerStatePoweredOn;
-    if (_oldValue == _enabled)
+    _enabled = [central state] == CBCentralManagerStatePoweredOn;
+    if (_oldValue != _enabled)
     {
         if ([self _hasListeners:@"change"]) {
             [self fireEvent:@"change" withObject:@{

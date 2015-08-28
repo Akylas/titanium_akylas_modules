@@ -2,4 +2,4 @@
 // PLACE ANY BUILD DEFINITIONS IN THIS FILE AND THEY WILL BE 
 // PICKED UP DURING THE APP BUILD FOR YOUR MODULE
 //
-// OTHER_LDFLAGS=$(inherited) -F$(SRCROOT)/platform -weak_framework AdSupport -framework TritonPlayerSDK
+OTHER_LDFLAGS=$(inherited) -F$(SRCROOT)/platform -framework CoreBluetooth

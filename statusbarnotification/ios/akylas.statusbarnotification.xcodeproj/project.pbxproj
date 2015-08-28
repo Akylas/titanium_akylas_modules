@@ -8,32 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
-		D507202B1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = D507202A1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch */; };
-		D50720301B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D507202C1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h */; };
-		D50720311B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D507202D1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m */; };
-		D50720321B344D9E005B31E5 /* AkylasBluetoothModule.h in Headers */ = {isa = PBXBuildFile; fileRef = D507202E1B344D9E005B31E5 /* AkylasBluetoothModule.h */; };
-		D50720331B344D9E005B31E5 /* AkylasBluetoothModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D507202F1B344D9E005B31E5 /* AkylasBluetoothModule.m */; };
-		D515C64A1B380992003F115E /* AkylasBluetoothBLEDeviceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D515C6481B380992003F115E /* AkylasBluetoothBLEDeviceProxy.h */; };
-		D515C64B1B380992003F115E /* AkylasBluetoothBLEDeviceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D515C6491B380992003F115E /* AkylasBluetoothBLEDeviceProxy.m */; };
+		D50720321B344D9E005B31E5 /* AkylasStatusbarnotificationModule.h in Headers */ = {isa = PBXBuildFile; fileRef = D507202E1B344D9E005B31E5 /* AkylasStatusbarnotificationModule.h */; };
+		D50720331B344D9E005B31E5 /* AkylasStatusbarnotificationModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D507202F1B344D9E005B31E5 /* AkylasStatusbarnotificationModule.m */; };
+		D512AAB51B764CC700AF0452 /* akylas.statusbarnotification_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = D512AAB41B764CC700AF0452 /* akylas.statusbarnotification_Prefix.pch */; };
 		D5ABCAE11B380628008E346E /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5ABCAE01B380628008E346E /* CoreBluetooth.framework */; };
-		D5ABCAE41B3806CC008E346E /* UARTPeripheral.h in Headers */ = {isa = PBXBuildFile; fileRef = D5ABCAE21B3806CC008E346E /* UARTPeripheral.h */; };
-		D5ABCAE51B3806CC008E346E /* UARTPeripheral.m in Sources */ = {isa = PBXBuildFile; fileRef = D5ABCAE31B3806CC008E346E /* UARTPeripheral.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D5CD73BC1B764DED00E1AE0E /* CWStatusBarNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = D5CD73BB1B764DE700E1AE0E /* CWStatusBarNotification.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D5CD73BD1B764DEF00E1AE0E /* CWStatusBarNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = D5CD73BA1B764DE700E1AE0E /* CWStatusBarNotification.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		24DD6D1B1134B66800162E58 /* titanium.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = titanium.xcconfig; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		D2AAC07E0554694100DB518D /* libakylas.bluetooth.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.bluetooth.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D507202A1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = akylas.bluetooth_Prefix.pch; sourceTree = "<group>"; };
-		D507202C1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasBluetoothDeviceProxy.h; path = Classes/AkylasBluetoothDeviceProxy.h; sourceTree = "<group>"; };
-		D507202D1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasBluetoothDeviceProxy.m; path = Classes/AkylasBluetoothDeviceProxy.m; sourceTree = "<group>"; };
-		D507202E1B344D9E005B31E5 /* AkylasBluetoothModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasBluetoothModule.h; path = Classes/AkylasBluetoothModule.h; sourceTree = "<group>"; };
-		D507202F1B344D9E005B31E5 /* AkylasBluetoothModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasBluetoothModule.m; path = Classes/AkylasBluetoothModule.m; sourceTree = "<group>"; };
-		D515C6481B380992003F115E /* AkylasBluetoothBLEDeviceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasBluetoothBLEDeviceProxy.h; path = Classes/AkylasBluetoothBLEDeviceProxy.h; sourceTree = "<group>"; };
-		D515C6491B380992003F115E /* AkylasBluetoothBLEDeviceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasBluetoothBLEDeviceProxy.m; path = Classes/AkylasBluetoothBLEDeviceProxy.m; sourceTree = "<group>"; };
+		D2AAC07E0554694100DB518D /* libakylas.statusbarnotification.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.statusbarnotification.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D507202E1B344D9E005B31E5 /* AkylasStatusbarnotificationModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasStatusbarnotificationModule.h; path = Classes/AkylasStatusbarnotificationModule.h; sourceTree = "<group>"; };
+		D507202F1B344D9E005B31E5 /* AkylasStatusbarnotificationModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasStatusbarnotificationModule.m; path = Classes/AkylasStatusbarnotificationModule.m; sourceTree = "<group>"; };
+		D512AAB41B764CC700AF0452 /* akylas.statusbarnotification_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = akylas.statusbarnotification_Prefix.pch; sourceTree = "<group>"; };
 		D5ABCAE01B380628008E346E /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
-		D5ABCAE21B3806CC008E346E /* UARTPeripheral.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UARTPeripheral.h; path = Classes/UARTPeripheral.h; sourceTree = "<group>"; };
-		D5ABCAE31B3806CC008E346E /* UARTPeripheral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UARTPeripheral.m; path = Classes/UARTPeripheral.m; sourceTree = "<group>"; };
+		D5CD73BA1B764DE700E1AE0E /* CWStatusBarNotification.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CWStatusBarNotification.h; sourceTree = "<group>"; };
+		D5CD73BB1B764DE700E1AE0E /* CWStatusBarNotification.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CWStatusBarNotification.m; sourceTree = "<group>"; };
 		D5FBE0BA1AA9979F00EB35E8 /* module.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -53,7 +45,7 @@
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D2AAC07E0554694100DB518D /* libakylas.bluetooth.a */,
+				D2AAC07E0554694100DB518D /* libakylas.statusbarnotification.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +53,7 @@
 		0867D691FE84028FC02AAC07 /* triton */ = {
 			isa = PBXGroup;
 			children = (
+				D5CD73B91B764DE700E1AE0E /* CWStatusBarNotification */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
@@ -81,14 +74,8 @@
 		08FB77AEFE84172EC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				D5ABCAE21B3806CC008E346E /* UARTPeripheral.h */,
-				D5ABCAE31B3806CC008E346E /* UARTPeripheral.m */,
-				D515C6481B380992003F115E /* AkylasBluetoothBLEDeviceProxy.h */,
-				D515C6491B380992003F115E /* AkylasBluetoothBLEDeviceProxy.m */,
-				D507202C1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h */,
-				D507202D1B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m */,
-				D507202E1B344D9E005B31E5 /* AkylasBluetoothModule.h */,
-				D507202F1B344D9E005B31E5 /* AkylasBluetoothModule.m */,
+				D507202E1B344D9E005B31E5 /* AkylasStatusbarnotificationModule.h */,
+				D507202F1B344D9E005B31E5 /* AkylasStatusbarnotificationModule.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -96,11 +83,21 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				D507202A1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch */,
+				D512AAB41B764CC700AF0452 /* akylas.statusbarnotification_Prefix.pch */,
 				D5FBE0BA1AA9979F00EB35E8 /* module.xcconfig */,
 				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
 			);
 			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		D5CD73B91B764DE700E1AE0E /* CWStatusBarNotification */ = {
+			isa = PBXGroup;
+			children = (
+				D5CD73BA1B764DE700E1AE0E /* CWStatusBarNotification.h */,
+				D5CD73BB1B764DE700E1AE0E /* CWStatusBarNotification.m */,
+			);
+			name = CWStatusBarNotification;
+			path = CWStatusBarNotification/CWStatusBarNotification;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -110,20 +107,18 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D50720321B344D9E005B31E5 /* AkylasBluetoothModule.h in Headers */,
-				D507202B1B344D35005B31E5 /* akylas.bluetooth_Prefix.pch in Headers */,
-				D515C64A1B380992003F115E /* AkylasBluetoothBLEDeviceProxy.h in Headers */,
-				D5ABCAE41B3806CC008E346E /* UARTPeripheral.h in Headers */,
-				D50720301B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.h in Headers */,
+				D512AAB51B764CC700AF0452 /* akylas.statusbarnotification_Prefix.pch in Headers */,
+				D50720321B344D9E005B31E5 /* AkylasStatusbarnotificationModule.h in Headers */,
+				D5CD73BD1B764DEF00E1AE0E /* CWStatusBarNotification.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D2AAC07D0554694100DB518D /* akylas.bluetooth */ = {
+		D2AAC07D0554694100DB518D /* akylas.statusbarnotification */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.bluetooth" */;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.statusbarnotification" */;
 			buildPhases = (
 				D2AAC07A0554694100DB518D /* Headers */,
 				D2AAC07B0554694100DB518D /* Sources */,
@@ -133,9 +128,9 @@
 			);
 			dependencies = (
 			);
-			name = akylas.bluetooth;
+			name = akylas.statusbarnotification;
 			productName = triton;
-			productReference = D2AAC07E0554694100DB518D /* libakylas.bluetooth.a */;
+			productReference = D2AAC07E0554694100DB518D /* libakylas.statusbarnotification.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -146,7 +141,7 @@
 			attributes = {
 				LastUpgradeCheck = 0610;
 			};
-			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.bluetooth" */;
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.statusbarnotification" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -158,7 +153,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D2AAC07D0554694100DB518D /* akylas.bluetooth */,
+				D2AAC07D0554694100DB518D /* akylas.statusbarnotification */,
 			);
 		};
 /* End PBXProject section */
@@ -168,10 +163,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D5ABCAE51B3806CC008E346E /* UARTPeripheral.m in Sources */,
-				D50720311B344D9E005B31E5 /* AkylasBluetoothDeviceProxy.m in Sources */,
-				D515C64B1B380992003F115E /* AkylasBluetoothBLEDeviceProxy.m in Sources */,
-				D50720331B344D9E005B31E5 /* AkylasBluetoothModule.m in Sources */,
+				D5CD73BC1B764DED00E1AE0E /* CWStatusBarNotification.m in Sources */,
+				D50720331B344D9E005B31E5 /* AkylasStatusbarnotificationModule.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,7 +207,6 @@
 					"-DDEBUG",
 					"-DTI_POST_1_2",
 				);
-				PRODUCT_NAME = akylas.bluetooth;
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
@@ -255,7 +247,6 @@
 					"$(SRCROOT)",
 				);
 				OTHER_CFLAGS = "-DTI_POST_1_2";
-				PRODUCT_NAME = akylas.bluetooth;
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
@@ -296,7 +287,7 @@
 					"-DTI_POST_1_2",
 				);
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = akylas.bluetooth;
+				PRODUCT_NAME = akylas.statusbarnotification;
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
@@ -331,7 +322,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = akylas.bluetooth;
+				PRODUCT_NAME = akylas.statusbarnotification;
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = NO;
@@ -343,7 +334,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.bluetooth" */ = {
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "akylas.statusbarnotification" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB921F08733DC00010E9CD /* Debug */,
@@ -352,7 +343,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.bluetooth" */ = {
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.statusbarnotification" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB922308733DC00010E9CD /* Debug */,

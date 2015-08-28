@@ -7,6 +7,7 @@
 //
 
 #import "UARTPeripheral.h"
+#import "TiBase.h"
 
 @interface UARTPeripheral ()
 @property CBService *uartService;
@@ -61,7 +62,7 @@
 
 - (void) didConnect
 {
-    [_peripheral discoverServices:@[self.class.uartServiceUUID, self.class.deviceInformationServiceUUID]];
+//    [_peripheral discoverServices:@[self.class.uartServiceUUID, self.class.deviceInformationServiceUUID, [CBUUID UUIDWithString:@"180f"]]];
 }
 
 - (void) didDisconnect
@@ -114,7 +115,10 @@
         else if ([s.UUID isEqual:self.class.deviceInformationServiceUUID])
         {
             [self.peripheral discoverCharacteristics:@[self.class.hardwareRevisionStringUUID] forService:s];
+        } else {
+            [self.delegate peripheral:peripheral didDiscoverService:s];
         }
+        DebugLog(@"didDiscoverServices %@", s.UUID.UUIDString);
     }
 }
 
@@ -128,6 +132,7 @@
     
     for (CBCharacteristic *c in [service characteristics])
     {
+        DebugLog(@"didDiscoverCharacteristics %@ ForService %@", c.UUID.UUIDString, service.UUID.UUIDString);
         if ([c.UUID isEqual:self.class.rxCharacteristicUUID])
         {
             self.rxCharacteristic = c;
@@ -141,7 +146,12 @@
         else if ([c.UUID isEqual:self.class.hardwareRevisionStringUUID])
         {
             [self.peripheral readValueForCharacteristic:c];
+        } else {
+            [self.delegate peripheral:peripheral didDiscoverCharacteristic:c inService:service];
         }
+    }
+    if ([service.UUID isEqual:self.class.uartServiceUUID]) {
+        [self.delegate didDiscoverUARTCharacteristics];
     }
 }
 
@@ -168,6 +178,8 @@
         }
         
         [self.delegate didReadHardwareRevisionString:[hwRevision substringToIndex:hwRevision.length-2]];
+    } else {
+        [self.delegate peripheral:peripheral didUpdateValueForCharacteristic:characteristic];
     }
 }
 @end
