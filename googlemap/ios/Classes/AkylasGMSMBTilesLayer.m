@@ -71,6 +71,17 @@
     
         [queue inDatabase:^(FMDatabase *db) {
             [db setShouldCacheStatements:YES];
+            FMResultSet *results = [db executeQuery:@"select min(zoom_level) from tiles"];
+            [results next];
+            if (![self dbHadError:db])
+                _minZoom = [results doubleForColumnIndex:0];
+            [results close];
+            results = [db executeQuery:@"select max(zoom_level) from tiles"];
+            [results next];
+            if (![self dbHadError:db])
+                _maxZoom = [results doubleForColumnIndex:0];
+            
+            [results close];
         }];
         
             self.cacheable = NO;
@@ -87,11 +98,10 @@
     [super dealloc];
 }
 
-
-- (void)requestTileForX:(NSUInteger)x
+-(void)getImageForTileX:(NSUInteger)x
                       y:(NSUInteger)y
                    zoom:(NSUInteger)zoom
-               receiver:(id<GMSTileReceiver>)receiver
+              comletion:(void(^)(UIImage*)) completion
 {
     
     dispatch_async(_dbQueue, ^{
@@ -114,10 +124,7 @@
              }
              
              [results close];
-             dispatch_async(dispatch_get_main_queue(), ^(void)
-                            {
-                                [receiver receiveTileWithX:x y:y zoom:zoom image:image];
-                            });
+             completion(image);
          }];
     });    
 //    [receiver receiveTileWithX:x y:y zoom:zoom image:nil];
@@ -151,26 +158,26 @@
 //    
 //    return image;
 //}
-
-- (float)minZoom
-{
-    if (_minZoom == -1) {
-        [queue inDatabase:^(FMDatabase *db)
-         {
-             FMResultSet *results = [db executeQuery:@"select min(zoom_level) from tiles"];
-             
-             [results next];
-             
-             if ([self dbHadError:db])
-                 _minZoom = kMBTilesDefaultMinTileZoom;
-             else
-                 _minZoom = [results doubleForColumnIndex:0];
-             
-             [results close];
-         }];
-    }
-    return _minZoom;
-}
+//
+//- (float)minZoom
+//{
+//    if (_minZoom == -1) {
+//        [queue inDatabase:^(FMDatabase *db)
+//         {
+//             FMResultSet *results = [db executeQuery:@"select min(zoom_level) from tiles"];
+//             
+//             [results next];
+//             
+//             if ([self dbHadError:db])
+//                 _minZoom = kMBTilesDefaultMinTileZoom;
+//             else
+//                 _minZoom = [results doubleForColumnIndex:0];
+//             
+//             [results close];
+//         }];
+//    }
+//    return _minZoom;
+//}
 
 -(BOOL)dbHadError:(FMDatabase *)db{
     BOOL result = [db hadError];
@@ -180,24 +187,24 @@
     return result;
 }
 
-- (float)maxZoom
-{
-    if (_maxZoom == -1) {
-        [queue inDatabase:^(FMDatabase *db)
-         {
-             FMResultSet *results = [db executeQuery:@"select max(zoom_level) from tiles"];
-             
-             [results next];
-             if ([self dbHadError:db])
-                 _maxZoom = kMBTilesDefaultMaxTileZoom;
-             else
-                 _maxZoom = [results doubleForColumnIndex:0];
-             
-             [results close];
-         }];
-    }
-    return _maxZoom;
-}
+//- (float)maxZoom
+//{
+//    if (_maxZoom == -1) {
+//        [queue inDatabase:^(FMDatabase *db)
+//         {
+//             FMResultSet *results = [db executeQuery:@"select max(zoom_level) from tiles"];
+//             
+//             [results next];
+//             if ([self dbHadError:db])
+//                 _maxZoom = kMBTilesDefaultMaxTileZoom;
+//             else
+//                 _maxZoom = [results doubleForColumnIndex:0];
+//             
+//             [results close];
+//         }];
+//    }
+//    return _maxZoom;
+//}
 
 //- (RMSphericalTrapezium)latitudeLongitudeBoundingBox
 //{
@@ -380,17 +387,5 @@
 - (NSString *)longAttribution
 {
     return [NSString stringWithFormat:@"%@ - %@", [self shortName], [self shortAttribution]];
-}
-
-
-
-- (void)setMinZoom:(float)aMinZoom
-{
-    _minZoom = aMinZoom;
-}
-
-- (void)setMaxZoom:(float)aMaxZoom
-{
-    _maxZoom = aMaxZoom;
 }
 @end

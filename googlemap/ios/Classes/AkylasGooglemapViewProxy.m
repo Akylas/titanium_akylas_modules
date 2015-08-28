@@ -21,7 +21,7 @@
     return @"AkylasGoogleMap.View";
 }
 
--(GMSMapView*)map
+-(AkylasGMSMapView*)map
 {
     return [(AkylasGooglemapView*)view map];
 }
@@ -60,5 +60,24 @@
     return [AkylasGooglemapClusterProxy class];
 }
 
+-(id)coordinateForPoints:(id)args
+{
+    ENSURE_SINGLE_ARG_OR_NIL(args, NSArray)
+//    ENSURE_UI_THREAD_WAIT_1_ARG(args)
+    AkylasGMSMapView* mapView = [self map];
+    __block NSMutableArray* result;
+    if (mapView) {
+        result = [NSMutableArray array];
+        TiThreadPerformBlockOnMainThread(^{
+            GMSProjection* proj = [mapView projection];
+            [args enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                CGPoint point = [TiUtils pointValue:obj];
+                CLLocationCoordinate2D coords = [proj coordinateForPoint:point];
+                [result addObject:@[@(coords.latitude), @(coords.longitude)]];
+            }];
+        }, YES);
+    }
+    return result;
+}
 
 @end

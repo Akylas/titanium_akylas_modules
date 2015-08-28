@@ -37,7 +37,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 
 +(NSString*)fixPath:(NSString *)path
 {
-    if ([path containsString:TOADD]) {
+    if ([path rangeOfString:TOADD].location != NSNotFound) {
         return path;
     }
     NSError *error = nil;

@@ -31,19 +31,15 @@
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#import "AkylasGMSURLTileLayer.h"
 
 @class FMDatabaseQueue;
 
-#define kMBTilesDefaultTileSize 256
-#define kMBTilesDefaultMinTileZoom 0
-#define kMBTilesDefaultMaxTileZoom 22
-
 /** An AkylasGMSMBTilesLayer provides for a fast, offline-capable set of map tile images served from a local database. [MBTiles](http://mbtiles.org) is an open standard for map tile image transport. */
-@interface AkylasGMSMBTilesLayer : GMSTileLayer
+@interface AkylasGMSMBTilesLayer : AkylasGMSURLTileLayer
 {
     FMDatabaseQueue *queue;
 }
-@property (nonatomic, assign) BOOL cacheable;
 
 /** @name Creating Tile Sources */
 

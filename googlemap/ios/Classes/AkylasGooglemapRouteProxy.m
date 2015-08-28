@@ -23,17 +23,25 @@
     TIGMSPolyline* _gPoly;
     GMSMutablePath *_gPath;
     NSArray * _spans;
+    GMSMapView* _mapView;
+    BOOL _selected;
 }
 
 -(void)dealloc
 {
+    RELEASE_TO_NIL(_mapView);
     RELEASE_TO_NIL(_gPath);
     RELEASE_TO_NIL(_spans);
     [_gPoly setUserData:nil];
     RELEASE_TO_NIL(_gPoly);
     [super dealloc];
 }
-
+-(void)_configure
+{
+    _selected = NO;
+    [super _configure];
+    self.zIndex = [[self class] gZIndexDelta];
+}
 -(NSString*)apiName
 {
     return @"Akylas.GoogleMap.Route";
@@ -51,9 +59,19 @@
 -(void)setColor:(id)value
 {
     [super setColor:value];
-    if (_gPoly != nil && !_spans)  {
+    if (_gPoly != nil && !_selected && !_spans)  {
         TiThreadPerformBlockOnMainThread(^{
             _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
+        }, NO);
+    }
+}
+
+-(void)setSelectedColor:(id)value
+{
+    [super setSelectedColor:value];
+    if (_gPoly != nil && _selected && !_spans)  {
+        TiThreadPerformBlockOnMainThread(^{
+            _gPoly.spans = @[[GMSStyleSpan spanWithColor:_selectedColor]];
         }, NO);
     }
 }
@@ -86,21 +104,31 @@
 }
 
 
--(void)setWidth:(id)value
+-(void)setLineWidth:(CGFloat)lineWidth
 {
-    [super setWidth:value];
+    [super setLineWidth:lineWidth];
 
     if (_gPoly != nil)  {
-        _gPoly.strokeWidth =_lineWidth;
+        _gPoly.strokeWidth =self.lineWidth;
     }
 }
 
 -(void)setTouchable:(BOOL)touchable
 {
     [super setTouchable:touchable];
-    if (configurationSet && _gPoly) {
+    if (_gPoly) {
         TiThreadPerformBlockOnMainThread(^{
             _gPoly.tappable = self.touchable;
+        }, NO);
+    }
+}
+
+-(void)setVisible:(BOOL)visible
+{
+    [super setVisible:visible];
+    if (_gPoly && _mapView) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gPoly.map = self.visible?_mapView:nil;
         }, NO);
     }
 }
@@ -156,7 +184,8 @@
 
 #pragma mark GoogleMap
 +(int)gZIndexDelta {
-    return 300;
+    static int lastIndex = 300;
+    return lastIndex++;
 }
 -(GMSMutablePath *) getGPath {
     if (_gPath == nil) {
@@ -173,6 +202,7 @@
 }
 
 -(void)removeFromMap {
+    RELEASE_TO_NIL(_mapView)
     if (_gPoly != nil && _gPoly.map) {
         _gPoly.map = nil;
     }
@@ -186,17 +216,23 @@
         } else {
             _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
         }
-        _gPoly.strokeWidth = _lineWidth;
+        _gPoly.strokeWidth = self.lineWidth;
         _gPoly.tappable = self.touchable;
         _gPoly.userData = self;
     }
     return _gPoly;
 }
 
+-(GMSPath*)gPath {
+    return _gPath;
+}
+
 -(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView
 {
     [self getOverlay];
-    _gPoly.map = mapView;
+    RELEASE_TO_NIL(_mapView)
+    _mapView = [mapView retain];
+    _gPoly.map = _mapView;
     return _gPoly;
 }
 
@@ -227,12 +263,13 @@
     if (overlay != _gPoly) {
         return;
     }
+    _selected = YES;
     _gPoly.zIndex = 10000;
     if (_selectedColor ) {
         _gPoly.spans = @[[GMSStyleSpan spanWithColor:_selectedColor]];
     }
-    if (_selectedLineWidth != _lineWidth ) {
-        _gPoly.strokeWidth =_selectedLineWidth;
+    if (self.selectedLineWidth >= 0 && self.selectedLineWidth != self.lineWidth ) {
+        _gPoly.strokeWidth =self.selectedLineWidth;
     }
     [self showInfo:nil];
 }
@@ -240,15 +277,17 @@
     if (overlay != _gPoly) {
         return;
     }
+    _selected = NO;
     if (_selectedColor ) {
         _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
     }
-    if (_selectedLineWidth != _lineWidth ) {
-        _gPoly.strokeWidth =_lineWidth;
+    if (self.selectedLineWidth != self.lineWidth ) {
+        _gPoly.strokeWidth =self.lineWidth;
     }
     
     _gPoly.zIndex = (int)self.zIndex;
     [self hideInfo:nil];
     
 }
+
 @end

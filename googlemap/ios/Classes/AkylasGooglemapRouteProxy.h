@@ -15,4 +15,5 @@
 @interface AkylasGooglemapRouteProxy : AkylasMapBaseRouteProxy
 -(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView;
 -(GMSOverlay*)gOverlay;
+-(GMSPath*)gPath;
 @end

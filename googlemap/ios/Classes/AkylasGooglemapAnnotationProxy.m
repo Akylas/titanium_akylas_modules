@@ -14,6 +14,7 @@
 @implementation AkylasGooglemapAnnotationProxy
 {
     GMSMarker* _gmarker;
+    BOOL _selected;
 }
 
 -(void)dealloc
@@ -28,8 +29,10 @@
 {
     [super _configure];
     _appearAnimation = YES;
+    _selected = NO;
     _mAnchorPoint = CGPointMake(0.5, 1.0);
     _calloutAnchorPoint = CGPointMake(0, 1.0f);
+    self.zIndex = [[self class] gZIndexDelta];
 }
 
 
@@ -242,12 +245,21 @@
 
 -(void)setInternalImage:(UIImage*)image {
     [super setInternalImage:image];
-    if (_gmarker) {
+    if (_gmarker && !_selected) {
         TiThreadPerformBlockOnMainThread(^{
             _gmarker.icon = _internalImage;
         }, NO);
     }
 }
+-(void)setInternalSelectedImage:(UIImage*)image {
+    [super setInternalSelectedImage:image];
+    if (_gmarker && _selected) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.icon = _internalSelectedImage;
+        }, NO);
+    }
+}
+
 
 -(void)setCalloutAnchorPoint:(id)value
 {
@@ -271,9 +283,9 @@
 }
 
 +(int)gZIndexDelta {
-    return 1000;
+    static int lastIndex = 800;
+    return lastIndex;
 }
-
 
 -(void)removeFromMap {
      if (_gmarker != nil && _gmarker.map) {
@@ -352,6 +364,7 @@
     if (overlay != _gmarker) {
         return;
     }
+    _selected = YES;
     _gmarker.zIndex = 10000;
     _gmarker.canBeClustered = NO;
     if (_internalSelectedImage) {
@@ -363,6 +376,7 @@
     if (overlay != _gmarker) {
         return;
     }
+    _selected = NO;
     if (_internalSelectedImage) {
         if (_internalImage) {
             _gmarker.icon = _internalImage;

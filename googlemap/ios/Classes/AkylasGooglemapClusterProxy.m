@@ -179,16 +179,16 @@ static NSInteger idIncrement = 0;
 
 -(void)removeAnnotation:(id)args
 {
-    if (!IS_OF_CLASS(args, NSArray)) {
+    
+    PREPARE_ARRAY_ARGS(args)
+    
+    [super removeAnnotation:args];
+    if (!IS_OF_CLASS(value, NSArray)) {
         [self removeAnnotation:@[args]];
         return;
     }
-    PREPARE_ARRAY_ARGS(args)
-
-    [super removeAnnotation:args];
-    
     TiThreadPerformBlockOnMainThread(^{
-        [[self algorithm] removeClusterItemsInSet:[NSSet setWithArray:[args objectAtIndex:0]] fromMap:[(AkylasGooglemapViewProxy*)self.delegate map]];
+        [[self algorithm] removeClusterItemsInSet:IS_OF_CLASS(value, NSArray)?[NSSet setWithArray:(NSArray*)value]:[NSSet setWithObject:value] fromMap:[(AkylasGooglemapViewProxy*)self.delegate map]];
         [self cluster];
     }, YES);
 }
@@ -207,6 +207,12 @@ static NSInteger idIncrement = 0;
     [self cluster];
 }
 
++(int)gZIndexDelta {
+    static int lastIndex = 0;
+    return lastIndex++;
+}
+
+
 -(GMSMarker*)createClusterMarker:(GStaticCluster*) cluster {
     AkylasClusterMarker *marker = [[AkylasClusterMarker alloc] init];
     
@@ -214,6 +220,7 @@ static NSInteger idIncrement = 0;
     marker.cluster = cluster;
     marker.icon = [self generateClusterIconWithCount:count selected:NO];
     marker.userData = self;
+    marker.flat = self.flat;
     marker.tappable = self.touchable;
     marker.position = cluster.position;
     marker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
@@ -434,6 +441,12 @@ static NSInteger idIncrement = 0;
             [ (AkylasGooglemapView*)(theMarker.map.delegate) hideCalloutForOverlay:theMarker];
         }
     }
+}
+
+
+-(id)visibleAnnotations
+{
+    return [[self algorithm] visibleItems];
 }
 
 @end

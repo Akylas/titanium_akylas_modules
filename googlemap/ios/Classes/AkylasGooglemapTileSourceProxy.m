@@ -12,6 +12,8 @@
 
 #import "AkylasGMSURLTileLayer.h"
 #import "AkylasGMSMBTilesLayer.h"
+#import "AkylasGooglemapView.h"
+#import "TiCache.h"
 
 @implementation AkylasGooglemapTileSourceProxy
 {
@@ -25,11 +27,11 @@
     RELEASE_TO_NIL(_url);
     [super dealloc];
 }
-
 -(void)_configure
 {
     _needsClearCache = NO;
     [super _configure];
+    self.zIndex = [[self class] gZIndexDelta];
 }
 
 -(NSString*)apiName
@@ -121,6 +123,8 @@
 -(void)clearCache:(id)unused
 {
     if (_gTileLayer) {
+        TiCache* cache = ((AkylasGMSMapView*)_gTileLayer.map).tileCache;
+        [cache removeAllCachedImagesForCacheKey:[TiUtils stringValue:[self valueForKey:@"id"]]];
         TiThreadPerformBlockOnMainThread(^{
             [_gTileLayer clearTileCache];
         }, NO);
@@ -129,145 +133,50 @@
     }
 }
 
+-(void)setErrorImage:(id)arg
+{
+    [super setErrorImage:arg];
+    if ((IS_OF_CLASS(_gTileLayer, AkylasGMSURLTileLayer))) {
+        ((AkylasGMSURLTileLayer*)_gTileLayer).errorImage = _errorImage;
+        TiThreadPerformBlockOnMainThread(^{
+            [_gTileLayer clearTileCache];
+        }, NO);
+    }
+}
 
+-(void)setShowTileAfterMaxZoom:(BOOL)showTileAfterMaxZoom
+{
+    [super setShowTileAfterMaxZoom:showTileAfterMaxZoom];
+    if ((IS_OF_CLASS(_gTileLayer, AkylasGMSURLTileLayer))) {
+        ((AkylasGMSURLTileLayer*)_gTileLayer).showTileAfterMaxZoom = self.showTileAfterMaxZoom;
+    }
+}
+
++(int)gZIndexDelta {
+    static int lastIndex = 0;
+    return lastIndex++;
+}
 -(GMSTileLayer*)tileLayer
 {
     id source = [self valueForKey:@"source"];
-    if (!IS_OF_CLASS(source, NSString)) {
-        if (IS_OF_CLASS(source, AkylasGooglemapTileSourceProxy) && source != self) {
-            return [source tileLayer];
-        }
-        else if ([source respondsToSelector:@selector(nativePath)]) {
-            
-        }
-        else  {
-            return nil;
-        }
+    if (IS_OF_CLASS(source, AkylasGooglemapTileSourceProxy) && source != self) {
+        return [source tileLayer];
     }
     NSString* typeLower = [source lowercaseString];
     GMSTileLayer* result = nil;
     GMSTileURLConstructor constructor = nil;
     
-    //    if ([typeLower hasSuffix:@"mbtiles"])
-    //    {
-    //        result = [[RMMBTilesSource alloc] initWithTileSetURL:[TiUtils toURL:type proxy:proxy]];
-    //    }
-    if ([typeLower isEqualToString:@"websource"])
-    {
-        _url = [TiUtils stringValue:[self valueForKey:@"url"]];
-        constructor = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            NSString* sX = [NSString stringWithFormat:@"%lu", x];
-            NSString* sY = [NSString stringWithFormat:@"%lu", y];
-            NSString* sZ = [NSString stringWithFormat:@"%lu", zoom];
-            return [NSURL URLWithString:[[[_url stringByReplacingOccurrencesOfString:@"{x}" withString:sX] stringByReplacingOccurrencesOfString:@"{y}" withString:sY] stringByReplacingOccurrencesOfString:@"{z}" withString:sZ]];
-        };
-    }
-    else if ([typeLower isEqualToString:@"openstreetmap"])
-    {
-        _url = @"http://tile.openstreetmap.org/%lu/%lu/%lu.png";
-        constructor = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            NSString *URLStr =
-            [NSString stringWithFormat:_url, (unsigned long)zoom, (unsigned long)x, (unsigned long)y];
-            return [NSURL URLWithString:URLStr];
-        };
-        
-    }
-    else if ([typeLower hasSuffix:@"mbtiles"])
+    if ([typeLower hasSuffix:@"mbtiles"])
     {
         result = [[AkylasGMSMBTilesLayer alloc] initWithTileSetURL:[TiUtils toURL:source proxy:self]];
-    }
-    else if ([typeLower isEqualToString:@"openseamap"])
-    {
-        _url = @"http://tiles.openseamap.org/seamark/%lu/%lu/%lu.png";
-        constructor = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            NSString *URLStr =
-            [NSString stringWithFormat:_url, (unsigned long)zoom, (unsigned long)x, (unsigned long)y];
-            return [NSURL URLWithString:URLStr];
-        };
-    }
-    else if ([typeLower isEqualToString:@"mapquest"])
-    {
-        _url = @"http://otile1.mqcdn.com/tiles/1.0.0/map/%lu/%lu/%lu.png";
-        constructor = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            NSString *URLStr =
-            [NSString stringWithFormat:_url, (unsigned long)zoom, (unsigned long)x, (unsigned long)y];
-            return [NSURL URLWithString:URLStr];
-        };
-    }
-    else if ([typeLower isEqualToString:@"mapquest-sat"])
-    {
-        _url = @"http://otile1.mqcdn.com/tiles/1.0.0/sat/%lu/%lu/%lu.png";
-        constructor = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            NSString *URLStr =
-            [NSString stringWithFormat:_url, (unsigned long)zoom, (unsigned long)x, (unsigned long)y];
-            return [NSURL URLWithString:URLStr];
-        };
-    }
-    else if ([typeLower isEqualToString:@"tilemill"] )
-    {
-        NSString* name = [TiUtils stringValue:[self valueForKey:@"mapName"]];
-        NSString* url = [NSString stringWithFormat:@"%@:20008/tile/%@", [TiUtils stringValue:[self valueForKey:@"host"]], name];
-        _url = [[url stringByAppendingString:@"/%lu/%lu/%lu.png?updated=%i"] retain];
-        constructor = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            NSString *URLStr =
-            [NSString stringWithFormat:_url, (unsigned long)x, (unsigned long)y, (unsigned long)zoom, (int)[[NSDate date] timeIntervalSince1970]];
-            return [NSURL URLWithString:URLStr];
-        };
-    }
-    else if ([typeLower isEqualToString:@"mapbox"] )
-    {
-        NSString* mapID = [TiUtils stringValue:[self valueForKey:@"mapId"]];
-        NSString* imageQuality = [TiUtils stringValue:[self valueForKey:@"imageQuality"] def:@"png"];
-        NSString* accessToken = [TiUtils stringValue:[self valueForKey:@"accessToken"] def:[AkylasMapBaseModule valueForKey:@"accessToken"]];
-        CGFloat contentScaleFactor = [UIScreen mainScreen].scale;
-        NSString* url = [NSString stringWithFormat:@"https://a.tiles.mapbox.com/v4/%@/", mapID];
-        _url = [[[url stringByAppendingString:@"%lu/%lu/%lu"] stringByAppendingString:[NSString stringWithFormat:@"%@.%@?access_token=%@", contentScaleFactor > 1.0 ? @"@2x" : @"",
-                                                                                       imageQuality,
-                                                                                       accessToken]] retain];
-        constructor = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            return  [NSURL URLWithString:[NSString stringWithFormat:_url,
-                                          (unsigned long)zoom,
-                                          (unsigned long)x,
-                                          (unsigned long)y
-                                          ]];
-        };
-    }
-    else if ([typeLower isEqualToString:@"ign"] )
-    {
-        NSString* key = [TiUtils stringValue:[self valueForKey:@"key"] def:@"xxx"];
-        NSString* layer = [TiUtils stringValue:[self valueForKey:@"layer"] def:@"xxx"];
-        NSString* format = [TiUtils stringValue:[self valueForKey:@"format"] def:@"image/jpeg"];
-        
-        NSString* realLayer = @"GEOGRAPHICALGRIDSYSTEMS.MAPS";
-        if ([layer isEqualToString:@"express"]) {
-            realLayer = @"GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE";
-        } else if ([layer isEqualToString:@"expressStandard"]) {
-            realLayer = @"GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD";
-        } else if ([layer isEqualToString:@"plan"]) {
-            realLayer = @"GEOGRAPHICALGRIDSYSTEMS.PLANIGN";
-        } else if ([layer isEqualToString:@"buildings"]) {
-            realLayer = @"BUILDINGS.BUILDINGS";
-        } else if ([layer isEqualToString:@"parcels"]) {
-            realLayer = @"CADASTRALPARCELS.PARCELS";
-        } else if ([layer isEqualToString:@"slopes"]) {
-            realLayer = @"ELEVATION.SLOPES.HIGHRES";
-        }
-        NSString* url = [NSString stringWithFormat:@"http://gpp3-wxs.ign.fr/%@/geoportail/wmts?LAYER=%@&EXCEPTIONS=text/xml&FORMAT=%@&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM", key,
-                         realLayer,
-                         format];
-        _url = [[url stringByAppendingString:@"&TILEMATRIX=%lu&TILEROW=%lu&TILECOL=%lu"] retain];
-        constructor = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            NSString* result = [NSString stringWithFormat:_url,
-                                (unsigned long)zoom,
-                                (unsigned long)y,
-                                (unsigned long)x
-                                ];
-            return  [NSURL URLWithString:result];
-        };
+    } else {
+        _url = [TiUtils stringValue:[self valueForKey:@"url"]];
     }
     
-    if (constructor) {
+    if (!result) {
         AkylasGMSURLTileLayer* theLayer = [[AkylasGMSURLTileLayer alloc] initWithConstructor:constructor];
+        theLayer.url = _url;
+        theLayer.subdomains = [TiUtils stringValue:[self valueForKey:@"subdomains"] def:@"abc"];
         theLayer.cacheKey = [TiUtils stringValue:[self valueForKey:@"id"]];
         theLayer.userAgent = [TiUtils stringValue:[self valueForKey:@"userAgent"]];
         theLayer.cacheable = [TiUtils boolValue:[self valueForKey:@"cacheable"] def:YES];
@@ -289,19 +198,21 @@
     if (_gTileLayer == nil) {
         _gTileLayer = [[self tileLayer] retain];
         if (!_gTileLayer) return nil;
-        if (_needsClearCache) {
-            [_gTileLayer clearTileCache];
-            _needsClearCache = NO;
-        }
+
         _gTileLayer.fadeIn = self.fadeIn;
         _gTileLayer.zIndex = (int)self.zIndex;
         _gTileLayer.opacity = self.visible?self.opacity:0;
         _gTileLayer.tileSize = self.tileSize;
         [_gTileLayer setMap:mapView];
+        if (_needsClearCache) {
+            [self clearCache:nil];
+            _needsClearCache = NO;
+        }
     }
-    else if (_gTileLayer.map && _gTileLayer.map != mapView) {
-        RELEASE_TO_NIL(_gTileLayer)
-        return [self getGTileLayerForMapView:mapView];
+    else  {
+        _gTileLayer.map = mapView;
+//        RELEASE_TO_NIL(_gTileLayer)
+//        return [self getGTileLayerForMapView:mapView];
     }
     return _gTileLayer;
 }

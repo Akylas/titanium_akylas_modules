@@ -10,11 +10,13 @@
 @interface AkylasGMSMapView : GMSMapView
 @property (nonatomic, readwrite, retain) TiCache *tileCache;
 @property (nonatomic, readwrite, assign) BOOL networkConnected;
+@property (nonatomic, readwrite, assign) BOOL ignoreSelectedMarkerChange;
 @end
 
-@interface AkylasGooglemapView : AkylasMapBaseView<SMCalloutViewDelegate, GMSMapViewDelegate>
+@interface AkylasGooglemapView : AkylasMapBaseView<SMCalloutViewDelegate, GMSMapViewDelegate, UIGestureRecognizerDelegate>
 {
 }
+@property (nonatomic, readwrite, assign) BOOL shouldFollowUserLocation;
 
 -(AkylasGMSMapView*)map;
 -(GClusterManager*)clusterManager;

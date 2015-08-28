@@ -47,7 +47,11 @@
     
     [super dealloc];
 }
-
+-(void)_configure
+{
+    [super _configure];
+    self.zIndex = [[self class] gZIndexDelta];
+}
 -(void)setTitle:(id)value
 {
     [super setTitle:value];
@@ -108,7 +112,8 @@
 }
 
 +(int)gZIndexDelta {
-    return 30;
+    static int lastIndex = 30;
+    return lastIndex++;
 }
 
 -(void)onPointProcessed
