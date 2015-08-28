@@ -9,6 +9,9 @@
 #import "CorePlot-CocoaTouch.h"
 
 @implementation AkylasChartsLabelFormatter
+{
+    KrollCallback* callback;
+}
 
 @synthesize tickLocations;
 
@@ -73,17 +76,18 @@
 -(id)initWithArray:(NSArray*)values
 {
 	if ( (self = [super init]) ) {
-        callback = nil;
         [self setTickInfo:values];
 	}
     
 	return self;	
 }
 
--(id)initWithCallback:(KrollCallback*)cb
+-(id)initWithCallback:(KrollCallback*)callback_
 {
+
 	if ( (self = [super init]) ) {
-        callback = [cb retain];
+        
+        callback = [callback_ retain];
         customLabels = nil;
 	}
     

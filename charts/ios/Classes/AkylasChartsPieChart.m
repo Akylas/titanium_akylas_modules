@@ -51,7 +51,6 @@
 {
     [super configureChart:props];
 
-    pieChart.identifier = graph.title;
     pieChart.shadow = [AkylasChartsParsers parseShadow:@"shadow" inProperties:self.proxy def:nil];
     
     float startDegrees = 90 + [TiUtils floatValue:[props objectForKey:@"startAngle"] def:0.0f];

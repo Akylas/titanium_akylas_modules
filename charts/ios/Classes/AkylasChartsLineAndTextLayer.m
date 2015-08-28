@@ -128,26 +128,26 @@
 -(void)setTextDisplacement:(CGPoint)displacement
 {
     CGFloat realYDisp = displacement.y - kDefaultTextDisplacementY;
-    if (realYDisp < 0)
-    {
-        textLayer.paddingTop = 0;
-        textLayer.paddingBottom = -realYDisp;
-    }
-    else {
+//    if (realYDisp < 0)
+//    {
+//        textLayer.paddingTop = 0;
+//        textLayer.paddingBottom = -realYDisp;
+//    }
+//    else {
         textLayer.paddingTop = realYDisp;
         textLayer.paddingBottom = 0;
-    }
+//    }
     
     CGFloat realXDisp = displacement.x - kDefaultTextDisplacementX;
-    if (realXDisp < 0)
-    {
-        textLayer.paddingLeft = 0;
-        textLayer.paddingRight = -realXDisp;
-    }
-    else {
+//    if (realXDisp < 0)
+//    {
+//        textLayer.paddingLeft = 0;
+//        textLayer.paddingRight = -realXDisp;
+//    }
+//    else {
         textLayer.paddingLeft = realXDisp;
         textLayer.paddingRight = 0;
-    }
+//    }
     [self sizeToFit];
 }
 
@@ -185,9 +185,9 @@
         CGSize sizeThatFits = [self sizeThatFits];
         CGRect newBounds    = self.bounds;
         newBounds.size         = sizeThatFits;
-        newBounds.size.width  += self.paddingLeft + self.paddingRight;
-        newBounds.size.height += self.paddingTop + self.paddingBottom;
-        
+//        newBounds.size.width  += self.paddingLeft + self.paddingRight;
+//        newBounds.size.height += self.paddingTop + self.paddingBottom;
+    
         self.bounds = newBounds;
         [self setNeedsLayout];
         [self setNeedsDisplay];

@@ -10,6 +10,7 @@
 #import "AkylasChartsMarkerAnnotation.h"
 #import "AkylasChartsLineAndTextLayer.h"
 #import "TiBase.h"
+#import "TiUtils.h"
 
 @implementation AkylasChartsMarkerProxy
 {
@@ -21,6 +22,11 @@
     RELEASE_TO_NIL(_marker)
 
     [super dealloc];
+}
+
+-(void)_configure {
+    _visible = YES;
+    [super _configure];
 }
 
 -(AkylasChartsMarkerAnnotation*)marker
@@ -35,6 +41,7 @@
             RELEASE_TO_NIL(_marker)
         }
         _marker = [[AkylasChartsMarkerAnnotation alloc] initForPlotSpace:plotSpace withProperties:[self allProperties]];
+        _marker.visible = self.visible;
         
     }
     return _marker;
@@ -60,6 +67,26 @@
         }
     }
     [self replaceValue:value forKey:@"value" notification:NO];
+}
+
+
+-(void)setTitle:(id)title {
+    if (_marker) {
+        TiThreadPerformBlockOnMainThread(^{
+            [((AkylasChartsLineAndTextLayer*)_marker.contentLayer) setText:[TiUtils stringValue:title]];
+        }, NO);
+    }
+}
+
+-(void)setVisible:(BOOL)visible
+{
+    _visible = visible;
+    if (_marker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _marker.visible = visible;
+        }, NO);
+        
+    }
 }
 
 @end

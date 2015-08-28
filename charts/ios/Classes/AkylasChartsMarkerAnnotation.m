@@ -44,6 +44,10 @@
             [newLayer setTextShadow:[AkylasChartsParsers parseShadow:@"shadow" inProperties:labelProps def:nil]];
             [newLayer setTextDisplacement:[TiUtils pointValue:@"offset" properties:labelProps def:CGPointZero]];
         }
+        if ([properties objectForKey:@"padding"]) {
+            UIEdgeInsets insets = [TiUtils contentInsets:[properties objectForKey:@"padding"]];
+            newLayer.insets = insets;
+        }
         newLayer.shadow = [AkylasChartsParsers parseShadow:@"shadow" inProperties:properties def:nil];
         self.contentLayer = newLayer;
 
@@ -57,9 +61,9 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self.contentLayer];
     [super setAnnotationHostLayer:newLayer];
     [((AkylasChartsLineAndTextLayer*)self.contentLayer) setParentLayer:self.annotationHostLayer];
-    [[NSNotificationCenter defaultCenter] addObserver:self.contentLayer
-                                             selector:@selector(sizeToFit)
-                                                 name:CPTLayerBoundsDidChangeNotification
-                                               object:self.annotationHostLayer];
+//    [[NSNotificationCenter defaultCenter] addObserver:self.contentLayer
+//                                             selector:@selector(sizeToFit)
+//                                                 name:CPTLayerBoundsDidChangeNotification
+//                                               object:self.annotationHostLayer];
 }
 @end

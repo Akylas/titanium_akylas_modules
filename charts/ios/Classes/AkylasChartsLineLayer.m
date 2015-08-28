@@ -223,12 +223,12 @@
         CGSize sizeThatFits = [self sizeThatFits];
         CGRect newBounds    = self.bounds;
         newBounds.size         = sizeThatFits;
-        if (direction == CPTLineDirectionHorizontal) {
-            newBounds.size.height += self.paddingTop + self.paddingBottom;
-        }
-        else {
-            newBounds.size.width  += self.paddingLeft + self.paddingRight;
-        }
+//        if (direction == CPTLineDirectionHorizontal) {
+//            newBounds.size.height += self.paddingTop + self.paddingBottom;
+//        }
+//        else {
+//            newBounds.size.width  += self.paddingLeft + self.paddingRight;
+//        }
         
         self.bounds = newBounds;
         [self setNeedsLayout];
@@ -243,15 +243,16 @@
 {
     CGMutablePathRef pathRef = CGPathCreateMutable();
     CGFloat inset      = self.lineStyle.lineWidth * CPTFloat(0.5);
+    CGSize size = self.bounds.size;
     if (direction == CPTLineDirectionHorizontal) {
-        float yPos = (self.bounds.size.height) / 2.0f;
-        CGPathMoveToPoint(pathRef, NULL, self.paddingLeft, yPos);
-        CGPathAddLineToPoint(pathRef, NULL, self.frame.size.width - self.paddingLeft - self.paddingRight, yPos);
+        float yPos = (size.height) / 2.0f;
+        CGPathMoveToPoint(pathRef, NULL, self.insets.left, yPos);
+        CGPathAddLineToPoint(pathRef, NULL, size.width - self.insets.left - self.insets.right, yPos);
     }
     else {
-        float xPos = (self.bounds.size.width) / 2.0f;
-        CGPathMoveToPoint(pathRef, NULL, xPos, self.paddingTop);
-        CGPathAddLineToPoint(pathRef, NULL, xPos, self.frame.size.height - self.paddingTop - self.paddingBottom);
+        float xPos = (size.width) / 2.0f;
+        CGPathMoveToPoint(pathRef, NULL, xPos, self.insets.bottom);
+        CGPathAddLineToPoint(pathRef, NULL, xPos, size.height - self.insets.top -  self.insets.bottom);
     }
     return pathRef;
 }

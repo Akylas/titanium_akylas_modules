@@ -39,7 +39,6 @@
     if (plot ==nil) return;
  
     // identifier is copied, so no need to retain
-	plot.identifier = [TiUtils stringValue:[props objectForKey:@"name"]];
     plot.shadow = [AkylasChartsParsers parseShadow:@"shadow" inProperties:self def:nil];
 
 	// Parse the labels
@@ -84,7 +83,7 @@
     // The point passed in is in view coordinates. We need to convert to graph coordinates
     // and specifically to the plot area. Remember that graph cooridates are inverted from
     // view coordinates.
-    CPTGraphHostingView *hostingView = [(AkylasChartsChart*)self.chartProxy.view hostingView];
+    CPTGraphHostingView *hostingView = [(AkylasChartsChart*)((AkylasChartsChartProxy*)parent).view hostingView];
     CGPoint pointInPlotArea = [hostingView.layer convertPoint:point toLayer:self.plot.plotArea];
 
     NSDecimal newPoint[2];

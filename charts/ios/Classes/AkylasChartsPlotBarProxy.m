@@ -32,10 +32,10 @@
 									 andOpacity:[props objectForKey:@"fillOpacity"]
 											def:plot.fill];
 	
-	plot.barsAreHorizontal = [TiUtils boolValue:[props objectForKey:@"barDirection"] def:[TiUtils boolValue:[self.chartProxy valueForUndefinedKey:@"barDirection"] def:plot.barsAreHorizontal]];
-	plot.barWidth = [AkylasChartsParsers decimalFromFloat:[props objectForKey:@"barWidth"] def:[AkylasChartsParsers decimalFromFloat:[self.chartProxy valueForUndefinedKey:@"barWidth"] def:plot.barWidth]];
-	plot.barOffset = [AkylasChartsParsers decimalFromFloat:[props objectForKey:@"barOffset"] def:[AkylasChartsParsers decimalFromFloat:[self.chartProxy valueForUndefinedKey:@"barOffset"] def:plot.barOffset]];
-	plot.barCornerRadius = [TiUtils floatValue:[props objectForKey:@"barRadius"] def:[TiUtils floatValue:[self.chartProxy valueForUndefinedKey:@"barRadius"] def:plot.cornerRadius]];
+	plot.barsAreHorizontal = [TiUtils boolValue:[props objectForKey:@"barDirection"] def:[TiUtils boolValue:[self.parent valueForUndefinedKey:@"barDirection"] def:plot.barsAreHorizontal]];
+	plot.barWidth = [AkylasChartsParsers decimalFromFloat:[props objectForKey:@"barWidth"] def:[AkylasChartsParsers decimalFromFloat:[self.parent valueForUndefinedKey:@"barWidth"] def:plot.barWidth]];
+	plot.barOffset = [AkylasChartsParsers decimalFromFloat:[props objectForKey:@"barOffset"] def:[AkylasChartsParsers decimalFromFloat:[self.parent valueForUndefinedKey:@"barOffset"] def:plot.barOffset]];
+	plot.barCornerRadius = [TiUtils floatValue:[props objectForKey:@"barRadius"] def:[TiUtils floatValue:[self.parent valueForUndefinedKey:@"barRadius"] def:plot.cornerRadius]];
 
 	// These fields allow for changing the base of the bar -- could be used for stacked bar charts
 	// TODO

@@ -13,5 +13,6 @@
 @interface AkylasChartsMarkerProxy : TiProxy
 -(AkylasChartsMarkerAnnotation*)getMarkerAnnotationForGraph:(CPTPlotSpace *)plotSpace;
 -(AkylasChartsMarkerAnnotation*)marker;
+@property (readwrite, assign, nonatomic) BOOL visible;
 
 @end

@@ -11,7 +11,7 @@
 @class AkylasChartsChartProxy;
 
 @interface AkylasChartsPlotProxy : TiParentingProxy <CPTPlotDataSource> {
-	
+
 @private
 	CPTPlot				*plot;
 	NSMutableArray		*dataX;
@@ -19,7 +19,7 @@
 	NSString			*dataKey;
 	int					dirtyDataFlags;
 	NSSet				*propertyChangedProperties;
-	AkylasChartsChartProxy	*chartProxy;
+//	AkylasChartsChartProxy	*chartProxy;
     float               minXValue;
     float               maxXValue;
     float               minYValue;
@@ -29,7 +29,7 @@
 @property(nonatomic,readwrite,retain) NSString* dataKey;
 @property(nonatomic,readwrite,retain) NSSet* propertyChangedProperties;
 @property(nonatomic,readwrite,retain) CPTPlot* plot;
-@property(nonatomic,assign) AkylasChartsChartProxy* chartProxy;
+//@property(nonatomic,readwrite,retain) AkylasChartsChartProxy* chartProxy;
 @property(nonatomic, readonly) float minXValue;
 @property(nonatomic, readonly) float maxXValue;
 @property(nonatomic, readonly) float minYValue;
@@ -50,6 +50,7 @@
 
 -(NSArray*)dataX;
 -(NSArray*)dataY;
+-(NSUInteger)indexForXValue:(CGFloat)value;
 
 
 @end

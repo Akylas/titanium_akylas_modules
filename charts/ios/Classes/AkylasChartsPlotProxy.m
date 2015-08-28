@@ -15,7 +15,7 @@
 #define NEEDS_RECONFIGURE   2
 
 @implementation AkylasChartsPlotProxy
-@synthesize dataKey, propertyChangedProperties, plot, chartProxy;
+@synthesize dataKey, propertyChangedProperties, plot;
 @synthesize minXValue, minYValue, maxXValue, maxYValue;
 
 -(CPTPlot*)allocPlot
@@ -69,6 +69,10 @@
 	}
 	
 	[self configurePlot: [self allProperties]];
+    
+    if ([self valueForUndefinedKey:@"bindId"]) {
+        plot.identifier = [self valueForUndefinedKey:@"bindId"];
+    }
 	
 	// Make sure to set the frame to match the graph
 	plot.frame = [toGraph frame];
@@ -83,26 +87,48 @@
 
 -(NSUInteger)numberOfRecordsForPlot:(CPTPlot *)plot
 {
-	return [dataY count];
+    @synchronized(dataY) {
+        return [dataY count];
+    }
 }
 
 -(NSNumber*)numberForPlot:(NSUInteger)index
 {
-	if (index < [dataY count]) {
-		return [dataY objectAtIndex:index];
-	}
-	
+    @synchronized(dataY) {
+        if (index < [dataY count]) {
+            return [dataY objectAtIndex:index];
+        }
+    }
 	return nil;
 }
+
+
+-(NSUInteger)indexForXValue:(CGFloat)value {
+    __block NSUInteger result = NSNotFound;
+    @synchronized(dataX) {
+        [dataX enumerateObjectsUsingBlock:^(NSNumber* number, NSUInteger idx, BOOL *stop) {
+            if (number.floatValue > value) {
+                result = idx;
+                *stop = YES;
+            }
+        }];
+    }
+    return result;
+}
+
 
 
 -(NSArray*)numbersForPlotRange:(NSRange)indexRange forCoordinate:(CPTCoordinate)coordinate
 {
     if (coordinate == CPTScatterPlotFieldY) {
-        return [dataY subarrayWithRange:indexRange];
+        @synchronized(dataY) {
+            return [dataY subarrayWithRange:indexRange];
+        }
     }
     else {
-        return [dataX subarrayWithRange:indexRange];
+        @synchronized(dataX) {
+            return [dataX subarrayWithRange:indexRange];
+        }
     }
     
     return nil;
@@ -111,10 +137,14 @@
 -(NSNumber*)numberForPlot:(NSUInteger)index forCoordinate:(CPTCoordinate)coordinate
 {
     if (coordinate == CPTScatterPlotFieldY) {
-        return [dataY objectAtIndex:index];
+        @synchronized(dataY) {
+            return [dataY objectAtIndex:index];
+        }
     }
     else {
-        return [dataX objectAtIndex:index];
+        @synchronized(dataX) {
+            return [dataX objectAtIndex:index];
+        }
     }
     
     return nil;
@@ -122,12 +152,16 @@
 
 -(NSArray*)dataY
 {
-	return dataY;
+    @synchronized(dataY) {
+        return dataY;
+    }
 }
 
 -(NSArray*)dataX
 {
-	return dataX;
+    @synchronized(dataX) {
+        return dataX;
+    }
 }
 
 -(void)refreshData
@@ -144,7 +178,7 @@
 	// to clear its cache of data and requery the values from the delegate.
 	[plot reloadData];
 
-	[chartProxy refreshPlotSpaces];
+	[(AkylasChartsChartProxy*)parent refreshPlotSpaces];
 }
 
 -(void)triggerDataUpdate
@@ -189,50 +223,54 @@
             dataY = [[NSMutableArray arrayWithCapacity:length] retain];
         }
 		
-        if([[values objectAtIndex:0] isKindOfClass:arrayClass]) {
-            NSArray* xs = [values objectAtIndex:0];
-            NSArray* ys = [values objectAtIndex:1];
-            length = [xs count];
-            
-            for (int i = 0; i < length; i++) {
-                id x = [xs objectAtIndex:i];
-                id y = [ys objectAtIndex:i];
-                if (x && ![x isEqual:[NSNull null]]) {
-                    float floatX = [x floatValue];
-                    float floatY = [y floatValue];
-                    if (floatX < minXValue)
-                        minXValue = floatX;
-                    else if (floatX > maxXValue)
-                        maxXValue = floatX;
-                    if (floatY < minYValue)
-                        minYValue = floatY;
-                    else if (floatY > maxYValue)
-                        maxYValue = floatY;
-                    [dataX insertObject:x atIndex:index+i];
-                    [dataY insertObject:y atIndex:index+i];
+        @synchronized(dataX) {
+            @synchronized(dataY) {
+               if([[values objectAtIndex:0] isKindOfClass:arrayClass]) {
+                    NSArray* xs = [values objectAtIndex:0];
+                    NSArray* ys = [values objectAtIndex:1];
+                    length = [xs count];
+                    
+                    for (int i = 0; i < length; i++) {
+                        id x = [xs objectAtIndex:i];
+                        id y = [ys objectAtIndex:i];
+                        if (x && ![x isEqual:[NSNull null]]) {
+                            float floatX = [x floatValue];
+                            float floatY = [y floatValue];
+                            if (floatX < minXValue)
+                                minXValue = floatX;
+                            else if (floatX > maxXValue)
+                                maxXValue = floatX;
+                            if (floatY < minYValue)
+                                minYValue = floatY;
+                            else if (floatY > maxYValue)
+                                maxYValue = floatY;
+                            [dataX insertObject:x atIndex:index+i];
+                            [dataY insertObject:y atIndex:index+i];
+                        }
+                        else {
+                            float floatY = [TiUtils floatValue:y];
+                            if (floatY < minYValue)
+                                minYValue = floatY;
+                            else if (floatY > maxYValue)
+                                maxYValue = floatY;
+                            [dataY insertObject:y atIndex:index+i];
+                        }
+                    }
                 }
                 else {
-                    float floatY = [TiUtils floatValue:y];
-                    if (floatY < minYValue)
-                        minYValue = floatY;
-                    else if (floatY > maxYValue)
-                        maxYValue = floatY;
-                    [dataY insertObject:y atIndex:index+i];
+                    for (int i = 0; i < length; i++) {
+                        id y = [values objectAtIndex:i];
+                        float floatY = [y floatValue];
+                        if (floatY < minYValue)
+                            minYValue = floatY;
+                        else if (floatY > maxYValue)
+                            maxYValue = floatY;
+                        [dataX insertObject:y atIndex:index+i];
+                    }
                 }
             }
         }
-        else {
-            for (int i = 0; i < length; i++) {
-                id y = [values objectAtIndex:i];
-                float floatY = [y floatValue];
-                if (floatY < minYValue)
-                    minYValue = floatY;
-                else if (floatY > maxYValue)
-                    maxYValue = floatY;
-                [dataX insertObject:y atIndex:index+i];
-            }
-        }
-	}	
+	}
 }
 
 -(void)setData:(id)values
@@ -321,22 +359,23 @@
 
 -(void)notifyOfDataClickedEvent:(NSUInteger)index
 {
-	if ([self _hasListeners:@"dataClicked"]) {
+    if ([self _hasListeners:@"dataClicked" checkParent:NO]) {
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
                                NUMINTEGER(index),@"index",
                                [self numberForPlot:index],@"value",
                                plot.identifier,@"name",                                
                                nil
                                ];        
-		[self fireEvent:@"dataClicked" withObject:event];
+		[self fireEvent:@"dataClicked" withObject:event propagate:NO checkForListener:NO];
 	}
 }
 
 -(CGPoint)viewPointFromGraphPoint:(CGPoint)point
 {
-    CGPoint viewPoint = [(AkylasChartsChart*)self.chartProxy.view viewPointFromGraphPoint:point];
+    CGPoint viewPoint = [(AkylasChartsChart*)((AkylasChartsChartProxy*)parent).view viewPointFromGraphPoint:point];
     return viewPoint;
 }
+
 
 -(void)notifyOfDataClickedEvent:(NSUInteger)index atPlotPoint:(CGPoint)plotPoint
 {
@@ -346,7 +385,7 @@
     CGPoint graphPoint = [self.plot.plotArea convertPoint:plotPoint toLayer:self.plot.graph];
     CGPoint viewPoint = [self viewPointFromGraphPoint:graphPoint];
 
-	if ([self _hasListeners:@"dataClicked"]) {
+    if ([self _hasListeners:@"dataClicked" checkParent:NO]) {
 		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
 								  NUMINTEGER(index),@"index",
 							      [self numberForPlot:index],@"value",
@@ -355,11 +394,11 @@
                                   NUMINTEGER(viewPoint.y),@"y",
 								  nil
 							  ];        
-		[self fireEvent:@"dataClicked" withObject:event];
+		[self fireEvent:@"dataClicked" withObject:event propagate:NO checkForListener:NO];
 	}
 
 	// Since dataClicked events override the touchstart event we should generate one
-	[(AkylasChartsChart*)self.chartProxy.view notifyOfTouchEvent:@"touchstart" atPoint:viewPoint];
+	[(AkylasChartsChart*)((AkylasChartsChartProxy*)parent).view notifyOfTouchEvent:@"touchstart" atPoint:viewPoint];
 }
 
 //-(void)propertyChanged:(NSString*)key oldValue:(id)oldValue newValue:(id)newValue proxy:(TiProxy*)proxy

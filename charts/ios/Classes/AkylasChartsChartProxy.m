@@ -14,8 +14,21 @@
 
 #import "TiUtils.h"
 
+#define PREPARE_ARRAY_ARGS(args) \
+ENSURE_TYPE(args, NSArray) \
+NSNumber* num = nil; \
+NSInteger index = -1; \
+NSObject* value = nil; \
+ENSURE_ARG_OR_NIL_AT_INDEX(value, args, 0, NSObject); \
+ENSURE_ARG_OR_NIL_AT_INDEX(num, args, 1, NSNumber); \
+if (num) { \
+index = [num integerValue]; \
+} \
+
+
 @implementation AkylasChartsChartProxy
 {
+    NSMutableArray	*_markers;
 }
 
 -(void)_initWithProperties:(NSDictionary*)properties
@@ -30,9 +43,13 @@
 
 -(void)dealloc
 {
-	// release any resources that have been retained by the module
-	RELEASE_TO_NIL(markers);
-	
+    if ((_markers)) {
+        for (id proxy in (_markers)) {
+//            [proxy setDelegate:nil];
+            [self forgetProxy:proxy];
+        }
+        RELEASE_TO_NIL((_markers));
+    }
 	[super dealloc];
 }
 
@@ -60,15 +77,6 @@
 	return [copy autorelease];
 }
 
--(NSMutableArray*)markers
-{
-	if (markers == nil) {
-		markers = [[NSMutableArray alloc] init];
-	}
-	
-	return markers;
-}
-
 -(void)childAdded:(TiProxy*)child atIndex:(NSInteger)position shouldRelayout:(BOOL)shouldRelayout
 {
     [super childAdded:child atIndex:position shouldRelayout:shouldRelayout];
@@ -77,10 +85,10 @@
         return;
     }
     
-    if ([child isKindOfClass:[AkylasChartsPlotProxy class]])
-        ((AkylasChartsPlotProxy*)child).chartProxy = self;
-    else if ([child isKindOfClass:[AkylasChartsPieSegmentProxy class]])
-        ((AkylasChartsPieSegmentProxy*)child).chartProxy = self;
+//    if ([child isKindOfClass:[AkylasChartsPlotProxy class]])
+//        ((AkylasChartsPlotProxy*)child).chartProxy = self;
+//    else if ([child isKindOfClass:[AkylasChartsPieSegmentProxy class]])
+//        ((AkylasChartsPieSegmentProxy*)child).chartProxy = self;
     
     // If a view is currently attached to this proxy then tell it to add this new plot
     // to the graph
@@ -109,7 +117,7 @@
     for (id plot in [self plots]) {
         [(AkylasChartsChart*)[self view] addPlot:plot];
     }
-    for (AkylasChartsMarkerProxy* marker in markers) {
+    for (AkylasChartsMarkerProxy* marker in _markers) {
         [(AkylasChartsChart*)[self view] addMarker:marker];
     }
 }
@@ -136,30 +144,107 @@ USE_VIEW_FOR_UI_METHOD(refresh);
 	return proxy;
 }
 
--(id)addMarker:(id)arg
+
+-(id)addMarker:(id)args
 {
-    ENSURE_SINGLE_ARG(arg, NSObject)
-    AkylasChartsMarkerProxy* marker = [self markerFromArg:arg];
-    if(!marker || [markers containsObject:marker]) return;
-    [self rememberProxy:marker];
-    [[self markers] addObject:marker];
-    if ([self view]) {
-        [(AkylasChartsChart*)[self view] addMarker:marker];
+    PREPARE_ARRAY_ARGS(args)
+    id newMarkers = nil;
+    if (IS_OF_CLASS(value, NSArray)) {
+        NSArray* array = (NSArray*)value;
+        newMarkers = [NSMutableArray arrayWithCapacity:[array count]];
+        for (id marker in array) {
+            AkylasChartsMarkerProxy* markerProxy = [self markerFromArg:marker];
+            if (!markerProxy || [_markers containsObject:markerProxy]) {
+                continue;
+            }
+            [(NSMutableArray*)newMarkers addObject:markerProxy];
+//            markerProxy.delegate = self;
+            [self rememberProxy:markerProxy];
+        }
+        if (!_markers) {
+            _markers = [NSMutableArray new];
+        }
+        
+        [_markers addObjectsFromArray:newMarkers];
+        
+    } else {
+        newMarkers = [self markerFromArg:value];
+        if (!newMarkers || [_markers containsObject:newMarkers]) return;
+        [self rememberProxy:newMarkers];
+//        ((AkylasMapBaseRouteProxy*)newMarkers).delegate = self;
+        if (!_markers) {
+            _markers = [NSMutableArray new];
+        }
+        [_markers addObject:newMarkers];
+        newMarkers = @[newMarkers];
     }
-    return marker;
+    
+    if (newMarkers && [self viewInitialized]) {
+        for (AkylasChartsMarkerProxy* marker in newMarkers) {
+            [(AkylasChartsChart*)[self view] addMarker:marker];
+        }
+    }
+    return newMarkers;
 }
 
--(void)removeMarker:(id)arg
+-(void)setMarkers:(id)arg{
+    [self removeAllMarkers:nil];
+    [self addMarker:@[arg]];
+}
+
+-(NSArray*)markers
 {
-    ENSURE_SINGLE_ARG(arg, AkylasChartsMarkerProxy)
-    if (arg != nil) {
-        [self forgetProxy:arg];
-        if(![markers containsObject:arg]) return;
-        if ([self view]) {
-            [(AkylasChartsChart*)[self view] removeMarker:arg];
+    return _markers;
+}
+
+-(void)removeMarker:(id)args
+{
+    PREPARE_ARRAY_ARGS(args)
+    id oldMarkers = nil;
+    if (IS_OF_CLASS(value, NSArray)) {
+        NSArray* array = (NSArray*)value;
+        oldMarkers = [NSMutableArray arrayWithCapacity:[array count]];
+        for (id markerProxy in array) {
+            if (IS_OF_CLASS(markerProxy, AkylasChartsMarkerProxy)) {
+//                [ann setDelegate:nil];
+                [self forgetProxy:markerProxy];
+                if ([markerProxy valueForUndefinedKey:@"bindId"]) {
+                    [self removeBindingsForProxy:markerProxy];
+                }
+                [(NSMutableArray*)oldMarkers addObject:markerProxy];
+            }
         }
-        [markers removeObject:arg];
+        [_markers removeObjectsInArray:array];
+    } else if (IS_OF_CLASS(value, AkylasChartsMarkerProxy)) {
+//        [(AkylasChartsMarkerProxy*)value setDelegate:nil];
+        [self forgetProxy:(AkylasChartsMarkerProxy*)value];
+        [_markers removeObject:value];
+        oldMarkers = @[value];
+    }
+    if ([self viewInitialized]) {
+        
+        for (AkylasChartsMarkerProxy* marker in oldMarkers) {
+            [(AkylasChartsChart*)[self view] removeMarker:marker.marker];
+        }
     }
 }
+
+-(void)removeAllMarkers:(id)unused
+{
+    if ([_markers count] > 0) {
+        for (id markerProxy in _markers) {
+//            [ann setDelegate:nil];
+            [self forgetProxy:markerProxy];
+        }
+        if ([self viewInitialized]) {
+            [(AkylasChartsChart*)[self view] removeAllMarkers];
+
+        }
+        RELEASE_TO_NIL(_markers)
+    }
+}
+
+/////
+
 
 @end

@@ -34,14 +34,14 @@
 	NSMutableArray *axes = [[[NSMutableArray alloc] init] autorelease];
 	CPTXYAxis* axis = [current count] > 0 ? [current objectAtIndex:0] : nil;
 	if (xProperties) {
-		axis = [AkylasChartsParsers parseAxis:CPTCoordinateX properties:xProperties usingPlotSpace:graph.defaultPlotSpace def:axis];
+        axis = [AkylasChartsParsers parseAxis:CPTCoordinateX properties:xProperties usingPlotSpace:graph.defaultPlotSpace def:axis forProxy:self.proxy];
 		if (axis) {
 			[axes addObject:axis];
 		}
 	}
     axis = [current count] > 1 ? [current objectAtIndex:1] : nil;
 	if (yProperties) {
-		axis = [AkylasChartsParsers parseAxis:CPTCoordinateY properties:yProperties usingPlotSpace:graph.defaultPlotSpace def:axis];
+		axis = [AkylasChartsParsers parseAxis:CPTCoordinateY properties:yProperties usingPlotSpace:graph.defaultPlotSpace def:axis forProxy:self.proxy];
 		if (axis) {
 			[axes addObject:axis];
 		}
@@ -164,7 +164,7 @@
 	
 	id options = [self.proxy valueForUndefinedKey:@"plotSpace"];
 	if (options) {
-		scaleToFit = [TiUtils boolValue:@"scaleToFit" properties:options def:(![options valueForKey:@"xRange"] && ![options valueForKey:@"xRange"])];
+		scaleToFit = [TiUtils boolValue:@"scaleToFit" properties:options def:(![options valueForKey:@"xRange"] && ![options valueForKey:@"yRange"])];
 //		expandBy = [TiUtils floatValue:@"expandRangeByFactor" properties:options def:1.0];
         
         if (scaleToFit == NO) {
@@ -202,30 +202,51 @@
     return viewPoint;
 }
 
--(void)notifyOfTouchEvent:(NSString*)type atPoint:(CGPoint)viewPoint
+-(void)notifyOfTouchEvent:(NSString*)type atPoint:(CGPoint)point onSpace:(CPTPlotSpace *)space
 {
 	if ([self.proxy _hasListeners:type]) {
-        NSDictionary *evt = [NSDictionary dictionaryWithObjectsAndKeys:
-                             NUMFLOAT(viewPoint.x), @"x",
-                             NUMFLOAT(viewPoint.y), @"y",
-                             nil
-                             ];
+        CGPoint viewPoint = [self viewPointFromGraphPoint:point];
+        NSMutableDictionary *evt = [TiUtils dictionaryFromPoint:viewPoint inView:self.hostingView];
+        [[space.graph allPlots] enumerateObjectsUsingBlock:^(CPTPlot* plot, NSUInteger idx, BOOL *stop) {
+            if (plot.identifier && IS_OF_CLASS(plot.delegate, AkylasChartsPlotProxy)) {
+                AkylasChartsPlotProxy* plotProxy = plot.delegate;
+                NSDecimal newPoint[2];
+                CGPoint pointInPlotArea = [graph convertPoint:point toLayer:self.hostingView.layer];
+                [graph.defaultPlotSpace plotPoint:newPoint numberOfCoordinates:2 forPlotAreaViewPoint:pointInPlotArea];
+                CGFloat xValue = [[NSDecimalNumber decimalNumberWithDecimal:newPoint[0]] floatValue];
+                NSUInteger dataIndex = [plotProxy indexForXValue:xValue];
+                if (dataIndex != NSNotFound) {
+                    NSNumber* xValue = [plotProxy numberForPlot:dataIndex forCoordinate:CPTCoordinateX];
+                    NSNumber* yValue = [plotProxy numberForPlot:dataIndex forCoordinate:CPTCoordinateY];
+                    //                    if (xValue && yValue) {
+                    [evt setValue:@{
+                                    @"plot":plotProxy,
+                                    @"index":@(dataIndex),
+                                    @"xValue":xValue,
+                                    @"yValue":yValue
+                                    } forKey:(NSString*)plot.identifier];
+                    
+                    //                    }
+                }
+//                NSDecimalRound(&newPoint[0], &newPoint[0], 0, NSRoundPlain);
+                
+            }
+            
+        }];
         [self.proxy fireEvent:type withObject:evt];
     }
 }
 
 -(BOOL)plotSpace:(CPTPlotSpace *)space shouldHandlePointingDeviceDownEvent:(id)event atPoint:(CGPoint)point
 {
-    CGPoint viewPoint = [self viewPointFromGraphPoint:point];
-    [self notifyOfTouchEvent:@"touchstart" atPoint:viewPoint];
+    [self notifyOfTouchEvent:@"touchstart" atPoint:point onSpace:space];
     
 	return YES;
 }
 
 -(BOOL)plotSpace:(CPTPlotSpace *)space shouldHandlePointingDeviceDraggedEvent:(id)event atPoint:(CGPoint)point
 {
-    CGPoint viewPoint = [self viewPointFromGraphPoint:point];
-    [self notifyOfTouchEvent:@"touchmove" atPoint:viewPoint];
+    [self notifyOfTouchEvent:@"touchmove" atPoint:point onSpace:space];
     
 	return YES;
 }
@@ -239,8 +260,7 @@
 
 -(BOOL)plotSpace:(CPTPlotSpace *)space shouldHandlePointingDeviceUpEvent:(id)event atPoint:(CGPoint)point
 {
-    CGPoint viewPoint = [self viewPointFromGraphPoint:point];
-    [self notifyOfTouchEvent:@"touchend" atPoint:viewPoint];
+    [self notifyOfTouchEvent:@"touchend" atPoint:point onSpace:space];
     
 	return YES;
 }

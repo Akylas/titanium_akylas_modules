@@ -22,6 +22,7 @@ AkylasChartsLineDirection;
 @property (readwrite, retain, nonatomic) CPTLineStyle *lineStyle;
 @property (readwrite, retain, nonatomic) CPTLayer *parentLayer;
 @property (readwrite, assign, nonatomic) AkylasChartsLineDirection direction;
+@property (readwrite, assign, nonatomic) UIEdgeInsets insets;
 
 /// @name Initialization
 /// @{

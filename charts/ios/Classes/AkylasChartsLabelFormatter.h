@@ -5,16 +5,15 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "KrollCallback.h"
+#import "ListenerEntry.h"
 
 @interface AkylasChartsLabelFormatter : NSNumberFormatter {
 @private
     NSDictionary* customLabels;
     NSSet* tickLocations;
-    KrollCallback* callback;
 }
 
 -(id)initWithArray:(NSArray*)values;
--(id)initWithCallback:(KrollCallback*)callback;
+-(id)initWithCallback:(KrollCallback*)callback_;
 @property(nonatomic,readonly) NSSet* tickLocations;
 @end

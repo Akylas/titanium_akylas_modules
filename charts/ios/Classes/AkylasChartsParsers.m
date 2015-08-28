@@ -249,6 +249,9 @@
 }
 
 + (NSString *)lowerCamelize:(NSString *)string WithPrefix:(NSString *)prefix {
+    if (!prefix) {
+        return string;
+    }
 	if (prefix != nil) return [AkylasChartsParsers camelizeWithLowerFirstLetter:[NSString stringWithFormat:@"%@_%@", prefix, string]];
     return string;
 }
@@ -363,7 +366,7 @@
 // Returns
 //   CPTXYAxis* or nil
 //
-+(CPTXYAxis*)parseAxis:(CPTCoordinate)coordinate properties:(NSDictionary*)properties usingPlotSpace:(CPTPlotSpace*)plotSpace def:(CPTXYAxis*)def
++(CPTXYAxis*)parseAxis:(CPTCoordinate)coordinate properties:(NSDictionary*)properties usingPlotSpace:(CPTPlotSpace*)plotSpace def:(CPTXYAxis*)def forProxy:(TiProxy*)proxy
 {
 	if (properties != nil) {
 		// Get a copy of the xAxis or yAxis from the AxisSet so that we can use the
@@ -404,11 +407,7 @@
         axis.visibleRange = [AkylasChartsParsers parsePlotRange:[properties objectForKey:@"visibleRange"] def:axis.visibleRange];
         
 		// Parse the line style
-		axis.axisLineStyle = [AkylasChartsParsers parseLineColor:[properties objectForKey:@"lineColor"]
-											       withWidth:[properties objectForKey:@"lineWidth"]
-                                                withGradient:[properties objectForKey:@"lineGradient"]
-											      andOpacity:[properties objectForKey:@"lineOpacity"]
-											   		      def:nil];
+		axis.axisLineStyle = [AkylasChartsParsers parseLine:properties withPrefix:@"line" def:nil];
 		
         // Set the default labeling policy
 		axis.labelingPolicy = CPTAxisLabelingPolicyAutomatic;
@@ -421,11 +420,7 @@
         
         NSDictionary* props = [properties valueForKey:@"majorTicks"];
         if (props != nil) {
-            axis.majorTickLineStyle = [AkylasChartsParsers parseLineColor:[props objectForKey:@"color"]
-                                                       withWidth:[props objectForKey:@"width"]
-                                                         withGradient:[props objectForKey:@"gradient"]
-                                                      andOpacity:[props objectForKey:@"opacity"]
-                                                             def:axis.majorTickLineStyle];
+            axis.majorTickLineStyle = [AkylasChartsParsers parseLine:props withPrefix:nil def:axis.majorGridLineStyle];
             axis.majorTickLength = [TiUtils floatValue:@"length" properties:props def:2.0];
             
             
@@ -437,11 +432,8 @@
             
             id gridlines = [props objectForKey:@"gridLines"];
             if (gridlines != nil) {
-                axis.majorGridLineStyle = [AkylasChartsParsers parseLineColor:[gridlines objectForKey:@"color"]
-                                                                withWidth:[gridlines objectForKey:@"width"]
-                                                             withGradient:[gridlines objectForKey:@"gradient"]
-                                                               andOpacity:[gridlines objectForKey:@"opacity"]
-                                                                      def:axis.majorGridLineStyle];
+                
+                axis.majorGridLineStyle = [AkylasChartsParsers parseLine:gridlines withPrefix:nil def:axis.majorGridLineStyle];
                 axis.majorTickLineStyle = axis.majorGridLineStyle;
                 axis.gridLinesRange = [AkylasChartsParsers parsePlotRange:[gridlines objectForKey:@"range"] def:axis.gridLinesRange];
             }
@@ -466,6 +458,7 @@
                 
                 id formatCallback = [labelProps objectForKey:@"formatCallback"];
                 if (formatCallback != nil && [formatCallback isKindOfClass:[KrollCallback class]]) {
+//                    [proxy replaceValue:formatCallback forKey:(coordinate == CPTCoordinateX)?@"axisXFormatter":@"axisYFormatter" notification:NO];
                     // Label locations can be explicitly specified. It is important to know that the value for the label
                     // must be included in the set of values for the major ticks in order for them to be displayed. Core-plot
                     // will not display them if there isn't a major tick for the value.
@@ -474,6 +467,7 @@
 //                    axis.labelingPolicy = CPTAxisLabelingPolicyLocationsProvided;
                 }
                 else {
+
                     // NOTE: Don't set the 'axisLabels' property and use CPTAxisLabelingPolicyNone as this
                     // will cause it to ignore any and all formatting control (e.g. rotation, alignment, etc.).
                     // We can still get the formatting logic to execute by storing axis labels ourself and using
@@ -574,7 +568,7 @@
 		CPTPlotSymbolType type = (CPTPlotSymbolType)[TiUtils intValue:@"type" properties:properties def:def.symbolType];
 		symbol.symbolType = type;
 		
-		symbol.lineStyle = [AkylasChartsParsers parseLine:properties withPrefix:@"line" def:def.lineStyle];		
+		symbol.lineStyle = [AkylasChartsParsers parseLine:properties withPrefix:@"line" def:def.lineStyle];
 		
 		symbol.fill = [AkylasChartsParsers parseFillColor:[properties objectForKey:@"fillColor"]
 										 withGradient:[properties objectForKey:@"fillGradient"]

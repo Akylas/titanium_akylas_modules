@@ -11,7 +11,6 @@
 @private
     int markerId;
 @protected
-	NSMutableArray	*markers;
 }
 
 -(NSMutableArray*)plots;
