@@ -8,9 +8,10 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "../GADAdLoaderDelegate.h"
-#import "GADNativeAd.h"
-#import "GADNativeAdImage.h"
+#import <GoogleMobileAds/GADAdLoaderDelegate.h>
+#import <GoogleMobileAds/GADNativeAd.h>
+#import <GoogleMobileAds/GADNativeAdImage.h>
+#import <GoogleMobileAds/GoogleMobileAdsDefines.h>
 
 #pragma mark - Native Content Ad Assets
 
@@ -18,7 +19,7 @@
 // conform to the GADNativeContentAdRequestDelegate protocol.
 //
 // See GADNativeAdImageAdLoaderOptions.h for ad loader image options.
-extern NSString *const kGADAdLoaderAdTypeNativeContent;
+GAD_EXTERN NSString *const kGADAdLoaderAdTypeNativeContent;
 
 /// Native content ad.
 @interface GADNativeContentAd : GADNativeAd

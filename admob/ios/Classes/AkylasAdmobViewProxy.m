@@ -40,7 +40,7 @@ GADAdSize adSizeFromString(NSString* value)
 
 -(TiDimension)defaultAutoWidthBehavior:(id)unused
 {
-    return TiDimensionAutoSize;
+    return TiDimensionAutoFill;
 }
 -(TiDimension)defaultAutoHeightBehavior:(id)unused
 {
@@ -57,7 +57,9 @@ GADAdSize adSizeFromString(NSString* value)
     if (view != nil) {
         [(AkylasAdmobView*)view refreshAdForAdSize:gadSize];
     }
-    [self contentsWillChange];
+    if ([self viewLayedOut]){
+        [self contentsWillChange];
+    }
 }
 
 -(void)viewDidInitialize
@@ -71,7 +73,9 @@ GADAdSize adSizeFromString(NSString* value)
     gadSize = adSizeFromString(value);
     smartBanner = [value isEqualToString:@"smartBanner"];
     [self replaceValue:arg forKey:@"adSize" notification:YES];
-    [self refreshAd];
+    if ([self viewLayedOut]){
+        [self refreshAd];
+    }
 }
 
 //-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
