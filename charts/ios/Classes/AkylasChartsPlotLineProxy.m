@@ -68,18 +68,18 @@ typedef enum AkylasChartsFillDirection {
             }
         }
         
-        NSDecimal areaBaseValue;
+        NSNumber* areaBaseValue;
         switch (direction) {
             case CPTFillDirectionBottom:
-                    areaBaseValue = [[NSDecimalNumber minimumDecimalNumber] decimalValue];
+                    areaBaseValue = [NSDecimalNumber minimumDecimalNumber];
                 break;
             case CPTFillDirectionTop:
-                areaBaseValue = [[NSDecimalNumber maximumDecimalNumber] decimalValue];
+                areaBaseValue = [NSDecimalNumber maximumDecimalNumber];
                 break;
             case CPTFillDirectionOrigin:
                 {
                 NSArray* axes = plot.plotArea.axisSet.axes;
-                areaBaseValue= ([axes count] > 1)?((CPTXYAxis*)axes[1]).orthogonalCoordinateDecimal:([axes count] > 0)?((CPTXYAxis*)axes[0]).orthogonalCoordinateDecimal:CPTDecimalFromFloat(0);
+                areaBaseValue= ([axes count] > 1)?((CPTXYAxis*)axes[1]).orthogonalPosition:([axes count] > 0)?((CPTXYAxis*)axes[0]).orthogonalPosition:@(0);
                 }
                 break;
             default:

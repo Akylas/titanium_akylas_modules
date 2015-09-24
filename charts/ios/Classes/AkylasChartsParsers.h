@@ -16,7 +16,7 @@
 +(CPTLineStyle*)parseLine:(id)object withPrefix:(id)prefix def:(CPTLineStyle*)def;
 +(CPTFill*)parseFillColor:(id)color withGradient:(id)gradientProps andOpacity:(id)opacity def:(CPTFill*)def;
 +(CPTPlotSymbol*)parseSymbol:(NSDictionary*)properties def:(CPTPlotSymbol*)def;
-+(NSDecimal)decimalFromFloat:(id)value def:(NSDecimal)def;
++(NSNumber*)decimalFromFloat:(id)value def:(NSNumber*)def;
 +(void)parseLabelStyle:(NSDictionary*)properties forPlot:(CPTPlot*)plot def:(CPTTextStyle*)def;
 +(CPTXYAxis*)parseAxis:(CPTCoordinate)coordinate properties:(NSDictionary*)properties usingPlotSpace:(CPTPlotSpace*)plotSpace def:(CPTXYAxis*)def forProxy:(TiProxy*)proxy;
 +(CPTPlotRange*)parsePlotRange:(NSDictionary*)properties def:(CPTPlotRange*)def;

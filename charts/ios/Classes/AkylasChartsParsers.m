@@ -347,8 +347,8 @@
     if (properties != nil) {
         float min = [TiUtils floatValue:@"min" properties:properties def:0.0];
         float max = [TiUtils floatValue:@"max" properties:properties def:0.0];
-        return [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(min)
-                                            length:CPTDecimalFromFloat(max - min)];
+        return [CPTPlotRange plotRangeWithLocation:@(min)
+                                            length:@(max - min)];
     }
     
     return def;
@@ -388,7 +388,7 @@
                 axis.axisConstraints = [CPTConstraints constraintWithLowerOffset:offset];
             }
         } else {     
-            axis.orthogonalCoordinateDecimal = CPTDecimalFromFloat([TiUtils floatValue:@"origin" properties:properties def:0.0]);
+            axis.orthogonalPosition = @([TiUtils floatValue:@"origin" properties:properties def:0.0]);
         }
 		
 		// Parse the title
@@ -427,7 +427,7 @@
             int majorTickInterval = [TiUtils intValue:@"interval" properties:props def:0];
             if (majorTickInterval > 0) {
                 axis.labelingPolicy = CPTAxisLabelingPolicyFixedInterval;         
-                axis.majorIntervalLength = CPTDecimalFromInteger(majorTickInterval);
+                axis.majorIntervalLength = @(majorTickInterval);
             }
             
             id gridlines = [props objectForKey:@"gridLines"];
@@ -690,10 +690,10 @@
 // Returns:
 //   NSDecimal
 //
-+(NSDecimal)decimalFromFloat:(id)value def:(NSDecimal)def
++(NSNumber*)decimalFromFloat:(id)value def:(NSNumber*)def
 {
 	if (value) {
-		return CPTDecimalFromFloat([TiUtils floatValue:value def:0.0]);
+		return @([TiUtils floatValue:value def:0.0]);
 	}
 	
 	return def;
