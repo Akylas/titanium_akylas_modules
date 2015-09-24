@@ -7,9 +7,12 @@
 package akylas.bluetooth;
 
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.appcelerator.kroll.KrollDict;
@@ -20,6 +23,7 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.util.TiActivityResultHandler;
@@ -107,10 +111,15 @@ public class AkylasBluetoothModule extends KrollModule {
                         KrollDict dict = dictFromDevice(device);
                         mNewDevicesArrayAdapter.put(address, dict);
                         if (hasListeners("found", false)) {
+                            KrollDict adv = new KrollDict();
+                            for (Map.Entry<String, byte[]> entry : leDevice.getAdRecordStore().humanReadableHashMap().entrySet()) {
+                                
+                                adv.put(entry.getKey(), TiBlob.blobFromObject(entry.getValue()));
+                            }
                             KrollDict data = new KrollDict();
                             data.put("device", dict);
                             data.put("discovering", true);
-                            data.put("advertising", leDevice.getAdRecordStore().humanReadableHashMap());
+                            data.put("advertising", adv);
                             data.put("rssi", rssi);
                            fireEvent("found", data, false, false);
                         }
@@ -476,19 +485,23 @@ public class AkylasBluetoothModule extends KrollModule {
             } else if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(
                         BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                if (hasListeners(TiC.EVENT_CHANGE, false)) {
-                    KrollDict data = new KrollDict();
-                    data.put(TiC.PROPERTY_STATE, state);
-                    data.put(TiC.PROPERTY_ENABLED, getBTAdapter().isEnabled());
-                    fireEvent(TiC.EVENT_CHANGE, data, false, false);
-                }
                 if (state == BluetoothAdapter.STATE_ON
-                        && onConnectCommand.size() > 0) {
-                    for (CommandNoReturn command : onConnectCommand) {
-                        command.execute();
+                        || state == BluetoothAdapter.STATE_OFF) {
+                    if (hasListeners(TiC.EVENT_CHANGE, false)) {
+                        KrollDict data = new KrollDict();
+                        data.put(TiC.PROPERTY_STATE, state);
+                        data.put(TiC.PROPERTY_ENABLED, getBTAdapter().isEnabled());
+                        fireEvent(TiC.EVENT_CHANGE, data, false, false);
                     }
+                    if (state == BluetoothAdapter.STATE_ON
+                            && onConnectCommand.size() > 0) {
+                        for (CommandNoReturn command : onConnectCommand) {
+                            command.execute();
+                        }
+                    }
+                    onConnectCommand.clear();
                 }
-                onConnectCommand.clear();
+                
             } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 final int state = intent
                         .getIntExtra(BluetoothDevice.EXTRA_BOND_STATE,

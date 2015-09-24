@@ -35,9 +35,11 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     BOOL _discovering;
     EAAccessory * _pairingAccessory;
     CBCentralManager *_centralManager;
+    CBPeripheralManager* _peripheralManager;
     NSMutableDictionary* _discoveredBLEDevices;
     KrollCallback * _discoveryCallback;
     dispatch_queue_t _cbQueue;
+    dispatch_queue_t _cpQueue;
 }
 
 +(AkylasBluetoothModule*)sharedInstance
@@ -54,13 +56,16 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     _discovering = NO;
     _enabled = NO;
     _cbQueue = dispatch_queue_create("akylas.bt.cbqueue", DISPATCH_QUEUE_SERIAL);
+    _cpQueue = dispatch_queue_create("akylas.bt.cpqueue", DISPATCH_QUEUE_SERIAL);
 }
 
 - (void)dealloc
 {
     dispatch_release(_cbQueue);
+    dispatch_release(_cpQueue);
     RELEASE_TO_NIL(_pairingAccessory)
     RELEASE_TO_NIL(_centralManager)
+    RELEASE_TO_NIL(_peripheralManager)
     RELEASE_TO_NIL(_discoveryCallback)
     RELEASE_TO_NIL(_discoveredBLEDevices)
     [super dealloc];
@@ -108,6 +113,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
         
         _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:_cbQueue options:@{CBCentralManagerOptionShowPowerAlertKey: @([TiUtils boolValue:[self valueForUndefinedKey:@"showPowerAlert"] def:YES])}];
         _enabled = [_centralManager state] == CBCentralManagerStatePoweredOn;
+        _peripheralManager = [[CBPeripheralManager alloc] initWithDelegate:self queue:_cpQueue options:@{CBCentralManagerOptionShowPowerAlertKey: @([TiUtils boolValue:[self valueForUndefinedKey:@"showPowerAlert"] def:YES])}];
     }
     return _centralManager;
 }
@@ -256,7 +262,10 @@ static AkylasBluetoothModule *_sharedInstance = nil;
              */
         }
         else {
-            [summary setObject:[value description] forKey:keyName];
+            NSData* data = IS_OF_CLASS(value, NSData) ? (NSData*)value : [NSKeyedArchiver archivedDataWithRootObject:value];
+            if (data)  {
+                [summary setObject:[[[TiBlob alloc] initWithData:data mimetype:@"application/octet-stream"] autorelease] forKey:keyName];
+            }
         }
     }
     [summary setObject:services forKey:@"services"];
@@ -285,7 +294,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 -(void)_listenerRemoved:(NSString*)type count:(NSInteger)count
 {
-    if (count == 1 && (([type isEqual:@"connected"] && ![self _hasListeners:@"disconnected"])
+    if (count == 0 && (([type isEqual:@"connected"] && ![self _hasListeners:@"disconnected"])
                        || ([type isEqual:@"disconnected"] && ![self _hasListeners:@"connected"])))
     {
         if (_registeredForNotifs) {
@@ -506,6 +515,11 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 - (void) centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error
 {
+    if(error) {
+        NSDictionary* data = [TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]];
+        [self fireEvent:@"error" withObject:data];
+        [peripheral.proxy fireEvent:@"error" withObject:data];
+    }
     [peripheral didDisconnect];
     if ([self _hasListeners:@"disconnected"]) {
         [self fireEvent:@"disconnected" withObject:@{
@@ -525,6 +539,11 @@ static AkylasBluetoothModule *_sharedInstance = nil;
                                                    @"enabled":@(_enabled)} propagate:NO checkForListener:NO];
         }
     }
+}
+- (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheral {
+    
+}
+- (void)peripheralManager:(CBPeripheralManager *)peripheral central:(CBCentral *)central didSubscribeToCharacteristic:(CBCharacteristic *)characteristic {
 }
 
 @end

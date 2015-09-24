@@ -125,11 +125,11 @@ public class AdRecordStore implements Parcelable {
     public String toString() {
         return "AdRecordStore [mLocalNameComplete=" + mLocalNameComplete + ", mLocalNameShort=" + mLocalNameShort + "]";
     }
-    public HashMap humanReadableHashMap() {
-       HashMap result = new HashMap<>();
+    public HashMap<String, byte[]> humanReadableHashMap() {
+        HashMap<String, byte[]> result = new HashMap<>();
        for (int i = 0; i < mAdRecords.size(); i++) {
-           AdRecord record = mAdRecords.valueAt(i);
-           result.put(record.getKeyForType(), AdRecordUtils.getRecordDataAsString(record));
+           AdRecord record = mAdRecords.valueAt(i); 
+           result.put(record.getKeyForType(), record.getData());
        }
        return result;
     }

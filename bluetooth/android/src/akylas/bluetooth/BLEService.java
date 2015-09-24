@@ -4,8 +4,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
+import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiEnhancedService;
 import org.appcelerator.titanium.proxy.TiEnhancedServiceProxy;
@@ -34,7 +38,7 @@ public class BLEService extends TiEnhancedService {
     private BluetoothAdapter mBluetoothAdapter;
     private String mBluetoothDeviceAddress;
     BluetoothGatt mBluetoothGatt;
-    private BluetoothDevice mDevice;
+//    private BluetoothDevice mDevice;
     private int mConnectionState = BluetoothProfile.STATE_DISCONNECTED;
     private BLEServiceCallback mBLEServiceCb = null;
 
@@ -50,40 +54,31 @@ public class BLEService extends TiEnhancedService {
     }
     
     
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-            case READ_RSSI_REPEAT:
-                if (mBluetoothGatt != null) {
-                    mBluetoothGatt.readRemoteRssi();
-//                sendMessageDelayed(obtainMessage(READ_RSSI_REPEAT), READING_RSSI_TASK_FREQUENCY);
-                }
-                break;
-            }
-        }
-    };
-    
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            switch (action) {
-            case BluetoothDevice.ACTION_NAME_CHANGED:
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (mDevice == device) {
-                    if (mBLEServiceCb != null) {
-                        mBLEServiceCb.nameChanged(intent.getStringExtra(BluetoothDevice.EXTRA_NAME));
-                    }
-                }
-                break;
-            }
-
-        }
-    };
+//    private final Handler mHandler = new Handler() {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            switch (msg.what) {
+//            case READ_RSSI_REPEAT:
+//                if (mBluetoothGatt != null) {
+//                    mBluetoothGatt.readRemoteRssi();
+////                sendMessageDelayed(obtainMessage(READ_RSSI_REPEAT), READING_RSSI_TASK_FREQUENCY);
+//                }
+//                break;
+//            }
+//        }
+//    };
 
     public void readRssi() {
         if (mBluetoothGatt != null) {
+            if (!TiApplication.isUIThread()) {
+                this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mBluetoothGatt.readRemoteRssi();
+                    }
+                });
+                return;
+            }
             mBluetoothGatt.readRemoteRssi();
         }
     }
@@ -104,10 +99,16 @@ public class BLEService extends TiEnhancedService {
                 // Attempts to discover services after successful connection.
                 Log.d(TAG,"Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                if (mConnectionState == BluetoothProfile.STATE_CONNECTING) {
+                    //this is an android bug? try again!
+                    connect(mBluetoothDeviceAddress);
+                    return;
+                }
                 if (mBLEServiceCb != null) {
                     mBLEServiceCb.notifyDisconnectedGATT();
                 }
                 Log.d(TAG,"Disconnected from GATT server.");
+//                close();
             }
             mConnectionState = newState;
         }
@@ -115,23 +116,23 @@ public class BLEService extends TiEnhancedService {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             Log.d(TAG,"onServicesDiscovered status = " + status);
-
+            if (mBLEServiceCb != null) {
+                mBLEServiceCb.onServicesDiscovered(status);
+            }
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                if (mBLEServiceCb != null) {
-                    mBLEServiceCb.onServicesDiscovered();
-                }
+                
                 for (BluetoothGattService service : gatt.getServices()) {
                     Log.d(TAG,"onServicesDiscovered : " + service.getUuid().toString());
                 }
-            } else {
-                Log.d(TAG,"onServicesDiscovered received: " + status);
             }
         }
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                displayCharacteristic(characteristic);
+                if (mBLEServiceCb != null) {
+                    mBLEServiceCb.onCharacteristicRead(characteristic, characteristic.getValue());
+                }
             }
         }
 
@@ -145,14 +146,41 @@ public class BLEService extends TiEnhancedService {
         }
 
         @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor,
+                int status) {
+            if (mBLEServiceCb != null) {
+                mBLEServiceCb.onDescriptorWrite(descriptor, status);
+            }
+        }
+
+        @Override
+        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor,
+                int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (mBLEServiceCb != null) {
+                    mBLEServiceCb.onDescriptorRead(descriptor, descriptor.getValue());
+                }
+            }
+        }
+        
+        @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            displayCharacteristic(characteristic);
+            if (mBLEServiceCb != null) {
+                mBLEServiceCb.onCharacteristicRead(characteristic, characteristic.getValue());
+            }
         }
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
             if (mBLEServiceCb != null) {
-                mBLEServiceCb.displayRssi(rssi);
+                mBLEServiceCb.onReadRemoteRssi(rssi);
+            }
+        }
+
+        @Override
+        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+            if (mBLEServiceCb != null) {
+                mBLEServiceCb.onMtuChanged(mtu);
             }
         }
     };
@@ -160,12 +188,6 @@ public class BLEService extends TiEnhancedService {
     public void setBLEServiceCb(BLEServiceCallback cb) {
         if (cb != null) {
             mBLEServiceCb = cb;
-        }
-    }
-
-    private void displayCharacteristic(final BluetoothGattCharacteristic characteristic) {
-        if (mBLEServiceCb != null) {
-            mBLEServiceCb.onData(characteristic, characteristic.getValue());
         }
     }
 
@@ -182,14 +204,21 @@ public class BLEService extends TiEnhancedService {
         close();
         return super.onUnbind(intent);
     }
+    @Override
+    public void onDestroy() {
+        close();
+        super.onDestroy();
+    }
+    
 
     public boolean initialize() {
+        if (mBluetoothManager == null) {
+            mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        }
         if (TiC.JELLY_BEAN_MR2_OR_GREATER) {
-            if (mBluetoothManager == null) {
-                mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-                if (mBluetoothManager != null) {
-                    mBluetoothAdapter = mBluetoothManager.getAdapter();
-               }
+            
+            if (mBluetoothManager != null) {
+                mBluetoothAdapter = mBluetoothManager.getAdapter();
             }
         } else {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -203,28 +232,54 @@ public class BLEService extends TiEnhancedService {
         return true;
     }
 
+    Handler handler = new Handler();
+    private void runOnUiThread(Runnable runnable) {
+        handler.post(runnable);
+    }
     public boolean connect(final String address) {
+
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
+        }
+        if (!TiApplication.isUIThread()) {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    connect(address);
+                }
+            });
+            return true;
         }
 
         // Previously connected device. Try to reconnect.
         if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress) && mBluetoothGatt != null) {
             Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
-            if (mBluetoothGatt.connect()) {
-                mConnectionState = BluetoothProfile.STATE_CONNECTING;
-                return true;
-            } else {
+            try {
+                if (mBluetoothGatt.connect()) {
+                    mConnectionState = BluetoothProfile.STATE_CONNECTING;
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch(Exception e) {
+                stop();
                 return false;
             }
+            
         }
-
-        mDevice = mBluetoothAdapter.getRemoteDevice(address);
+        if (mBluetoothGatt != null) {
+            close();
+        }
+        BluetoothDevice mDevice = mBluetoothAdapter.getRemoteDevice(address);
         if (mDevice == null) {
             Log.w(TAG, "Device not found.  Unable to connect.");
             return false;
         }
+        List<BluetoothDevice> connectedDevices = mBluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
+        if (connectedDevices.contains(mDevice)) {
+            Log.w(TAG, "Device already connected....");
+       }
         // We want to directly connect to the device, so we are setting the
         // autoConnect
         // parameter to false.
@@ -236,20 +291,21 @@ public class BLEService extends TiEnhancedService {
     }
 
     public void disconnect() {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+        if (mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
         mBluetoothGatt.disconnect();
     }
 
-    public void close() {
+    public synchronized void close() {
         if (mBluetoothGatt == null) {
             return;
         }
+        mBluetoothGatt.disconnect();
         mBluetoothGatt.close();
         mBluetoothGatt = null;
-        mDevice = null;
+//        mDevice = null;
     }
 
     /**
@@ -261,8 +317,17 @@ public class BLEService extends TiEnhancedService {
      * @param characteristic
      *            The characteristic to read from.
      */
-    public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
+    public void readCharacteristic(final BluetoothGattCharacteristic characteristic) {
         if (mBluetoothGatt == null || characteristic == null) {
+            return;
+        }
+        if (!TiApplication.isUIThread()) {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    readCharacteristic(characteristic);
+                }
+            });
             return;
         }
         mBluetoothGatt.readCharacteristic(characteristic);
@@ -283,13 +348,22 @@ public class BLEService extends TiEnhancedService {
      * {@code BluetoothGattCallback#onCharacteristicWrite(andorid.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)}
      * callback.
      */
-    public void writeCharacteristic(BluetoothGattCharacteristic characteristic, byte[] value) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null || characteristic == null) {
+    public void writeCharacteristic(final BluetoothGattCharacteristic characteristic, final byte[] value) {
+        if (mBluetoothGatt == null || characteristic == null) {
             return;
         }
         if (writing) {
             Log.d(TAG, "queuing " + new String(value));
             writeQueue.add(value);
+        }
+        if (!TiApplication.isUIThread()) {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    writeCharacteristic(characteristic, value);
+                }
+            });
+            return;
         }
         writing = true;
         characteristic.setValue(value);
@@ -303,9 +377,18 @@ public class BLEService extends TiEnhancedService {
      * {@code BluetoothGattCallback#onCharacteristicWrite(andorid.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)}
      * callback.
      */
-    public void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null || characteristic == null) {
+    public void writeCharacteristic(final BluetoothGattCharacteristic characteristic) {
+        if (mBluetoothGatt == null || characteristic == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
+            return;
+        }
+        if (!TiApplication.isUIThread()) {
+            this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    writeCharacteristic(characteristic);
+                }
+            });
             return;
         }
         mBluetoothGatt.writeCharacteristic(characteristic);
@@ -320,19 +403,53 @@ public class BLEService extends TiEnhancedService {
      * @param enabled
      *            If true, enable notification. False otherwise.
      */
-    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic, boolean enabled) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+    public boolean setCharacteristicNotification(final BluetoothGattCharacteristic characteristic, final boolean enabled) {
+        if (mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
+            return false;
+        }
+        if (!TiApplication.isUIThread()) {
+            FutureTask<Boolean> futureResult = new FutureTask<Boolean>(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return setCharacteristicNotification(characteristic, enabled);
+                }
+            });
+            // this block until the result is calculated!
+            try {
+                this.runOnUiThread(futureResult);
+                return futureResult.get();
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        boolean status = mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
+        if (status) {
+            status = false;
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG));
+            if (descriptor != null) {
+                byte[] currentValue = descriptor.getValue();
+                if (currentValue != BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE) {
+                    descriptor.setValue(enabled?BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE:BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                    status = mBluetoothGatt.writeDescriptor(descriptor);
+                } else {
+                    //still call the delegate so that it can handle what it want(uart connect)
+                    if (mBLEServiceCb != null) {
+                        mBLEServiceCb.onDescriptorWrite(descriptor, 0);
+                    }
+                }
+                
+            }
+        }
+        return status;
+        
+    }
+    
+    public void requestMTU(int mtu) {
+        if (mBluetoothGatt == null) {
             return;
         }
-        mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
-
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG));
-        if (descriptor != null) {
-            descriptor.setValue(enabled?BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE:BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-            mBluetoothGatt.writeDescriptor(descriptor);
-        }
-        
+        mBluetoothGatt.requestMtu(mtu);
     }
 
     /**
@@ -354,16 +471,22 @@ public class BLEService extends TiEnhancedService {
     }
 
     public interface BLEServiceCallback {
-        public void displayRssi(int rssi);
+        public void onReadRemoteRssi(int rssi);
+        public void onMtuChanged(int mtu);
+     
 
-        public void onData(final BluetoothGattCharacteristic characteristic, byte[] data);
+        public void onCharacteristicRead(final BluetoothGattCharacteristic characteristic, byte[] data);
+        public void onDescriptorRead(final BluetoothGattDescriptor descriptor, byte[] data);
+        public void onDescriptorWrite(final BluetoothGattDescriptor descriptor, int status);
 
         public void notifyConnectedGATT();
 
         public void notifyDisconnectedGATT();
 
-        public void onServicesDiscovered();
+        public void onServicesDiscovered(int status);
         public void nameChanged(final String name);
 
      }
+
+
 }

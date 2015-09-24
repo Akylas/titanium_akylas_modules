@@ -11,7 +11,7 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 
 @class AkylasBluetoothBLEDeviceProxy;
-@interface AkylasBluetoothModule : TiModule<CBCentralManagerDelegate>
+@interface AkylasBluetoothModule : TiModule<CBCentralManagerDelegate, CBPeripheralManagerDelegate>
 //+(void)addManagedBLEDevice:(AkylasBluetoothBLEDeviceProxy*)device;
 //+(void)removeManagedBLEDevice:(AkylasBluetoothBLEDeviceProxy*)device ;
 +(void)connectBLEDevice:(CBPeripheral*)peripheral;

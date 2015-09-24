@@ -43,7 +43,7 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 {
     CBPeripheral *_peripheral;
     NSString* _identifier;
-    KrollCallback * _readRSSICallback;
+//    KrollCallback * _readRSSICallback;
     
     CBService *uartService;
     CBCharacteristic *rxCharacteristic;
@@ -77,7 +77,7 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 
 
 - (void)dealloc {
-    RELEASE_TO_NIL(_readRSSICallback)
+//    RELEASE_TO_NIL(_readRSSICallback)
     RELEASE_TO_NIL(uartService)
     RELEASE_TO_NIL(rxCharacteristic)
     RELEASE_TO_NIL(txCharacteristic)
@@ -146,10 +146,10 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 
 -(void)connect:(id)args
 {
-    if ([self isConnected])
-    {
-        return;
-    }
+//    if ([self isConnected])
+//    {
+//        return;
+//    }
     [AkylasBluetoothModule connectBLEDevice:[self peripheral]];
 }
 
@@ -244,10 +244,10 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 
 -(void)readRSSI:(id)args
 {
-    ENSURE_SINGLE_ARG_OR_NIL(args, KrollCallback);
-
-    RELEASE_TO_NIL(_readRSSICallback)
-    _readRSSICallback = [(KrollCallback*)args retain];
+//    ENSURE_SINGLE_ARG_OR_NIL(args, KrollCallback);
+//
+//    RELEASE_TO_NIL(_readRSSICallback)
+//    _readRSSICallback = [(KrollCallback*)args retain];
     if (_peripheral) {
         [[self peripheral] readRSSI];
     }
@@ -283,7 +283,7 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
     
     for (CBService* item in peri.services)
     {
-        NSLog(@"test %@", item.UUID.UUIDString);
+//        NSLog(@"test %@", item.UUID.UUIDString);
         if ([item.UUID isEqual: uuid])
         {
             return item;
@@ -405,6 +405,11 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
     [[self peripheral] setNotifyValue:NO forCharacteristic:characteristic];
 }
 
+-(void)requestMTU:(id)args
+{
+    //not working on ios
+}
+
 - (void)readCharacteristicValue:(id)args
 {
     CBCharacteristic* characteristic = [self internalGetCharacteristic:args];
@@ -430,10 +435,6 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
     }
 }
 
-- (void) didReceiveData:(NSData *)data
-{
-    [self fireDataEvent:@"uartread" withData:data extraData:nil];
-}
 
 - (void)peripheralDidUpdateName:(CBPeripheral *)peripheral{
     if ([self _hasListeners:@"change"]) {
@@ -476,6 +477,9 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
         [self fireEvent:@"change" withObject:@{@"rssi":RSSI}];
     }
 }
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForDescriptor:(CBDescriptor *)descriptor error:(NSError *)error {
+    
+}
 
 - (void) peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
@@ -488,7 +492,7 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 //    if (uartMode) {
         for (CBService *s in [peripheral services])
         {
-            DebugLog(@"didDiscoverService %@", s.UUID.UUIDString);
+//            DebugLog(@"didDiscoverService %@", s.UUID.UUIDString);
             if ([s.UUID isEqual:self.class.uartServiceUUID] && uartMode)
             {
                 uartService = [s retain];
@@ -513,7 +517,7 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
     if (uartMode && [service.UUID isEqual:self.class.uartServiceUUID]) {
         for (CBCharacteristic *c in [service characteristics])
         {
-            DebugLog(@"didDiscoverCharacteristics %@ ForService %@", c.UUID.UUIDString, service.UUID.UUIDString);
+//            DebugLog(@"didDiscoverCharacteristics %@ ForService %@", c.UUID.UUIDString, service.UUID.UUIDString);
             if ([c.UUID isEqual:self.class.rxCharacteristicUUID])
             {
                 rxCharacteristic = [c retain];
