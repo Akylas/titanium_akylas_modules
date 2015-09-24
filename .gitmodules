@@ -16,6 +16,9 @@
 [submodule "mapbox/ios/Classes/common"]
 	path = mapbox/ios/Classes/common
 	url = git@bitbucket.org:farfromrefuge/akylas.map.common.ios.git
+[submodule "googlemap/ios/Classes/common"]
+	path = googlemap/ios/Classes/common
+	url = git@bitbucket.org:farfromrefuge/akylas.map.common.ios.git
 [submodule "googlemap/android/src/akylas/map"]
 	path = googlemap/android/src/akylas/map
 	url = git@bitbucket.org:farfromrefuge/akylas.map.common.android.git
