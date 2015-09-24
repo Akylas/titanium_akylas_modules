@@ -331,8 +331,9 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		}
 		
 		public void updatePathForRect(Context context, Path path, int width, int height) {
-
-			path.addCircle(center.x, center.y, radius.x, direction);
+		    if (center != null) {
+	            path.addCircle(center.x, center.y, radius.x, direction);
+		    }
 		}
 	}
 	
