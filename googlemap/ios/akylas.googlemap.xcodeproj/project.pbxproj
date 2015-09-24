@@ -136,7 +136,6 @@
 		D512CC3B1B8A028200C0E691 /* SMClassicCalloutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SMClassicCalloutView.h; path = ../../../../../ios/calloutview/SMClassicCalloutView.h; sourceTree = "<group>"; };
 		D512CC3C1B8A028200C0E691 /* SMClassicCalloutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SMClassicCalloutView.m; path = ../../../../../ios/calloutview/SMClassicCalloutView.m; sourceTree = "<group>"; };
 		D513AA8A1B6774DE005448BF /* GClusterAlgorithm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GClusterAlgorithm.m; sourceTree = "<group>"; };
-		D55B2DAF1ACC59DE008C0279 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		D55C81861AD673C700339334 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		D55C81FC1AD6B8B600339334 /* AkylasMapBaseView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapBaseView.h; path = Classes/common/AkylasMapBaseView.h; sourceTree = "<group>"; };
 		D55C81FD1AD6B8B600339334 /* AkylasMapBaseView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapBaseView.m; path = Classes/common/AkylasMapBaseView.m; sourceTree = "<group>"; };
@@ -248,7 +247,6 @@
 			isa = PBXGroup;
 			children = (
 				D55C81861AD673C700339334 /* CoreLocation.framework */,
-				D55B2DAF1ACC59DE008C0279 /* libsqlite3.dylib */,
 				D5B4A9031ACAD87E003B8608 /* GoogleMaps.bundle */,
 				D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */,
 				D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */,

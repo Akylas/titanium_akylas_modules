@@ -15,9 +15,13 @@
 @class GMSPlaceUserData;
 
 
+/** Describes the current open status of a place. */
 typedef NS_ENUM(NSInteger, GMSPlacesOpenNowStatus) {
+  /** The place is open now. */
   kGMSPlacesOpenNowStatusYes,
+  /** The place is not open now. */
   kGMSPlacesOpenNowStatusNo,
+  /** We don't know whether the place is open now. */
   kGMSPlacesOpenNowStatusUnknown,
 };
 

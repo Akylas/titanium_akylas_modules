@@ -29,7 +29,8 @@
 - (void)clustersChanged:(AkylasClusterAlgorithm*)algo forZoom:(CGFloat)zoom {
     NSUInteger theId = algo.uniqueId;
     [self clearCacheForId:theId];
-    if (zoom == -1 || !algo.visible) {
+    BOOL zoomHidden =(algo.maxZoom > 0 && zoom > algo.maxZoom) || (algo.minZoom > 0 && zoom < algo.minZoom);
+    if (zoomHidden || zoom == -1 || !algo.visible) {
         return;
     }
     NSSet* clusters = [algo getClusters:zoom];

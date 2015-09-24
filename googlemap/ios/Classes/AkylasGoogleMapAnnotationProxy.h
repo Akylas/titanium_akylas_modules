@@ -12,6 +12,11 @@
 @class GMSOverlay;
 @class AkylasGMSMapView;
 
+@interface AkylasGMSMarker : GMSMarker{
+    
+}
+@end
+
 @interface AkylasGooglemapAnnotationProxy : AkylasMapBaseAnnotationProxy<GClusterItem>
 
 +(int)gZIndexDelta;

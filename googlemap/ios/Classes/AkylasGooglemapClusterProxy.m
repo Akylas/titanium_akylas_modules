@@ -13,7 +13,6 @@
 #import "AkylasGooglemapViewProxy.h"
 #import "GCluster.h"
 #import <CoreText/CoreText.h>
-#import "DTCoreTextFunctions.h"
 #import "AkylasMapBaseViewProxy.h"
 #import "AkylasGooglemapView.h"
 #import "AkylasGooglemapModule.h"
@@ -121,6 +120,8 @@ static NSInteger idIncrement = 0;
         _algorithm.gridSize = self.maxDistance;
         _algorithm.proxy = self;
         _algorithm.visible = self.visible;
+        _algorithm.minZoom = self.minZoom;
+        _algorithm.maxZoom = self.maxZoom;
     }
     return _algorithm;
 }
@@ -250,6 +251,28 @@ static NSInteger idIncrement = 0;
     if (_algorithm) {
         TiThreadPerformBlockOnMainThread(^{
         _algorithm.visible = self.visible;
+            [self cluster];
+        }, NO);
+    }
+}
+
+-(void)setMinZoom:(CGFloat)minZoom
+{
+    [super setMinZoom:minZoom];
+    if (_algorithm) {
+        TiThreadPerformBlockOnMainThread(^{
+            _algorithm.minZoom = self.minZoom;
+            [self cluster];
+        }, NO);
+    }
+}
+
+-(void)setMaxZoom:(CGFloat)maxZoom
+{
+    [super setMaxZoom:maxZoom];
+    if (_algorithm) {
+        TiThreadPerformBlockOnMainThread(^{
+            _algorithm.maxZoom = self.maxZoom;
             [self cluster];
         }, NO);
     }

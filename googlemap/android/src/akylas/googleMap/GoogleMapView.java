@@ -8,6 +8,7 @@
 package akylas.googlemap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -104,6 +105,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     private static boolean INITIALIZED = false;
     private RectF padding = null;
+    private int cameraAnimationDuration = CAMERA_UPDATE_DURATION;
     // private FollowMeLocationSource followMeLocationSource = new
     // FollowMeLocationSource();
 
@@ -315,6 +317,16 @@ public class GoogleMapView extends AkylasMapBaseView implements
     }
 
     @Override
+    public void aboutToProcessProperties(KrollDict d) {
+        if (d instanceof HashMap) {
+            cameraAnimationDuration = TiConvert.toInt(d, "animationDuration", 500);
+//            animate = TiConvert.toBoolean(d, TiC.PROPERTY_ANIMATED, true);
+//            d.remove(TiC.PROPERTY_ANIMATED);
+            d.remove("animationDuration");
+        }
+        super.aboutToProcessProperties(d);
+    }
+    @Override
     public void propertySet(String key, Object newValue, Object oldValue,
             boolean changedProperty) {
         switch (key) {
@@ -375,6 +387,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
         case AkylasGooglemapModule.PROPERTY_ZOOM:
             targetZoom = TiConvert.toFloat(newValue, 0);
             getCameraBuilder().zoom(targetZoom);
+            break;
+        case "animationDuration":
+            cameraAnimationDuration = TiConvert.toInt(newValue, CAMERA_UPDATE_DURATION);
             break;
         case TiC.PROPERTY_REGION:
             getCameraBuilder();
@@ -507,7 +522,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (map == null)
             return;
         if (anim) {
-            map.animateCamera(camUpdate, CAMERA_UPDATE_DURATION, null);
+            map.animateCamera(camUpdate, cameraAnimationDuration, null);
         } else {
             map.moveCamera(camUpdate);
         }
@@ -625,15 +640,15 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     public float getZoomLevel() {
         if (targetZoom != -1) {
-            Log.d(TAG, "getZoomLevel targetZoom");
+//            Log.d(TAG, "getZoomLevel targetZoom");
             return targetZoom;
         }
         if (currentCameraPosition == null) {
-            Log.d(TAG, "getZoomLevel getProperty");
+//            Log.d(TAG, "getZoomLevel getProperty");
             return TiConvert.toFloat(
                     proxy.getProperty(AkylasGooglemapModule.PROPERTY_ZOOM), 0);
         }
-        Log.d(TAG, "getZoomLevel currentCameraPosition");
+//        Log.d(TAG, "getZoomLevel currentCameraPosition");
         return currentCameraPosition.zoom;
     }
 
@@ -1353,7 +1368,8 @@ public class GoogleMapView extends AkylasMapBaseView implements
     }
 
     public void updateMarkerPosition(final Marker marker,
-            final LatLng toPosition, final boolean animated) {
+            final LatLng toPosition, final long animationDuration) {
+        boolean animated = animationDuration > 0;
         if (!animated || !shouldAnimate() || marker.getPosition() == null
                 || toPosition == null) {
             marker.setPosition(toPosition);
@@ -1362,7 +1378,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         final LatLng startLatLng = marker.getPosition();
         final Handler handler = new Handler();
         final long start = SystemClock.uptimeMillis();
-        final long duration = CAMERA_UPDATE_DURATION;
+//        final long duration = animationDuration;
 
         final LinearInterpolator interpolator = new LinearInterpolator();
 
@@ -1373,7 +1389,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                     long elapsed = SystemClock.uptimeMillis() - start;
                     float t = Math.min(
                             interpolator.getInterpolation((float) elapsed
-                                    / duration), 1.0f);
+                                    / animationDuration), 1.0f);
                     double lng = t * toPosition.longitude + (1 - t)
                             * startLatLng.longitude;
                     double lat = t * toPosition.latitude + (1 - t)

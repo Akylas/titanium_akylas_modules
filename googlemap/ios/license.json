@@ -1,2 +1,32 @@
 {
+    "Nimbus":{
+        "title":"Nimbus",
+        "copyright":"Copyright © 2011-2012 Jeff Verkoeyen",
+        "licenseId":"apache_2"
+    },
+    "Objective C Protocol Buffers": {
+        "title": "Nimbus",
+        "copyright": "Copyright © 2011-2013 Google Inc. Copyright © 2010 Booyah Inc. Copyright © 2008 Cyrus Najmabadi.",
+        "licenseId": "apache_2"
+    },    
+    "zlib": {
+        "title": "zlib",
+        "copyright": "Copyright © 1995-2013 Jean-loup Gailly and Mark Adler",
+        "license": "Licensed under the zlib license (http://zlib.net/zlib_license.html)."
+    },
+    "JQuery Easing": {
+        "title": "JQuery Easing",
+        "copyright": "Copyright © 2008 George McGinley Smith. Copyright © 2001 Robert Penner All rights reserved.",
+        "licenseId": "bsd_3"
+    },
+    "Siemreap": {
+        "title": "Siemreap Font",
+        "copyright": "Copyright © 2010 Danh Hong (khmertype.blogspot.com).",
+        "license": "SIL Open Font License, Version 1.1 (http://scripts.sil.org/OFL)."
+    },
+    "Tharlon-Regular": {
+        "title": "Tharlon-Regular Font",
+        "copyright": "Copyright © 2012, Sun Tun, Ngwe Tun, Solveware Solution (http://code.google.com/p/tharlon-font).",
+        "license": "SIL Open Font License, Version 1.1 (http://scripts.sil.org/OFL)."
+    }
 }

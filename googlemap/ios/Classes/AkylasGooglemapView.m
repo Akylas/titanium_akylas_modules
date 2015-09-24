@@ -399,10 +399,15 @@
         return;
 	}
     ENSURE_UI_THREAD_1_ARG(value)
-
+    
+    
+    AkRegion region = [AkylasGooglemapModule regionFromObject:value];
+    if (!AkRegionIsValid(region)) {
+        return;
+    }
     needsRegionZoomFix = NO;
     
-    GMSCameraPosition* position = [[self map] cameraForBounds:boundsFromRegion([AkylasGooglemapModule regionFromObject:value]) insets:UIEdgeInsetsZero];
+    GMSCameraPosition* position = [[self map] cameraForBounds:boundsFromRegion(region) insets:UIEdgeInsetsZero];
     if (animate || !configurationSet) {
         [[self map] animateToCameraPosition:position];
     } else {
@@ -1705,6 +1710,7 @@
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     CGPoint point = [gestureRecognizer locationInView:map];
     _touchCoords = [map.projection coordinateForPoint:point];
+    return NO;
 }
 /**
  * Called after an overlay has been tapped.

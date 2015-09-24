@@ -11,9 +11,20 @@
 #import "AkylasGooglemapView.h"
 #import "AkylasGooglemapClusterProxy.h"
 
+
+@implementation AkylasGMSMarker
+-(void)setMap:(GMSMapView *)map
+{
+    if (self.map && !map && self.map.selectedMarker == self) {
+        self.map.selectedMarker = nil;
+    }
+    [super setMap:map];
+}
+@end
+
 @implementation AkylasGooglemapAnnotationProxy
 {
-    GMSMarker* _gmarker;
+    AkylasGMSMarker* _gmarker;
     BOOL _selected;
 }
 
@@ -300,7 +311,7 @@
 -(GMSMarker*)getMarker {
     if (_gmarker == nil) {
         
-        _gmarker = [[GMSMarker markerWithPosition:self.coordinate] retain];
+        _gmarker = [[AkylasGMSMarker markerWithPosition:self.coordinate] retain];
         _gmarker.title = [self title];
         _gmarker.snippet = [self subtitle];
         _gmarker.userData = self;
