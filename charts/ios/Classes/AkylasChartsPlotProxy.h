@@ -51,6 +51,7 @@
 -(NSArray*)dataX;
 -(NSArray*)dataY;
 -(NSUInteger)indexForXValue:(CGFloat)value;
+-(NSArray*)rangeForXValue:(CGFloat)value;
 
 
 @end

@@ -106,15 +106,40 @@
 -(NSUInteger)indexForXValue:(CGFloat)value {
     __block NSUInteger result = NSNotFound;
     @synchronized(dataX) {
+        __block NSNumber* last = nil;
         [dataX enumerateObjectsUsingBlock:^(NSNumber* number, NSUInteger idx, BOOL *stop) {
             if (number.floatValue > value) {
                 result = idx;
+                if (last && (fabs(last.floatValue - value) < fabs(number.floatValue - value))) {
+                    result = idx - 1;
+                }
                 *stop = YES;
             }
+            last = number;
         }];
     }
     return result;
 }
+
+-(NSArray*)rangeForXValue:(CGFloat)value {
+    __block NSArray* result = nil;
+    @synchronized(dataX) {
+        __block NSInteger last = -1;
+        [dataX enumerateObjectsUsingBlock:^(NSNumber* number, NSUInteger idx, BOOL *stop) {
+            if (number.floatValue > value) {
+                if (last > -1) {
+                    result = [[NSArray alloc] initWithObjects:@(last), @(idx), nil];
+                } else {
+                    result = [[NSArray alloc] initWithObjects:@(idx), nil];
+                }
+                *stop = YES;
+            }
+            last = idx;
+        }];
+    }
+    return [result autorelease];
+}
+
 
 
 
