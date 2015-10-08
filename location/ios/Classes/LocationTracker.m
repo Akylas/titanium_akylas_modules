@@ -17,13 +17,26 @@
     BOOL _started;
     BOOL _shouldBeStarted;
 }
-
++(BOOL)isIOS9OrGreater
+{
+    static BOOL isIOS9OrGreater;
+    static dispatch_once_t predicate;
+    dispatch_once(&predicate, ^{
+        isIOS9OrGreater = [UIImage instancesRespondToSelector:@selector(flipsForRightToLeftLayoutDirection)];
+    });
+    
+    return isIOS9OrGreater;
+}
 + (CLLocationManager *)sharedLocationManager {
 	static CLLocationManager *_locationManager;
 	
 	@synchronized(self) {
 		if (_locationManager == nil) {
 			_locationManager = [[CLLocationManager alloc] init];
+            if ([self isIOS9OrGreater]) {
+                _locationManager.allowsBackgroundLocationUpdates = YES;
+            }
+            _locationManager.pausesLocationUpdatesAutomatically = NO;
 		}
 	}
 	return _locationManager;
