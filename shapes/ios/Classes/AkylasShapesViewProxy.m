@@ -128,7 +128,7 @@ static NSArray *supportedEvents;
 
 -(void)fireEvent:(NSString*)type withObject:(id)obj propagate:(BOOL)propagate reportSuccess:(BOOL)report errorCode:(NSInteger)code message:(NSString*)message checkForListener:(BOOL)checkForListener
 {
-	if ([[AkylasShapesViewProxy supportedEvents] indexOfObject:type] != NSNotFound && childrenCount > 0) {
+	if ([[AkylasShapesViewProxy supportedEvents] indexOfObject:type] != NSNotFound && [view touchEnabled] && childrenCount > 0) {
         CGPoint point  = CGPointMake(-1, -1);
         if ([obj isKindOfClass:[NSDictionary class]]) {
             point.x = [[((NSDictionary*)obj) objectForKey:@"x"] intValue];

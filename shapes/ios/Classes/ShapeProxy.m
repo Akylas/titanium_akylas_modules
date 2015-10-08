@@ -48,6 +48,7 @@ parentBounds = _parentBounds;
         _layer.masksToBounds = NO;
         _layer.needsDisplayOnBoundsChange = YES;
         _configurationSet = NO;
+        _touchEnabled = YES;
         _realTransform = CGAffineTransformIdentity;
         type = -1;
     }
@@ -773,6 +774,9 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 
 -(BOOL)readyToAnimate
 {
+    if (IS_OF_CLASS(self.parent, TiViewProxy)) {
+        return [(TiAnimatableProxy*)parent readyToAnimate] && [(TiViewProxy*)parent viewLayedOut];
+    }
     return IS_OF_CLASS(self.parent, TiAnimatableProxy) && [(TiAnimatableProxy*)parent readyToAnimate];
 }
 
@@ -920,8 +924,8 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
                 }
             } recursive:NO];
         }
-        if ((!handledByChildren || bubbles) &&  [self _hasListeners:eventName]) {
-            [self fireEvent:eventName withObject:data];
+        if (self.touchEnabled && (!handledByChildren || bubbles) &&  [self _hasListeners:eventName]) {
+            [self fireEvent:eventName withObject:data checkForListener:NO];
             return YES;
         }
     }

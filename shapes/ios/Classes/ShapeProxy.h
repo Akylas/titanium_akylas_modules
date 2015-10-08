@@ -54,6 +54,7 @@ enum
 @property(nonatomic,assign) CGRect currentShapeBounds;
 @property(nonatomic,readonly) CGAffineTransform realTransform;
 //@property(nonatomic,readonly) CALayer* layer;
+@property(nonatomic,assign) BOOL touchEnabled;
 
 -(void)boundsChanged:(CGRect)bounds;
 -(CGPoint) computePoint:(TiPoint*)center withAnchor:(NSInteger)anchor inSize:(CGSize)size decale:(CGSize)decale;

@@ -89,24 +89,24 @@ static NSString * const kLayerAnimationGroupKey = @"AkylasShapesAnimation";
         // quickly pressing the shift key three times)
         //
         // Credits to Cédric Luthi, see http://twitter.com/0xced/statuses/232860477317869568
-#if TARGET_IPHONE_SIMULATOR
-        static CGFloat (*s_UIAnimationDragCoefficient)(void) = NULL;
-        static BOOL s_firstLoad = YES;
-        if (s_firstLoad) {
-            void *UIKitDylib = dlopen([[[NSBundle bundleForClass:[UIApplication class]] executablePath] fileSystemRepresentation], RTLD_LAZY);
-            s_UIAnimationDragCoefficient = (CGFloat (*)(void))dlsym(UIKitDylib, "UIAnimationDragCoefficient");
-            if (! s_UIAnimationDragCoefficient) {
-                HLSLoggerInfo(@"UIAnimationDragCoefficient not found. Slow animations won't be available for animations based on Core Animation");
-            }
-            
-            s_firstLoad = NO;
-        }
-        
-        if (s_UIAnimationDragCoefficient) {
-            duration *= s_UIAnimationDragCoefficient();
-            startTime *= s_UIAnimationDragCoefficient();
-        }
-#endif
+//#if TARGET_IPHONE_SIMULATOR
+//        static CGFloat (*s_UIAnimationDragCoefficient)(void) = NULL;
+//        static BOOL s_firstLoad = YES;
+//        if (s_firstLoad) {
+//            void *UIKitDylib = dlopen([[[NSBundle bundleForClass:[UIApplication class]] executablePath] fileSystemRepresentation], RTLD_LAZY);
+//            s_UIAnimationDragCoefficient = (CGFloat (*)(void))dlsym(UIKitDylib, "UIAnimationDragCoefficient");
+//            if (! s_UIAnimationDragCoefficient) {
+//                HLSLoggerInfo(@"UIAnimationDragCoefficient not found. Slow animations won't be available for animations based on Core Animation");
+//            }
+//            
+//            s_firstLoad = NO;
+//        }
+//        
+//        if (s_UIAnimationDragCoefficient) {
+//            duration *= s_UIAnimationDragCoefficient();
+//            startTime *= s_UIAnimationDragCoefficient();
+//        }
+//#endif
     }
 //    [CATransaction begin];
 //    [CATransaction setDisableActions:YES];

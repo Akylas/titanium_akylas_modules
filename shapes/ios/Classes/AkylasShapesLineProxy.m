@@ -123,7 +123,7 @@ static NSArray *animationKeys;
 
 -(void)setPoints:(id)points {
     NSMutableDictionary* result = [NSMutableDictionary dictionary];
-    if (points) {
+    if (points && !IS_OF_CLASS(points, NSNull)) {
         for (int i = 0; i < [points count]; i++) {
             NSArray* point = [points objectAtIndex:i];
             NSMutableDictionary* bezierPoint = [NSMutableDictionary dictionary];

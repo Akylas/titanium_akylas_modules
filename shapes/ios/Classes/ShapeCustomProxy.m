@@ -185,13 +185,18 @@
 -(void)setLineDash:(id)arg
 {
     ENSURE_SINGLE_ARG_OR_NIL(arg, NSDictionary);
+    if (!arg) {
+        [self setLayerValue:nil forKey:@"dashPattern"];
+        [self setLayerValue:nil forKey:@"dashPhase"];
+    } else {
+        if ([arg objectForKey:@"pattern"]) {
+            [self setLayerValue:[arg objectForKey:@"pattern"] forKey:@"dashPattern"];
+        }
+        if ([arg objectForKey:@"phase"]) {
+            [self setLayerValue:[NSNumber numberWithFloat:[TiUtils floatValue:[arg objectForKey:@"phase"]]] forKey:@"dashPhase"];
+        }
+    }
     
-    if ([arg objectForKey:@"pattern"]) {
-        [self setLayerValue:[arg objectForKey:@"pattern"] forKey:@"dashPattern"];
-    }
-    if ([arg objectForKey:@"phase"]) {
-        [self setLayerValue:[NSNumber numberWithFloat:[TiUtils floatValue:[arg objectForKey:@"phase"]]] forKey:@"dashPhase"];
-    }
 	[self replaceValue:arg forKey:@"lineDash" notification:NO];
 }
 
@@ -336,7 +341,7 @@
 {
     CABasicAnimation *caAnim = [self animation];
     caAnim.keyPath = keyPath_;
-    caAnim.toValue = [value_ isKindOfClass:[NSNull class]]?[_layer valueForKeyPath:keyPath_]:value_;
+    caAnim.toValue = (!value_ || IS_OF_CLASS(value_, NSNull))?[_layer valueForKeyPath:keyPath_]:value_;
     if (restartFromBeginning_) caAnim.fromValue = [_layer valueForKeyPath:keyPath_];
     return caAnim;
 }
@@ -359,6 +364,17 @@
         UIColor* color = [[TiUtils colorValue:[animProps objectForKey:kAnimFillColor]] _color];
         if (color == nil) color = [UIColor clearColor];
         [animations addObject:[self animationForKeyPath:kAnimFillColor value:(id)color.CGColor restartFromBeginning:restartFromBeginning]];
+    }
+    
+    if ([animation valueForKey:@"lineDash"]) {
+        id lineDash = [animation valueForKey:@"lineDash"];
+        if (IS_OF_CLASS(lineDash, NSNull)) {
+            [animations addObject:[self animationForKeyPath:@"lineDashPhase" value:[NSNull null] restartFromBeginning:restartFromBeginning]];
+
+        }
+        else {
+            [animations addObject:[self animationForKeyPath:@"lineDashPhase" value:[lineDash objectForKey:@"phase"] restartFromBeginning:restartFromBeginning]];
+        }
     }
     
     [self addAnimationForKeyPath:kAnimLineWidth restartFromBeginning:restartFromBeginning animation:animation holder:animations animProps:animProps];
