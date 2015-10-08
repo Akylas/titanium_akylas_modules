@@ -243,8 +243,14 @@
     BOOL animated = YES;
 	if (args != nil)
 		animated = [args boolValue];
-        
-    [self blur:nil];
+    if ([self _controller].openSide == MMDrawerSideLeft) {
+        [[self holdedProxyForKey:@"centerView"] focus:nil];
+        [[self holdedProxyForKey:@"leftView"] blur:nil];
+    } else {
+        [[self holdedProxyForKey:@"centerView"] blur:nil];
+        [[self holdedProxyForKey:@"leftView"] focus:nil];
+    }
+//    [self blur:nil];
     [[self _controller] toggleDrawerSide:MMDrawerSideLeft animated:animated completion:nil];
 }
 -(void)toggleRightView:(id)args
@@ -254,8 +260,14 @@
     BOOL animated = YES;
 	if (args != nil)
 		animated = [args boolValue];
-    
-    [self blur:nil];
+    if ([self _controller].openSide == MMDrawerSideRight) {
+        [[self holdedProxyForKey:@"rightView"] blur:nil];
+        [[self holdedProxyForKey:@"centerView"] focus:nil];
+    } else {
+        [[self holdedProxyForKey:@"centerView"] blur:nil];
+        [[self holdedProxyForKey:@"rightView"] focus:nil];
+    }
+//    [self blur:nil];
     [[self _controller] toggleDrawerSide:MMDrawerSideRight animated:animated completion:nil];
 
 }
@@ -264,44 +276,74 @@
 {
     ENSURE_SINGLE_ARG_OR_NIL(args, NSNumber);
     ENSURE_UI_THREAD_1_ARG(args);
-    BOOL animated = YES;
-	if (args != nil)
-		animated = [args boolValue];
-    [self blur:nil];
-  [[self _controller] openDrawerSide:MMDrawerSideLeft animated:animated completion:nil];
+    if ([self _controller].openSide == MMDrawerSideLeft) {
+        return;
+    }
+    TiViewProxy* vp = [self holdedProxyForKey:@"leftView"];
+    if (vp) {
+        BOOL animated = YES;
+        if (args != nil)
+            animated = [args boolValue];
+        [[self _controller] openDrawerSide:MMDrawerSideLeft animated:animated completion:nil];
+        [[self holdedProxyForKey:@"rightView"] blur:nil];
+        [[self holdedProxyForKey:@"centerView"] blur:nil];
+        [vp focus:nil];
+    }
 }
 
 -(void)openRightView:(id)args
 {
     ENSURE_SINGLE_ARG_OR_NIL(args, NSNumber);
     ENSURE_UI_THREAD_1_ARG(args);
-    BOOL animated = YES;
-	if (args != nil)
-		animated = [args boolValue];
-    [self blur:nil];
-    [[self _controller] openDrawerSide:MMDrawerSideRight animated:animated completion:nil];
+    if ([self _controller].openSide == MMDrawerSideRight) {
+        return;
+    }
+    TiViewProxy* vp = [self holdedProxyForKey:@"rightView"];
+    if (vp) {
+        BOOL animated = YES;
+        if (args != nil)
+            animated = [args boolValue];
+        [[self _controller] openDrawerSide:MMDrawerSideRight animated:animated completion:nil];
+        [[self holdedProxyForKey:@"leftView"] blur:nil];
+        [[self holdedProxyForKey:@"centerView"] blur:nil];
+        [vp focus:nil];
+    }
 }
 
 -(void)closeLeftView:(id)args
 {
     ENSURE_SINGLE_ARG_OR_NIL(args, NSNumber);
     ENSURE_UI_THREAD_1_ARG(args);
-    BOOL animated = YES;
-	if (args != nil)
-		animated = [args boolValue];
-    [self blur:nil];
-    [[self _controller] closeDrawerAnimated:animated completion:nil];
+    if ([self _controller].openSide != MMDrawerSideLeft) {
+        return;
+    }
+    TiViewProxy* vp = [self holdedProxyForKey:@"leftView"];
+    if (vp) {
+        BOOL animated = YES;
+        if (args != nil)
+            animated = [args boolValue];
+        [[self _controller] closeDrawerAnimated:animated completion:nil];
+        [vp blur:nil];
+        [[self holdedProxyForKey:@"centerView"] focus:nil];
+    }
 }
 
 -(void)closeRightView:(id)args
 {
     ENSURE_SINGLE_ARG_OR_NIL(args, NSNumber);
     ENSURE_UI_THREAD_1_ARG(args);
-    BOOL animated = YES;
-	if (args != nil)
-		animated = [args boolValue];
-    [self blur:nil];
-    [[self _controller] closeDrawerAnimated:animated completion:nil];
+    if ([self _controller].openSide != MMDrawerSideRight) {
+        return;
+    }
+    TiViewProxy* vp = [self holdedProxyForKey:@"rightView"];
+    if (vp) {
+        BOOL animated = YES;
+        if (args != nil)
+            animated = [args boolValue];
+        [[self _controller] closeDrawerAnimated:animated completion:nil];
+        [vp blur:nil];
+        [[self holdedProxyForKey:@"centerView"] focus:nil];
+    }
 }
 
 
@@ -309,10 +351,16 @@
 {
     ENSURE_SINGLE_ARG_OR_NIL(args, NSNumber);
     ENSURE_UI_THREAD_1_ARG(args);
+    if ([self _controller].openSide == MMDrawerSideNone) {
+        return;
+    }
     BOOL animated = YES;
 	if (args != nil)
 		animated = [args boolValue];
-    [self blur:nil];
+//    [self blur:nil];
+    [[self holdedProxyForKey:@"leftView"] blur:nil];
+    [[self holdedProxyForKey:@"rightView"] blur:nil];
+    [[self holdedProxyForKey:@"centerView"] focus:nil];
     [[self _controller] closeDrawerAnimated:animated completion:nil];
 }
 
