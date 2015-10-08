@@ -6,7 +6,7 @@
  */
 #import "TiModule.h"
 
-@interface AkylasTestfairyModule : TiModule 
+@interface AkylasPlcrashreporterModule : TiModule
 {
 }
 @end

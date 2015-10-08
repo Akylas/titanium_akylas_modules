@@ -4,93 +4,44 @@
  * Appcelerator Titanium is Copyright (c) 2009-2010 by Appcelerator, Inc.
  * and licensed under the Apache Public License (version 2)
  */
-#import "AkylasTestfairyModule.h"
+#import "AkylasPlcrashreporterModule.h"
 #import "TiBase.h"
 #import "TiHost.h"
 #import "TiUtils.h"
 #import "TiApp.h"
-#import "TestFairy.h"
+#import "CrashReporter/PLCrashReporter.h"
 
+#import <sys/types.h>
+#import <sys/sysctl.h>
 
-#define TF_PREFIX @"testflight."
-extern NSString * const TI_APPLICATION_DEPLOYTYPE;
-static BOOL asyncLog = false;
-static BOOL testFilghtOn = false;
-//@implementation TiApp (TFLog)
-//
-//+(void)TiNSLog:(NSString*) message
-//{
-//#pragma push
-//#undef NSLog
-//    if (testFilghtOn == false || [TI_APPLICATION_DEPLOYTYPE isEqualToString:@"development"]) {
-//        NSLog(@"%@",message);
-//    }
-//    else {
-//        if (asyncLog) {
-//            TFLog_async(@"[TFA] %@",message);
-//        }
-//        else {
-//            TFLog(@"[TF] %@",message);
-//        }
-//    }
-//#pragma pop
-//}
-//@end
+#include <Availability.h>
 
-@implementation AkylasTestfairyModule
+@implementation AkylasPlcrashreporterModule
 
 #pragma mark Internal
 
 // this is generated for your module, please do not change it
 -(id)moduleGUID
 {
-	return @"397c89fb-9d51-4c88-becd-9e10a1bc7e97";
+	return @"397c89fb-9a51-4c88-becd-9e10a1bc7e97";
 }
 
 // this is generated for your module, please do not change it
 -(NSString*)moduleId
 {
-	return @"akylas.testfairy";
+	return @"akylas.plcrashreporter";
 }
 
 #pragma mark Lifecycle
 
 -(void)startup
 {
-	// this method is called when the module is first loaded
-	// you *must* call the superclass
-	[super startup];
-//    NSMutableDictionary* optionsToSet = [NSMutableDictionary dictionary];
-    NSDictionary* tiappProperties = [TiApp tiAppProperties];
-//    [[AkylasTestfairyModule mapping] enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-//        id value = [tiappProperties objectForKey:[NSString stringWithFormat:@"%@%@", TF_PREFIX, key]];
-//        if (value) {
-//            [optionsToSet setObject:value forKey:obj];
-//        }
-//    }];
-//    [TestFlight setOptions:optionsToSet];
-//    testFilghtOn = YES;
-//    [self replaceValue:@(testFilghtOn) forKey:@"enabled" notification:NO];
-    NSString* token = [tiappProperties objectForKey:@"testfairy.token"];
-//    if ([tiappProperties objectForKey:@"testflight.asyncLog"]) {
-//        DebugLog(@"[INFO] TestFlight asyncLogging");
-//        asyncLog = [[tiappProperties objectForKey:@"testflight.asyncLog"] boolValue];
-//    }
-//    [self replaceValue:@(asyncLog) forKey:@"asyncLog" notification:NO];
     
-    if (token) {
-        DebugLog(@"[INFO] TestFairy begin %@", token);
-        [TestFairy begin:token];
-    }
+	[super startup];
 }
 
 -(void)shutdown:(id)sender
 {
-	// this method is called when the module is being unloaded
-	// typically this is during shutdown. make sure you don't do too
-	// much processing here or the app will be quit forceably
-	
-	// you *must* call the superclass
 	[super shutdown:sender];
 }
 
@@ -111,79 +62,117 @@ static BOOL testFilghtOn = false;
 	[super didReceiveMemoryWarning:notification];
 }
 
+
+-(PLCrashReporter *)crashReporter
+{
+    return [PLCrashReporter sharedReporter];
+//    static PLCrashReporter *crashReporter = nil;
+//    static dispatch_once_t onceToken;
+//    dispatch_once(&onceToken, ^{
+//        PLCrashReporterConfig *config = [[[PLCrashReporterConfig alloc]
+//                                          initWithSignalHandlerType: [TiUtils intValue:[self valueForKey:@"signalHandlerType"] def:PLCrashReporterSignalHandlerTypeMach]
+//                                          symbolicationStrategy: [TiUtils intValue:[self valueForKey:@"symbolicationStrategy"] def:PLCrashReporterSymbolicationStrategyAll]] autorelease];
+//        crashReporter = [[PLCrashReporter alloc] initWithConfiguration: config];
+//    });
+//    return crashReporter;
+}
+
+
 #pragma Public APIs
-
--(id)getObjectProperty:(NSString*)key
+-(id)hasPendingCrashReport
 {
-    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    return [defaults objectForKey:key];
+    PLCrashReporter *crashReporter = [self crashReporter];
+    return @([crashReporter hasPendingCrashReport]);
 }
 
--(BOOL)getBoolProperty:(NSString*)key defaultValue:(BOOL)defaultValue
+
+-(void)purgePendingCrashReport:(id)args
 {
-    id object = [self getObjectProperty:key];
-    if (object) {
-        return [object boolValue];
+    PLCrashReporter *crashReporter = [self crashReporter];
+    [crashReporter purgePendingCrashReport];
+}
+
+-(id)generateLiveReport:(id)args
+{
+    PLCrashReporter *crashReporter = [self crashReporter];
+    NSData* result = [crashReporter generateLiveReport];
+    if (result) {
+        return [[[TiBlob alloc] initWithData:result mimetype:@"application/octet-stream"] autorelease];
     }
-    return defaultValue;
+    return nil;
 }
 
--(NSString*)getStringProperty:(NSString*)key defaultValue:(NSString*)defaultValue
+-(id)loadPendingCrashReport:(id)args
 {
-    id object = [self getObjectProperty:key];
-    if (object) {
-        return [object stringValue];
-    }
-    return defaultValue;
-}
-
--(void)begin:(id)args
-{
-    ENSURE_UI_THREAD_1_ARG(args);
-    ENSURE_SINGLE_ARG_OR_NIL(args,NSString);
+    PLCrashReporter *crashReporter = [self crashReporter];
+    NSData* result = [crashReporter loadPendingCrashReportData];
     
-    [TestFairy begin:args];
-    DebugLog(@"[INFO] TestFairy begin %@", args);
+    if (result) {
+        return [[[TiBlob alloc] initWithData:result mimetype:@"application/octet-stream"] autorelease];
+    }
+    return nil;
 }
 
--(void)pause:(id)args
+/* A custom post-crash callback */
+static void post_crash_callback (siginfo_t *info, ucontext_t *uap, void *context) {
+    // this is not async-safe, but this is a test implementation
+    NSLog(@"post crash callback: signo=%d, uap=%p, context=%p", info->si_signo, uap, context);
+}
+
+static bool debugger_should_exit (void) {
+#if !TARGET_OS_IPHONE
+    return false;
+#endif
+    
+    struct kinfo_proc info;
+    size_t info_size = sizeof(info);
+    int name[4];
+    
+    name[0] = CTL_KERN;
+    name[1] = KERN_PROC;
+    name[2] = KERN_PROC_PID;
+    name[3] = getpid();
+    
+    if (sysctl(name, 4, &info, &info_size, NULL, 0) == -1) {
+        NSLog(@"sysctl() failed: %s", strerror(errno));
+        return false;
+    }
+    
+    if ((info.kp_proc.p_flag & P_TRACED) != 0)
+        return true;
+    
+    return false;
+}
+
+-(id)enableCrashReporter:(id)args
 {
-    ENSURE_UI_THREAD_1_ARG(args);
-    [TestFairy pause];
+//    if (debugger_should_exit()) {
+//        NSLog(@"The demo crash app should be run without a debugger present. Exiting ...");
+//        return @{
+//                 @"code":@(-1),
+//                 @"error":@"should not run with a debugger!"
+//                 
+//        };
+//    }
+    PLCrashReporter *crashReporter = [self crashReporter];
+    NSError *error;
+    /* Set up post-crash callbacks */
+    PLCrashReporterCallbacks cb = {
+        .version = 0,
+        .context = (void *) 0xABABABAB,
+        .handleSignal = post_crash_callback
+    };
+    [crashReporter setCrashCallbacks: &cb];
+    [crashReporter enableCrashReporter];
+    if (error) {
+        return [TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]];
+    }
+    return nil;
 }
 
--(void)resume:(id)args
+-(void)triggerCrash:(id)unused
 {
-    ENSURE_UI_THREAD_1_ARG(args);
-    [TestFairy resume];
+    /* Trigger a crash */
+    ((char *)NULL)[1] = 0;
 }
-
--(void)passCheckpoint:(id)args
-{    
-    ENSURE_UI_THREAD_1_ARG(args);
-    ENSURE_SINGLE_ARG(args, NSString)
-    [TestFairy checkpoint:args];
-}
-
--(void)submitFeedback:(id)args
-{
-    ENSURE_UI_THREAD_1_ARG(args);
-
-    [TestFairy pushFeedbackController];
-}
-
--(void)setCorrelationId:(id)args
-{
-    ENSURE_UI_THREAD_1_ARG(args);
-    ENSURE_SINGLE_ARG(args, NSString)
-    [TestFairy setCorrelationId:args];
-}
-
--(void)updateLocation:(id)args
-{
-    ENSURE_UI_THREAD_1_ARG(args);
-    ENSURE_SINGLE_ARG(args, NSArray)
-    [TestFairy updateLocation:args];
-}
-
 @end

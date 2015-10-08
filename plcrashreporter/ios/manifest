@@ -1,0 +1,16 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+description: A module to implement the PLCrashReporter SDK
+author: Akylas
+license: See LICENSE file
+copyright: Copyright (c) 2015 Akylas
+
+# these should not be edited
+name: plcrashreporter
+moduleid: akylas.plcrashreporter
+guid: 397c89fb-9a51-4c88-becd-9e10a1bc7e97
+platform: iphone
+minsdk: 4.0.0
