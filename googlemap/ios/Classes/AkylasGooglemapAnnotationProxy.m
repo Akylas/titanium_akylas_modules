@@ -66,6 +66,11 @@
     }
 }
 
+-(BOOL)shouldAnimate {
+    return _gmarker && _gmarker.map && [super shouldAnimate];
+}
+
+
 -(void)setConfigurationSet:(BOOL)value
 {
     [super setConfigurationSet:value];
@@ -323,6 +328,7 @@
         }
         _gmarker.draggable = self.draggable;
         _gmarker.flat = self.flat;
+        _gmarker.zIndex = (int)self.zIndex;
        
         [self updateMarker];
 

@@ -23,6 +23,19 @@
     [super dealloc];
 }
 
+- (id)init
+{
+    if ((self = [super init])) {
+        _networkConnected = YES;
+    }
+    return self;
+}
+
+-(BOOL)networkConnected
+{
+    return _networkConnected;
+}
+
 //- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 //{
 //    [super touchesBegan:touches withEvent:event];
@@ -61,7 +74,7 @@
     BOOL _forwarding;
     NSInteger _userTrackingMode;
     CGFloat _userLocationRequiredZoom;
-    BOOL _inUserAction;
+//    BOOL _inUserAction;
     
     AkCalloutView* _calloutView;
     UIView* calloutTouchedView;
@@ -79,13 +92,15 @@
     CLLocationCoordinate2D _touchCoords;
     
     BOOL _ignoreSelectChange;
+    
+    CGPoint panStartLocation;
 }
 
 - (id)init
 {
     if ((self = [super init])) {
         _shouldFollowUserLocation = NO;
-        _inUserAction = NO;
+//        _inUserAction = NO;
         _firstLayout = YES;
         _forwarding = NO;
         _dragging = NO;
@@ -181,8 +196,30 @@
         tapGestureRecognizer.delegate = self;
         [map addGestureRecognizer:tapGestureRecognizer];
         [tapGestureRecognizer release];
+        
+        UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(didRecognizePan:)];
+        panGestureRecognizer.delegate = self;
+        [map addGestureRecognizer:panGestureRecognizer];
+        [panGestureRecognizer release];
     }
     return map;
+}
+
+- (float) distanceBetween : (CGPoint) p1 and: (CGPoint)p2
+{
+    return sqrt(pow(p2.x-p1.x,2)+pow(p2.y-p1.y,2));
+}
+- (void)didRecognizePan:(UIPanGestureRecognizer*)sender {
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        panStartLocation = [sender locationInView:self];
+    } else if (sender.state == UIGestureRecognizerStateChanged) {
+        CGPoint location = [sender locationInView:self];
+        if ([self distanceBetween:panStartLocation and:location] > 20) {
+            [self setUserTrackingMode_:@(0)];
+            sender.enabled = NO;
+            sender.enabled = YES;
+        }
+    }
 }
 
 -(GClusterManager*)clusterManager {
@@ -406,13 +443,23 @@
         return;
     }
     needsRegionZoomFix = NO;
-    
-    GMSCameraPosition* position = [[self map] cameraForBounds:boundsFromRegion(region) insets:UIEdgeInsetsZero];
-    if (animate || !configurationSet) {
-        [[self map] animateToCameraPosition:position];
+    if (self.regionFits) {
+        GMSCameraUpdate* cameraUpdate = [GMSCameraUpdate fitBounds:boundsFromRegion(region)];
+        //    GMSCameraPosition* position = [[self map] cameraForBounds:boundsFromRegion(region) insets:UIEdgeInsetsZero];
+        if (animate || !configurationSet) {
+            [[self map] animateWithCameraUpdate:cameraUpdate];
+        } else {
+            [[self map] moveCamera:cameraUpdate];
+        }
     } else {
-        [self map].camera = position;
+        GMSCameraPosition* position = [[self map] cameraForBounds:boundsFromRegion(region) insets:UIEdgeInsetsZero];
+        if (animate || !configurationSet) {
+            [[self map] animateToCameraPosition:position];
+        } else {
+            [self map].camera = position;
+        }
     }
+    
 }
 
 
@@ -1432,19 +1479,21 @@
  *
  * @param gesture If YES, this is occuring due to a user gesture.
  */
-- (void)mapView:(GMSMapView *)mapView willMove:(BOOL)gesture {
-//    NSString* type = @"willMove";
-//    if ([self.viewProxy _hasListeners:type checkParent:NO]) {
-//        
-//        NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-//                               NUMBOOL(gesture),@"userAction",
-//                               nil
-//                               ];
-//        [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
+//- (void)mapView:(GMSMapView *)mapView willMove:(BOOL)gesture {
+////    NSString* type = @"willMove";
+////    if ([self.viewProxy _hasListeners:type checkParent:NO]) {
+////        
+////        NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
+////                               NUMBOOL(gesture),@"userAction",
+////                               nil
+////                               ];
+////        [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:NO];
+////    }
+////
+//    if (configurationSet && gesture) {
+//        _inUserAction = configurationSet && gesture;
 //    }
-//    
-    _inUserAction = configurationSet && gesture;
-}
+//}
 
 -(void)dismissCalloutView {
     [_calloutView dismissCalloutAnimated:YES];
@@ -1513,9 +1562,6 @@
         [_clusterManager mapView:mapView didChangeCameraPosition:position];
     }
 //    region = regionFromMKRegion([mapView region]);
-    if (_inUserAction) {
-        [self setUserTrackingMode_:@(0)];
-    }
     
     [self updateCalloutPosition];
    
@@ -1710,7 +1756,7 @@
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     CGPoint point = [gestureRecognizer locationInView:map];
     _touchCoords = [map.projection coordinateForPoint:point];
-    return NO;
+    return IS_OF_CLASS(gestureRecognizer, UIPanGestureRecognizer);
 }
 /**
  * Called after an overlay has been tapped.

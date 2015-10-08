@@ -8,6 +8,7 @@
 
 #import "AkylasGMSURLTileLayer.h"
 #import "AkylasGooglemapView.h"
+#import "AkylasGooglemapModule.h"
 
 #define HTTP_404_NOT_FOUND 404
 @interface AkylasGMSURLTileLayer()
@@ -138,17 +139,19 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
         return;
     }
     NSNumber* key = [NSNumber numberWithUnsignedLongLong:TileKey(x, y, zoom)];
-    if (self.cacheable && [self.map isKindOfClass:[AkylasGMSMapView class]]) {
-        TiCache* cache = ((AkylasGMSMapView*)self.map).tileCache;
-        UIImage* image = [cache cachedImage:key withCacheKey:[self cacheKey]];
-        if (image) {
-            completion(image);
+    if ([self.map isKindOfClass:[AkylasGMSMapView class]]) {
+        if (self.cacheable) {
+            TiCache* cache = ((AkylasGMSMapView*)self.map).tileCache;
+            UIImage* image = [cache cachedImage:key withCacheKey:[self cacheKey]];
+            if (image) {
+                completion(image);
+                return;
+            }
+        }
+        if ([AkylasGooglemapModule sharedInstance].offlineMode || !((AkylasGMSMapView*)self.map).networkConnected) {
+            completion(nil);
             return;
         }
-    }
-    if (!((AkylasGMSMapView*)self.map).networkConnected) {
-        completion(nil);
-        return;
     }
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:theUrl];

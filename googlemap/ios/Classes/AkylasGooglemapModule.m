@@ -26,6 +26,233 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     return [[[GMSCoordinateBounds alloc] initWithCoordinate:trapez.northEast coordinate:trapez.southWest] autorelease];
 }
 
+//@interface NSURLConnection (InspectionDelegates)
+//+ (NSMutableSet *)inspectedDelegates;
+//@end
+//
+//@implementation NSURLConnection (InspectionDelegates)
+//
+//static NSMutableSet *s_delegates = nil;
+//
+//+ (NSMutableSet *)inspectedDelegates
+//{
+//    if (! s_delegates)
+//        s_delegates = [[NSMutableSet alloc] init];
+//    return s_delegates;
+//}
+//
+//@end
+
+@interface InspectedConnectionDelegate : NSObject <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
+//@property (nonatomic, strong) NSMutableData *received;
+@property (nonatomic, strong) id <NSURLConnectionDelegate> actualDelegate;
+//@property (nonatomic, strong) NSURLResponse *response;
+@end
+
+
+@implementation InspectedConnectionDelegate
+@synthesize actualDelegate;
+
+- (id) initWithActualDelegate:(id <NSURLConnectionDelegate>)actual
+{
+    self = [super init];
+    if (self) {
+//        self.received = [[NSMutableData alloc] init];
+//        [self.received setLength:0];
+        self.actualDelegate = actual;
+//        self.response = nil;
+    }
+    return self;
+}
+
+- (void) cleanup:(NSError *)error
+{
+//    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+//    if (self.response)
+//        [userInfo setObject:self.response forKey:@"response"];
+//    if (self.received.length > 0)
+//        [userInfo setObject:self.received forKey:@"body"];
+//    if (error)
+//        [userInfo setObject:error forKey:@"error"];
+//    
+//    self.response = nil;
+//    self.received = nil;
+    self.actualDelegate = nil;
+//    [[NSURLConnection inspectedDelegates] removeObject:self];
+}
+
+// ------------------------------------------------------------------------
+//
+#pragma mark NSURLConnectionDelegate
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    if ([self.actualDelegate respondsToSelector:@selector(connection:didFailWithError:)])
+        [self.actualDelegate connection:connection didFailWithError:error];
+    
+    [self cleanup:error];
+}
+
+// ------------------------------------------------------------------------
+#pragma mark NSURLConnectionDataDelegate
+//
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)aResponse
+{
+//    self.response = aResponse;
+    NSURL* url  =connection.originalRequest.URL;
+    if ([AkylasGooglemapModule sharedInstance].offlineMode && [url.absoluteString containsString:@"mmap"] || [url.absoluteString containsString:@"geosdk"]) {
+        //        URL = nil;
+//        cachePolicy = NSURLRequestReturnCacheDataDontLoad;
+        if ([self.actualDelegate respondsToSelector:@selector(connection:didFailWithError:)]) {
+            [self.actualDelegate connection:connection didFailWithError:[NSError errorWithDomain:NSURLErrorDomain
+                                                                                            code:NSURLErrorNetworkConnectionLost
+                                                                                        userInfo:nil]];
+        }
+    } else {
+        if ([self.actualDelegate respondsToSelector:@selector(connection:didReceiveResponse:)]) {
+            id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
+            [actual connection:connection didReceiveResponse:aResponse];
+        }
+
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+    if ([self.actualDelegate respondsToSelector:@selector(connection:didReceiveData:)]) {
+        id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
+        [actual connection:connection didReceiveData:data];
+    }
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+    if ([self.actualDelegate respondsToSelector:@selector(connectionDidFinishLoading:)]) {
+        id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
+        [actual connectionDidFinishLoading:connection];
+    }
+    
+    [self cleanup:nil];
+}
+
+- (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
+{
+    if ([self.actualDelegate respondsToSelector:@selector(connection:didSendBodyData:totalBytesWritten:totalBytesExpectedToWrite:)]) {
+        id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
+        [actual connection:connection didSendBodyData:bytesWritten totalBytesWritten:totalBytesWritten totalBytesExpectedToWrite:totalBytesExpectedToWrite];
+    }
+}
+
+- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse
+{
+    if ([self.actualDelegate respondsToSelector:@selector(connection:willSendRequest:redirectResponse:)]) {
+        id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
+        return [actual connection:connection willSendRequest:request redirectResponse:redirectResponse];
+    }
+    return request;
+}
+
+- (NSInputStream *)connection:(NSURLConnection *)connection needNewBodyStream:(NSURLRequest *)request
+{
+    if ([self.actualDelegate respondsToSelector:@selector(connection:needNewBodyStream:)]) {
+        id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
+        return [actual connection:connection needNewBodyStream:request];
+    }
+    return nil;
+}
+
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse
+{
+    if ([self.actualDelegate respondsToSelector:@selector(connection:willCacheResponse:)]) {
+        id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
+        return [actual connection:connection willCacheResponse:cachedResponse];
+    }
+    return cachedResponse;
+}
+
+@end
+
+@implementation NSURLConnection (Inspected)
+
+#pragma mark -
+#pragma mark Instance method swizzling
+
+- (id)inspected_initWithRequest:(NSURLRequest *)request delegate:(id < NSURLConnectionDelegate >)delegate
+{
+    InspectedConnectionDelegate *inspectedDelegate = [[InspectedConnectionDelegate alloc] initWithActualDelegate:delegate];
+    return [self inspected_initWithRequest:request delegate:inspectedDelegate];
+}
+
+- (id)inspected_initWithRequest:(NSURLRequest *)request delegate:(id < NSURLConnectionDelegate >)delegate startImmediately:(BOOL)startImmediately
+{
+    InspectedConnectionDelegate *inspectedDelegate = [[InspectedConnectionDelegate alloc] initWithActualDelegate:delegate];
+    return [self inspected_initWithRequest:request delegate:inspectedDelegate startImmediately:startImmediately];
+}
+
+// ------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Method swizzling magics.
++ (void) swizzleClassMethod:(SEL)from to:(SEL)to
+{
+    NSError *error = nil;
+    BOOL swizzled = [NSURLConnection jr_swizzleClassMethod:from withClassMethod:to error:&error];
+    if (!swizzled || error) {
+        NSLog(@"Failed in replacing method: %@", error);
+    }
+}
+
++ (void) swizzleMethod:(SEL)from to:(SEL)to
+{
+    NSError *error = nil;
+    BOOL swizzled = [NSURLConnection jr_swizzleMethod:from withMethod:to error:&error];
+    if (!swizzled || error) {
+        NSLog(@"Failed in replacing method: %@", error);
+    }
+}
+
++ (void) setupSwizzle
+{
+#define inspected_method(method) inspected_##method
+#define swizzle_method_wrap(method) [NSURLConnection swizzleMethod:@selector(method) to:@selector(inspected_method(method))]
+    
+    swizzle_method_wrap(initWithRequest:delegate:);
+    swizzle_method_wrap(initWithRequest:delegate:startImmediately:);
+    
+#undef swizzle_method_wrap
+#undef inspected_method
+}
+
+@end
+
+
+//@implementation NSURLRequest (UserAgentFix)
+//+ (void) swizzleMethod:(SEL)from to:(SEL)to
+//{
+//    NSError *error = nil;
+//    BOOL swizzled = [NSURLRequest jr_swizzleMethod:from withMethod:to error:&error];
+//    if (!swizzled || error) {
+//        NSLog(@"Failed in replacing method: %@", error);
+//    }
+//}
+//
+//
+//+(void)setupSwizzle
+//{
+//    [self swizzleMethod:@selector(initWithURL:cachePolicy:timeoutInterval:)
+//                     to:@selector(initWithURL2:cachePolicy:timeoutInterval:)];
+//}
+//-(id)initWithURL2:(NSURL *)URL cachePolicy:(NSURLRequestCachePolicy)cachePolicy timeoutInterval:(NSTimeInterval)timeoutInterval
+//{
+//    if ([AkylasGooglemapModule sharedInstance].offlineMode && [URL.absoluteString containsString:@"mmap"] || [URL.absoluteString containsString:@"geosdk"]) {
+////        URL = nil;
+//        cachePolicy = NSURLRequestReturnCacheDataDontLoad;
+//    }
+//
+//    self = [self initWithURL2:URL cachePolicy:cachePolicy timeoutInterval:timeoutInterval];
+//    
+//    return self;
+//}
+//@end
+
 @implementation NSBundle (GoogleMapsFix)
 
 + (void) swizzle
@@ -84,7 +311,9 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 -(void)startup
 {
     [NSBundle swizzle];
-	// this method is called when the module is first loaded
+//    [NSURLRequest setupSwizzle];
+    [NSURLConnection setupSwizzle];
+    // this method is called when the module is first loaded
 	// you *must* call the superclass
     CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.View", [AkylasGooglemapViewProxy class]);
     CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.Annotation", [AkylasGooglemapAnnotationProxy class]);
@@ -104,6 +333,10 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 //    [self replaceValue:value forKey:@"mapboxAccessToken" notification:NO];
 //}
 
+-(void)setOfflineMode:(BOOL)offlineMode
+{
+    [super setOfflineMode:offlineMode];
+}
 
 -(void)setGoogleMapAPIKey:(id)value
 {

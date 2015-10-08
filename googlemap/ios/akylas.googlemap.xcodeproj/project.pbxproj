@@ -88,6 +88,11 @@
 		D594D1A11AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D594D19F1AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.m */; };
 		D594D1A41AD5648800EA6005 /* AkylasGooglemapRouteProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D594D1A21AD5648800EA6005 /* AkylasGooglemapRouteProxy.h */; };
 		D594D1A51AD5648800EA6005 /* AkylasGooglemapRouteProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D594D1A31AD5648800EA6005 /* AkylasGooglemapRouteProxy.m */; };
+		D595C97E1BBC1F65007C552B /* CLLocation+measuring.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C9791BBC1F65007C552B /* CLLocation+measuring.h */; settings = {ASSET_TAGS = (); }; };
+		D595C97F1BBC1F65007C552B /* CLLocation+measuring.m in Sources */ = {isa = PBXBuildFile; fileRef = D595C97A1BBC1F65007C552B /* CLLocation+measuring.m */; settings = {ASSET_TAGS = (); }; };
+		D595C9801BBC1F65007C552B /* CLLocation+routeInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C97B1BBC1F65007C552B /* CLLocation+routeInfo.h */; settings = {ASSET_TAGS = (); }; };
+		D595C9811BBC1F65007C552B /* CLLocation+routeInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D595C97C1BBC1F65007C552B /* CLLocation+routeInfo.m */; settings = {ASSET_TAGS = (); }; };
+		D595C9821BBC1F65007C552B /* CLUtilsDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C97D1BBC1F65007C552B /* CLUtilsDefines.h */; settings = {ASSET_TAGS = (); }; };
 		D59988621AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D59988601AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h */; };
 		D59988631AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D59988611AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m */; };
 		D599F23E1AC933A400EB7A9B /* GoogleMaps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */; };
@@ -196,6 +201,11 @@
 		D594D19F1AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapAnnotationProxy.m; path = Classes/AkylasGooglemapAnnotationProxy.m; sourceTree = "<group>"; };
 		D594D1A21AD5648800EA6005 /* AkylasGooglemapRouteProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGooglemapRouteProxy.h; path = Classes/AkylasGooglemapRouteProxy.h; sourceTree = "<group>"; };
 		D594D1A31AD5648800EA6005 /* AkylasGooglemapRouteProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapRouteProxy.m; path = Classes/AkylasGooglemapRouteProxy.m; sourceTree = "<group>"; };
+		D595C9791BBC1F65007C552B /* CLLocation+measuring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CLLocation+measuring.h"; path = "Classes/common/CoreLocationUtils/CLLocation+measuring.h"; sourceTree = "<group>"; };
+		D595C97A1BBC1F65007C552B /* CLLocation+measuring.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "CLLocation+measuring.m"; path = "Classes/common/CoreLocationUtils/CLLocation+measuring.m"; sourceTree = "<group>"; };
+		D595C97B1BBC1F65007C552B /* CLLocation+routeInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CLLocation+routeInfo.h"; path = "Classes/common/CoreLocationUtils/CLLocation+routeInfo.h"; sourceTree = "<group>"; };
+		D595C97C1BBC1F65007C552B /* CLLocation+routeInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "CLLocation+routeInfo.m"; path = "Classes/common/CoreLocationUtils/CLLocation+routeInfo.m"; sourceTree = "<group>"; };
+		D595C97D1BBC1F65007C552B /* CLUtilsDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CLUtilsDefines.h; path = Classes/common/CoreLocationUtils/CLUtilsDefines.h; sourceTree = "<group>"; };
 		D59988601AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGooglemapTileSourceProxy.h; path = Classes/AkylasGooglemapTileSourceProxy.h; sourceTree = "<group>"; };
 		D59988611AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapTileSourceProxy.m; path = Classes/AkylasGooglemapTileSourceProxy.m; sourceTree = "<group>"; };
 		D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleMaps.framework; path = platform/GoogleMaps.framework; sourceTree = "<group>"; };
@@ -387,6 +397,7 @@
 		D594D17B1AD55FF300EA6005 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				D595C9781BBC1F5B007C552B /* CoreLocationUtils */,
 				D594D17C1AD5600700EA6005 /* AkylasMapBaseAnnotationProxy.h */,
 				D594D17D1AD5600700EA6005 /* AkylasMapBaseAnnotationProxy.m */,
 				D594D17E1AD5600700EA6005 /* AkylasMapBaseRouteProxy.h */,
@@ -410,6 +421,18 @@
 			name = common;
 			sourceTree = "<group>";
 		};
+		D595C9781BBC1F5B007C552B /* CoreLocationUtils */ = {
+			isa = PBXGroup;
+			children = (
+				D595C9791BBC1F65007C552B /* CLLocation+measuring.h */,
+				D595C97A1BBC1F65007C552B /* CLLocation+measuring.m */,
+				D595C97B1BBC1F65007C552B /* CLLocation+routeInfo.h */,
+				D595C97C1BBC1F65007C552B /* CLLocation+routeInfo.m */,
+				D595C97D1BBC1F65007C552B /* CLUtilsDefines.h */,
+			);
+			name = CoreLocationUtils;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -419,6 +442,7 @@
 			files = (
 				D5B4A8F91ACAD0FA003B8608 /* GoogleMaps.framework in Headers */,
 				D58FC1D71B63ED2A0080C88B /* GridBasedAlgorithm.h in Headers */,
+				D595C97E1BBC1F65007C552B /* CLLocation+measuring.h in Headers */,
 				D512CC3F1B8A028200C0E691 /* SMClassicCalloutView.h in Headers */,
 				D594D1A41AD5648800EA6005 /* AkylasGooglemapRouteProxy.h in Headers */,
 				D594D18B1AD5600700EA6005 /* AkylasMapBaseRouteProxy.h in Headers */,
@@ -428,11 +452,13 @@
 				D59988621AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h in Headers */,
 				D594D1731AD55FE300EA6005 /* AkylasGMSURLTileLayer.h in Headers */,
 				D594D1891AD5600700EA6005 /* AkylasMapBaseAnnotationProxy.h in Headers */,
+				D595C9801BBC1F65007C552B /* CLLocation+routeInfo.h in Headers */,
 				D5BD8AE31AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h in Headers */,
 				AA747D9F0F9514B9006C5449 /* akylas.googlemap_Prefix.pch in Headers */,
 				D512CC3D1B8A028200C0E691 /* SMCalloutView.h in Headers */,
 				D594D1A01AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.h in Headers */,
 				D594D1931AD5600700EA6005 /* ReusableViewProtocol.h in Headers */,
+				D595C9821BBC1F65007C552B /* CLUtilsDefines.h in Headers */,
 				D56F8F601B43DA3300570916 /* AkylasGooglemapClusterProxy.h in Headers */,
 				D56F8F581B43D8A900570916 /* AkylasGooglemapClusterRenderer.h in Headers */,
 				D594D1941AD5600700EA6005 /* ReusableViewProxy.h in Headers */,
@@ -569,6 +595,7 @@
 				D512CC3E1B8A028200C0E691 /* SMCalloutView.m in Sources */,
 				D513AA8B1B6774DE005448BF /* GClusterAlgorithm.m in Sources */,
 				D594D1741AD55FE300EA6005 /* AkylasGMSURLTileLayer.m in Sources */,
+				D595C97F1BBC1F65007C552B /* CLLocation+measuring.m in Sources */,
 				D594D19D1AD560EB00EA6005 /* AkylasMapBaseModule.m in Sources */,
 				D594D17A1AD55FE300EA6005 /* AkylasGooglemapViewProxy.m in Sources */,
 				D594D18E1AD5600700EA6005 /* AkylasMapBaseTileSourceProxy.m in Sources */,
@@ -586,6 +613,7 @@
 				D56F8F4C1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.m in Sources */,
 				D56F8F4D1B43D58800570916 /* SphericalMercatorProjection.h in Sources */,
 				D56F8F4E1B43D58800570916 /* SphericalMercatorProjection.m in Sources */,
+				D595C9811BBC1F65007C552B /* CLLocation+routeInfo.m in Sources */,
 				D56F8F4F1B43D58800570916 /* GQTBounds.h in Sources */,
 				D56F8F501B43D58800570916 /* GQTPoint.h in Sources */,
 				D56F8F511B43D58800570916 /* GQTPointQuadTree.h in Sources */,
