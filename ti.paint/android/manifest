@@ -2,18 +2,17 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2.0.2
+version: 1.0
 apiversion: 2
-architectures: armeabi armeabi-v7a x86
-description: Provides a paint surface user interface view.
-author: Fred Spencer
+description: Akylas GoogleMap module
+author: Martin Guillon
 license: Appcelerator Commercial License
 copyright: Copyright (c) 2010-2013 by Appcelerator, Inc.
-
+debug_project_subpath: ti.paint/android
 
 # these should not be edited
-name: paint
+name: ti-paint
 moduleid: ti.paint
 guid: de06ebe1-4ab9-44da-85e4-7409b24190eb
 platform: android
-minsdk: 3.2.2.GA
+minsdk: 4.1.0.AKYLAS
