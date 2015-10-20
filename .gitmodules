@@ -25,3 +25,6 @@
 [submodule "statusbarnotification/ios/CWStatusBarNotification"]
 	path = statusbarnotification/ios/CWStatusBarNotification
 	url = git@github.com:Akylas/CWStatusBarNotification.git
+[submodule "ti.paypal"]
+	path = ti.paypal
+	url = git@github.com:Akylas/ti.paypal.git
