@@ -13,10 +13,27 @@
 
 #import <sys/types.h>
 #import <sys/sysctl.h>
-
+#import <mach/mach.h>
+#import <mach/mach_host.h>
 #include <Availability.h>
 
+NSString *kCrashReportAnalyzerStarted = @"CrashReportAnalyzerStarted";		// flags if the crashlog analyzer is started. since this may crash we need to track it
+NSString *kLastRunMemoryWarningReached = @"LastRunMemoryWarningReached";	// is the last crash because of lowmemory warning?
+NSString *kLastStartupFreeMemory = @"LastStartupFreeMemory";							// the amount of memory available on startup on the run of the app the crash happened
+NSString *kLastShutdownFreeMemory = @"LastShutdownFreeMemory";						// the amount of memory available on shutdown on the run of the app the crash happened
+
+
 @implementation AkylasPlcrashreporterModule
+{
+    time_t _memoryWarningTimestamp;		// timestamp when memory warning appeared, we check on terminate if that timestamp is within a reasonable range to avoid false alarms
+    BOOL _memoryWarningReached;				// true if memory warning notification is run at least once
+    NSInteger _startupFreeMemory;						// amount of memory available at startup
+    NSInteger _lastStartupFreeMemory;				// free memory at the last startup run
+    
+    NSInteger	_crashReportAnalyzerStarted;	// flags if the crashlog analyzer is started. since this may crash we need to track it
+    NSInteger _shutdownFreeMemory;					// amount of memory available at shutdown
+    NSInteger _lastShutdownFreeMemory;			// free memory at the last shutdown run
+}
 
 #pragma mark Internal
 
@@ -32,16 +49,64 @@
 	return @"akylas.plcrashreporter";
 }
 
+- (void) getMemory:(BOOL)startup
+{
+    mach_port_t host_port;
+    mach_msg_type_number_t host_size;
+    vm_size_t pagesize;
+    
+    host_port = mach_host_self();
+    host_size = sizeof(vm_statistics_data_t) / sizeof(integer_t);
+    host_page_size(host_port, &pagesize);
+    
+    vm_statistics_data_t vm_stat;
+    
+    if (host_statistics(host_port, HOST_VM_INFO, (host_info_t)&vm_stat, &host_size) != KERN_SUCCESS)
+        NSLog(@"Failed to fetch vm statistics");
+    
+    natural_t mem_free = vm_stat.free_count * pagesize;
+    if (startup)
+        _startupFreeMemory = (mem_free / 1024 );
+    else
+        _shutdownFreeMemory = (mem_free / 1024 );
+}
+
+
+
 #pragma mark Lifecycle
 
 -(void)startup
 {
-    
+//    [self getMemory:YES];
+//    _memoryWarningTimestamp = 0;
+//    NSString *testValue = nil;
+//    testValue = [[NSUserDefaults standardUserDefaults] stringForKey:kLastStartupFreeMemory];
+//    if (testValue == nil)
+//    {
+//        _lastStartupFreeMemory = 0;
+//    } else {
+//        _lastStartupFreeMemory = [[NSNumber numberWithInteger:[[NSUserDefaults standardUserDefaults] integerForKey:kLastStartupFreeMemory]] integerValue];
+//    }
+//    
+//    testValue = nil;
+//    testValue = [[NSUserDefaults standardUserDefaults] stringForKey:kLastShutdownFreeMemory];
+//    if (testValue == nil)
+//    {
+//        _lastShutdownFreeMemory = 0;
+//    } else {
+//        _lastShutdownFreeMemory = [[NSNumber numberWithInteger:[[NSUserDefaults standardUserDefaults] integerForKey:kLastShutdownFreeMemory]] integerValue];
+//    }
 	[super startup];
 }
 
 -(void)shutdown:(id)sender
 {
+//    [self getMemory:NO];
+//    
+//    // save current memory
+//    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:_memoryWarningReached] forKey:kLastRunMemoryWarningReached];
+//    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:_startupFreeMemory] forKey:kLastStartupFreeMemory];
+//    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInteger:_shutdownFreeMemory] forKey:kLastShutdownFreeMemory];
 	[super shutdown:sender];
 }
 
