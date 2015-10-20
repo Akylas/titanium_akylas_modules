@@ -97,23 +97,11 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 //
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)aResponse
 {
-//    self.response = aResponse;
-    NSURL* url  =connection.originalRequest.URL;
-    if ([AkylasGooglemapModule sharedInstance].offlineMode && [url.absoluteString containsString:@"mmap"] || [url.absoluteString containsString:@"geosdk"]) {
-        //        URL = nil;
-//        cachePolicy = NSURLRequestReturnCacheDataDontLoad;
-        if ([self.actualDelegate respondsToSelector:@selector(connection:didFailWithError:)]) {
-            [self.actualDelegate connection:connection didFailWithError:[NSError errorWithDomain:NSURLErrorDomain
-                                                                                            code:NSURLErrorNetworkConnectionLost
-                                                                                        userInfo:nil]];
-        }
-    } else {
+
         if ([self.actualDelegate respondsToSelector:@selector(connection:didReceiveResponse:)]) {
             id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
             [actual connection:connection didReceiveResponse:aResponse];
         }
-
-    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -126,6 +114,7 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
+
     if ([self.actualDelegate respondsToSelector:@selector(connectionDidFinishLoading:)]) {
         id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
         [actual connectionDidFinishLoading:connection];
@@ -144,6 +133,10 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
 
 - (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse
 {
+    NSURL* url  =connection.originalRequest.URL;
+    if ([AkylasGooglemapModule sharedInstance].offlineMode && [url.absoluteString containsString:@"mmap"] || [url.absoluteString containsString:@"geosdk"]) {
+        return nil;
+    }
     if ([self.actualDelegate respondsToSelector:@selector(connection:willSendRequest:redirectResponse:)]) {
         id <NSURLConnectionDataDelegate> actual = (id <NSURLConnectionDataDelegate>)self.actualDelegate;
         return [actual connection:connection willSendRequest:request redirectResponse:redirectResponse];

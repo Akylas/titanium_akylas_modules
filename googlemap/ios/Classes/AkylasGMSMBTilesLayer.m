@@ -313,7 +313,7 @@
 
 - (void)didReceiveMemoryWarning
 {
-    NSLog(@"*** didReceiveMemoryWarning in %@", [self class]);
+//    NSLog(@"*** didReceiveMemoryWarning in %@", [self class]);
 }
 
 //- (NSString *)uniqueTilecacheKey

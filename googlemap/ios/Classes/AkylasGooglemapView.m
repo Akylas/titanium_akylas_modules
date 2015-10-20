@@ -1309,6 +1309,9 @@
         [event setObject:source forKey:@"clicksource"];
     }
     [event setObject:ourProxy forKey:@"map"];
+    [event setObject:@(_mpp) forKey:@"mpp"];
+    [event setObject:@(_internalZoom) forKey:@"zoom"];
+
     [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:_touchCoords]];
     [annotProxy fireEvent:type withObject:event propagate:propagate checkForListener:NO];
     return YES;
@@ -1325,6 +1328,8 @@
     if ([self.viewProxy _hasListeners:type checkParent:propagate]) {
         NSMutableDictionary *event = [TiUtils dictionaryFromPoint:[[map projection] pointForCoordinate:coordinate] inView:map];
         [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:coordinate]];
+        [event setObject:@(_mpp) forKey:@"mpp"];
+        [event setObject:@(_internalZoom) forKey:@"zoom"];
         [self.proxy fireEvent:type withObject:event propagate:NO checkForListener:propagate];
     }
 }

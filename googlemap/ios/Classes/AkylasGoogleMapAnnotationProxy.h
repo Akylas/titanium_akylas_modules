@@ -21,6 +21,7 @@
 
 +(int)gZIndexDelta;
 @property (nonatomic, readwrite, assign) BOOL appearAnimation;
+@property (nonatomic, readonly, assign, getter=isSelected) BOOL selected;
 
 -(GMSOverlay*)getGOverlayForMapView:(AkylasGMSMapView*)mapView;
 -(GMSOverlay*)gOverlay;

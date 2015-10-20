@@ -113,7 +113,7 @@
 
 +(int)gZIndexDelta {
     static int lastIndex = 30;
-    return lastIndex++;
+    return lastIndex;
 }
 
 -(void)onPointProcessed

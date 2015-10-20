@@ -154,7 +154,7 @@
 
 +(int)gZIndexDelta {
     static int lastIndex = 0;
-    return lastIndex++;
+    return lastIndex;
 }
 -(GMSTileLayer*)tileLayer
 {

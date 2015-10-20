@@ -59,7 +59,7 @@
 -(void)setColor:(id)value
 {
     [super setColor:value];
-    if (_gPoly != nil && !_selected && !_spans)  {
+    if (_gPoly != nil && (!_selected || !_selectedColor) && !_spans)  {
         TiThreadPerformBlockOnMainThread(^{
             _gPoly.spans = @[[GMSStyleSpan spanWithColor:_color]];
         }, NO);
@@ -185,7 +185,7 @@
 #pragma mark GoogleMap
 +(int)gZIndexDelta {
     static int lastIndex = 300;
-    return lastIndex++;
+    return lastIndex;
 }
 -(GMSMutablePath *) getGPath {
     if (_gPath == nil) {

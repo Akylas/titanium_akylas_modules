@@ -27,6 +27,7 @@
     AkylasGMSMarker* _gmarker;
     BOOL _selected;
 }
+@synthesize selected = _selected;
 
 -(void)dealloc
 {
@@ -362,6 +363,8 @@
                 [delegate showCalloutForOverlay:_gmarker];
             }, NO);
         }
+    } else {
+        [self hideInfo:nil];
     }
     
 }

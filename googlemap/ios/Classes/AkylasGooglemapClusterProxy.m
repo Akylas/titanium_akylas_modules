@@ -210,7 +210,7 @@ static NSInteger idIncrement = 0;
 
 +(int)gZIndexDelta {
     static int lastIndex = 0;
-    return lastIndex++;
+    return lastIndex;
 }
 
 
