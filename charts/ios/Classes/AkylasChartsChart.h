@@ -50,5 +50,6 @@
 
 -(CGPoint)viewPointFromGraphPoint:(CGPoint)point;
 -(void)notifyOfTouchEvent:(NSString*)type atPoint:(CGPoint)viewPoint;
+-(NSMutableDictionary*)eventDictAtPoint:(CGPoint)point onSpace:(CPTPlotSpace *)space;
 
 @end

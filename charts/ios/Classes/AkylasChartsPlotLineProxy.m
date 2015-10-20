@@ -6,6 +6,7 @@
 
 #import "AkylasChartsPlotLineProxy.h"
 #import "AkylasChartsChart.h"
+#import "AkylasChartsChartProxy.h"
 #import "AkylasChartsParsers.h"
 #import "TiUtils.h"
 
@@ -131,6 +132,33 @@ typedef enum AkylasChartsFillDirection {
     RELEASE_TO_NIL(highlightSymbol)
     [super dealloc];
 }
+
+-(void)select:(id)arg {
+    if (self.plot != nil) {
+        ENSURE_SINGLE_ARG(arg,NSNumber);
+        if (IS_OF_CLASS(self.plot, CPTScatterPlot)) {
+            [self.plot.delegate scatterPlot:(CPTScatterPlot*)self.plot plotSymbolWasSelectedAtRecordIndex:[arg intValue]];
+        }
+    }
+}
+
+-(id)getDataForIndex:(id)arg {
+    if (self.plot != nil) {
+        ENSURE_SINGLE_ARG(arg,NSNumber);
+        if (IS_OF_CLASS(self.plot, CPTScatterPlot)) {
+            double pts[2];
+            NSInteger index = [arg integerValue];
+            pts[CPTCoordinateX] = [[self numberForPlot:index forCoordinate:CPTCoordinateX] doubleValue];
+            pts[CPTCoordinateY] = [[self numberForPlot:index forCoordinate:CPTCoordinateY] doubleValue];
+            CGPoint plotPoint = [self.plot.plotSpace plotAreaViewPointForDoublePrecisionPlotPoint:pts numberOfCoordinates:2];
+            CGPoint graphPoint = [self.plot.plotArea convertPoint:plotPoint toLayer:self.plot.graph];
+            CGPoint viewPoint = [self viewPointFromGraphPoint:graphPoint];
+            NSMutableDictionary *evt = [(AkylasChartsChart*)((AkylasChartsChartProxy*)parent).view eventDictAtPoint:viewPoint onSpace:self.plot.graph.defaultPlotSpace];
+            return evt;
+        }
+    }
+}
+
 
 -(void)scatterPlot:(CPTScatterPlot*)plot plotSymbolWasSelectedAtRecordIndex:(NSUInteger)index
 {

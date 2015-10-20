@@ -89,15 +89,6 @@
     [super refreshPlotSpaces];
 }
 
--(CGPoint)viewPointFromGraphPoint:(CGPoint)point
-{
-    // Convert the point from the graph's coordinate system to the view. Note that the
-    // graph's coordinate system has (0,0) in the lower left hand corner and the
-    // view's coordinate system has (0,0) in the upper right hand corner
-    CGPoint viewPoint = [self.hostingView.hostedGraph convertPoint:point toLayer:self.hostingView.layer];
-    return viewPoint;
-}
-
 -(void)notifyOfTouchEvent:(NSString*)type atPoint:(CGPoint)viewPoint
 {
 	if ([self.proxy _hasListeners:type]) {

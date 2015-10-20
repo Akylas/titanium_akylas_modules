@@ -382,19 +382,6 @@
 	[self triggerDataUpdate];
 }
 
--(void)notifyOfDataClickedEvent:(NSUInteger)index
-{
-    if ([self _hasListeners:@"dataClicked" checkParent:NO]) {
-		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-                               NUMINTEGER(index),@"index",
-                               [self numberForPlot:index],@"value",
-                               plot.identifier,@"name",                                
-                               nil
-                               ];        
-		[self fireEvent:@"dataClicked" withObject:event propagate:NO checkForListener:NO];
-	}
-}
-
 -(CGPoint)viewPointFromGraphPoint:(CGPoint)point
 {
     CGPoint viewPoint = [(AkylasChartsChart*)((AkylasChartsChartProxy*)parent).view viewPointFromGraphPoint:point];
@@ -407,23 +394,36 @@
     // The point passed in is relative to the plot area.
     // - First convert from the plot area to the graph area.
     // - Then convert from the graph area to the chart view
-    CGPoint graphPoint = [self.plot.plotArea convertPoint:plotPoint toLayer:self.plot.graph];
-    CGPoint viewPoint = [self viewPointFromGraphPoint:graphPoint];
+    
+    BOOL hasDataClicked = [((AkylasChartsChartProxy*)parent) _hasListeners:@"click" checkParent:YES];
+    BOOL hasTouchEnd = [((AkylasChartsChartProxy*)parent) _hasListeners:@"touchend" checkParent:NO];
+    if (hasDataClicked || hasTouchEnd) {
+        CGPoint graphPoint = [self.plot.plotArea convertPoint:plotPoint toLayer:self.plot.graph];
+        CGPoint viewPoint = [self viewPointFromGraphPoint:graphPoint];
+        NSMutableDictionary *evt = [(AkylasChartsChart*)((AkylasChartsChartProxy*)parent).view eventDictAtPoint:viewPoint onSpace:self.plot.graph.defaultPlotSpace];
+        if (hasTouchEnd) {
+            [((AkylasChartsChartProxy*)parent) fireEvent:@"touchend" withObject:evt propagate:NO checkForListener:NO];
+        }
+        if (hasDataClicked) {
+            [((AkylasChartsChartProxy*)parent) fireEvent:@"click" withObject:evt propagate:YES checkForListener:NO];
+        }
+        
+    }
 
-    if ([self _hasListeners:@"dataClicked" checkParent:NO]) {
-		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-								  NUMINTEGER(index),@"index",
-							      [self numberForPlot:index],@"value",
-							      self.plot.identifier,@"name",
-                                  NUMINTEGER(viewPoint.x),@"x",
-                                  NUMINTEGER(viewPoint.y),@"y",
-								  nil
-							  ];        
-		[self fireEvent:@"dataClicked" withObject:event propagate:NO checkForListener:NO];
-	}
-
-	// Since dataClicked events override the touchstart event we should generate one
-	[(AkylasChartsChart*)((AkylasChartsChartProxy*)parent).view notifyOfTouchEvent:@"touchstart" atPoint:viewPoint];
+//    if ([self _hasListeners:@"dataClicked" checkParent:NO]) {
+//		NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
+//								  NUMINTEGER(index),@"index",
+//							      [self numberForPlot:index],@"value",
+//							      self.plot.identifier,@"name",
+//                                  NUMINTEGER(viewPoint.x),@"x",
+//                                  NUMINTEGER(viewPoint.y),@"y",
+//								  nil
+//							  ];        
+//		[self fireEvent:@"dataClicked" withObject:event propagate:NO checkForListener:NO];
+//	}
+//
+//	// Since dataClicked events override the touchstart event we should generate one
+//	[(AkylasChartsChart*)((AkylasChartsChartProxy*)parent).view notifyOfTouchEvent:@"touchstart" atPoint:viewPoint];
 }
 
 //-(void)propertyChanged:(NSString*)key oldValue:(id)oldValue newValue:(id)newValue proxy:(TiProxy*)proxy

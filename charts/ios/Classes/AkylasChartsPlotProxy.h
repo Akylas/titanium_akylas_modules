@@ -44,7 +44,6 @@
 -(NSArray*)numbersForPlotRange:(NSRange)indexRange forCoordinate:(CPTCoordinate)coordinate;
 -(NSUInteger)numberOfRecordsForPlot:(CPTPlot *)plot;
 -(void)refreshData;
--(void)notifyOfDataClickedEvent:(NSUInteger)index;
 -(void)notifyOfDataClickedEvent:(NSUInteger)index atPlotPoint:(CGPoint)plotPoint;
 -(CGPoint)viewPointFromGraphPoint:(CGPoint)point;
 

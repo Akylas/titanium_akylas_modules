@@ -18,6 +18,4 @@
     float               minYValue;
     float               maxYValue;
 }
--(CGPoint)viewPointFromGraphPoint:(CGPoint)point;
--(void)notifyOfTouchEvent:(NSString*)name atPoint:(CGPoint)viewPoint;
 @end
