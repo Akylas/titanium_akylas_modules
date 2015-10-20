@@ -178,6 +178,16 @@
     [super resignFocus];
 }
 
+
+-(BOOL)containsChild:(TiProxy*)child
+{
+    MMDrawerSide side = [self _controller].openSide;
+    return [super containsChild:child] ||
+    (side == MMDrawerSideNone && [[self holdedProxyForKey:@"centerView"] containsChild:child]) ||
+    (side == MMDrawerSideLeft && [[self holdedProxyForKey:@"leftView"] containsChild:child]) ||
+    (side == MMDrawerSideRight && [[self holdedProxyForKey:@"rightView"] containsChild:child]);
+}
+
 -(TiProxy *)topWindow
 {
     UIViewController* topVC = [[self _controller] centerViewController];
