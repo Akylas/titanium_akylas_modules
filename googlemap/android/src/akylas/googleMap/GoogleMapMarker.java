@@ -44,8 +44,8 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             if (imageBlob != null) {
                 Bitmap image = ((TiBlob) imageBlob).getImage();
                 if (image != null) {
-                    markerOptions.icon(BitmapDescriptorFactory
-                            .fromBitmap(image));
+                    markerOptions
+                            .icon(BitmapDescriptorFactory.fromBitmap(image));
                     setIconImageHeight(image.getHeight());
                     return;
                 }
@@ -72,7 +72,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     public int getIconImageHeight() {
         return iconImageHeight;
     }
-    
+
     protected void handleSetImage(Bitmap bitmap) {
         if (bitmap == null) {
             setIconImageHeight(-1);
@@ -87,50 +87,61 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             marker.setIcon(icon);
             invalidate();
         }
-        
     };
 
+    @Override
+    public void setMarkerColor(int color) {
+        if (color != -1 && marker != null) {
+            float[] hsv = new float[3];
+            Color.colorToHSV(color, hsv);
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(hsv[0]));
+        }
+    }
 
     public MarkerOptions getMarkerOptions() {
         if (markerOptions == null) {
-            
+
             markerOptions = new MarkerOptions()
-                .position((LatLng) proxy.getPosition())
-                .rotation(proxy.heading)
-                .title(proxy.getTitle())
-                .snippet(proxy.getSubtitle())
-                .draggable(proxy.getDraggable())
-                .visible(proxy.visible)
-                .flat(proxy.getFlat());
-            
-//            if (bitmap != null) {
-//            } else {
-                int color = proxy.getPinColor();
+                    .position((LatLng) proxy.getPosition())
+                    .rotation(proxy.heading).title(proxy.annoTitle)
+                    .snippet(proxy.annoSubtitle).draggable(proxy.draggable)
+                    .flat(proxy.flat);
+
+            markerOptions.alpha(proxy.opacity);
+            if (proxy.opacity == 0) {
+                markerOptions.visible(false);
+            } else {
+                markerOptions.visible(proxy.visible);
+            }
+            // if (bitmap != null) {
+            // } else {
+            if (getImage() == null) {
+                int color = proxy.tintColor;
                 if (color != -1) {
                     float[] hsv = new float[3];
                     Color.colorToHSV(color, hsv);
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(hsv[0]));
+                    markerOptions.icon(
+                            BitmapDescriptorFactory.defaultMarker(hsv[0]));
                 }
-                getImage();
-//            }
-            
-            if (proxy.getAnchor() != null) {
-                PointF anchor = proxy.getAnchor();
+            }
+            // }
+
+            if (proxy.anchor != null) {
+                PointF anchor = proxy.anchor;
                 markerOptions.anchor(anchor.x, anchor.y);
             }
-            if (proxy.getCalloutAnchor() != null) {
-                PointF anchor = proxy.getCalloutAnchor();
+            if (proxy.calloutAnchor != null) {
+                PointF anchor = proxy.calloutAnchor;
                 markerOptions.infoWindowAnchor(anchor.x, anchor.y);
             }
         }
-        
-        
+
         KrollDict dict = proxy.getProperties();
         // customView, image and pincolor must be defined before adding to
         // mapview. Once added, their values are final.
-//        if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
-//            handleCustomView(dict.get(AkylasMapModule.PROPERTY_CUSTOM_VIEW));
-//        } else 
+        // if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
+        // handleCustomView(dict.get(AkylasMapModule.PROPERTY_CUSTOM_VIEW));
+        // } else
         return markerOptions;
     }
 
@@ -149,6 +160,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     public void removeFromMap() {
         if (marker != null) {
             marker.remove();
+            marker = null;
         }
     }
 
@@ -174,6 +186,9 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     }
 
     public void showInfoWindow() {
+        if (marker == null) {
+            return;
+        }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
                 if (marker != null) {
@@ -184,6 +199,9 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     }
 
     public void hideInfoWindow() {
+        if (marker == null) {
+            return;
+        }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
                 if (marker != null) {
@@ -195,25 +213,22 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             }
         });
     }
-    
+
     public void runInUiThread(final CommandNoReturn command) {
         if (marker != null) {
             super.runInUiThread(command);
         }
     }
-    
-    
 
     @Override
     public void setPosition(final LatLng point) {
-        if (point == null) 
-        {
+        if (point == null) {
             return;
         }
+        if (markerOptions != null) {
+            markerOptions.position(point);
+        }
         if (marker == null) {
-            if (markerOptions != null) {
-                markerOptions.position(point);
-            }
             return;
         }
         final long duration = proxy.animationDuration();
@@ -225,23 +240,32 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
                 }
             }
         });
-        
+
     }
-    
+
     @Override
     public void setVisible(final boolean visible) {
+        if (markerOptions != null) {
+            markerOptions.visible(visible);
+        }
+        if (marker == null) {
+            return;
+        }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
                 marker.setVisible(visible);
             }
         });
-        if (markerOptions != null) {
-            markerOptions.visible(visible);
-        }
     }
-    
+
     @Override
     public void setHeading(final float heading) {
+        if (markerOptions != null) {
+            markerOptions.rotation(heading);
+        }
+        if (marker == null) {
+            return;
+        }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
                 GoogleMapView mapView = (GoogleMapView) proxy.getMapView();
@@ -250,45 +274,56 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
                 }
             }
         });
-        if (markerOptions != null) {
-            markerOptions.rotation(heading);
-        }
+
     }
-    
+
     public void setAlpha(final float alpha) {
+        if (markerOptions != null) {
+            markerOptions.alpha(alpha);
+        }
+        if (marker == null) {
+            return;
+        }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
                 marker.setAlpha(alpha);
             }
         });
-        
-        if (markerOptions != null) {
-            markerOptions.alpha(alpha);
-        }
     }
-    
+
     @Override
     public void setDraggable(final boolean draggable) {
-        if (marker != null) {
-            marker.setDraggable(draggable);
-        }
         if (markerOptions != null) {
             markerOptions.draggable(draggable);
         }
+        if (marker != null) {
+            runInUiThread(new CommandNoReturn() {
+                public void execute() {
+                    marker.setDraggable(draggable);
+                }
+            });
+        }
     }
-    
+
     @Override
     public void setFlat(final boolean flat) {
-        if (marker != null) {
-            marker.setFlat(flat);
-        }
         if (markerOptions != null) {
             markerOptions.flat(flat);
+        }
+        if (marker != null) {
+            runInUiThread(new CommandNoReturn() {
+                public void execute() {
+                    marker.setFlat(flat);
+                }
+            });
         }
     }
 
     @Override
     public void invalidate() {
+        if (marker == null) {
+            return;
+        }
         final boolean oldVisible = marker.isVisible();
         runInUiThread(new CommandNoReturn() {
             public void execute() {
@@ -300,31 +335,35 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
 
     @Override
     public void setAnchor(PointF anchor) {
-        final float anchorX = (anchor != null)?anchor.x:0.5f;
-        final float anchorY = (anchor != null)?anchor.y:1.0f;
+        final float anchorX = (anchor != null) ? anchor.x : 0.5f;
+        final float anchorY = (anchor != null) ? anchor.y : 1.0f;
+        if (markerOptions != null) {
+            markerOptions.anchor(anchorX, anchorY);
+        }
+        if (marker == null) {
+            return;
+        }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
                 marker.setAnchor(anchorX, anchorY);
             }
         });
-        if (markerOptions != null) {
-            markerOptions.anchor(anchorX, anchorY);
-        }
     }
 
     @Override
     public void setWindowAnchor(PointF anchor) {
-        final float anchorX = (anchor != null)?anchor.x:0.5f;
-        final float anchorY = (anchor != null)?anchor.y:1.0f;
+        final float anchorX = (anchor != null) ? anchor.x : 0.5f;
+        final float anchorY = (anchor != null) ? anchor.y : 1.0f;
+        if (markerOptions != null) {
+            markerOptions.infoWindowAnchor(anchorX, anchorY);
+        }
+        if (marker == null) {
+            return;
+        }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
                 marker.setInfoWindowAnchor(anchorX, anchorY);
             }
         });
-        if (markerOptions != null) {
-            markerOptions.infoWindowAnchor(anchorX, anchorY);
-        }
     }
-
-
 }

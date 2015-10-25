@@ -7,15 +7,25 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiUIView;
+
+
 import org.appcelerator.titanium.TiC;
 
+import akylas.map.common.AkylasMapBaseModule;
 import akylas.map.common.MapDefaultViewProxy;
 import android.app.Activity;
 import android.os.Message;
 
 @Kroll.proxy(creatableInModule = AkylasGooglemapModule.class, propertyAccessors = {
-    TiC.PROPERTY_PADDING,
-    TiC.PROPERTY_MAP_TYPE
+        AkylasMapBaseModule.PROPERTY_TRAFFIC,
+        AkylasMapBaseModule.PROPERTY_USER_LOCATION_BUTTON,
+        AkylasMapBaseModule.PROPERTY_COMPASS_ENABLED,
+        AkylasMapBaseModule.PROPERTY_TOOLBAR_ENABLED,
+        AkylasMapBaseModule.PROPERTY_ZOOM_CONTROLS_ENABLED,
+        AkylasMapBaseModule.PROPERTY_BUILDINGS_ENABLED,
+        AkylasMapBaseModule.PROPERTY_INDOOR_ENABLED,
+        AkylasMapBaseModule.PROPERTY_INDOOR_CONTROLS_ENABLED,
+        TiC.PROPERTY_PADDING,
 })
 public class ViewProxy extends MapDefaultViewProxy {
     private static final String TAG = "GoogleMapViewProxy";
@@ -28,6 +38,25 @@ public class ViewProxy extends MapDefaultViewProxy {
         super();
     }
     
+//    @Override
+//    public void setActivity(Activity activity)
+//    {
+//        if (this.activity != null) {
+//            TiBaseActivity tiActivity = (TiBaseActivity) this.activity.get();
+//            if (tiActivity != null) {
+//                tiActivity.removeOnLifecycleEventListener(this);
+//                tiActivity.removeOnInstanceStateEventListener(this);
+//            }
+//        }
+//        super.setActivity(activity);
+//        if (this.activity != null) {
+//            TiBaseActivity tiActivity = (TiBaseActivity) this.activity.get();
+//            if (tiActivity != null) {
+//                tiActivity.addOnLifecycleEventListener(this);
+//                tiActivity.addOnInstanceStateEventListener(this);
+//            }
+//        }
+//    }
     @Override
     public String getApiName() {
         return "Akylas.GoogleMap.View";
@@ -112,4 +141,55 @@ public class ViewProxy extends MapDefaultViewProxy {
             applyProperties(value);
         }
     }
+    
+//    private MapView getMapView() {
+//        if (view != null) {
+//            return ((GoogleMapView)view).getMapView();
+//        }
+//        return null;
+//    }
+//
+//    @Override
+//    public void onDestroy(Activity activity) {
+//        MapView mapView = getMapView();
+//        if (mapView != null) {
+//            mapView.onDestroy();
+//        }
+//    }
+//
+//    @Override
+//    public void onPause(Activity activity) {
+//         MapView mapView = getMapView();
+//        if (mapView != null) {
+//            mapView.onPause();
+//        }
+//    }
+//
+//    @Override
+//    public void onResume(Activity activity) {
+//        MapView mapView = getMapView();
+//        if (mapView != null) {
+//            mapView.onResume();
+//        }
+//    }
+//    
+//    @Override
+//    public void onLowMemory(Activity activity) {
+//        MapView mapView = getMapView();
+//        if (mapView != null) {
+//            mapView.onLowMemory();
+//        }
+//    }
+//
+//    @Override
+//    public void onSaveInstanceState(Bundle bundle) {
+//        MapView mapView = getMapView();
+//        if (mapView != null) {
+//            mapView.onSaveInstanceState(bundle);
+//        }
+//    }
+
+//    @Override
+//    public void onRestoreInstanceState(Bundle bundle) {        
+//    }
 }

@@ -192,6 +192,7 @@ public class AkylasGooglemapModule extends
         map.put("Akylas.Googlemap.Annotation", AnnotationProxy.class.getName());
         map.put("Akylas.Googlemap.Route", RouteProxy.class.getName());
         map.put("Akylas.Googlemap.TileSource", TileSourceProxy.class.getName());
+        map.put("Akylas.Googlemap.Cluster", ClusterProxy.class.getName());
         APIMap.addMapping(map);
     }
     
