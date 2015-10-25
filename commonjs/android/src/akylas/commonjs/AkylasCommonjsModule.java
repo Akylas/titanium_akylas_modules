@@ -87,7 +87,7 @@ public class AkylasCommonjsModule extends KrollModule
              TiApplication.getAppRootOrCurrentActivity().finish();
              System.exit(0);
 	        }
-	    }, 10000);
+	    }, 20000);
 	}
 
 	@Kroll.onAppCreate
@@ -111,7 +111,6 @@ public class AkylasCommonjsModule extends KrollModule
             showError("You need to set the \"akylas.commonjs.key\"");
             return;
         }
-        
         String result;
         try {
             result = AeSimpleSHA1.SHA1(String.format("%s%s",  appId, AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f")));
