@@ -27,6 +27,7 @@ import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUIView;
 import org.appcelerator.titanium.view.TiCompositeLayout.LayoutArrangement;
+import org.appcelerator.titanium.view.TiCompositeLayout.LayoutParams;
 
 import akylas.shapes.ShapeProxy.PRoundRect;
 import android.app.Activity;
@@ -74,6 +75,8 @@ public class ShapeViewProxy extends TiViewProxy {
 
 		public TiShapeView(final TiViewProxy proxy, Activity activity) {
 			super(proxy);
+			layoutParams.sizeOrFillWidthEnabled = true;
+			layoutParams.sizeOrFillHeightEnabled = true;
 			layoutParams.autoFillsHeight = true;
 			layoutParams.autoFillsWidth = true;
 			nativeViewBounds = new Rect();
@@ -184,7 +187,6 @@ public class ShapeViewProxy extends TiViewProxy {
 
 	@Override
 	public TiUIView createView(Activity activity) {
-		
 		return new TiShapeView(this, activity);
 	}
 

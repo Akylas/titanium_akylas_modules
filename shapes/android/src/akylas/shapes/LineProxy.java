@@ -145,8 +145,8 @@ public class LineProxy extends ArcProxy{
 		
 		if (animOptions.containsKey(AkylasShapesModule.PROPERTY_POINTS)) {
 			
-			int width = parentBounds.width();
-			int height = parentBounds.height();
+			int width = currentBounds.width();
+			int height = currentBounds.height();
 			
 			ArrayList<BezierPoint> realPoints = getRealPointsFromObject((Object[]) animOptions.get(AkylasShapesModule.PROPERTY_POINTS), width, height);
 			BezierPointsEvaluator evaluator =  new BezierPointsEvaluator();

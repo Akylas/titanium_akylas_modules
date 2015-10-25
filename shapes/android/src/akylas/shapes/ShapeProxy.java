@@ -423,6 +423,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		fillPaint = null;
 		linePaint = null;
 		path = new Path();
+        path.setFillType(FillType.EVEN_ODD);
 		currentRegion = new Region();
 		this.center = new TiPoint(0,0);
 		this.radius = getDefaultRadius();
@@ -666,10 +667,17 @@ public class ShapeProxy extends AnimatableReusableProxy {
 			path.transform(matrix);
 		}
 		synchronized (paintLock) {
-			path.setFillType(fillInversed?FillType.INVERSE_EVEN_ODD:FillType.EVEN_ODD);
-			drawPathWithPaint(path, fillPaint, canvas, AkylasShapesModule.PROPERTY_FILL_SHADOW, fillOpacity);
-			path.setFillType(lineInversed?FillType.INVERSE_EVEN_ODD:FillType.EVEN_ODD);
-			drawPathWithPaint(path, linePaint, canvas, AkylasShapesModule.PROPERTY_LINE_SHADOW, lineOpacity);
+		    Path inversedPath = null;
+		    if (fillInversed || lineInversed) {
+		        inversedPath = new Path();
+		        inversedPath.addRect(0, 0, currentBounds.width(), currentBounds.height(), Direction.CCW);
+		        inversedPath.addPath(path);
+		    }
+			drawPathWithPaint(fillInversed?inversedPath:path, fillPaint, canvas, AkylasShapesModule.PROPERTY_FILL_SHADOW, fillOpacity);
+			drawPathWithPaint(lineInversed?inversedPath:path, linePaint, canvas, AkylasShapesModule.PROPERTY_LINE_SHADOW, lineOpacity);
+			if (inversedPath != null) {
+			    inversedPath = null;
+			}
 		}
 		canvas.save();
 		canvas.translate(currentPathBounds.left, currentPathBounds.top);
