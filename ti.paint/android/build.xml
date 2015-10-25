@@ -1,4 +1,4 @@
-<project name="akylas-googlemap" default="dist">
+<project name="ti-paint" default="dist">
 	<description>
 		Ant build script for Titanium Android module akylas-googlemap
 	</description>
