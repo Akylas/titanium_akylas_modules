@@ -37,5 +37,4 @@
 -(GMSMarker*)createClusterMarker:(id <GCluster>)cluster;
 -(void)cluster;
 -(id)visibleAnnotations;
--(id)visibleAnnotations;
 @end

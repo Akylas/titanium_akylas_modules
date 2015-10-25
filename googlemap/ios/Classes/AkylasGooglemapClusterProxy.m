@@ -67,7 +67,6 @@ static NSInteger idIncrement = 0;
     CGFloat _selectedStrokeWidth;
     UIColor *_selectedColor;
     UIColor *_selectedStrokeColor;
-    UIColor *_selectedTintColor;
     
 }
 @synthesize maxDistance;
@@ -82,7 +81,6 @@ static NSInteger idIncrement = 0;
     RELEASE_TO_NIL(_strokeColor)
     RELEASE_TO_NIL(_font)
     
-    RELEASE_TO_NIL(_selectedTintColor)
     RELEASE_TO_NIL(_selectedColor)
     RELEASE_TO_NIL(_selectedStrokeColor)
     RELEASE_TO_NIL(_selectedFont)
@@ -101,7 +99,6 @@ static NSInteger idIncrement = 0;
     _strokeColor = nil;
     _selectedColor = nil;
     _selectedStrokeColor = nil;
-    _selectedTintColor = nil;
     _selectedFont = nil;
     [super _configure];
 }
@@ -287,16 +284,6 @@ static NSInteger idIncrement = 0;
 }
 
 
--(void)setSelectedTintColor:(id)color
-{
-    RELEASE_TO_NIL(_selectedTintColor)
-    [self replaceValue:color forKey:@"selectedTintColor" notification:NO];
-    _selectedTintColor = [[[TiUtils colorValue:color] _color] retain];
-}
-
--(id)selectedTintColor {
-    return [self valueForUndefinedKey:@"selectedTintColor"];
-}
 
 
 -(void)setColor:(id)color
@@ -385,7 +372,10 @@ static NSInteger idIncrement = 0;
         
         ctx = UIGraphicsGetCurrentContext();
         
-        UIColor* tintColor = (selected && _selectedTintColor) ? _selectedTintColor : [self nGetTintColor];
+        UIColor* tintColor = (selected?[self nGetSelectedTintColor]:nil);
+        if (!tintColor) {
+            tintColor =[self nGetTintColor];
+        }
         if (tintColor) {
             [tintColor setFill];
         }
@@ -438,7 +428,7 @@ static NSInteger idIncrement = 0;
         theMarker.selected =(_internalSelectedImage ||
                           _selectedFont ||
                           _selectedStrokeColor ||
-                          _selectedTintColor ||
+                          [self nGetSelectedTintColor] ||
                           _selectedColor ||
                           (_selectedShowText != _showText) ||
                           (_strokeWidth != _selectedStrokeWidth));
