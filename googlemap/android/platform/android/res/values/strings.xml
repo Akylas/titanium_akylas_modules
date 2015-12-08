@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="toolTipTitle">Title</string>
-    <string name="toolTipDescription">Description</string>
-    <string name="toolTipAddress">Address</string>
-    <item name="mapboxAndroidSDKVersion" type="string">0.7.3-SNAPSHOT</item>
-</resources>
