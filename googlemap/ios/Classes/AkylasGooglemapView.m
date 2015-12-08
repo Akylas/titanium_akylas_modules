@@ -989,6 +989,7 @@
         
         
         // Apply the desired calloutOffset (from the top-middle of the view)
+        CGPoint anchorOffset = [annProxy nGetAnchorPoint];
         CGPoint calloutOffset = [annProxy nGetCalloutAnchorPoint];
         CLLocationCoordinate2D coords = [annProxy coordinate];
         CGSize size = CGSizeZero;
@@ -998,8 +999,8 @@
         if (CGSizeEqualToSize(size, CGSizeZero)) {
             size = [annProxy getSize];
         }
-        calloutOffset.x *= size.width;
-        calloutOffset.y *= -size.height;
+        calloutOffset.x = (calloutOffset.x - anchorOffset.x) * size.width;
+        calloutOffset.y = (calloutOffset.y - anchorOffset.y) * size.height;
         
         _calloutView.overlay = overlay;
         // apply the MKAnnotationView's basic properties
@@ -1521,6 +1522,7 @@
         if (overlay != nil) {
             AkylasMapBaseAnnotationProxy *annProxy = ([overlay respondsToSelector:@selector(userData)])? [(id)overlay userData]: nil;
 
+            CGPoint anchorOffset = [annProxy nGetAnchorPoint];
             CGPoint calloutOffset = [annProxy nGetCalloutAnchorPoint];
             CLLocationCoordinate2D coords = [annProxy coordinate];
             CGSize size = CGSizeZero;
@@ -1530,8 +1532,8 @@
             if (CGSizeEqualToSize(size, CGSizeZero)) {
                 size = [annProxy getSize];
             }
-            calloutOffset.x *= size.width;
-            calloutOffset.y *= -size.height;
+            calloutOffset.x = (calloutOffset.x - anchorOffset.x) * size.width;
+            calloutOffset.y = (calloutOffset.y - anchorOffset.y) * size.height;
             
             //        _calloutView.calloutOffset = calloutOffset;
             

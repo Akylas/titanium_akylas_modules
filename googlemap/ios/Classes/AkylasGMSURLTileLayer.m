@@ -171,12 +171,12 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
         } else if (!error) {
             image = [UIImage imageWithData:data];
             //https://c.tile.openstreetmap.org/13/4226/2940.png
-            //            if (zoom == 13 && x == 4226 && y == 2940) {
-            //                NSString* filePath = @"/Volumes/data/dev/titanium/Akylas/akylas.mapme/Resources/images/tilesnew";
-            //                filePath = [filePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png", self.cacheKey]];
-            //                NSData *imageData = UIImagePNGRepresentation(image);
-            //                [imageData writeToFile:filePath atomically:YES];
-            //            }
+//            if (zoom == 13 && x == 4226 && y == 2940) {
+//                NSString* filePath = @"/Volumes/data/dev/titanium/Akylas/akylas.mapme/Resources/images/tilesnew";
+//                filePath = [filePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png", self.cacheKey]];
+//                NSData *imageData = UIImagePNGRepresentation(image);
+//                [imageData writeToFile:filePath atomically:YES];
+//            }
             if (image && self.cacheable && [self.map isKindOfClass:[AkylasGMSMapView class]]) {
                 TiCache* cache = ((AkylasGMSMapView*)self.map).tileCache;
                 [cache addImage:image forKey:key withCacheKey:[self cacheKey]];
