@@ -23,8 +23,8 @@ import android.os.Build;
 
 import com.androidplot.pie.Segment;
 import com.androidplot.pie.SegmentFormatter;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ObjectAnimator;
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 
 @Kroll.proxy(creatableInModule = AkylasChartsModule.class, propertyAccessors={
     TiC.PROPERTY_NAME,
@@ -126,9 +126,9 @@ public class PieSegmentProxy extends AnimatableReusableProxy{
 	@SuppressWarnings("rawtypes")
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
-	protected void prepareAnimatorSet(TiAnimatorSet tiSet, List<Animator> list, List<Animator> listReverse,
-            HashMap options) {
-	    super.prepareAnimatorSet(tiSet, list, listReverse, options);
+	protected void prepareAnimatorSet(TiAnimatorSet tiSet, List<Animator> list, List<Animator> listReverse) {
+	    super.prepareAnimatorSet(tiSet, list, listReverse);
+        HashMap options = tiSet.getToOptions();
 		if (options.containsKey(TiC.PROPERTY_VALUE)) {
 			ObjectAnimator anim = ObjectAnimator.ofInt(this, TiC.PROPERTY_VALUE, TiConvert.toInt(options.get(TiC.PROPERTY_VALUE)));
 			list.add(anim);

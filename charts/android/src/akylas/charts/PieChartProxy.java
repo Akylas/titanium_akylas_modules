@@ -1,12 +1,14 @@
 package akylas.charts;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiUIView;
 
 import android.app.Activity;
@@ -69,7 +71,7 @@ public class PieChartProxy extends ChartProxy {
 		}
 
 		@Override
-        protected void handleProperties(KrollDict d, final boolean changed) {
+        protected void handleProperties(HashMap d, final boolean changed) {
             super.handleProperties(d, changed);
 
 //			Context context = plotView.getContext();
@@ -80,10 +82,10 @@ public class PieChartProxy extends ChartProxy {
 				render.setDonutSize(size, PieRenderer.DonutMode.PIXELS);
 			}
 			if (d.containsKey("startAngle")) {
-				render.setStartDeg(-90 + d.getFloat("startAngle"));
+				render.setStartDeg(-90 +TiConvert.toFloat(d, "startAngle"));
 			}
 			if (d.containsKey("endAngle")) {
-				render.setEndDeg(-90 + d.getFloat("endAngle"));
+				render.setEndDeg(-90 + TiConvert.toFloat(d, "endAngle"));
 			}
 		}
 
@@ -130,12 +132,6 @@ public class PieChartProxy extends ChartProxy {
 		view.getLayoutParams().autoFillsWidth = true;
 		return view;
 	}
-
-	// Handle creation options
-//	@Override
-//	public void handleCreationDict(KrollDict options) {
-//		super.handleCreationDict(options);
-//	}
 
 	@Kroll.method
 	public void add(Object segment) {

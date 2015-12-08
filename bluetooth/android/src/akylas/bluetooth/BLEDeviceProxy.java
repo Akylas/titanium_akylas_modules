@@ -8,6 +8,7 @@ package akylas.bluetooth;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
@@ -100,7 +101,9 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
         super.invokeBoundService();
     }
 
-    public void handleCreationDict(KrollDict dict) {
+    @Override
+    public void handleCreationDict(HashMap dict)
+    {
         setParentForBubbling(AkylasBluetoothModule.getInstance());
         super.handleCreationDict(dict);
         mMacAdress = TiConvert.toString(dict, "identifier", null);

@@ -20,8 +20,8 @@ import android.graphics.Paint;
 import com.androidplot.xy.ValueMarker;
 import com.androidplot.xy.XValueMarker;
 import com.androidplot.xy.YValueMarker;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ObjectAnimator;
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 
 @Kroll.proxy(creatableInModule = AkylasChartsModule.class, propertyAccessors = { TiC.PROPERTY_VALUE })
 @SuppressWarnings("rawtypes")
@@ -52,8 +52,9 @@ public class MarkerProxy extends AnimatableReusableProxy {
 
     @Override
     protected void prepareAnimatorSet(TiAnimatorSet tiSet, List<Animator> list,
-            List<Animator> listReverse, HashMap options) {
-        super.prepareAnimatorSet(tiSet, list, listReverse, options);
+            List<Animator> listReverse) {
+        super.prepareAnimatorSet(tiSet, list, listReverse);
+        HashMap options = tiSet.getToOptions();
         if (options.containsKey(TiC.PROPERTY_VALUE)) {
             ObjectAnimator anim = ObjectAnimator.ofInt(this,
                     TiC.PROPERTY_VALUE,
@@ -63,12 +64,11 @@ public class MarkerProxy extends AnimatableReusableProxy {
     }
 
     @Override
-    public void handleCreationDict(KrollDict properties) {
-        Log.d(TAG, properties.toString());
-        int type = properties.optInt(TiC.PROPERTY_TYPE, 0);
-        mMarker = (type == 1) ? new XValueMarker(0, properties.optString(
+    public void handleCreationDict(HashMap properties) {
+        int type = TiConvert.toInt(properties, TiC.PROPERTY_TYPE, 0);
+        mMarker = (type == 1) ? new XValueMarker(0, TiConvert.toString(properties,
                 TiC.PROPERTY_TITLE, null)) : new YValueMarker(0,
-                properties.optString(TiC.PROPERTY_TITLE, null));
+                        TiConvert.toString(properties, TiC.PROPERTY_TITLE, null));
         mPaint = mMarker.getLinePaint();
         super.handleCreationDict(properties);
     }

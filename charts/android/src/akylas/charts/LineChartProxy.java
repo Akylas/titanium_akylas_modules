@@ -333,7 +333,8 @@ public class LineChartProxy extends ChartProxy {
 	            HashMap currentOptions = TiConvert.toHashMap(oldValue);
                 KrollDict axisOptions = TiConvert.toKrollDict(newValue);
                 if (currentOptions != null) {
-                    axisOptions = KrollDict.merge(currentOptions, axisOptions);
+//                    axisOptions = KrollDict.merge(currentOptions, axisOptions);
+                    KrollDict.merge(currentOptions, axisOptions, false);
                 }
                 Context context = plotView.getContext();
                 
@@ -517,7 +518,8 @@ public class LineChartProxy extends ChartProxy {
 	            HashMap currentOptions = TiConvert.toHashMap(oldValue);
                 KrollDict axisOptions = TiConvert.toKrollDict(newValue);
                 if (currentOptions != null) {
-                    axisOptions = KrollDict.merge(currentOptions, axisOptions);
+//                    axisOptions = KrollDict.merge(currentOptions, axisOptions);
+                    KrollDict.merge(currentOptions, axisOptions, false);
                 }
                 Context context = plotView.getContext();
                 
@@ -915,17 +917,17 @@ public class LineChartProxy extends ChartProxy {
 
 	// Handle creation options
 	@Override
-	public void handleCreationDict(KrollDict options) {
+	public void handleCreationDict(HashMap options) {
 		super.handleCreationDict(options);
 
-		userInteractionEnabled = options.optBoolean("userInteraction",
+		userInteractionEnabled = TiConvert.toBoolean(options, "userInteraction",
 				userInteractionEnabled);
 		if (userInteractionEnabled) {
 			panEnabled = zoomEnabled = true;
 		}
-		panEnabled = options.optBoolean("panEnabled", panEnabled);
-		zoomEnabled = options.optBoolean("zoomEnabled", zoomEnabled);
-		clampInteraction = options.optBoolean("clampInteraction",
+		panEnabled = TiConvert.toBoolean(options, "panEnabled", panEnabled);
+		zoomEnabled = TiConvert.toBoolean(options, "zoomEnabled", zoomEnabled);
+		clampInteraction = TiConvert.toBoolean(options, "clampInteraction",
 				clampInteraction);
 	}
 

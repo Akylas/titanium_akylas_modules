@@ -40,13 +40,13 @@ public class Utils {
 	private static final TiDimension DEFAULT_RADIUS = new TiDimension(1.0,
 			TiDimension.TYPE_UNDEFINED);
 
-	public static float getRawSize(KrollDict dict, String property,
+	public static float getRawSize(HashMap dict, String property,
 			String defaultValue, Context context) {
-		return TiUIHelper.getRawSize(dict.optString(property, defaultValue),
+		return TiUIHelper.getRawSize(TiConvert.toString(dict, property, defaultValue),
 				context);
 	}
 
-	public static float getRawSize(KrollDict dict, String property,
+	public static float getRawSize(HashMap dict, String property,
 			Context context) {
 		return getRawSize(dict, property, null, context);
 	}
@@ -57,15 +57,15 @@ public class Utils {
                 null);
     }
 
-	public static float getRawSizeOrZero(KrollDict dict, String property,
+	public static float getRawSizeOrZero(HashMap dict, String property,
 			Context context) {
 		if (dict.containsKey(property)) {
-			return TiUIHelper.getRawSize(dict.getString(property), context);
+			return TiUIHelper.getRawSize(TiConvert.toString(dict, property), context);
 		}
 		return 0;
 	}
 	
-	public static float[] getRawSizeArray(KrollDict dict, String property,
+	public static float[] getRawSizeArray(HashMap dict, String property,
 			float[] defaultValue) {
 		if (dict.containsKey(property)) {
 			Object[] array = (Object[])dict.get(property);
@@ -80,14 +80,14 @@ public class Utils {
 		}
 	}
 
-	public static float[] getRawSizeArray(KrollDict dict, String property) {
+	public static float[] getRawSizeArray(HashMap dict, String property) {
 		return getRawSizeArray(dict, property, null);
 	}
 
-	public static void styleOpacity(KrollDict dict, String property,
+	public static void styleOpacity(HashMap dict, String property,
 			Paint[] paints) {
 		if (dict.containsKey(property)) {
-		    styleOpacity(dict.getFloat(property), paints);
+		    styleOpacity(TiConvert.toFloat(dict, property), paints);
 		}
 	}
 	
@@ -100,12 +100,12 @@ public class Utils {
         }
     }
 
-	public static void styleOpacity(KrollDict dict, String property, Paint paint) {
+	public static void styleOpacity(HashMap dict, String property, Paint paint) {
 		styleOpacity(dict, property, new Paint[] { paint });
 
 	}
 
-	public static void styleOpacity(KrollDict dict, Paint paint) {
+	public static void styleOpacity(HashMap dict, Paint paint) {
 		styleOpacity(dict, "opacity", new Paint[] { paint });
 	}
 	
@@ -113,12 +113,12 @@ public class Utils {
         styleOpacity(value, new Paint[] { paint });
     }
 	
-	public static void styleOpacity(KrollDict dict, Paint[] paints) {
+	public static void styleOpacity(HashMap dict, Paint[] paints) {
 		styleOpacity(dict, "opacity", paints);
 	}
 
 	// StrokeWidth
-	public static void styleStrokeWidth(KrollDict dict, String property,
+	public static void styleStrokeWidth(HashMap dict, String property,
 			String defaultValue, Paint[] paints, Context context) {
 		float width = getRawSize(dict, property, defaultValue, context);
 		for (int i = 0; i < paints.length; i++) {
@@ -127,17 +127,17 @@ public class Utils {
 		}
 	}
 	
-	public static void styleStrokeWidth(KrollDict dict, String property,
+	public static void styleStrokeWidth(HashMap dict, String property,
             String defaultValue, Paint paint) {
         styleStrokeWidth(dict, property, defaultValue, paint, null);
     }
-	public static void styleStrokeWidth(KrollDict dict, String property,
+	public static void styleStrokeWidth(HashMap dict, String property,
 			String defaultValue, Paint paint, Context context) {
 		styleStrokeWidth(dict, property, defaultValue, new Paint[] { paint },
 				context);
 	}
 
-	public static void styleStrokeWidth(KrollDict dict, String property,
+	public static void styleStrokeWidth(HashMap dict, String property,
 			Paint[] paints, Context context) {
 		if (dict.containsKey(property)) {
 			float width = getRawSize(dict, property, context);
@@ -148,18 +148,18 @@ public class Utils {
 		}
 	}
 
-	public static void styleStrokeWidth(KrollDict dict, String property,
+	public static void styleStrokeWidth(HashMap dict, String property,
 			Paint paint, Context context) {
 		styleStrokeWidth(dict, property, new Paint[] { paint }, context);
 	}
 	
-	public static void styleStrokeWidth(KrollDict dict, String property,
+	public static void styleStrokeWidth(HashMap dict, String property,
             Paint paint) {
         styleStrokeWidth(dict, property, paint, null);
     }
 
 
-	public static void styleStrokeWidth(KrollDict dict, Paint paint,
+	public static void styleStrokeWidth(HashMap dict, Paint paint,
 			Context context) {
 		styleStrokeWidth(dict, "width", paint, context);
 	}
@@ -179,9 +179,9 @@ public class Utils {
     }
 
 	// Cap
-	public static void styleCap(KrollDict dict, String property,
+	public static void styleCap(HashMap dict, String property,
 			int defaultValue, Paint paint) {
-		Cap cap = Cap.values()[dict.optInt(property, defaultValue)];
+		Cap cap = Cap.values()[TiConvert.toInt(dict, property, defaultValue)];
 		paint.setStrokeCap(cap);
 	}
 	
@@ -189,20 +189,20 @@ public class Utils {
         Cap cap = Cap.values()[value];
         paint.setStrokeCap(cap);
     }
-	public static void styleCap(KrollDict dict, String property, Paint paint) {
+	public static void styleCap(HashMap dict, String property, Paint paint) {
 		if (dict.containsKey(property)) {
-		    styleCap(dict.getInt(property), paint);
+		    styleCap(TiConvert.toInt(dict, property), paint);
 		}
 	}
 
-	public static void styleJoin(KrollDict dict, Paint paint) {
+	public static void styleJoin(HashMap dict, Paint paint) {
 		styleCap(dict, "join", paint);
 	}
 
 	// Cap
-	public static void styleJoin(KrollDict dict, String property,
+	public static void styleJoin(HashMap dict, String property,
 			int defaultValue, Paint paint) {
-		Join join = Join.values()[dict.optInt(property, defaultValue)];
+		Join join = Join.values()[TiConvert.toInt(dict, property, defaultValue)];
 		paint.setStrokeJoin(join);
 	}
 	
@@ -210,41 +210,41 @@ public class Utils {
         Join join = Join.values()[value];
         paint.setStrokeJoin(join);
     }
-	public static void styleJoin(KrollDict dict, String property, Paint paint) {
+	public static void styleJoin(HashMap dict, String property, Paint paint) {
 		if (dict.containsKey(property)) {
-		    styleJoin(dict.getInt(property), paint);
+		    styleJoin(TiConvert.toInt(dict, property), paint);
 		}
 	}
 
-	public static void styleCap(KrollDict dict, Paint paint) {
+	public static void styleCap(HashMap dict, Paint paint) {
 		styleCap(dict, "cap", paint);
 	}
 
 	// Color
-	public static void styleColor(KrollDict dict, String property,
+	public static void styleColor(HashMap dict, String property,
 			int defaultValue, Paint[] paints) {
-		int color = dict.optColor(property, defaultValue);
+		int color = TiConvert.toColor(dict, property, defaultValue);
 		for (int i = 0; i < paints.length; i++) {
 			Paint paint = paints[i];
 			paint.setColor(color);
 		}
 	}
 
-	public static void styleColor(KrollDict dict, String property,
+	public static void styleColor(HashMap dict, String property,
 			int defaultValue, Paint paint) {
-		paint.setColor(dict.optColor(property, defaultValue));
+		paint.setColor(TiConvert.toColor(dict, property, defaultValue));
 	}
 
-	public static void styleColor(KrollDict dict, String property, Paint paint) {
+	public static void styleColor(HashMap dict, String property, Paint paint) {
 		if (dict.containsKey(property)) {
-			paint.setColor(dict.getColor(property));
+			paint.setColor(TiConvert.toColor(dict, property));
 		}
 	}
 
-	public static void styleColor(KrollDict dict, String property,
+	public static void styleColor(HashMap dict, String property,
 			Paint[] paints) {
 		if (dict.containsKey(property)) {
-			int color = dict.getColor(property);
+			int color = TiConvert.toColor(dict, property);
 			for (int i = 0; i < paints.length; i++) {
 				Paint paint = paints[i];
 				paint.setColor(color);
@@ -256,19 +256,19 @@ public class Utils {
         paint.setColor(color);
     }
 
-	public static void styleColor(KrollDict dict, Paint paint) {
+	public static void styleColor(HashMap dict, Paint paint) {
 		styleColor(dict, "color", paint);
 	}
 	
-	public static void styleColor(KrollDict dict, Paint[] paints) {
+	public static void styleColor(HashMap dict, Paint[] paints) {
 		styleColor(dict, "color", paints);
 	}
 
 	// Margins
-	public static void styleMargins(KrollDict dict, String property,
+	public static void styleMargins(HashMap dict, String property,
 			Object object, String method, Context context) {
 		if (dict.containsKey(property)) {
-			KrollDict padding = dict.getKrollDict(property);
+		    HashMap padding = TiConvert.toHashMap(dict.get(property));
 			float top = getRawSizeOrZero(padding, "top", context);
 			float bottom = getRawSizeOrZero(padding, "bottom", context);
 			float left = getRawSizeOrZero(padding, "left", context);
@@ -283,26 +283,26 @@ public class Utils {
 		}
 	}
 
-	public static void styleMargins(KrollDict dict, Object object, String m,
+	public static void styleMargins(HashMap dict, Object object, String m,
 			Context context) {
 		styleMargins(dict, "padding", object, m, context);
 	}
 
 	// Text Widget
-	public static void styleTextWidget(KrollDict dict, Paint[] paints,
+	public static void styleTextWidget(HashMap dict, Paint[] paints,
 			Context context) {
 		if (dict.containsKey(TiC.PROPERTY_COLOR)) {
-			int color = dict.getColor(TiC.PROPERTY_COLOR);
+			int color = TiConvert.toColor(dict, TiC.PROPERTY_COLOR);
 			for (int i = 0; i < paints.length; i++) {
 				Paint paint = paints[i];
 				paint.setColor(color);
 			}
 		}
 		styleShadow(dict, AkylasChartsModule.PROPERTY_SHADOW, paints);
-		Align align = Align.values()[dict.optInt(TiC.PROPERTY_TEXT_ALIGN, 1)];
+		Align align = Align.values()[TiConvert.toInt(dict, TiC.PROPERTY_TEXT_ALIGN, 1)];
 		
 		if (dict.containsKey(TiC.PROPERTY_FONT)) {
-		    FontDesc desc = TiUIHelper.getFontStyle(context, dict.getHashMap(TiC.PROPERTY_FONT));
+		    FontDesc desc = TiUIHelper.getFontStyle(context, TiConvert.toHashMap(dict.get(TiC.PROPERTY_FONT)));
             float fontSize = TiUIHelper.getRawSize(desc.sizeUnit, desc.size, context);
 			for (int i = 0; i < paints.length; i++) {
 			    
@@ -324,17 +324,17 @@ public class Utils {
 		styleOpacity(dict, paints);
 	}
 
-	public static void styleTextWidget(KrollDict dict, Paint paint,
+	public static void styleTextWidget(HashMap dict, Paint paint,
 			Context context) {
 		styleTextWidget(dict, new Paint[] { paint }, context);
 	}
 
 	// Value Format
-	public static void styleValueFormat(KrollDict dict, final HashMap<Integer, String> locations, Object object,
+	public static void styleValueFormat(HashMap dict, final HashMap<Integer, String> locations, Object object,
 			String method) {
-		String pattern = dict.optString("numberFormat", null);
-		String patternPos = dict.optString("numberFormatPositive", null);
-		String patternNeg = dict.optString("numberFormatNegative", null);
+		String pattern = TiConvert.toString(dict, "numberFormat", null);
+		String patternPos = TiConvert.toString(dict, "numberFormatPositive", null);
+		String patternNeg = TiConvert.toString(dict, "numberFormatNegative", null);
 
 		String realpattern = pattern;
 		if (patternPos != null && patternNeg != null)
@@ -353,15 +353,15 @@ public class Utils {
 	
 		if (realpattern != null || hasSuffixOrPrefix) {
 			DecimalFormat format = new DecimalFormat((realpattern != null)?realpattern:"0.0");
-			String prefix = dict.optString("numberPrefix", "");
-			format.setNegativePrefix(dict.optString("numberPrefixNegative",
+			String prefix = TiConvert.toString(dict, "numberPrefix", "");
+			format.setNegativePrefix(TiConvert.toString(dict, "numberPrefixNegative",
 					prefix));
-			format.setPositivePrefix(dict.optString("numberPrefixPositive",
+			format.setPositivePrefix(TiConvert.toString(dict, "numberPrefixPositive",
 					prefix));
-			String suffix = dict.optString("numberSuffix", "");
-			format.setNegativeSuffix(dict.optString("numberSuffixNegative",
+			String suffix = TiConvert.toString(dict, "numberSuffix", "");
+			format.setNegativeSuffix(TiConvert.toString(dict, "numberSuffixNegative",
 					suffix));
-			format.setPositiveSuffix(dict.optString("numberSuffixPositive",
+			format.setPositiveSuffix(TiConvert.toString(dict, "numberSuffixPositive",
 					suffix));
 			try {
 				Method m = object.getClass().getMethod(method, Format.class);
@@ -372,7 +372,7 @@ public class Utils {
 		}
 	}
 	
-	public static void styleValueFormat(KrollDict dict, Object object,
+	public static void styleValueFormat(HashMap dict, Object object,
 			String method) {
 		styleValueFormat(dict, null, object, method);
 	}
@@ -411,8 +411,8 @@ public class Utils {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static Shader styleGradient(KrollDict properties, Context context, Rect rect) {
-		String type = properties.optString("type", "linear");
+	public static Shader styleGradient(HashMap properties, Context context, Rect rect) {
+		String type = TiConvert.toString(properties, "type", "linear");
 		GradientType gradientType = GradientType.LINEAR_GRADIENT;
 		TiDimension startRadius = DEFAULT_RADIUS;
 		TiPoint startPoint = DEFAULT_START_POINT;
@@ -466,7 +466,7 @@ public class Utils {
 			return new RadialGradient(x0, y0, radius0, resultColors, offsets, TileMode.CLAMP);
 		}
 	}
-	public static Shader styleGradient(KrollDict properties, View view) {
+	public static Shader styleGradient(HashMap properties, View view) {
 		Rect rect = new Rect();
 		view.getDrawingRect(rect);
 		return styleGradient(properties, view.getContext(), rect);
@@ -474,13 +474,14 @@ public class Utils {
 
 	
 	// Emboss
-	public static EmbossMaskFilter styleEmboss(KrollDict dict, String property) {
+	public static EmbossMaskFilter styleEmboss(HashMap dict, String property) {
 		if (dict.containsKey(property)) {
-			KrollDict emboss = dict.getKrollDict(property);
-			float[] direction = emboss.optFloatArray("direction", new float[]{1, 1, 1});
-			float ambient = emboss.optFloat("ambient", 0.4f);
-			float specular = emboss.optFloat("specular", 10);
-			float blurRadius = emboss.optFloat("blurRadius", 8.2f);
+		    HashMap emboss = TiConvert.toHashMap(dict.get(property));
+			float[] direction = TiConvert.toFloatArray(emboss, 
+			        "direction", new float[]{1, 1, 1});
+			float ambient = TiConvert.toFloat(emboss, "ambient", 0.4f);
+			float specular = TiConvert.toFloat(emboss, "specular", 10);
+			float blurRadius = TiConvert.toFloat(emboss, "blurRadius", 8.2f);
 	        EmbossMaskFilter emf = new EmbossMaskFilter(direction, ambient, specular, blurRadius);
 	        return emf;
 		}
@@ -491,30 +492,30 @@ public class Utils {
 		return styleEmboss(dict, "emboss");
 	}
 	
-	public static void styleEmboss(KrollDict dict, String property, Paint paint) {
+	public static void styleEmboss(HashMap dict, String property, Paint paint) {
         EmbossMaskFilter emf = styleEmboss(dict, property);
 		if (emf != null) {
 	        paint.setMaskFilter(emf);
 		}
 	}
 	
-	public static void styleEmboss(KrollDict dict, Paint paint) {
+	public static void styleEmboss(HashMap dict, Paint paint) {
 		styleEmboss(dict, "emboss", paint);
 	}
 	
 	// Dash
-	public static DashPathEffect styleDash(KrollDict dict, String property) {
+	public static DashPathEffect styleDash(HashMap dict, String property) {
 		if (dict.containsKey(property)) {
-			KrollDict dash = dict.getKrollDict(property);
+		    HashMap dash = TiConvert.toHashMap(dict.get(property));
 			float[] pattern = getRawSizeArray(dash, "pattern", new float[]{10,20});
-			float phase = dash.optFloat("phase", 0.0f);
+			float phase = TiConvert.toFloat(dash, "phase", 0.0f);
 			DashPathEffect effect = new DashPathEffect(pattern, phase);
 	        return effect;
 		}
 		return null;
 	}
 	
-	public static void styleDash(KrollDict dict, String property, Paint[] paints) {
+	public static void styleDash(HashMap dict, String property, Paint[] paints) {
 		DashPathEffect effect = styleDash(dict, property);
 		for (int i = 0; i < paints.length; i++) {
 			Paint paint = paints[i];
@@ -522,42 +523,42 @@ public class Utils {
 		}
 	}
 	
-	public static void styleDash(KrollDict dict, String property, Paint paint) {
+	public static void styleDash(HashMap dict, String property, Paint paint) {
 		paint.setPathEffect(styleDash(dict, property));
 	}
 	
-	public static void styleDash(KrollDict dict, Paint paint) {
+	public static void styleDash(HashMap dict, Paint paint) {
 		styleDash(dict, "dash", paint);
 	}
 	
-	public static void styleShadow(KrollDict dict, String property, Paint[] paints) {
+	public static void styleShadow(HashMap dict, String property, Paint[] paints) {
 		if (dict.containsKey(property)) {
-			styleShadow(dict.getKrollDict(property), paints);
+			styleShadow(TiConvert.toHashMap(dict.get(property)), paints);
 		}
 	}
 	
-	public static void styleShadow(KrollDict shadowOptions, Paint[] paints) {
+	public static void styleShadow(HashMap shadowOptions, Paint[] paints) {
         float offsetx = 0.0f;
         float offsety = 0.0f;
-        KrollDict offset = (shadowOptions != null)?shadowOptions.getKrollDict(TiC.PROPERTY_OFFSET):null;
+        HashMap offset = (shadowOptions != null)?TiConvert.toHashMap(shadowOptions.get(TiC.PROPERTY_OFFSET)):null;
         
         if (offset != null) {
             offsetx = TiUIHelper.getInPixels(offset, TiC.PROPERTY_X);
             offsety = TiUIHelper.getInPixels(offset, TiC.PROPERTY_Y);
         }
         float blurRadius = TiUIHelper.getInPixels(shadowOptions, "radius");
-        int color = shadowOptions.optColor(TiC.PROPERTY_COLOR, Color.BLACK);
+        int color = TiConvert.toColor(shadowOptions, TiC.PROPERTY_COLOR, Color.BLACK);
         for (int i = 0; i < paints.length; i++) {
             Paint paint = paints[i];
             paint.setShadowLayer(blurRadius, offsetx, offsety, color);
         }
     }
 	
-	public static void styleShadow(KrollDict dict, String property, Paint paint) {
+	public static void styleShadow(HashMap dict, String property, Paint paint) {
 		styleShadow(dict, property, new Paint[]{paint});
 	}
 	
-	public static void styleShadow(KrollDict shadowOptions, Paint paint) {
+	public static void styleShadow(HashMap shadowOptions, Paint paint) {
         styleShadow(shadowOptions, new Paint[]{paint});
     }
 	

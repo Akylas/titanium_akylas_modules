@@ -1,10 +1,13 @@
 package akylas.charts;
 
+import java.util.HashMap;
+
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiUIView;
 
@@ -18,6 +21,7 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
+import ti.modules.titanium.ui.widget.TiUIImageView;
 
 import com.androidplot.Plot;
 import com.androidplot.Plot.RenderMode;
@@ -60,8 +64,10 @@ public class ChartProxy extends TiViewProxy {
 				@Override
 				protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 					super.onLayout(changed, left, top, right, bottom);
-					onLayoutChanged();
-					TiUIHelper.firePostLayoutEvent(ChartView.this);
+					if (changed) {
+	                    onLayoutChanged();
+	                    TiUIHelper.firePostLayoutEvent(ChartView.this);
+	                }
 				}
 			};
 			try {
@@ -130,7 +136,7 @@ public class ChartProxy extends TiViewProxy {
 		}
 
 		@Override
-	    protected void handleProperties(KrollDict d, final boolean changed) {
+	    protected void handleProperties(HashMap d, final boolean changed) {
 		    super.handleProperties(d, changed);
 			if (d.containsKey(AkylasChartsModule.PROPERTY_FILL_COLOR)) {
 				// a trick to have fillColor work as a background (for
@@ -151,7 +157,7 @@ public class ChartProxy extends TiViewProxy {
 			Context context = plotView.getContext();
 
 			if (d.containsKey(TiC.PROPERTY_TITLE)) {
-				KrollDict titleOptions = d.getKrollDict(TiC.PROPERTY_TITLE);
+			    HashMap titleOptions =TiConvert.toHashMap(d.get(TiC.PROPERTY_TITLE));
 				
 				Utils.styleTextWidget(titleOptions, plotView.getTitleWidget().getLabelPaint(), context);
 
@@ -161,7 +167,7 @@ public class ChartProxy extends TiViewProxy {
 				XLayoutStyle xlayout = XLayoutStyle.ABSOLUTE_FROM_CENTER;
 				YLayoutStyle ylayout = YLayoutStyle.ABSOLUTE_FROM_TOP;
 				if (titleOptions.containsKey(TiC.PROPERTY_LOCATION)) {
-					anchor = AnchorPosition.values()[titleOptions.getInt(TiC.PROPERTY_LOCATION)];
+					anchor = AnchorPosition.values()[TiConvert.toInt(titleOptions, TiC.PROPERTY_LOCATION)];
 				}
 				if (anchor == AnchorPosition.BOTTOM_MIDDLE) {
 					xlayout = XLayoutStyle.ABSOLUTE_FROM_CENTER;
@@ -174,7 +180,7 @@ public class ChartProxy extends TiViewProxy {
 					ylayout = YLayoutStyle.ABSOLUTE_FROM_CENTER;
 				}
 				if (titleOptions.containsKey(TiC.PROPERTY_OFFSET)) {
-					KrollDict offset = titleOptions.getKrollDict(TiC.PROPERTY_OFFSET);
+				    HashMap offset = TiConvert.toHashMap(titleOptions.get(TiC.PROPERTY_OFFSET));
 					top = Utils.getRawSizeOrZero(offset, TiC.PROPERTY_Y, context);
 					left = Utils.getRawSizeOrZero(offset, TiC.PROPERTY_X, context);
 				}
@@ -185,13 +191,13 @@ public class ChartProxy extends TiViewProxy {
 
 
 			if (d.containsKey(AkylasChartsModule.PROPERTY_PLOT_AREA)) {
-				KrollDict plotOptions = d.getKrollDict(AkylasChartsModule.PROPERTY_PLOT_AREA);
+			    HashMap plotOptions = TiConvert.toHashMap(d.get(AkylasChartsModule.PROPERTY_PLOT_AREA));
 				if (plotOptions.containsKey(TiC.PROPERTY_BORDER_RADIUS)) {
 					float radius = Utils.getRawSize(plotOptions, TiC.PROPERTY_BORDER_RADIUS, context);
 					plotView.setBorderStyle(XYPlot.BorderStyle.ROUNDED, radius, radius);
 				}
 				if (plotOptions.containsKey(TiC.PROPERTY_BORDER_COLOR)) {
-					plotView.getBorderPaint().setColor(plotOptions.optColor(TiC.PROPERTY_BORDER_COLOR, Color.BLACK));
+					plotView.getBorderPaint().setColor(TiConvert.toColor(plotOptions, TiC.PROPERTY_BORDER_COLOR, Color.BLACK));
 				}
 
 				Paint paint1 = plotView.getBorderPaint();
@@ -242,13 +248,13 @@ public class ChartProxy extends TiViewProxy {
 
 	// Handle creation options
 	@Override
-	public void handleCreationDict(KrollDict options) {
+	public void handleCreationDict(HashMap options) {
 		super.handleCreationDict(options);
 
 		if (options.containsKey(TiC.PROPERTY_TITLE)) {
-			KrollDict titleOptions = options.getKrollDict(TiC.PROPERTY_TITLE);
+			HashMap titleOptions = TiConvert.toHashMap(options.get(TiC.PROPERTY_TITLE));
 			if (titleOptions.containsKey(TiC.PROPERTY_TEXT)) {
-				mTitle = titleOptions.getString(TiC.PROPERTY_TEXT);
+				mTitle = TiConvert.toString(titleOptions, TiC.PROPERTY_TEXT);
 			}
 		}
 	}

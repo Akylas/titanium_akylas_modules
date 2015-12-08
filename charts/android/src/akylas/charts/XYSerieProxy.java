@@ -2,6 +2,7 @@ package akylas.charts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,9 +69,8 @@ public class XYSerieProxy extends ReusableProxy {
 
 	// Handle creation options
 	@Override
-	public void handleCreationDict(KrollDict options) {
-		Log.d(TAG, "handleCreationDict ");
-		mTitle = options.optString("name", "");
+	public void handleCreationDict(HashMap options) {
+		mTitle = TiConvert.toString(options, "name", "");
         series = new SimpleXYSeries(mTitle);
         series.useImplicitXVals();
         if (options.containsKey("implicitXVals")) {

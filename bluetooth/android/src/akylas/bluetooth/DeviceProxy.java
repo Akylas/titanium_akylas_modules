@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 
 import org.appcelerator.kroll.KrollDict;
@@ -80,7 +81,8 @@ public class DeviceProxy extends KrollProxy
 		this();
 	}
 	
-	public void handleCreationDict(KrollDict dict)
+	@Override
+    public void handleCreationDict(HashMap dict)
     {
         super.handleCreationDict(dict);
         mMacAdress = TiConvert.toString(dict, "identifier", null);
