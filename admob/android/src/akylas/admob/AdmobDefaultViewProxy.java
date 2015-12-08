@@ -2,12 +2,9 @@ package akylas.admob;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.titanium.TiBaseActivity;
-import org.appcelerator.titanium.TiBaseActivity.ConfigurationChangedListener;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 
-import android.app.Activity;
 
 @Kroll.proxy()
 public abstract class AdmobDefaultViewProxy extends TiViewProxy {
