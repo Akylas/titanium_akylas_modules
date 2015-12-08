@@ -29,6 +29,7 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import android.app.Activity;
@@ -106,7 +107,7 @@ public class WSProxy extends KrollProxy implements OnLifecycleEvent {
 
 	// Handle creation options
 	@Override
-	public void handleCreationDict(KrollDict options) {
+	public void handleCreationDict(HashMap options) {
 		super.handleCreationDict(options);
 	}
 
