@@ -17,15 +17,10 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiExceptionHandler;
 import org.appcelerator.titanium.TiProperties;
 
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningServiceInfo;
-import android.content.Context;
-import android.os.Process;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -98,7 +93,6 @@ public class AkylasCommonjsModule extends KrollModule
 	@Kroll.onVerifyModule
     public static void onVerifyModule(TiApplication app)
     {
-        Log.d(TAG, "onVerifyModule", Log.DEBUG_MODE);
         ITiAppInfo appInfo = app.getAppInfo();
         TiProperties appProperties = app.getAppProperties();
         String appId = appInfo.getId();
