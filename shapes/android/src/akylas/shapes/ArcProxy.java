@@ -1,5 +1,6 @@
 package akylas.shapes;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
@@ -9,7 +10,7 @@ import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 import org.appcelerator.titanium.util.TiConvert;
 
-import com.nineoldandroids.animation.PropertyValuesHolder;
+import android.animation.PropertyValuesHolder;
 
 @Kroll.proxy(creatableInModule = AkylasShapesModule.class, propertyAccessors = {
         AkylasShapesModule.PROPERTY_SWEEPANGLE,
@@ -60,7 +61,7 @@ public class ArcProxy extends ShapeProxy {
     protected void preparePropertiesSet(TiAnimatorSet tiSet,
             List<PropertyValuesHolder> propertiesList,
             List<PropertyValuesHolder> propertiesListReverse,
-            KrollDict animOptions) {
+            HashMap animOptions) {
         super.preparePropertiesSet(tiSet, propertiesList,
                 propertiesListReverse, animOptions);
 

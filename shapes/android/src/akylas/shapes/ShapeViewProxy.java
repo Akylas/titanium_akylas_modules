@@ -114,7 +114,7 @@ public class ShapeViewProxy extends TiViewProxy {
 		}
 
 		@Override
-		public void processProperties(KrollDict d) {
+		public void processProperties(HashMap d) {
 
 			super.processProperties(d);
 			if (d.containsKey(AkylasShapesModule.PROPERTY_SHAPES)) {

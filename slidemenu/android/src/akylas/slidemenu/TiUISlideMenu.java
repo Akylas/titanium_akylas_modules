@@ -31,7 +31,6 @@ import android.widget.RelativeLayout.LayoutParams;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu.ViewTransformer;
 
-
 public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListener{
 	private SlidingMenu slidingMenu;
 	private TiViewProxy leftView;
@@ -77,7 +76,9 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 			protected void onLayout(boolean changed, int left, int top, int right, int bottom)
 			{
 				super.onLayout(changed, left, top, right, bottom);
-				TiUIHelper.firePostLayoutEvent(TiUISlideMenu.this);
+				if (changed) {
+                    TiUIHelper.firePostLayoutEvent(TiUISlideMenu.this);
+                }
 			}
 			
 			@Override
@@ -89,6 +90,8 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 				group.addView(layout, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 			}
 		};
+		slidingMenu.setActionBarOverlay(TiConvert.toBoolean(proxy.getProperty(TiC.PROPERTY_ACTIONBAR_OVERLAY), false));
+//		slidingMenu.attachToActivity(activity, style, TiConvert.toBoolean(proxy.getProperty(TiC.PROPERTY_ACTIONBAR_OVERLAY), false));
 		slidingMenu.setClassForNonViewPager(TiViewPagerLayout.class);
 		slidingMenu.setOnCloseListener(new SlidingMenu.OnCloseListener() {
 			@Override
@@ -201,8 +204,8 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 //            );
 	}
 	
-
-	public View getParentViewForChild()
+	@Override
+	public ViewGroup getParentViewForChild()
 	{
 		return parentViewForChildren;
 	}

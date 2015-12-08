@@ -35,16 +35,16 @@ public class Utils {
         return TiUIHelper.getRawSize(TiConvert.toString(value, defaultValue),
                 null);
     }
-	public static float getRawSize(KrollDict dict, String property,
+	public static float getRawSize(HashMap dict, String property,
             String defaultValue, Context context) {
-        return TiUIHelper.getRawSize(dict.optString(property, defaultValue),
+        return TiUIHelper.getRawSize(TiConvert.toString(dict, property, defaultValue),
                 context);
     }
-	public static float getRawSize(KrollDict dict, String property, String defaultValue) {
+	public static float getRawSize(HashMap dict, String property, String defaultValue) {
 		return getRawSize(dict, property, defaultValue, null);
 	}
 
-	public static float getRawSize(KrollDict dict, String property,
+	public static float getRawSize(HashMap dict, String property,
 			Context context) {
 		return getRawSize(dict, property, null, context);
 	}
@@ -58,14 +58,14 @@ public class Utils {
         return getRawSize(value, (String)null);
     }
 	
-	public static float getRawSize(KrollDict dict, String property) {
+	public static float getRawSize(HashMap dict, String property) {
 		return getRawSize(dict, property, null, null);
 	}
 
-	public static float getRawSizeOrZero(KrollDict dict, String property,
+	public static float getRawSizeOrZero(HashMap dict, String property,
 			Context context) {
 		if (dict.containsKey(property)) {
-			return TiUIHelper.getRawSize(dict.getString(property), context);
+			return TiUIHelper.getRawSize(TiConvert.toString(dict, property), context);
 		}
 		return 0;
 	}

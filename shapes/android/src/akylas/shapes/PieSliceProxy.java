@@ -1,5 +1,6 @@
 
 package akylas.shapes;
+import java.util.HashMap;
 import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
@@ -9,7 +10,7 @@ import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 
-import com.nineoldandroids.animation.PropertyValuesHolder;
+import android.animation.PropertyValuesHolder;
 
 import android.graphics.Point;
 
@@ -56,7 +57,7 @@ public class PieSliceProxy extends ArcProxy{
 	protected void preparePropertiesSet(TiAnimatorSet tiSet,
 			List<PropertyValuesHolder> propertiesList,
 			List<PropertyValuesHolder> propertiesListReverse,
-			KrollDict animOptions) {
+			HashMap animOptions) {
 		super.preparePropertiesSet(tiSet, propertiesList, propertiesListReverse, animOptions);
 		
 		if (animOptions.containsKey(AkylasShapesModule.PROPERTY_INNERRADIUS)) {

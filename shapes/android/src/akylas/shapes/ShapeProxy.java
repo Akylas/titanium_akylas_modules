@@ -22,13 +22,13 @@ import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.Ti2DMatrix;
 
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ArgbEvaluator;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.animation.PropertyValuesHolder;
-import com.nineoldandroids.animation.TypeEvaluator;
-import com.nineoldandroids.animation.ValueAnimator;
-import com.nineoldandroids.animation.ValueAnimator.AnimatorUpdateListener;
+import android.animation.Animator;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.animation.TypeEvaluator;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -559,6 +559,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		}
 		updatePath();
 		updateGradients();
+		handlePendingAnimation();
 	}
 	
 	
@@ -696,12 +697,12 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		return linePaint;
 	}
 	
-	protected void createAnimForColor(String prop, KrollDict animOptions,
-			KrollDict properties, List<PropertyValuesHolder> list,
+	protected void createAnimForColor(String prop, HashMap animOptions,
+	        KrollDict properties, List<PropertyValuesHolder> list,
 			List<PropertyValuesHolder> listReverse, int defaultValue) {
 		if (animOptions.containsKey(prop)) {
-			int inValue = properties.optColor(prop, defaultValue);
-			int outValue = animOptions.optColor(prop, inValue);
+			int inValue = TiConvert.toColor(properties, prop, defaultValue);
+			int outValue = TiConvert.toColor(animOptions, prop, inValue);
 			PropertyValuesHolder anim = PropertyValuesHolder.ofInt(prop,
 					outValue);
 			anim.setEvaluator(new ArgbEvaluator());
@@ -714,12 +715,12 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		}
 	}
 	
-	protected void createAnimForInt(String prop, KrollDict animOptions,
+	protected void createAnimForInt(String prop, HashMap animOptions,
 			KrollDict properties, List<PropertyValuesHolder> list,
 			List<PropertyValuesHolder> listReverse, int defaultValue) {
 		if (animOptions.containsKey(prop)) {
 			int inValue = properties.optInt(prop, defaultValue);
-			int outValue = animOptions.optInt(prop, inValue);
+			int outValue = TiConvert.toInt(animOptions, prop, inValue);
 			list.add(PropertyValuesHolder.ofInt(prop, outValue));
 			if (listReverse != null) {
 				listReverse.add(PropertyValuesHolder.ofInt(prop, inValue));
@@ -727,7 +728,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		}
 	}
 
-	protected void createAnimForRawInt(String prop, KrollDict animOptions,
+	protected void createAnimForRawInt(String prop, HashMap animOptions,
 			KrollDict properties, List<PropertyValuesHolder> list,
 			List<PropertyValuesHolder> listReverse, String defaultValue) {
 		if (animOptions.containsKey(prop)) {
@@ -741,12 +742,12 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		}
 	}
 
-	protected void createAnimForFloat(String prop, KrollDict animOptions,
+	protected void createAnimForFloat(String prop, HashMap animOptions,
 			KrollDict properties, List<PropertyValuesHolder> list,
 			List<PropertyValuesHolder> listReverse, float defaultValue) {
 		if (animOptions.containsKey(prop)) {
 			float inValue = properties.optFloat(prop, defaultValue);
-			float outValue = animOptions.optFloat(prop, inValue);
+			float outValue = TiConvert.toFloat(animOptions, prop, inValue);
 			list.add(PropertyValuesHolder.ofFloat(prop, outValue));
 			if (listReverse != null) {
 				listReverse.add(PropertyValuesHolder.ofFloat(prop, inValue));
@@ -754,7 +755,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 		}
 	}
 
-	protected void createAnimForRawFloat(String prop, KrollDict animOptions,
+	protected void createAnimForRawFloat(String prop, HashMap animOptions,
 			KrollDict properties, List<PropertyValuesHolder> list,
 			List<PropertyValuesHolder> listReverse, String defaultValue) {
 		if (animOptions.containsKey(prop)) {
@@ -790,10 +791,17 @@ public class ShapeProxy extends AnimatableReusableProxy {
 
 	}
 	
+	@Override
+	protected void handlePendingAnimation() {
+        if (currentBounds.width() == 0 && currentBounds.height() == 0) {
+            return;
+        }
+        super.handlePendingAnimation();
+	}
+	
 	protected void preparePropertiesSet(TiAnimatorSet tiSet,
 			List<PropertyValuesHolder> propertiesList,
-			List<PropertyValuesHolder> propertiesListReverse,
-			KrollDict animOptions) {
+			List<PropertyValuesHolder> propertiesListReverse, HashMap animOptions) {
 		// KrollDict properties = getProperties();
 		boolean needsReverse = propertiesListReverse != null;
 		Boolean animatingCenter = animOptions.containsKey(TiC.PROPERTY_CENTER);
@@ -856,13 +864,12 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	}
 	
 	@Override
-	protected void prepareAnimatorSet(TiAnimatorSet tiSet, List<Animator> list, List<Animator> reverseList, HashMap options) {
-		super.prepareAnimatorSet(tiSet, list, reverseList, options);
+	protected void prepareAnimatorSet(TiAnimatorSet tiSet, List<Animator> list, List<Animator> reverseList) {
+		super.prepareAnimatorSet(tiSet, list, reverseList);
 		
 		List<PropertyValuesHolder> propertiesList = new ArrayList<PropertyValuesHolder>();
 		List<PropertyValuesHolder> propertiesListReverse = (reverseList!=null)?new ArrayList<PropertyValuesHolder>():null;
-		KrollDict animOptions = new KrollDict(options);
-		preparePropertiesSet(tiSet, propertiesList, propertiesListReverse, animOptions);
+		preparePropertiesSet(tiSet, propertiesList, propertiesListReverse, tiSet.getToOptions());
 		
 		ObjectAnimator anim = ObjectAnimator.ofPropertyValuesHolder(this,propertiesList.toArray(new PropertyValuesHolder[0]));
 		anim.addUpdateListener(new AnimatorUpdateListener(){
