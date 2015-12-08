@@ -20,7 +20,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 @Kroll.proxy(creatableInModule = AkylasGooglemapModule.class, propertyAccessors = {
     TiC.PROPERTY_VISIBLE,
-    TiC.PROPERTY_OPACITY
+    TiC.PROPERTY_OPACITY,
+    "tileSize"
 })
 public class TileSourceProxy extends BaseTileSourceProxy {
     private static final String TAG = "TileSourceProxy";
@@ -32,6 +33,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
     private boolean fadeIn = true;
     private boolean visible = true;
     private float opacity = 1.0f;
+    private float zIndex = -1;
     
     public static class MapBoxOnlineTileProvider extends TileJsonProvider {
         private String mToken;
@@ -65,7 +67,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
     }
 
     @Override
-    protected void releaseSource() {
+    public void releaseSource() {
         if (mOverlay != null) {
             mOverlay.remove();
             mOverlay = null;
@@ -113,6 +115,25 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 ((WebTileProvider) mTileProvider).setOpacity(opacity);
             }
             updateTileLayerVisibility();
+            break;
+        case TiC.PROPERTY_ZINDEX:
+            zIndex = TiConvert.toFloat(newValue, 1.0f);
+            if (mOverlay != null) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mOverlay != null) {
+                            mOverlay.setZIndex(zIndex);
+                        }
+                    }
+                });
+            }
+
+            break;
+        case "tileSize": 
+            if (mTileProvider instanceof WebTileProvider) {
+                ((WebTileProvider) mTileProvider).setOpacity(opacity);
+            }
             break;
         case "fadeIn":
             fadeIn = TiConvert.toBoolean(newValue);
@@ -177,82 +198,83 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 mTileProvider = new WebTileProvider(sSource, sSource);
             } else {
                 final int tileSize = TiConvert.toInt(getProperty("tileSize"), 256);
-                switch (sSource.toLowerCase()) {
-                case "websource":
-                {
+//                switch (sSource.toLowerCase()) {
+//                case "websource":
+//                {
                     mTileProvider = new WebTileProvider(TiConvert.toString(getProperty("id")),
                             TiConvert.toString(getProperty("url")),tileSize)
                             .setName(TiConvert.toString(getProperty("name"))).setAttribution(
                                     TiConvert.toString(getProperty("attribution")));
-                    break;
-                }
-                case "openstreetmap":
-                    mTileProvider = new WebTileProvider("openstreetmap",
-                            "http://tile.openstreetmap.org/{z}/{x}/{y}.png", tileSize)
-                            .setName("OpenStreetMap").setAttribution(
-                                    "© OpenStreetMap Contributors");
-                    break;
-                case "openseamap":
-                    mTileProvider = new WebTileProvider("openseamap",
-                            "http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png", tileSize)
-                            .setName("OpenSeaMap").setAttribution(
-                                    "© Map data © OpenStreetMap, licensed under Creative Commons Share Alike By Attribution.");
-                    break;
-                case "mapquest":
-                    mTileProvider = new WebTileProvider("mapquest",
-                            "http://otile1.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png", tileSize)
-                            .setName("MapQuest Open Aerial")
-                            .setAttribution(
-                                    "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
-                    break;
-                case "mapquest-sat":
-                    mTileProvider = new WebTileProvider("mapquest-sat",
-                            "http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png", tileSize)
-                            .setName("MapQuest Open Aerial")
-                            .setAttribution(
-                                    "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
-                    break;
-                case "ign":
-                {
-                    final String key = TiConvert.toString(getProperty("key"));
-                    String realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
-                    final String layer = TiConvert.toString(getProperty("layer"), realLayer);
-                    final String format = TiConvert.toString(getProperty("format"), "image/jpeg");
-                    if (layer.equals("express")) {
-                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE";
-                    } else if (layer.equals("expressStandard")) {
-                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD";
-                    } else if (layer.equals("plan")) {
-                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.PLANIGN";
-                    } else if (layer.equals("buildings")) {
-                        realLayer = "BUILDINGS.BUILDINGS";
-                    } else if (layer.equals("parcels")) {
-                        realLayer = "CADASTRALPARCELS.PARCELS";
-                    } else if (layer.equals("slopes")) {
-                        realLayer = "ELEVATION.SLOPES.HIGHRES";
-                    }
-                    final String url  = "http://gpp3-wxs.ign.fr/" + key + "/geoportail/wmts?LAYER=" + realLayer + "&EXCEPTIONS=text/xml&FORMAT=" + format + "&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
-                    mTileProvider = new WebTileProvider("ign",
-                            url, tileSize)
-                            .setName("IGN")
-                            .setAttribution(
-                                    "Copyright (c) 2008-2014, Institut National de l'Information Géographique et Forestière France");
-                    break;
-                }
-                case "mapbox":
-                {
-                    final String mapId = TiConvert.toString(getProperty("mapId"));
-//                    final String imageQuality = TiConvert.toString(getProperty("imageQuality"), "png");
-                    final String token = TiConvert.toString(getProperty("accessToken"));
-                    mTileProvider = new MapBoxOnlineTileProvider(mapId, token);
-                    break;
-                }
-                default:
-                    break;
-                }
+//                    break;
+//                }
+//                case "openstreetmap":
+//                    mTileProvider = new WebTileProvider("openstreetmap",
+//                            "http://tile.openstreetmap.org/{z}/{x}/{y}.png", tileSize)
+//                            .setName("OpenStreetMap").setAttribution(
+//                                    "© OpenStreetMap Contributors");
+//                    break;
+//                case "openseamap":
+//                    mTileProvider = new WebTileProvider("openseamap",
+//                            "http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png", tileSize)
+//                            .setName("OpenSeaMap").setAttribution(
+//                                    "© Map data © OpenStreetMap, licensed under Creative Commons Share Alike By Attribution.");
+//                    break;
+//                case "mapquest":
+//                    mTileProvider = new WebTileProvider("mapquest",
+//                            "http://otile1.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png", tileSize)
+//                            .setName("MapQuest Open Aerial")
+//                            .setAttribution(
+//                                    "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
+//                    break;
+//                case "mapquest-sat":
+//                    mTileProvider = new WebTileProvider("mapquest-sat",
+//                            "http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png", tileSize)
+//                            .setName("MapQuest Open Aerial")
+//                            .setAttribution(
+//                                    "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
+//                    break;
+//                case "ign":
+//                {
+//                    final String key = TiConvert.toString(getProperty("key"));
+//                    String realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
+//                    final String layer = TiConvert.toString(getProperty("layer"), realLayer);
+//                    final String format = TiConvert.toString(getProperty("format"), "image/jpeg");
+//                    if (layer.equals("express")) {
+//                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE";
+//                    } else if (layer.equals("expressStandard")) {
+//                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD";
+//                    } else if (layer.equals("plan")) {
+//                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.PLANIGN";
+//                    } else if (layer.equals("buildings")) {
+//                        realLayer = "BUILDINGS.BUILDINGS";
+//                    } else if (layer.equals("parcels")) {
+//                        realLayer = "CADASTRALPARCELS.PARCELS";
+//                    } else if (layer.equals("slopes")) {
+//                        realLayer = "ELEVATION.SLOPES.HIGHRES";
+//                    }
+//                    final String url  = "http://gpp3-wxs.ign.fr/" + key + "/geoportail/wmts?LAYER=" + realLayer + "&EXCEPTIONS=text/xml&FORMAT=" + format + "&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
+//                    mTileProvider = new WebTileProvider("ign",
+//                            url, tileSize)
+//                            .setName("IGN")
+//                            .setAttribution(
+//                                    "Copyright (c) 2008-2014, Institut National de l'Information Géographique et Forestière France");
+//                    break;
+//                }
+//                case "mapbox":
+//                {
+//                    final String mapId = TiConvert.toString(getProperty("mapId"));
+////                    final String imageQuality = TiConvert.toString(getProperty("imageQuality"), "png");
+//                    final String token = TiConvert.toString(getProperty("accessToken"));
+//                    mTileProvider = new MapBoxOnlineTileProvider(mapId, token);
+//                    break;
+//                }
+//                default:
+//                    break;
+//                }
             }
             
             if (mTileProvider instanceof WebTileProvider) {
+                ((WebTileProvider) mTileProvider).setSubdomains(TiConvert.toString(getProperty("subdomains"), "abc"));
                 ((WebTileProvider) mTileProvider).setUserAgent(TiConvert.toString(getProperty("userAgent")));
                 ((WebTileProvider) mTileProvider).setMinimumZoomLevel(mMinZoom);
                 ((WebTileProvider) mTileProvider).setMaximumZoomLevel(mMaxZoom);
@@ -273,6 +295,9 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 mOverlayOptions = new TileOverlayOptions()
                 .fadeIn(fadeIn)
                 .tileProvider(mTileProvider);
+                if (zIndex != -1) {
+                    mOverlayOptions.zIndex(zIndex);
+                }
             }
         }
         return mOverlayOptions;
@@ -326,6 +351,20 @@ public class TileSourceProxy extends BaseTileSourceProxy {
 
     public void setTileOverlay(TileOverlay overlay) {
         mOverlay = overlay;
+    }
+    
+    @Override
+    public void clearCache() {
+        if (mOverlay != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mOverlay != null) {
+                        mOverlay.clearTileCache();
+                    }
+                }
+            });
+        }
     }
 
 }

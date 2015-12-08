@@ -2,10 +2,10 @@ package akylas.googlemap;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
+import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.util.TiUIHelper.FontDesc;
@@ -134,6 +134,13 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
                 cluster();
             }
             break;
+        case TiC.PROPERTY_VISIBLE:
+            visible = TiConvert.toBoolean(newValue, true);
+            if (_algorithm != null) {
+                _algorithm.setVisible(visible);
+                cluster();
+            }
+            break;
         default:
             super.propertySet(key, newValue, oldValue, changedProperty);
             break;
@@ -142,13 +149,15 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
 
     @Override
     protected void onAnnotationsAdded(List toAdd) {
-        getOrCreateAlgorithm().addItems(toAdd);
-        cluster();
+        if (toAdd != null) {
+            getOrCreateAlgorithm().addItems(toAdd);
+            cluster();
+        }
     }
 
     @Override
     protected void onAnnotationsRemoved(List removed) {
-        if (_algorithm != null) {
+        if (_algorithm != null && removed != null) {
             _algorithm.removeItems(removed);
             cluster();
         }
@@ -258,7 +267,7 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
             markerOptions.anchor(anchor.x, anchor.y);
         }
         if (calloutAnchor != null) {
-            markerOptions.infoWindowAnchor(calloutAnchor.x, calloutAnchor.y);
+            markerOptions.infoWindowAnchor(calloutAnchor.x, 1-calloutAnchor.y);
         }
 
         BitmapDescriptor icon = BitmapDescriptorFactory

@@ -31,12 +31,13 @@ public class WebTileProvider implements TileProvider {
     protected String mAttribution;
     protected String mLegend;
     protected String mUserAgent = null;
+    protected String mSubdomains = "abc";
 
     protected float mMinimumZoomLevel = -1.0f;
     protected float mMaximumZoomLevel = -1.0f;
     protected LatLngBounds mBoundingBox = AkylasGooglemapModule.WORLD_BOUNDING_BOX;
     protected LatLng mCenter = new LatLng(0, 0);
-    private final int mTileSizePixels;
+    private int mTileSizePixels;
 
     protected boolean mEnableSSL = false;
     protected boolean mHdpi = false;
@@ -149,25 +150,31 @@ public class WebTileProvider implements TileProvider {
           return null;
         }
         Bitmap target = bitmap;
-//        float ratioX = mTileSizePixels / (float) bitmap.getWidth();
-//        float ratioY = mTileSizePixels / (float) bitmap.getHeight();
-//        if (ratioX != 1.0f || ratioY != 1.0f) {
-//            target = Bitmap.createBitmap(mTileSizePixels, mTileSizePixels, Bitmap.Config.ARGB_8888);
-//            float middleX = mTileSizePixels / 2.0f;
-//            float middleY = mTileSizePixels / 2.0f;
-//
-//            Matrix scaleMatrix = new Matrix();
-//            scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
-//
-//            Canvas canvas = new Canvas(target);
-//            canvas.setMatrix(scaleMatrix);
-//            canvas.drawBitmap(bitmap, middleX - bitmap.getWidth() / 2, middleY - bitmap.getHeight() / 2, tilePaint);
-//            bitmap.recycle();
-//            bitmap = null;
-//        }
+        float ratioX = mTileSizePixels / (float) bitmap.getWidth();
+        float ratioY = mTileSizePixels / (float) bitmap.getHeight();
+        if (ratioX != 1.0f || ratioY != 1.0f) {
+            target = Bitmap.createBitmap(mTileSizePixels, mTileSizePixels, Bitmap.Config.ARGB_8888);
+            float middleX = mTileSizePixels / 2.0f;
+            float middleY = mTileSizePixels / 2.0f;
+
+            Matrix scaleMatrix = new Matrix();
+            scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
+
+            Canvas canvas = new Canvas(target);
+            canvas.setMatrix(scaleMatrix);
+            canvas.drawBitmap(bitmap, middleX - bitmap.getWidth() / 2, middleY - bitmap.getHeight() / 2, tilePaint);
+            bitmap.recycle();
+            bitmap = null;
+        }
         return target;
       }
- 
+    
+    
+    public String getSubdomain(int x, int y) {
+        int index = (x + y) % mSubdomains.length();
+        return mSubdomains.substring(index, index + 1);
+}
+    
     /**
      * Return the url to your tiles. For example:
      * <pre>
@@ -190,7 +197,8 @@ public String getTileUrl(int x, int y, int z) {
         return mUrl.replace("{z}", Integer.toString(zoom))
                 .replace("{x}", Integer.toString(x))
                 .replace("{y}", Integer.toString(y))
-                .replace("{2x}", mHdpi ? "@2x" : "");
+                .replace("{2x}", mHdpi ? "@2x" : "")
+                .replace("{s}", getSubdomain(x, y));
     }
     
     public void setURL(final String aUrl) {
@@ -262,7 +270,11 @@ public String getTileUrl(int x, int y, int z) {
         tilePaint.setAlpha((int) (mOpacity * 255));
         return this;
     }
-
+    
+    public WebTileProvider setTileSize(final int size) {
+        mTileSizePixels = size;
+        return this;
+    }
     
     public float getMinimumZoomLevel() {
         return mMinimumZoomLevel;
@@ -302,5 +314,9 @@ public String getTileUrl(int x, int y, int z) {
 
     public String getLegend() {
         return mLegend;
+    }
+    public void setSubdomains(String string) {
+        // TODO Auto-generated method stub
+        
     }
 }

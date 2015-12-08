@@ -1,6 +1,5 @@
 package akylas.googlemap;
 
-import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiApplication;
@@ -25,6 +24,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     private MarkerOptions markerOptions = null;
     private Marker marker;
 
+    private static final String defaultIconImageWidth = "30dip"; // The height
     private static final String defaultIconImageHeight = "40dip"; // The height
     // of the
     // default
@@ -32,6 +32,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     // The height of the marker icon in the unit of "px". Will use it to analyze
     // the touch event to find out
     // the correct clicksource for the click event.
+    private int iconImageWidth = 0;
     private int iconImageHeight = 0;
 
     public GoogleMapMarker(final AnnotationProxy p) {
@@ -46,13 +47,13 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
                 if (image != null) {
                     markerOptions
                             .icon(BitmapDescriptorFactory.fromBitmap(image));
+                    setIconImageWidth(image.getWidth());
                     setIconImageHeight(image.getHeight());
                     return;
                 }
             }
         }
         Log.w(TAG, "Unable to get the image from the custom view: " + obj);
-        setIconImageHeight(-1);
     }
 
     private void setIconImageHeight(int h) {
@@ -68,16 +69,33 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             iconImageHeight = dimension.getAsPixels(view);
         }
     }
-
-    public int getIconImageHeight() {
-        return iconImageHeight;
+    private void setIconImageWidth(int w) {
+        if (w >= 0) {
+            iconImageWidth = w;
+        } else { // default maker icon
+            TiDimension dimension = new TiDimension(defaultIconImageWidth,
+                    TiDimension.TYPE_UNDEFINED);
+            // TiDimension needs a view to grab the window manager, so we'll
+            // just use the decorview of the current window
+            View view = TiApplication.getAppCurrentActivity().getWindow()
+                    .getDecorView();
+            iconImageWidth = dimension.getAsPixels(view);
+        }
     }
 
+    public int getIconImageHeight() {
+        return  iconImageHeight;
+    }
+    public int getIconImageWidth() {
+        return  iconImageWidth;
+    }
     protected void handleSetImage(Bitmap bitmap) {
         if (bitmap == null) {
+            setIconImageWidth(-1);
             setIconImageHeight(-1);
             return;
         }
+        setIconImageWidth(bitmap.getWidth());
         setIconImageHeight(bitmap.getHeight());
         BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(bitmap);
         if (markerOptions != null) {
@@ -91,7 +109,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
 
     @Override
     public void setMarkerColor(int color) {
-        if (color != -1 && marker != null) {
+        if (color != Color.TRANSPARENT && marker != null) {
             float[] hsv = new float[3];
             Color.colorToHSV(color, hsv);
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(hsv[0]));
@@ -103,8 +121,10 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
 
             markerOptions = new MarkerOptions()
                     .position((LatLng) proxy.getPosition())
-                    .rotation(proxy.heading).title(proxy.annoTitle)
-                    .snippet(proxy.annoSubtitle).draggable(proxy.draggable)
+                    .rotation(proxy.heading)
+//                    .title(proxy.annoTitle)
+//                    .snippet(proxy.annoSubtitle)
+                    .draggable(proxy.draggable)
                     .flat(proxy.flat);
 
             markerOptions.alpha(proxy.opacity);
@@ -116,8 +136,8 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             // if (bitmap != null) {
             // } else {
             if (getImage() == null) {
-                int color = proxy.tintColor;
-                if (color != -1) {
+                int color = proxy.getCurrentTintColor();
+                if (color != Color.TRANSPARENT) {
                     float[] hsv = new float[3];
                     Color.colorToHSV(color, hsv);
                     markerOptions.icon(
@@ -136,7 +156,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             }
         }
 
-        KrollDict dict = proxy.getProperties();
+        // KrollDict dict = proxy.getProperties();
         // customView, image and pincolor must be defined before adding to
         // mapview. Once added, their values are final.
         // if (dict.containsKey(AkylasMapModule.PROPERTY_CUSTOM_VIEW)) {
@@ -157,6 +177,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
         return (AnnotationProxy) proxy;
     }
 
+    @Override
     public void removeFromMap() {
         if (marker != null) {
             marker.remove();
@@ -186,7 +207,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     }
 
     public void showInfoWindow() {
-        if (marker == null) {
+        if (marker == null || !proxy.canShowInfoWindow()) {
             return;
         }
         runInUiThread(new CommandNoReturn() {
@@ -199,7 +220,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     }
 
     public void hideInfoWindow() {
-        if (marker == null) {
+        if (marker == null || !proxy.canShowInfoWindow()) {
             return;
         }
         runInUiThread(new CommandNoReturn() {
@@ -353,7 +374,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     @Override
     public void setWindowAnchor(PointF anchor) {
         final float anchorX = (anchor != null) ? anchor.x : 0.5f;
-        final float anchorY = (anchor != null) ? anchor.y : 1.0f;
+        final float anchorY = (anchor != null) ? anchor.y : 0.0f;
         if (markerOptions != null) {
             markerOptions.infoWindowAnchor(anchorX, anchorY);
         }

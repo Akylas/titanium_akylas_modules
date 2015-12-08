@@ -15,6 +15,7 @@ public class ClusterRenderer extends DefaultClusterRenderer<AnnotationProxy> {
     public ClusterRenderer(Context context, GoogleMap map,
             ClusterManager<AnnotationProxy> clusterManager) {
         super(context, map, clusterManager);
+        setAnimationType(ANIMATION_FADE);
     }
 //    @Override
 //    protected void onBeforeClusterItemRendered(AnnotationProxy person, MarkerOptions markerOptions) {
@@ -23,6 +24,11 @@ public class ClusterRenderer extends DefaultClusterRenderer<AnnotationProxy> {
 ////        mImageView.setImageResource(person.profilePhoto);
 ////        Bitmap icon = mIconGenerator.makeIcon();
 ////        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(person.name);
+//    }
+    
+//    @Override
+//    protected boolean shouldAnimate() {
+//        return false;
 //    }
     
     @Override

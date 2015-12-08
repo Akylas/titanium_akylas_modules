@@ -17,6 +17,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import akylas.map.common.BaseRouteProxy;
+import android.graphics.Color;
 import android.graphics.Paint.Cap;
 import android.graphics.Paint.Join;
 import android.os.Message;
@@ -32,7 +33,6 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     private PolylineOptions options = null;
     private Polyline polyline;
 
-    private int mColor = 0;
     private Cap mStrokeCap = Cap.ROUND;
     private Join mStrokeJoin = Join.ROUND;
     private float mStrokeWidth = 7;
@@ -52,12 +52,12 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
         AsyncResult result = null;
         switch (msg.what) {
 
-        case MSG_SET_COLOR: {
-            result = (AsyncResult) msg.obj;
-            polyline.setColor(mColor);
-            result.setResult(null);
-            return true;
-        }
+//        case MSG_SET_COLOR: {
+//            result = (AsyncResult) msg.obj;
+//            polyline.setColor(mColor);
+//            result.setResult(null);
+//            return true;
+//        }
 
         case MSG_SET_WIDTH: {
             result = (AsyncResult) msg.obj;
@@ -91,10 +91,16 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
             }
             break;
         case TiC.PROPERTY_COLOR:
-            mColor = TiConvert.toColor(newValue);
-            if (polyline != null) {
-                TiMessenger.sendBlockingMainMessage(getMainHandler()
-                        .obtainMessage(MSG_SET_COLOR));
+            tintColor = TiConvert.toColor(newValue, Color.TRANSPARENT);
+            if (polyline != null && (!selected || (selectedTintColor == Color.TRANSPARENT))) {
+                polyline.setColor(tintColor);
+//                marker.setMarkerColor(tintColor);
+            }
+            break;
+        case TiC.PROPERTY_SELECTED_COLOR:
+            selectedTintColor = TiConvert.toColor(newValue, Color.TRANSPARENT);
+            if (polyline != null && selected) {
+                polyline.setColor(selectedTintColor);
             }
             break;
         case TiC.PROPERTY_ZINDEX:
@@ -149,7 +155,7 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     
     public PolylineOptions getAndSetOptions(final CameraPosition position) {
         options = new PolylineOptions();
-        return options.width(mStrokeWidth).addAll(mPoints).color(mColor).zIndex(zIndex);
+        return options.width(mStrokeWidth).addAll(mPoints).color(selected?selectedTintColor:tintColor).zIndex(zIndex);
     }
 
     public void setPolyline(Polyline r) {
