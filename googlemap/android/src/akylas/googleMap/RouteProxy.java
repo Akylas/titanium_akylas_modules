@@ -5,6 +5,7 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
@@ -26,16 +27,13 @@ import android.os.Message;
 public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     private static final int MSG_FIRST_ID = KrollProxy.MSG_LAST_ID + 1;
 
-    private static final int MSG_SET_COLOR = MSG_FIRST_ID + 401;
+//    private static final int MSG_SET_COLOR = MSG_FIRST_ID + 401;
     private static final int MSG_SET_WIDTH = MSG_FIRST_ID + 402;
     private static final int MSG_SET_ZINDEX = MSG_FIRST_ID + 403;
 
     private PolylineOptions options = null;
     private Polyline polyline;
 
-    private Cap mStrokeCap = Cap.ROUND;
-    private Join mStrokeJoin = Join.ROUND;
-    private float mStrokeWidth = 7;
 
     public RouteProxy() {
         super();
@@ -83,11 +81,20 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
             boolean changedProperty) {
         super.propertySet(key, newValue, oldValue, changedProperty);
         switch (key) {
-        case TiC.PROPERTY_WIDTH:
+        case "lineWidth":
             mStrokeWidth = TiUIHelper.getInPixels(newValue, mStrokeWidth);
-            if (polyline != null) {
-                TiMessenger.sendBlockingMainMessage(getMainHandler()
-                        .obtainMessage(MSG_SET_WIDTH));
+            if (polyline != null && (!selected || mSelectedStrokeWidth < 0)) {
+                polyline.setWidth(mStrokeWidth);
+//                TiMessenger.sendBlockingMainMessage(getMainHandler()
+//                        .obtainMessage(MSG_SET_WIDTH));
+            }
+            break;
+        case "selectedLineWidth":
+            mSelectedStrokeWidth = TiUIHelper.getInPixels(newValue, mStrokeWidth);
+            if (polyline != null && (selected && mSelectedStrokeWidth >= 0)) {
+                polyline.setWidth(mSelectedStrokeWidth);
+//                TiMessenger.sendBlockingMainMessage(getMainHandler()
+//                        .obtainMessage(MSG_SET_WIDTH));
             }
             break;
         case TiC.PROPERTY_COLOR:
@@ -115,15 +122,20 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
                 polyline.setVisible(TiConvert.toBoolean(newValue));
             }
             break;
-        case AkylasGooglemapModule.PROPERTY_LINE_JOIN:
-            mStrokeJoin = joinFromString(TiConvert.toString(newValue));
-            break;
-        case AkylasGooglemapModule.PROPERTY_LINE_CAP:
-            mStrokeCap = capFromString(TiConvert.toString(newValue));
-            break;
         default:
             break;
         }
+    }
+    
+    
+    @Override
+    protected void didProcessProperties() {
+        if ((mProcessUpdateFlags & TIFLAG_NEEDS_TOUCHABLE) != 0) {
+            if (polyline != null) {
+                polyline.setClickable(touchable);
+            }
+        }
+        super.didProcessProperties();
     }
     
     private void updatePolyline() {
@@ -155,7 +167,10 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     
     public PolylineOptions getAndSetOptions(final CameraPosition position) {
         options = new PolylineOptions();
-        return options.width(mStrokeWidth).addAll(mPoints).color(selected?selectedTintColor:tintColor).zIndex(zIndex);
+        return options.width(selected?mSelectedStrokeWidth:mStrokeWidth)
+                .addAll(mPoints)
+                .clickable(touchable)
+                .color(selected?selectedTintColor:tintColor).zIndex(zIndex);
     }
 
     public void setPolyline(Polyline r) {
@@ -172,6 +187,11 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
             polyline = null;
         }
     }
+    
+    @Override
+    public void removeFromMap() {
+        removePolyline();
+    }
 
 //    private float widthThickness = 1.2f;
 
@@ -183,5 +203,47 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
         // polyline.setWidth(newWidth);
         // }
         // }
+    }
+    
+    @Override
+    public void onDeselect() {
+        if (!TiApplication.isUIThread()) {
+            runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    onDeselect();
+                }
+            }, false);
+            return;
+        }
+        super.onDeselect();
+        if (polyline == null) {
+            return;
+        }
+        polyline.setZIndex(zIndex);
+        if (mSelectedStrokeWidth >= 0 && mSelectedStrokeWidth != mStrokeWidth ) {
+            polyline.setWidth(mStrokeWidth);
+        }
+    }
+    
+    @Override
+    public void onSelect() {
+        if (!TiApplication.isUIThread()) {
+            runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    onSelect();
+                }
+            }, false);
+            return;
+        }
+        super.onSelect();
+        if (polyline == null) {
+            return;
+        }
+        polyline.setZIndex(10000);
+        if (mSelectedStrokeWidth >= 0 && mSelectedStrokeWidth != mStrokeWidth ) {
+            polyline.setWidth(mSelectedStrokeWidth);
+        }
     }
 }

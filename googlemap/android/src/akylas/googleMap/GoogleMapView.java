@@ -9,9 +9,10 @@ package akylas.googlemap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+//import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.WeakHashMap;
+//import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -20,7 +21,8 @@ import akylas.map.common.AkylasMapBaseView;
 import akylas.map.common.AkylasMapInfoView;
 import akylas.map.common.AkylasMarker;
 import akylas.map.common.BaseAnnotationProxy;
-import akylas.map.common.BaseTileSourceProxy;
+import akylas.map.common.BaseRouteProxy;
+//import akylas.map.common.BaseTileSourceProxy;
 import akylas.map.common.ReusableView;
 import android.graphics.RectF;
 
@@ -75,6 +77,8 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import com.google.android.gms.maps.GoogleMap.OnPolygonClickListener;
+import com.google.android.gms.maps.GoogleMap.OnPolylineClickListener;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
@@ -85,6 +89,8 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterItem;
@@ -102,14 +108,17 @@ public class GoogleMapView extends AkylasMapBaseView implements
         GoogleMap.OnMapLongClickListener, GoogleMap.OnMapLoadedCallback,
         GoogleMap.OnMyLocationChangeListener, OnMyLocationButtonClickListener,
         OnMapReadyCallback, OnClusterClickListener, OnClusterItemClickListener,
-        OnClusterItemInfoWindowClickListener, OnClusterInfoWindowClickListener,
+        OnClusterItemInfoWindowClickListener, OnClusterInfoWindowClickListener,    
+        OnPolylineClickListener, OnPolygonClickListener,
         OnLifecycleEvent {
     private static final String TAG = "AkylasMapView";
     private GoogleMap map;
     protected boolean animate = false;
     protected boolean preLayout = true;
     protected LatLngBounds preLayoutUpdateBounds;
-    protected ArrayList<AkylasMarker> timarkers;
+//    protected ArrayList<AkylasMarker> timarkers;
+    protected WeakHashMap<Polyline, RouteProxy> handledPolylines;
+    protected WeakHashMap<Marker, AnnotationProxy> handledMarkers;
     private Fragment fragment;
 
     private float mRequiredZoomLevel = 10;
@@ -126,10 +135,10 @@ public class GoogleMapView extends AkylasMapBaseView implements
     private RectF padding = null;
     private int cameraAnimationDuration = CAMERA_UPDATE_DURATION;
 
-    private Set<RouteProxy> addedRoutes = new HashSet<RouteProxy>();
-    private Set<GroundOverlayProxy> addedGroundOverlays = new HashSet<GroundOverlayProxy>();
-    private Set<ClusterProxy> addedClusters = new HashSet<ClusterProxy>();
-    private Set<BaseTileSourceProxy> addedTileSources = new HashSet<BaseTileSourceProxy>();
+//    private Set<RouteProxy> addedRoutes = new HashSet<RouteProxy>();
+//    private Set<GroundOverlayProxy> addedGroundOverlays = new HashSet<GroundOverlayProxy>();
+//    private Set<ClusterProxy> addedClusters = new HashSet<ClusterProxy>();
+//    private Set<BaseTileSourceProxy> addedTileSources = new HashSet<BaseTileSourceProxy>();
     private MapView mapView;
     final AbsoluteLayout container;
     protected static final int TIFLAG_NEEDS_CAMERA = 0x00000001;
@@ -259,7 +268,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (activity instanceof TiBaseActivity) {
             ((TiBaseActivity) activity).addOnLifecycleEventListener(this);
         }
-        timarkers = new ArrayList<AkylasMarker>();
+//        timarkers = new ArrayList<AkylasMarker>();
     }
 
     @Override
@@ -301,6 +310,8 @@ public class GoogleMapView extends AkylasMapBaseView implements
         theMap.setInfoWindowAdapter(mapView);
         theMap.setOnMapLongClickListener(mapView);
         theMap.setOnMapLoadedCallback(mapView);
+        theMap.setOnPolygonClickListener(mapView);
+        theMap.setOnPolylineClickListener(mapView);
         theMap.setOnMyLocationChangeListener(mapView);
         theMap.setOnMyLocationButtonClickListener(mapView);
     }
@@ -410,30 +421,35 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
         releaseFragment();
 
-        addedClusters.clear();
+//        addedClusters.clear();
 
-        for (RouteProxy route : addedRoutes) {
-            route.removePolyline();
+//        for (RouteProxy route : addedRoutes) {
+//            route.removePolyline();
+//        }
+//        addedRoutes.clear();
+//
+//        for (GroundOverlayProxy overlay : addedGroundOverlays) {
+//            overlay.removeGroundOverlay();
+//        }
+//        addedGroundOverlays.clear();
+//
+//        for (BaseTileSourceProxy tileSource : addedTileSources) {
+//            tileSource.releaseSource();
+//        }
+//        addedTileSources.clear();
+//
+//        for (AkylasMarker marker : timarkers) {
+//            ((GoogleMapMarker) marker).setMarker(null);
+//            if (marker.getProxy() != null) {
+//                marker.getProxy().setMarker(null);
+//            }
+//        }
+        if (handledMarkers != null) {
+            handledMarkers.clear();
         }
-        addedRoutes.clear();
-
-        for (GroundOverlayProxy overlay : addedGroundOverlays) {
-            overlay.removeGroundOverlay();
+        if (handledPolylines != null) {
+            handledPolylines.clear();
         }
-        addedGroundOverlays.clear();
-
-        for (BaseTileSourceProxy tileSource : addedTileSources) {
-            tileSource.releaseSource();
-        }
-        addedTileSources.clear();
-
-        for (AkylasMarker marker : timarkers) {
-            ((GoogleMapMarker) marker).setMarker(null);
-            if (marker.getProxy() != null) {
-                marker.getProxy().setMarker(null);
-            }
-        }
-        timarkers.clear();
     }
 
     protected Fragment createFragment() {
@@ -692,52 +708,33 @@ public class GoogleMapView extends AkylasMapBaseView implements
     }
 
     public float getMaxZoomLevel() {
+        float defaultValue = TiConvert.toFloat(
+                proxy.getProperty(AkylasGooglemapModule.PROPERTY_MAXZOOM),
+                0);
         if (map == null) {
-            return TiConvert.toFloat(
-                    proxy.getProperty(AkylasGooglemapModule.PROPERTY_MAXZOOM),
-                    0);
+            return defaultValue;
         }
-        FutureTask<Float> futureResult = new FutureTask<Float>(
-                new Callable<Float>() {
-                    @Override
-                    public Float call() throws Exception {
-                        return map.getMaxZoomLevel();
-                    }
-                });
-        // this block until the result is calculated!
-        getProxy().getActivity().runOnUiThread(futureResult);
-        try {
-            return futureResult.get();
-        } catch (InterruptedException | ExecutionException e) {
-            return TiConvert.toFloat(
-                    proxy.getProperty(AkylasGooglemapModule.PROPERTY_MAXZOOM),
-                    0);
-        }
+        return proxy.getValueInUIThread(new Command<Float>() {
+            @Override
+            public Float execute() {
+                return map.getMaxZoomLevel();
+            }
+        }, defaultValue);
     }
 
     public float getMinZoomLevel() {
+        float defaultValue = TiConvert.toFloat(
+                proxy.getProperty(AkylasGooglemapModule.PROPERTY_MINZOOM),
+                0);
         if (map == null) {
-            return TiConvert.toFloat(
-                    proxy.getProperty(AkylasGooglemapModule.PROPERTY_MINZOOM),
-                    0);
+            return defaultValue;
         }
-
-        FutureTask<Float> futureResult = new FutureTask<Float>(
-                new Callable<Float>() {
-                    @Override
-                    public Float call() throws Exception {
-                        return map.getMinZoomLevel();
-                    }
-                });
-        // this block until the result is calculated!
-        getProxy().getActivity().runOnUiThread(futureResult);
-        try {
-            return futureResult.get();
-        } catch (InterruptedException | ExecutionException e) {
-            return TiConvert.toFloat(
-                    proxy.getProperty(AkylasGooglemapModule.PROPERTY_MINZOOM),
-                    0);
-        }
+        return proxy.getValueInUIThread(new Command<Float>() {
+            @Override
+            public Float execute() {
+                return map.getMinZoomLevel();
+            }
+        }, defaultValue);
     }
 
     public static float metersToEquatorPixels(GoogleMap map,
@@ -790,26 +787,24 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     public float getZoomLevel() {
         if (targetZoom != -1) {
-            // Log.d(TAG, "getZoomLevel targetZoom");
             return targetZoom;
         }
         if (currentCameraPosition == null) {
-            // Log.d(TAG, "getZoomLevel getProperty");
             return TiConvert.toFloat(
                     proxy.getProperty(AkylasGooglemapModule.PROPERTY_ZOOM), 0);
         }
-        // Log.d(TAG, "getZoomLevel currentCameraPosition");
         return currentCameraPosition.zoom;
     }
 
     private AnnotationProxy getProxyByMarker(Marker m) {
-        if (m != null) {
-            for (int i = 0; i < timarkers.size(); i++) {
-                GoogleMapMarker timarker = (GoogleMapMarker) timarkers.get(i);
-                if (m.equals(timarker.getMarker())) {
-                    return timarker.getProxy();
-                }
-            }
+        if (m != null && handledMarkers != null) {
+            return handledMarkers.get(m);
+//            for (int i = 0; i < timarkers.size(); i++) {
+//                GoogleMapMarker timarker = (GoogleMapMarker) timarkers.get(i);
+//                if (m.equals(timarker.getMarker())) {
+//                    return timarker.getProxy();
+//                }
+//            }
         }
         return null;
     }
@@ -1288,7 +1283,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 currentInfoWindowAnim.cancel();
                 currentInfoWindowAnim = null;
             }
-            infoWindowContainer.setVisibility(View.GONE);
             TiViewHelper.setPivotFloatX(infoWindowContainer, 0.5f);
             TiViewHelper.setPivotFloatY(infoWindowContainer, 1f);
             currentInfoWindowAnim = new AnimatorSet();
@@ -1305,7 +1299,11 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
+                    infoWindowContainer.setVisibility(View.GONE);
                     currentInfoWindowAnim = null;
+                    if (showingInfoMarker != null) {
+                        showingInfoMarker.infoWindowDidClose();
+                    }
                 }
 
                 @Override
@@ -1356,12 +1354,12 @@ public class GoogleMapView extends AkylasMapBaseView implements
             positionUpdaterRunnable = null;
         }
         AkylasMapInfoView infoView = null;
-        if (proxy != null && proxy.canShowInfoWindow()) {
-            if (proxy != showingInfoMarker) {
+        if (proxy != null) {
+//            if (proxy != showingInfoMarker) {
                 showingInfoMarker = (AnnotationProxy) proxy;
                 infoView = (AkylasMapInfoView) mInfoWindowCache.get("infoView");
                 proxy.prepareInfoView(infoView);
-            }
+//            }
         }
         if (infoView == null) {
             return;
@@ -1466,12 +1464,18 @@ public class GoogleMapView extends AkylasMapBaseView implements
         proxy.runInUiThread(new CommandNoReturn() {
             @Override
             public void execute() {
+                final Activity activity = proxy.getActivity();
                 for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
                     proxy.setPolyline(map.addPolyline(
                             proxy.getAndSetOptions(currentCameraPosition)));
                     proxy.setMapView(GoogleMapView.this);
+                    proxy.setActivity(activity);
                     proxy.setParentForBubbling(GoogleMapView.this.proxy);
-                    addedRoutes.add(proxy);
+//                    addedRoutes.add(proxy);
+                    if (handledPolylines == null) { 
+                        handledPolylines = new WeakHashMap<Polyline, RouteProxy>();
+                    }
+                    handledPolylines.put(proxy.getPolyline(), proxy);
                 }
             }
         }, true);
@@ -1483,10 +1487,15 @@ public class GoogleMapView extends AkylasMapBaseView implements
             @Override
             public void execute() {
                 for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
+                    if (handledPolylines != null) {
+                        handledPolylines.remove(proxy.getPolyline());
+                    }
                     proxy.removePolyline();
+                    proxy.setActivity(null);
                     proxy.setMapView(null);
                     proxy.setParentForBubbling(null);
-                    addedRoutes.remove(proxy);
+
+                    // addedRoutes.remove(proxy);
                 }
             }
         }, true);
@@ -1500,12 +1509,14 @@ public class GoogleMapView extends AkylasMapBaseView implements
         proxy.runInUiThread(new CommandNoReturn() {
             @Override
             public void execute() {
-                for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
+                final Activity activity = proxy.getActivity();
+               for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
                     proxy.setGroundOverlay(map.addGroundOverlay(
                             proxy.getAndSetOptions(currentCameraPosition)));
+                    proxy.setActivity(activity);
                     proxy.setMapView(GoogleMapView.this);
                     proxy.setParentForBubbling(GoogleMapView.this.proxy);
-                    addedGroundOverlays.add(proxy);
+//                    addedGroundOverlays.add(proxy);
                 }
             }
         }, true);
@@ -1518,9 +1529,10 @@ public class GoogleMapView extends AkylasMapBaseView implements
             public void execute() {
                 for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
                     proxy.removeGroundOverlay();
+                    proxy.setActivity(null);
                     proxy.setMapView(null);
                     proxy.setParentForBubbling(null);
-                    addedGroundOverlays.remove(proxy);
+//                    addedGroundOverlays.remove(proxy);
                 }
             }
         }, true);
@@ -1534,9 +1546,11 @@ public class GoogleMapView extends AkylasMapBaseView implements
         proxy.runInUiThread(new CommandNoReturn() {
             @Override
             public void execute() {
+                final Activity activity = proxy.getActivity();
                 for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
                     proxy.setMapView(GoogleMapView.this);
                     proxy.setParentForBubbling(GoogleMapView.this.proxy);
+                    proxy.setActivity(activity);
                     getClusterManager()
                             .addClusterAlgorithm(proxy.getOrCreateAlgorithm());
                 }
@@ -1551,7 +1565,8 @@ public class GoogleMapView extends AkylasMapBaseView implements
             public void execute() {
                 for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
                     proxy.setMapView(null);
-                    proxy.setParentForBubbling(null);
+                    proxy.setActivity(null);
+                   proxy.setParentForBubbling(null);
                     getClusterManager()
                             .removeClusterAlgorithm(proxy.getAlgorithm());
                 }
@@ -1568,16 +1583,18 @@ public class GoogleMapView extends AkylasMapBaseView implements
             @Override
             public void execute() {
                 int realIndex = index;
-                for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
+                final Activity activity = proxy.getActivity();
+               for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
                     TileOverlayOptions options = ((TileSourceProxy) proxy)
                             .getTileOverlayOptions();
                     if (options != null) {
                         if (realIndex != -1) {
                             options.zIndex(realIndex);
                         }
-                        proxy.setTileOverlay(map.addTileOverlay(options));
+                        proxy.setActivity(activity);
+                       proxy.setTileOverlay(map.addTileOverlay(options));
                         proxy.setParentForBubbling(GoogleMapView.this.proxy);
-                        addedTileSources.add(proxy);
+//                        addedTileSources.add(proxy);
                     }
                     if (realIndex != -1) {
                         realIndex++;
@@ -1594,8 +1611,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
             public void execute() {
                 for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
                     proxy.release();
+                    proxy.setActivity(null);
                     proxy.setParentForBubbling(null);
-                    addedTileSources.remove(proxy);
+//                    addedTileSources.remove(proxy);
                 }
             }
         }, true);
@@ -1621,7 +1639,12 @@ public class GoogleMapView extends AkylasMapBaseView implements
         // position might already have changed
         googlemarker.setPosition((LatLng) proxy.getPosition());
         gMarker.setMarker(googlemarker);
-        timarkers.add(proxy.getMarker());
+        
+        if (handledMarkers == null) { 
+            handledMarkers = new WeakHashMap<Marker, AnnotationProxy>();
+        }
+        handledMarkers.put(googlemarker, proxy);
+//        timarkers.add(proxy.getMarker());
         if (proxy.selected && proxy == selectedAnnotation) {
             handleSelectAnnotation(selectedAnnotation);
         }
@@ -1636,7 +1659,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
         proxy.runInUiThread(new CommandNoReturn() {
             @Override
             public void execute() {
-                for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
+                final Activity activity = proxy.getActivity();
+               for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
+                   proxy.setActivity(activity);
                     addAnnotationToMap(proxy);
                 }
             }
@@ -1651,79 +1676,82 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
                     GoogleMapMarker marker = (GoogleMapMarker) proxy
                             .getMarker();
+                    if (handledMarkers != null) {
+                        handledMarkers.remove(marker.getMarker());
+                    }
                     proxy.removeFromMap();
-                    timarkers.remove(marker);
-                    deselectAnnotation(proxy);
-                    // proxy.setMarker(null);
-                    proxy.setParentForBubbling(null);
+//                    timarkers.remove(marker);
+                    deselectAnnotation(proxy);                    
+                    proxy.setActivity(null);
                     proxy.setMapView(null);
+                    proxy.setParentForBubbling(null);
                 }
             }
         }, true);
 
     }
 
-    @Override
-    protected void removeAllAnnotations() {
-        if (!TiApplication.isUIThread()) {
-            proxy.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    removeAllAnnotations();
-                }
-            });
-            return;
-        }
-        map.clear();
-    }
+//    @Override
+//    protected void removeAllAnnotations() {
+//        if (!TiApplication.isUIThread()) {
+//            proxy.getActivity().runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    removeAllAnnotations();
+//                }
+//            });
+//            return;
+//        }
+//        map.clear();
+//    }
 
-    protected void removeAllRoutes() {
-        if (!TiApplication.isUIThread()) {
-            proxy.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    removeAllRoutes();
-                }
-            });
-            return;
-        }
-        for (RouteProxy route : addedRoutes) {
-            route.removePolyline();
-        }
-        addedRoutes.clear();
-    }
+//    protected void removeAllRoutes() {
+//        if (!TiApplication.isUIThread()) {
+//            proxy.getActivity().runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    removeAllRoutes();
+//                }
+//            });
+//            return;
+//        }
+//        for (RouteProxy route : addedRoutes) {
+//            route.removePolyline();
+//        }
+//        addedRoutes.clear();
+//    }
 
-    protected void removeAllGroundOverlays() {
-        if (!TiApplication.isUIThread()) {
-            proxy.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    removeAllGroundOverlays();
-                }
-            });
-            return;
-        }
-        for (GroundOverlayProxy overlay : addedGroundOverlays) {
-            overlay.removeGroundOverlay();
-        }
-        addedGroundOverlays.clear();
-    }
+//    protected void removeAllGroundOverlays() {
+//        if (!TiApplication.isUIThread()) {
+//            proxy.getActivity().runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    removeAllGroundOverlays();
+//                }
+//            });
+//            return;
+//        }
+//        for (GroundOverlayProxy overlay : addedGroundOverlays) {
+//            overlay.removeGroundOverlay();
+//        }
+//        addedGroundOverlays.clear();
+//    }
 
-    protected void removeAllTileSources() {
-        if (!TiApplication.isUIThread()) {
-            proxy.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    removeAllTileSources();
-                }
-            });
-            return;
-        }
-        for (BaseTileSourceProxy tileSource : addedTileSources) {
-            tileSource.release();
-        }
-        addedTileSources.clear();
-    }
+//    protected void removeAllTileSources() {
+//        if (!TiApplication.isUIThread()) {
+//            proxy.getActivity().runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    removeAllTileSources();
+//                }
+//            });
+//            return;
+//        }
+//        for (BaseTileSourceProxy tileSource : addedTileSources) {
+//            tileSource.release();
+//        }
+//        addedTileSources.clear();
+//    }
 
     @Override
     public void onMyLocationChange(Location location) {
@@ -1926,6 +1954,21 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
         return true;
     }
+    
+
+    @Override
+    public void onPolygonClick(Polygon arg0) {
+    }
+
+    @Override
+    public void onPolylineClick(Polyline polyline) {
+        if (handledPolylines != null) {
+            BaseRouteProxy route = handledPolylines.get(polyline);
+            if (route != null) {
+                handleMarkerClick(route);
+            }
+        }
+    }
 
     @Override
     public boolean onClusterClick(Cluster cluster) {
@@ -2000,4 +2043,5 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     public void onLowMemory(Activity activity) {
     }
+
 }

@@ -206,34 +206,34 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
         return 0;
     }
 
-    public void showInfoWindow() {
-        if (marker == null || !proxy.canShowInfoWindow()) {
-            return;
-        }
-        runInUiThread(new CommandNoReturn() {
-            public void execute() {
-                if (marker != null) {
-                    marker.showInfoWindow();
-                }
-            }
-        });
-    }
-
-    public void hideInfoWindow() {
-        if (marker == null || !proxy.canShowInfoWindow()) {
-            return;
-        }
-        runInUiThread(new CommandNoReturn() {
-            public void execute() {
-                if (marker != null) {
-                    marker.hideInfoWindow();
-                    if (proxy != null) {
-                        proxy.infoWindowDidClose();
-                    }
-                }
-            }
-        });
-    }
+//    public void showInfoWindow() {
+//        if (marker == null || !proxy.canShowInfoWindow()) {
+//            return;
+//        }
+//        runInUiThread(new CommandNoReturn() {
+//            public void execute() {
+//                if (marker != null) {
+//                    marker.showInfoWindow();
+//                }
+//            }
+//        });
+//    }
+//
+//    public void hideInfoWindow() {
+//        if (marker == null || !proxy.canShowInfoWindow()) {
+//            return;
+//        }
+//        runInUiThread(new CommandNoReturn() {
+//            public void execute() {
+//                if (marker != null) {
+//                    marker.hideInfoWindow();
+//                    if (proxy != null) {
+//                        proxy.infoWindowDidClose();
+//                    }
+//                }
+//            }
+//        });
+//    }
 
     public void runInUiThread(final CommandNoReturn command) {
         if (marker != null) {
