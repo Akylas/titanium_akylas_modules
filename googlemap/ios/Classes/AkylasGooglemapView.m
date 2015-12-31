@@ -716,6 +716,28 @@
     [CATransaction commit];
 }
 
+-(void)showInfoWindow
+{
+    GMSOverlay* overlay = map.selectedMarker;
+    if (!overlay) {
+        overlay = _selectedOverlay;
+    }
+    if (overlay) {
+        [self showCalloutForOverlay:overlay];
+    }
+}
+
+-(void)hideInfoWindow
+{
+    GMSOverlay* overlay = map.selectedMarker;
+    if (!overlay) {
+        overlay = _selectedOverlay;
+    }
+    if (overlay) {
+        [self hideCalloutForOverlay:overlay];
+    }
+}
+
 -(void)selectAnnotation:(id)args
 {
     ENSURE_SINGLE_ARG_OR_NIL(args,NSObject);
@@ -967,11 +989,11 @@
 
 -(void)showCalloutForOverlay:(GMSOverlay*)overlay
 {
-    BOOL canShowCallout = YES;
+    BOOL canShowCallout = self.canShowInfoWindow;
     AkylasMapBaseAnnotationProxy *annProxy = ([overlay respondsToSelector:@selector(userData)])? [(id)overlay userData]: nil;
 
     if (annProxy) {
-        canShowCallout = annProxy.showInfoWindow;
+        canShowCallout &= annProxy.showInfoWindow;
     }
     if (canShowCallout) {
         if (!_calloutView) {
@@ -1735,6 +1757,14 @@
 }
 
 
+-(void)setCanSelectRoute_:(id)value
+{
+    [super setCanSelectRoute_:value];
+    if (!self.canSelectRoute && _selectedOverlay) {
+        [self selectAnnotation:nil];
+    }
+}
+
 -(void)selectOverlay:(GMSOverlay *)overlay {
     if (self.canSelectRoute) {
         GMSOverlay* oldOverlay = nil;
@@ -1757,6 +1787,8 @@
         
         [self fireSelectedEventFromOverlay:oldOverlay toOverlay:_selectedOverlay];
         RELEASE_TO_NIL(oldOverlay)
+    } else {
+        [self selectAnnotation:nil];
     }
 }
 

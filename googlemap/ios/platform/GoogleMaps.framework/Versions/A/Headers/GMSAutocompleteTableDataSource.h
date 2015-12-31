@@ -106,7 +106,7 @@
     UITableViewDataSource, UITableViewDelegate>
 
 /** Delegate to be notified when a place is selected or picking is cancelled. */
-@property(nonatomic, weak) id<GMSAutocompleteTableDataSourceDelegate> delegate;
+@property(nonatomic, weak) IBOutlet id<GMSAutocompleteTableDataSourceDelegate> delegate;
 
 /** Bounds used to bias the autocomplete search (can be nil). */
 @property(nonatomic, strong) GMSCoordinateBounds *autocompleteBounds;
