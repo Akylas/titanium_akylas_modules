@@ -1346,7 +1346,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 marker.showInfoWindow();
             }
         }
-        if (!proxy.canShowInfoWindow()) {
+        if (!_canShowInfoWindow || !proxy.canShowInfoWindow()) {
             return;
         }
         if (positionUpdaterRunnable != null) {
