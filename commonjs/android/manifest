@@ -12,7 +12,7 @@ debug_project_subpath: commonjs/android
 
 
 # these should not be edited
-name: akylas.commonjs
+name: akylas-commonjs
 moduleid: akylas.commonjs
 guid: 1748bde1-61ed-44fe-995d-2a5191eb032a
 platform: android

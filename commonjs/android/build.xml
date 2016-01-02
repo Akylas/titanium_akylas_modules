@@ -1,4 +1,4 @@
-<project name="akylas.commonjs" default="dist">
+<project name="akylas-commonjs" default="dist">
 	<description>
 		Ant build script for Titanium Android module akylas-commonjs
 	</description>

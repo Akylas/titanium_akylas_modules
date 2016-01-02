@@ -21,8 +21,7 @@ import org.appcelerator.titanium.TiProperties;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.HashMap;
 
 @Kroll.module(name="AkylasCommonjs", id="akylas.commonjs")
 public class AkylasCommonjsModule extends KrollModule
@@ -75,14 +74,17 @@ public class AkylasCommonjsModule extends KrollModule
         Log.d(TAG, "AkylasCommonjsModule", Log.DEBUG_MODE);
 	}
 	public static void showError(final String message) {
-	    (new TiExceptionHandler()).handleException(new KrollExceptionHandler.ExceptionMessage(message, null, null,0,null, 0, null));
-	    new Timer().schedule(new TimerTask() {
-	        @Override
-	        public void run() {
-             TiApplication.getAppRootOrCurrentActivity().finish();
-             System.exit(0);
-	        }
-	    }, 20000);
+	    HashMap error = new HashMap();
+	    error.put("title", message);
+	    error.put("canContinue", false);
+	    TiApplication.getExceptionHandler().handleException(error);
+//	    new Timer().schedule(new TimerTask() {
+//	        @Override
+//	        public void run() {
+//             TiApplication.getAppRootOrCurrentActivity().finish();
+//             System.exit(0);
+//	        }
+//	    }, 20000);
 	}
 
 	@Kroll.onAppCreate
