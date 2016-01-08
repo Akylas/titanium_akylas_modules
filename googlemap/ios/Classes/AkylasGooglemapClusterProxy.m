@@ -69,7 +69,7 @@ static NSInteger idIncrement = 0;
     UIColor *_selectedStrokeColor;
     
 }
-@synthesize maxDistance;
+@synthesize minDistance, maxDistance;
 
 -(void)dealloc
 {
@@ -91,6 +91,7 @@ static NSInteger idIncrement = 0;
 
 -(void)_configure
 {
+    minDistance = -1;
     maxDistance = 100;
     _showText = YES;
     _strokeWidth = 2;
@@ -114,7 +115,8 @@ static NSInteger idIncrement = 0;
 {
     if (!_algorithm) {
         _algorithm = [[AkylasClusterAlgorithm alloc] init];
-        _algorithm.gridSize = self.maxDistance;
+        _algorithm.minDistance = self.minDistance;
+        _algorithm.maxDistanceAtZoom = self.maxDistance;
         _algorithm.proxy = self;
         _algorithm.visible = self.visible;
         _algorithm.minZoom = self.minZoom;
@@ -128,7 +130,16 @@ static NSInteger idIncrement = 0;
     maxDistance = newValue;
     [self replaceValue:@(newValue) forKey:@"maxDistance" notification:NO];
     if (_algorithm) {
-        ((AkylasClusterAlgorithm*)_algorithm).gridSize = maxDistance;
+        ((AkylasClusterAlgorithm*)_algorithm).maxDistanceAtZoom = maxDistance;
+    }
+}
+
+-(void)setMinDistance:(CGFloat)newValue
+{
+    minDistance = newValue;
+    [self replaceValue:@(newValue) forKey:@"minDistance" notification:NO];
+    if (_algorithm) {
+        ((AkylasClusterAlgorithm*)_algorithm).minDistance = minDistance;
     }
 }
 

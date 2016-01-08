@@ -19,7 +19,7 @@
 @property (nonatomic, assign) BOOL selected;
 @end
 
-@interface AkylasClusterAlgorithm : GridBasedAlgorithm
+@interface AkylasClusterAlgorithm : NonHierarchicalDistanceBasedAlgorithm
 
 @property (nonatomic, readonly) NSUInteger uniqueId;
 @property (nonatomic, assign) BOOL visible;
@@ -29,6 +29,7 @@
 
 @interface AkylasGooglemapClusterProxy : AkylasMapBaseClusterProxy
 @property (nonatomic, readwrite, assign) CGFloat maxDistance;
+@property (nonatomic, readwrite, assign) CGFloat minDistance;
 @property (nonatomic, readwrite, assign) BOOL showText;
 @property (nonatomic, readwrite, assign) BOOL selectedShowText;
 

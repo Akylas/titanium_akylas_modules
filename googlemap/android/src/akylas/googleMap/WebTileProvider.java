@@ -145,28 +145,28 @@ public class WebTileProvider implements TileProvider {
     }
     
     private Bitmap resizeForTile(Bitmap bitmap) {
-
-        if (bitmap == null) {
-          return null;
-        }
-        Bitmap target = bitmap;
-        float ratioX = mTileSizePixels / (float) bitmap.getWidth();
-        float ratioY = mTileSizePixels / (float) bitmap.getHeight();
-        if (ratioX != 1.0f || ratioY != 1.0f) {
-            target = Bitmap.createBitmap(mTileSizePixels, mTileSizePixels, Bitmap.Config.ARGB_8888);
-            float middleX = mTileSizePixels / 2.0f;
-            float middleY = mTileSizePixels / 2.0f;
-
-            Matrix scaleMatrix = new Matrix();
-            scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
-
-            Canvas canvas = new Canvas(target);
-            canvas.setMatrix(scaleMatrix);
-            canvas.drawBitmap(bitmap, middleX - bitmap.getWidth() / 2, middleY - bitmap.getHeight() / 2, tilePaint);
-            bitmap.recycle();
-            bitmap = null;
-        }
-        return target;
+          return bitmap;
+//        if (bitmap == null) {
+//          return null;
+//        }
+//        Bitmap target = bitmap;
+//        float ratioX = mTileSizePixels / (float) bitmap.getWidth();
+//        float ratioY = mTileSizePixels / (float) bitmap.getHeight();
+//        if (ratioX != 1.0f || ratioY != 1.0f) {
+//            target = Bitmap.createBitmap(mTileSizePixels, mTileSizePixels, Bitmap.Config.ARGB_8888);
+//            float middleX = mTileSizePixels / 2.0f;
+//            float middleY = mTileSizePixels / 2.0f;
+//
+//            Matrix scaleMatrix = new Matrix();
+//            scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
+//
+//            Canvas canvas = new Canvas(target);
+//            canvas.setMatrix(scaleMatrix);
+//            canvas.drawBitmap(bitmap, middleX - bitmap.getWidth() / 2, middleY - bitmap.getHeight() / 2, tilePaint);
+//            bitmap.recycle();
+//            bitmap = null;
+//        }
+//        return target;
       }
     
     

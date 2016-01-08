@@ -34,6 +34,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
     private boolean visible = true;
     private float opacity = 1.0f;
     private float zIndex = -1;
+    private int tileSize = 256;
     
     public static class MapBoxOnlineTileProvider extends TileJsonProvider {
         private String mToken;
@@ -131,8 +132,9 @@ public class TileSourceProxy extends BaseTileSourceProxy {
 
             break;
         case "tileSize": 
+            tileSize = TiConvert.toInt(newValue, 256);
             if (mTileProvider instanceof WebTileProvider) {
-                ((WebTileProvider) mTileProvider).setOpacity(opacity);
+                ((WebTileProvider) mTileProvider).setTileSize(tileSize);
             }
             break;
         case "fadeIn":

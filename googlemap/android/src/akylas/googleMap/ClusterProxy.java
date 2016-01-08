@@ -28,6 +28,7 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
 
     private AkylasClusterAlgorithm _algorithm;
     private int maxDistance = 100;
+    private int minDistance = -1;
     private boolean showText = true;
     private float strokeWidth = 2;
     private FontDesc font;
@@ -79,7 +80,14 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
         case "maxDistance":
             maxDistance = TiConvert.toInt(newValue);
             if (_algorithm != null) {
-                ((AkylasClusterAlgorithm) _algorithm).setGridSize(maxDistance);
+                ((AkylasClusterAlgorithm) _algorithm).maxDistanceAtZoom = maxDistance;
+                cluster();
+            }
+            break;
+        case "minDistance":
+            minDistance = TiConvert.toInt(newValue);
+            if (_algorithm != null) {
+                ((AkylasClusterAlgorithm) _algorithm).minDistance = minDistance;
                 cluster();
             }
             break;
@@ -167,7 +175,7 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
         if (_algorithm == null) {
             _algorithm = new AkylasClusterAlgorithm();
             _algorithm.setProxy(this);
-            _algorithm.setGridSize(maxDistance);
+            _algorithm.maxDistanceAtZoom = maxDistance;
         }
         return _algorithm;
     }

@@ -9,10 +9,8 @@ package akylas.googlemap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-//import java.util.HashSet;
 import java.util.List;
 import java.util.WeakHashMap;
-//import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -22,7 +20,6 @@ import akylas.map.common.AkylasMapInfoView;
 import akylas.map.common.AkylasMarker;
 import akylas.map.common.BaseAnnotationProxy;
 import akylas.map.common.BaseRouteProxy;
-//import akylas.map.common.BaseTileSourceProxy;
 import akylas.map.common.ReusableView;
 import android.graphics.RectF;
 
@@ -558,8 +555,10 @@ public class GoogleMapView extends AkylasMapBaseView implements
                     CAMERA_UPDATE_DURATION);
             break;
         case TiC.PROPERTY_REGION:
-            getCameraBuilder();
             mCameraRegion = AkylasGooglemapModule.regionFromObject(newValue);
+            if (mCameraRegion != null) {
+                getCameraBuilder();
+            }
             mCameraRegionUpdate = mCameraRegion != null;
             break;
         case AkylasGooglemapModule.PROPERTY_CENTER_COORDINATE:
@@ -616,6 +615,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
             mCameraBuilder = new CameraPosition.Builder();
             if (currentCameraPosition == null) {
                 currentCameraPosition = map.getCameraPosition();
+                Log.d(TAG, "create currentCameraPosition from builder " + currentCameraPosition.zoom);
             }
             if (currentCameraPosition != null) {
                 mCameraBuilder.target(currentCameraPosition.target)
@@ -639,7 +639,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
             });
             return;
         }
-        boolean animate = mCameraAnimate || shouldAnimate();
+        boolean animate = mCameraAnimate && shouldAnimate();
         if (mCameraRegionUpdate) {
             CameraUpdate update;
             if (regionFit) {
@@ -668,7 +668,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     @Override
     protected void didProcessProperties() {
-
+        Log.d(TAG, "didProcessProperties " + mProcessUpdateFlags);
         if ((mProcessUpdateFlags & TIFLAG_NEEDS_CAMERA) != 0) {
             handleCameraUpdate();
             mProcessUpdateFlags &= ~TIFLAG_NEEDS_CAMERA;
@@ -685,12 +685,14 @@ public class GoogleMapView extends AkylasMapBaseView implements
     }
 
     protected void moveCamera(CameraUpdate camUpdate, boolean anim) {
+        Log.d(TAG, "moveCamera " + anim);
         if (map == null)
             return;
         if (anim) {
             map.animateCamera(camUpdate, cameraAnimationDuration, null);
         } else {
             map.moveCamera(camUpdate);
+//            onCameraChange(map.getCameraPosition());
         }
     }
 
@@ -847,14 +849,14 @@ public class GoogleMapView extends AkylasMapBaseView implements
         return !annoProxy.canShowInfoWindow();
     }
 
+
     @Override
     public boolean onMarkerClick(Marker marker) {
         AnnotationProxy annoProxy = getProxyByMarker(marker);
-        if (annoProxy.touchable) {
-            handleMarkerClick(annoProxy);
-            // } else {
-            // return false;
+        if (annoProxy == null || !annoProxy.touchable) {
+            return false;
         }
+        handleMarkerClick(annoProxy);
         return true;
     }
 
@@ -998,20 +1000,27 @@ public class GoogleMapView extends AkylasMapBaseView implements
         return null;
     }
 
-    private long lastCameraEvent = 0;
+//    private long lastCameraEvent = 0;
 
     @Override
     public void onCameraChange(CameraPosition position) {
-        long timestamp = System.currentTimeMillis();
-        if (timestamp - lastCameraEvent < 30) {
-            // Log.d(TAG, "ignoring onCameraChange", Log.DEBUG_MODE);
-            return;
-        }
-        lastCameraEvent = timestamp;
+//        long timestamp = System.currentTimeMillis();
+        
         currentCameraPosition = position;
+        Log.d(TAG, " currentCameraPosition from change " + currentCameraPosition.zoom);
+
         mpp = 156543.03392 * Math.cos(position.target.latitude * Math.PI / 180)
                 / Math.pow(2, position.zoom);
         targetZoom = -1;
+        
+        //we cant really filter events because the last one we actually send
+        //might not be updated :s
+//        if (timestamp - lastCameraEvent < 30) {
+//            //ignore 
+//            return;
+//        }
+//        lastCameraEvent = timestamp;
+
         if (userAction) {
             setShouldFollowUserLocation(false);
             userAction = false;
@@ -1962,12 +1971,18 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     @Override
     public void onPolylineClick(Polyline polyline) {
-        if (handledPolylines != null) {
-            BaseRouteProxy route = handledPolylines.get(polyline);
-            if (route != null) {
-                handleMarkerClick(route);
+        if (_canSelectRoute) {
+            if (handledPolylines != null) {
+                BaseRouteProxy route = handledPolylines.get(polyline);
+                if (route != null) {
+                    handleMarkerClick(route);
+                }
             }
+        } else if (lastDownEvent != null){
+            Point p = new Point((int) lastDownEvent.getX(), (int) lastDownEvent.getY());
+            onMapClick(getProjection().fromScreenLocation(p));
         }
+        
     }
 
     @Override
@@ -2043,5 +2058,25 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     public void onLowMemory(Activity activity) {
     }
-
+    
+//    public Bitmap toImage() {
+//        final ArrayList resultHolder = new ArrayList();
+//        final Semaphore semaphore = new Semaphore(0);
+//        map.snapshot(new GoogleMap.SnapshotReadyCallback() {
+//
+//            @Override
+//            public void onSnapshotReady(Bitmap snapshot) {
+//                resultHolder.add(snapshot);
+//                semaphore.release();
+//            }
+//        });
+//        try {
+//            semaphore.acquire();
+//        } catch (InterruptedException e) {
+//        }
+//        if (!resultHolder.isEmpty()) {
+//            return (Bitmap) resultHolder.get(0);
+//        }
+//        return null;
+//    }
 }
