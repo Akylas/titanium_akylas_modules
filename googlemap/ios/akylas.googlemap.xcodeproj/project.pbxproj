@@ -88,11 +88,11 @@
 		D594D1A11AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D594D19F1AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.m */; };
 		D594D1A41AD5648800EA6005 /* AkylasGooglemapRouteProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D594D1A21AD5648800EA6005 /* AkylasGooglemapRouteProxy.h */; };
 		D594D1A51AD5648800EA6005 /* AkylasGooglemapRouteProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D594D1A31AD5648800EA6005 /* AkylasGooglemapRouteProxy.m */; };
-		D595C97E1BBC1F65007C552B /* CLLocation+measuring.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C9791BBC1F65007C552B /* CLLocation+measuring.h */; settings = {ASSET_TAGS = (); }; };
-		D595C97F1BBC1F65007C552B /* CLLocation+measuring.m in Sources */ = {isa = PBXBuildFile; fileRef = D595C97A1BBC1F65007C552B /* CLLocation+measuring.m */; settings = {ASSET_TAGS = (); }; };
-		D595C9801BBC1F65007C552B /* CLLocation+routeInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C97B1BBC1F65007C552B /* CLLocation+routeInfo.h */; settings = {ASSET_TAGS = (); }; };
-		D595C9811BBC1F65007C552B /* CLLocation+routeInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D595C97C1BBC1F65007C552B /* CLLocation+routeInfo.m */; settings = {ASSET_TAGS = (); }; };
-		D595C9821BBC1F65007C552B /* CLUtilsDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C97D1BBC1F65007C552B /* CLUtilsDefines.h */; settings = {ASSET_TAGS = (); }; };
+		D595C97E1BBC1F65007C552B /* CLLocation+measuring.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C9791BBC1F65007C552B /* CLLocation+measuring.h */; };
+		D595C97F1BBC1F65007C552B /* CLLocation+measuring.m in Sources */ = {isa = PBXBuildFile; fileRef = D595C97A1BBC1F65007C552B /* CLLocation+measuring.m */; };
+		D595C9801BBC1F65007C552B /* CLLocation+routeInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C97B1BBC1F65007C552B /* CLLocation+routeInfo.h */; };
+		D595C9811BBC1F65007C552B /* CLLocation+routeInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = D595C97C1BBC1F65007C552B /* CLLocation+routeInfo.m */; };
+		D595C9821BBC1F65007C552B /* CLUtilsDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C97D1BBC1F65007C552B /* CLUtilsDefines.h */; };
 		D59988621AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D59988601AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h */; };
 		D59988631AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D59988611AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m */; };
 		D599F23E1AC933A400EB7A9B /* GoogleMaps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */; };
@@ -711,7 +711,6 @@
 				HEADER_SEARCH_PATHS = (
 					"$(TITANIUM_BASE_SDK)",
 					"$(TITANIUM_BASE_SDK2)",
-					"$(BUILT_PRODUCTS_DIR)/include/MapBox",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				ONLY_ACTIVE_ARCH = YES;
@@ -755,7 +754,6 @@
 				HEADER_SEARCH_PATHS = (
 					"$(TITANIUM_BASE_SDK)",
 					"$(TITANIUM_BASE_SDK2)",
-					"$(BUILT_PRODUCTS_DIR)/include/MapBox",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				OTHER_CFLAGS = "-DTI_POST_1_2";
