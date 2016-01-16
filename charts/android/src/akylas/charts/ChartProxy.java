@@ -9,19 +9,17 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
+import org.appcelerator.titanium.view.TiUINonViewGroupView;
 import org.appcelerator.titanium.view.TiUIView;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
-import ti.modules.titanium.ui.widget.TiUIImageView;
 
 import com.androidplot.Plot;
 import com.androidplot.Plot.RenderMode;
@@ -31,9 +29,6 @@ import com.androidplot.ui.YLayoutStyle;
 import com.androidplot.xy.XYPlot;
 
 // This proxy can be created by calling Android.createExample({message: "hello world"})
-@SuppressLint("NewApi")
-@SuppressWarnings({"unchecked", "rawtypes"})
-
 @Kroll.proxy
 public class ChartProxy extends TiViewProxy {
 	// Standard Debugging variables
@@ -42,7 +37,7 @@ public class ChartProxy extends TiViewProxy {
 	protected String mTitle;
 	
 
-	protected class ChartView extends TiUIView {
+	protected class ChartView extends TiUINonViewGroupView {
 		protected LinearLayout layout;
 		
 		protected void onLayoutChanged() {
@@ -77,9 +72,9 @@ public class ChartProxy extends TiViewProxy {
 				return;
 			}
 //			plotView.setShouldSupportHwAcceleration(false);
-			if (TiC.HONEYCOMB_OR_GREATER) {
-				plotView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-			}
+//			if (TiC.HONEYCOMB_OR_GREATER) {
+//				plotView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+//			}
 			float defaultSize = TiUIHelper.getRawSize(null, plotView.getContext());
 			plotView.getTitleWidget().getLabelPaint().setTextSize(defaultSize);
 			plotView.getTitleWidget().pack();
@@ -93,6 +88,7 @@ public class ChartProxy extends TiViewProxy {
 			plotView.setPlotPadding(0, 0, 0, 0);
 			plotView.setPadding(0, 0, 0, 0);
 
+//			plotView.setOnTouchListener(this);
 			// reposition the grid so that it rests above the bottom-left
 			// edge of the graph widget:
 			plotView.getTitleWidget().position(0, XLayoutStyle.RELATIVE_TO_CENTER, 0,
@@ -112,7 +108,10 @@ public class ChartProxy extends TiViewProxy {
 			
 		}
 
-
+		protected View getTouchView() {
+	        return plotView;
+	    }
+		
 
 		public ChartView(final TiViewProxy proxy, Activity activity) {
 			super(proxy);

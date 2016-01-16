@@ -28,3 +28,6 @@
 [submodule "ti.paypal"]
 	path = ti.paypal
 	url = git@github.com:Akylas/ti.paypal.git
+[submodule "charts2/ios/ios-charts"]
+	path = charts2/ios/ios-charts
+	url = git@github.com:danielgindi/ios-charts.git

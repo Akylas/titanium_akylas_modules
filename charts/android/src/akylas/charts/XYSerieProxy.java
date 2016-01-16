@@ -1,15 +1,14 @@
 package akylas.charts;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.proxy.ReusableProxy;
@@ -20,6 +19,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.view.View;
 
 import com.androidplot.Plot;
 import com.androidplot.xy.FillDirection;
@@ -31,9 +31,17 @@ import com.androidplot.xy.XYSeries;
 
 @Kroll.proxy
 public class XYSerieProxy extends ReusableProxy {
+    
+    public static class AkXYSeries extends SimpleXYSeries {
+        public WeakReference<XYSerieProxy> proxy = null;
+        public AkXYSeries(String title) {
+            super(title);
+        }
+        
+    }
 	// Standard Debugging variables
 	private static final String TAG = "PlotStepProxy";
-	protected SimpleXYSeries series;
+	protected AkXYSeries series;
 	protected String mTitle;
 	protected Context context;
 	protected LineChartProxy plot;
@@ -63,7 +71,7 @@ public class XYSerieProxy extends ReusableProxy {
 	}
 
 
-	public SimpleXYSeries getSeries() {
+	public AkXYSeries getSeries() {
 		return series;
 	}
 
@@ -71,7 +79,8 @@ public class XYSerieProxy extends ReusableProxy {
 	@Override
 	public void handleCreationDict(HashMap options) {
 		mTitle = TiConvert.toString(options, "name", "");
-        series = new SimpleXYSeries(mTitle);
+        series = new AkXYSeries(mTitle);
+        series.proxy = new WeakReference<XYSerieProxy>(this);
         series.useImplicitXVals();
         if (options.containsKey("implicitXVals")) {
             series.useImplicitXVals();
@@ -299,5 +308,11 @@ public class XYSerieProxy extends ReusableProxy {
         default:
             break;
         }
+    }
+    
+ // Methods
+    @Kroll.method
+    public void select(int index) {
+//        series.useImplicitXVals();
     }
 }
