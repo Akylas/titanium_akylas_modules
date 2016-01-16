@@ -4,12 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.appcelerator.titanium.TiApplication;
-import org.appcelerator.titanium.util.TiImageHelper;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -74,7 +72,7 @@ public class WebTileProvider implements TileProvider {
     protected void initialize(String pId, String aUrl, boolean enableSSL) {
         setURL(aUrl);
         final Context context = TiApplication.getAppContext();
-        OkHttpClient client = TiApplication.getPicassoHttpClientInstance().clone();;
+        OkHttpClient client = TiApplication.getPicassoHttpClientInstance().clone();
         client.interceptors().add(new com.squareup.okhttp.Interceptor() {
             @Override public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                 com.squareup.okhttp.Request.Builder builder = chain.request().newBuilder();
@@ -87,7 +85,49 @@ public class WebTileProvider implements TileProvider {
         picasso = new Picasso.Builder(context).downloader(new OkHttpDownloader(client)).build();
     }
    
-    
+    public byte[] getTileFromNextZoomLevel(final int x, final int y, final int z) {
+
+        final Bitmap[] tiles = new Bitmap[4];
+
+        Thread t1 = new Thread() {
+
+            @Override
+            public void run() { tiles[0] = getTileImage(x * 2, y * 2, z + 1); }
+        };
+        t1.start();
+
+        Thread t2 = new Thread() {
+
+            @Override
+            public void run() { tiles[1] = getTileImage(x * 2 + 1, y * 2, z + 1);}
+        };
+        t2.start();
+
+        Thread t3 = new Thread() {
+
+            @Override
+            public void run() { tiles[2] = getTileImage(x * 2, y * 2 + 1, z + 1); }
+        };
+        t3.start();
+
+        Thread t4 = new Thread() {
+
+            @Override
+            public void run() { tiles[3] = getTileImage(x * 2 + 1, y * 2 + 1, z + 1); }
+        };
+        t4.start();
+
+        try {
+            t1.join();
+            t2.join();
+            t3.join();
+            t4.join();
+        }
+        catch (InterruptedException e) { e.printStackTrace(); }
+
+        return mergeBitmaps(tiles, Bitmap.CompressFormat.JPEG); // PNG is a lot slower, use it only if you really need to
+
+    }
  
     @Override
     public Tile getTile(int x, int y, int z) {
@@ -98,7 +138,15 @@ public class WebTileProvider implements TileProvider {
         if (mVisible == false || mOpacity == 0.0f) {
             return null;
         }
-        byte[] tileImage = getTileImage(x, y, z);
+        byte[] tileImage = null;
+        if (mHdpi) {
+            tileImage = getTileFromNextZoomLevel(x, y, z);
+        } else {
+            Bitmap bitmap = getTileImage(x, y, z);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            tileImage = stream.toByteArray();
+        }
         if (tileImage != null) {
             return new Tile(mTileSizePixels, mTileSizePixels, tileImage);
         }
@@ -128,46 +176,52 @@ public class WebTileProvider implements TileProvider {
      * @param z the zoom level
      * @return byte data of the image or <i>null</i> if the image could not be loaded.
      */
-    private byte[] getTileImage(int x, int y, int z) {
+    private Bitmap getTileImage(int x, int y, int z) {
         Bitmap bitmap = null;
         try {
             final String url = getTileUrl(x, y, z);
-            bitmap = resizeForTile(picasso.load(url).get());
+            bitmap = picasso.load(url).get();
         } catch (Exception e) {
             bitmap = null;
         }
         if (bitmap == null) {
             return null;
         }
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        return stream.toByteArray();
+        return bitmap;
     }
     
-    private Bitmap resizeForTile(Bitmap bitmap) {
-          return bitmap;
-//        if (bitmap == null) {
-//          return null;
-//        }
-//        Bitmap target = bitmap;
-//        float ratioX = mTileSizePixels / (float) bitmap.getWidth();
-//        float ratioY = mTileSizePixels / (float) bitmap.getHeight();
-//        if (ratioX != 1.0f || ratioY != 1.0f) {
-//            target = Bitmap.createBitmap(mTileSizePixels, mTileSizePixels, Bitmap.Config.ARGB_8888);
-//            float middleX = mTileSizePixels / 2.0f;
-//            float middleY = mTileSizePixels / 2.0f;
-//
-//            Matrix scaleMatrix = new Matrix();
-//            scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
-//
-//            Canvas canvas = new Canvas(target);
-//            canvas.setMatrix(scaleMatrix);
-//            canvas.drawBitmap(bitmap, middleX - bitmap.getWidth() / 2, middleY - bitmap.getHeight() / 2, tilePaint);
-//            bitmap.recycle();
-//            bitmap = null;
-//        }
-//        return target;
-      }
+    public static byte[] mergeBitmaps(Bitmap[] parts, Bitmap.CompressFormat format) {
+
+        // Check if all the bitmap are null (if so return null) :
+        boolean allNulls = true;
+        for (int i = 0; i < parts.length; i++) {
+
+            if(parts[i] != null) {
+
+                allNulls = false;
+                break;
+            }
+        }
+        if(allNulls) return null;
+
+        Bitmap tileBitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(tileBitmap);
+        Paint paint = new Paint();
+        for (int i = 0; i < parts.length; i++) {
+
+            if(parts[i] == null) {
+
+                parts[i] = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
+            }
+            canvas.drawBitmap(parts[i], parts[i].getWidth() * (i % 2), parts[i].getHeight() * (i / 2), paint);
+        }
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        tileBitmap.compress(format, 100, stream);
+        byte[] bytes = stream.toByteArray();
+
+        return bytes;
+    }
     
     
     public String getSubdomain(int x, int y) {
