@@ -2058,6 +2058,11 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     public void onLowMemory(Activity activity) {
     }
+
+    @Override
+    protected KrollDict fromScreenLocation(Point p) {
+        return AkylasGooglemapModule.latLongToDict(getProjection().fromScreenLocation(p));
+    }
     
 //    public Bitmap toImage() {
 //        final ArrayList resultHolder = new ArrayList();
