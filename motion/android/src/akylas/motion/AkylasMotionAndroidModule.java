@@ -13,28 +13,26 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-//import java.util.Vector;
 
 
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.util.TiSensorHelper;
+import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.ProtectedModule.AeSimpleSHA1;
 
 import android.app.Activity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-//import android.opengl.Matrix;
-//import android.text.TextUtils;
 
 @Kroll.module(name = "AkylasMotion", id = "akylas.motion")
-public class AkylasMotionAndroidModule extends KrollModule implements
+public class AkylasMotionAndroidModule extends ProtectedModule implements
         SensorEventListener {
     private static final Object valuesLock = new Object();
     // private static Boolean working = false;
@@ -652,5 +650,11 @@ public class AkylasMotionAndroidModule extends KrollModule implements
     public void onDestroy(Activity activity) {
         TiSensorHelper.unregisterListener(this);
         super.onDestroy(activity);
+    }
+    
+    @Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
     }
 }

@@ -9,14 +9,15 @@ package akylas.triton;
 
 import java.util.HashMap;
 
-import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.ProtectedModule.AeSimpleSHA1;
 
 @Kroll.module(name = "AkylasTriton", id = "akylas.triton")
-public class AkylasTritonModule extends KrollModule {
+public class AkylasTritonModule extends ProtectedModule {
     // Standard Debugging variables
     private static final String TAG = "AkylasTritonModule";
 
@@ -31,6 +32,12 @@ public class AkylasTritonModule extends KrollModule {
         map.put("AkylasTriton.Player", akylas.triton.PlayerProxy.class.getName());
         
         APIMap.addMapping(map);
+    }
+    
+    @Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
     }
 
 }

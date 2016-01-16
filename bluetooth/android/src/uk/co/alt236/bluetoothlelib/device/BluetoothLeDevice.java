@@ -30,7 +30,7 @@ import uk.co.alt236.bluetoothlelib.util.LimitedLinkHashMap;
 public class BluetoothLeDevice implements Parcelable {
     /**
      * The Constant CREATOR.
-     */
+     */ 
     public static final Parcelable.Creator<BluetoothLeDevice> CREATOR = new Parcelable.Creator<BluetoothLeDevice>() {
         public BluetoothLeDevice createFromParcel(final Parcel in) {
             return new BluetoothLeDevice(in);

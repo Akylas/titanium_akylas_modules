@@ -4,9 +4,9 @@
  * Appcelerator Titanium is Copyright (c) 2009-2010 by Appcelerator, Inc.
  * and licensed under the Apache Public License (version 2)
  */
-#import "TiModule.h"
+#import "TiProtectedModule.h"
 
-@interface AkylasChartsModule : TiModule 
+@interface AkylasChartsModule : TiProtectedModule
 {
 }
 @property(nonatomic,readonly) NSNumber *LOCATION_TOP;

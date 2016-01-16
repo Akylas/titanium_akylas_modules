@@ -8,6 +8,8 @@
 #import "TiBase.h"
 #import "AkylasCameraViewProxy.h"
 #import <AVFoundation/AVFoundation.h>
+#import "AkylasCameraViewProxy.h"
+#import "NSData+Additions.h"
 
 @implementation AkylasCameraModule
 
@@ -49,6 +51,14 @@ MAKE_SYSTEM_PROP(EXPOSURE_CONTINUOUS,AVCaptureExposureModeContinuousAutoExposure
 {
     CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Camera.View", [AkylasCameraViewProxy class]);
     [super startup];
+}
+
+#pragma mark Password
+-(NSString*)getPasswordKey {
+    return @"akylas.modules.key";
+}
+-(NSString*) getPassword {
+    return stringWithHexString(@"7265745b496b2466553b486f736b7b4f");
 }
 
 

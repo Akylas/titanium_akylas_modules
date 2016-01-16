@@ -2,10 +2,10 @@ package akylas.charts;
 
 import java.util.HashMap;
 
-import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.TiApplication;
 
 import com.androidplot.util.PixelUtils;
@@ -13,7 +13,7 @@ import com.androidplot.util.PixelUtils;
 import android.graphics.Matrix;
 
 @Kroll.module(name="AkylasCharts", id="akylas.charts")
-public class AkylasChartsModule extends KrollModule
+public class AkylasChartsModule extends ProtectedModule
 {
 
 	public static float[] gradientCoordsFromAngle(int width, int height, int angle) {
@@ -128,5 +128,11 @@ public class AkylasChartsModule extends KrollModule
 		APIMap.addMapping(map);
 		// put module init code that needs to run when the application is created
 	}
+    
+	@Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
+    }
 }
 

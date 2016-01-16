@@ -7,8 +7,6 @@
 package akylas.bluetooth;
 
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +15,6 @@ import java.util.Set;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
-import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
@@ -26,6 +23,7 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
+import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.util.TiActivityResultHandler;
 import org.appcelerator.titanium.util.TiActivitySupport;
 import org.appcelerator.titanium.util.TiConvert;
@@ -40,7 +38,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 @Kroll.module(name = "AkylasBluetooth", id = "akylas.bluetooth")
-public class AkylasBluetoothModule extends KrollModule {
+public class AkylasBluetoothModule extends ProtectedModule {
     private static final String TAG = "AkylasBluetoothModule";
 
     // Constants that indicate the current connection state
@@ -136,8 +134,10 @@ public class AkylasBluetoothModule extends KrollModule {
         this();
     }
 
-    @Kroll.onAppCreate
-    public static void onAppCreate(TiApplication app) {
+    @Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
     }
 
     @Override

@@ -28,10 +28,6 @@
 		24DE9E1211C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DE9E1011C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m */; };
 		AA747D9F0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
-		D5039309193F49EA00F0A0B3 /* NSData+AES.h in Headers */ = {isa = PBXBuildFile; fileRef = D5039305193F49EA00F0A0B3 /* NSData+AES.h */; };
-		D503930A193F49EA00F0A0B3 /* NSData+AES.m in Sources */ = {isa = PBXBuildFile; fileRef = D5039306193F49EA00F0A0B3 /* NSData+AES.m */; };
-		D503930B193F49EA00F0A0B3 /* NSString+AES.h in Headers */ = {isa = PBXBuildFile; fileRef = D5039307193F49EA00F0A0B3 /* NSString+AES.h */; };
-		D503930C193F49EA00F0A0B3 /* NSString+AES.m in Sources */ = {isa = PBXBuildFile; fileRef = D5039308193F49EA00F0A0B3 /* NSString+AES.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,10 +49,6 @@
 		AA747D9E0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AkylasCommonjs_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libakylas.commonjs.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libakylas.commonjs.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D5039305193F49EA00F0A0B3 /* NSData+AES.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+AES.h"; path = "Classes/NSData+AES.h"; sourceTree = "<group>"; };
-		D5039306193F49EA00F0A0B3 /* NSData+AES.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+AES.m"; path = "Classes/NSData+AES.m"; sourceTree = "<group>"; };
-		D5039307193F49EA00F0A0B3 /* NSString+AES.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+AES.h"; path = "Classes/NSString+AES.h"; sourceTree = "<group>"; };
-		D5039308193F49EA00F0A0B3 /* NSString+AES.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+AES.m"; path = "Classes/NSString+AES.m"; sourceTree = "<group>"; };
 		D5EE1BF01860CAF500579573 /* akylas.commonjs.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.commonjs.js; path = assets/akylas.commonjs.js; sourceTree = "<group>"; };
 		D5EE1BF11860CAFE00579573 /* akylas.additions.function.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.additions.function.js; path = assets/AkInclude/akylas.additions.function.js; sourceTree = "<group>"; };
 		D5EE1BF21860CAFE00579573 /* akylas.additions.math.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = akylas.additions.math.js; path = assets/AkInclude/akylas.additions.math.js; sourceTree = "<group>"; };
@@ -114,10 +106,6 @@
 		08FB77AEFE84172EC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				D5039305193F49EA00F0A0B3 /* NSData+AES.h */,
-				D5039306193F49EA00F0A0B3 /* NSData+AES.m */,
-				D5039307193F49EA00F0A0B3 /* NSString+AES.h */,
-				D5039308193F49EA00F0A0B3 /* NSString+AES.m */,
 				24DE9E0F11C5FE74003F90F6 /* AkylasCommonjsModuleAssets.h */,
 				24DE9E1011C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m */,
 				24DD6CF71134B3F500162E58 /* AkylasCommonjsModule.h */,
@@ -178,8 +166,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA747D9F0F9514B9006C5449 /* AkylasCommonjs_Prefix.pch in Headers */,
-				D5039309193F49EA00F0A0B3 /* NSData+AES.h in Headers */,
-				D503930B193F49EA00F0A0B3 /* NSString+AES.h in Headers */,
 				24DD6CF91134B3F500162E58 /* AkylasCommonjsModule.h in Headers */,
 				24DE9E1111C5FE74003F90F6 /* AkylasCommonjsModuleAssets.h in Headers */,
 			);
@@ -270,9 +256,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				24DD6CFA1134B3F500162E58 /* AkylasCommonjsModule.m in Sources */,
-				D503930C193F49EA00F0A0B3 /* NSString+AES.m in Sources */,
 				24DE9E1211C5FE74003F90F6 /* AkylasCommonjsModuleAssets.m in Sources */,
-				D503930A193F49EA00F0A0B3 /* NSData+AES.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -10,9 +10,7 @@
 #import <ExternalAccessory/ExternalAccessory.h>
 #import "UARTPeripheral.h"
 #import "AkylasBluetoothBLEDeviceProxy.h"
-
-
-
+#import "NSData+Additions.h"
 
 #define PREPARE_ARRAY_ARGS(args) \
 ENSURE_TYPE(args, NSArray) \
@@ -74,6 +72,14 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 -(NSString*)apiName
 {
     return @"Akylas.Bluetooth";
+}
+
+#pragma mark Password
+-(NSString*)getPasswordKey {
+    return @"akylas.modules.key";
+}
+-(NSString*) getPassword {
+    return stringWithHexString(@"7265745b496b2466553b486f736b7b4f");
 }
 
 -(id)createBLEDevice:(id)args

@@ -10,12 +10,10 @@ package akylas.camera;
 
 import java.util.HashMap;
 
-import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.APIMap;
-import org.appcelerator.kroll.common.Log;
-import org.appcelerator.kroll.common.TiConfig;
 
 import akylas.camera.cameramanager.CameraManager;
 import android.hardware.Camera.CameraInfo;
@@ -24,7 +22,7 @@ import android.hardware.Camera.Parameters;
 
 @SuppressWarnings("deprecation")
 @Kroll.module(name="AkylasCamera", id="akylas.camera")
-public class AkylasCameraModule extends KrollModule
+public class AkylasCameraModule extends ProtectedModule
 {
 
 	// Standard Debugging variables
@@ -69,6 +67,12 @@ public class AkylasCameraModule extends KrollModule
         map.put("Akylas.Camera.View", akylas.camera.ViewProxy.class.getName());
         APIMap.addMapping(map);
         CameraManager.init(app.getApplicationContext());
+    }
+    
+	@Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
     }
 }
 

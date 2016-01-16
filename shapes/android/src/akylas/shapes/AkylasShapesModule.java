@@ -5,10 +5,12 @@ import java.util.HashMap;
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.ProtectedModule.AeSimpleSHA1;
+import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.kroll.common.APIMap;
 
 @Kroll.module(name = "AkylasShapes", id = "akylas.shapes")
-public class AkylasShapesModule extends KrollModule {
+public class AkylasShapesModule extends ProtectedModule {
     private static final String TAG = "ShapesModule";
 
     static final String PROPERTY_RADIUS = "radius";
@@ -143,5 +145,11 @@ public class AkylasShapesModule extends KrollModule {
         map.put("AkylasShapes.View",
                 akylas.shapes.ShapeViewProxy.class.getName());
         APIMap.addMapping(map);
+    }
+    
+    @Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
     }
 }

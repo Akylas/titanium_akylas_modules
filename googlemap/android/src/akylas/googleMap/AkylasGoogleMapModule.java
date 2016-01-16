@@ -8,6 +8,7 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.ProtectedModule.AeSimpleSHA1;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -15,6 +16,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 
 import akylas.map.common.AkylasMapBaseModule;
 import android.app.Activity;
+import android.location.Location;
 
 @Kroll.module(name = "AkylasGooglemap", id = "akylas.googlemap", parentModule = AkylasMapBaseModule.class)
 public class AkylasGooglemapModule extends
@@ -175,6 +177,20 @@ public class AkylasGooglemapModule extends
                     result.put(TiC.PROPERTY_LONGITUDE, point.longitude);
                     return result;
                 }
+
+                @Override
+                public double getDistance(LatLng p1, LatLng p2) {
+                    float[] results = new float[1];
+                    Location.distanceBetween(p1.latitude, p1.longitude,
+                            p2.latitude, p2.longitude,
+                                             results);
+                    return results[0];
+                }
+
+                @Override
+                public boolean isPoint(Object p) {
+                    return p instanceof LatLng;
+                }
             };
         }
         return mFactory;
@@ -196,6 +212,11 @@ public class AkylasGooglemapModule extends
         APIMap.addMapping(map);
     }
     
+    @Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
+    }
     @Override
     protected void initActivity(Activity activity) {
         super.initActivity(activity);

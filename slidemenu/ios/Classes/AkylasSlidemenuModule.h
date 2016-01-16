@@ -1,6 +1,6 @@
-#import "TiModule.h"
+#import "TiProtectedModule.h"
 
-@interface AkylasSlidemenuModule : TiModule 
+@interface AkylasSlidemenuModule : TiProtectedModule
 {
 }
 @property(nonatomic,readonly) NSNumber *LEFT_VIEW;

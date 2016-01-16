@@ -8,14 +8,15 @@
  */
 package akylas.slidemenu;
 
-import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.ProtectedModule.AeSimpleSHA1;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
 @Kroll.module(name="AkylasSlidemenu", id="akylas.slidemenu")
-public class AkylasSlidemenuModule extends KrollModule
+public class AkylasSlidemenuModule extends ProtectedModule
 {
 
 	// Standard Debugging variables
@@ -28,11 +29,12 @@ public class AkylasSlidemenuModule extends KrollModule
 	{
 		super();
 	}
-	
-	@Kroll.onAppCreate
-	public static void onAppCreate(TiApplication app)
-	{
-	}
+    
+	@Kroll.onVerifyModule
+    public static void onVerifyModule(TiApplication app)
+    {
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
+    }
 	
 	@Kroll.constant public static final int STYLE_NORMAL = SlidingMenu.SLIDING_CONTENT;
 	@Kroll.constant public static final int STYLE_WITH_ACTIONBAR = SlidingMenu.SLIDING_WINDOW;
@@ -68,7 +70,6 @@ public class AkylasSlidemenuModule extends KrollModule
 	
 	public static String EVENT_OPEN_MENU = "openmenu";
 	public static String EVENT_CLOSE_MENU = "closemenu";
-	public static String EVENT_CLOSED_MENU = "closedmenu";
-	
+	public static String EVENT_CLOSED_MENU = "closedmenu";	
 }
 

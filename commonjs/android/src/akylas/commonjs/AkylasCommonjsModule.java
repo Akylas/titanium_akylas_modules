@@ -8,121 +8,24 @@
  */
 package akylas.commonjs;
 
-import org.appcelerator.kroll.KrollExceptionHandler;
-import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.kroll.common.Log;
-import org.appcelerator.titanium.ITiAppInfo;
+import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.TiApplication;
-import org.appcelerator.titanium.TiExceptionHandler;
-import org.appcelerator.titanium.TiProperties;
 
-
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 
 @Kroll.module(name="AkylasCommonjs", id="akylas.commonjs")
-public class AkylasCommonjsModule extends KrollModule
+public class AkylasCommonjsModule extends ProtectedModule
 {
 
 	// Standard Debugging variables
 	private static final String TAG = "AkylasCommonjsModule";
-	
 
-
-	public static class AeSimpleSHA1 {
-	    private static String convertToHex(byte[] data) {
-	        StringBuilder buf = new StringBuilder();
-	        for (byte b : data) {
-	            int halfbyte = (b >>> 4) & 0x0F;
-	            int two_halfs = 0;
-	            do {
-	                buf.append((0 <= halfbyte) && (halfbyte <= 9) ? (char) ('0' + halfbyte) : (char) ('a' + (halfbyte - 10)));
-	                halfbyte = b & 0x0F;
-	            } while (two_halfs++ < 1);
-	        }
-	        return buf.toString();
-	    }
-
-	    public static String SHA1(String text) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-	        MessageDigest md = MessageDigest.getInstance("SHA-1");
-	        md.update(text.getBytes("iso-8859-1"), 0, text.length());
-	        byte[] sha1hash = md.digest();
-	        return convertToHex(sha1hash);
-	    }
-	    
-	    public static String hexToString(String txtInHex)
-	    {
-	        byte [] txtInByte = new byte [txtInHex.length() / 2];
-	        int j = 0;
-	        for (int i = 0; i < txtInHex.length(); i += 2)
-	        {
-	                txtInByte[j++] = Byte.parseByte(txtInHex.substring(i, i + 2), 16);
-	        }
-	        return new String(txtInByte);
-	    }
-	}
-
-	// You can define constants with @Kroll.constant, for example:
-	// @Kroll.constant public static final String EXTERNAL_NAME = value;
-	
-	public AkylasCommonjsModule()
-	{
-		super();
-        Log.d(TAG, "AkylasCommonjsModule", Log.DEBUG_MODE);
-	}
-	public static void showError(final String message) {
-	    HashMap error = new HashMap();
-	    error.put("title", message);
-	    error.put("canContinue", false);
-	    TiApplication.getExceptionHandler().handleException(error);
-//	    new Timer().schedule(new TimerTask() {
-//	        @Override
-//	        public void run() {
-//             TiApplication.getAppRootOrCurrentActivity().finish();
-//             System.exit(0);
-//	        }
-//	    }, 20000);
-	}
-
-	@Kroll.onAppCreate
-	public static void onAppCreate(TiApplication app)
-	{
-	}
-	
 	@Kroll.onVerifyModule
     public static void onVerifyModule(TiApplication app)
     {
-        ITiAppInfo appInfo = app.getAppInfo();
-        TiProperties appProperties = app.getAppProperties();
-        String appId = appInfo.getId();
-        
-        String commonjsKey = appProperties.getString("akylas.commonjs.key", null);
-        if (appId.equals("com.akylas.titanium.ks")) {
-            commonjsKey = "b5500c8406217aa71d38f5db43118dac72049b5d";
-        }
-        if (commonjsKey == null) {
-            showError("You need to set the \"akylas.commonjs.key\"");
-            return;
-        }
-        String result;
-        try {
-            result = AeSimpleSHA1.SHA1(String.format("%s%s",  appId, AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f")));
-            if (!result.equalsIgnoreCase(commonjsKey)) {
-                showError("wrong \"akylas.commonjs.key\" key!");
-                return;
-            }
-        } catch (Exception e) {
-            commonjsKey = null;
-        }
-        
-        if (commonjsKey == null) {
-            showError("You need to set the \"akylas.commonjs.key\"");
-            return; 
-            
-        }
+        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
     }
+
+
 }
 
