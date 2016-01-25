@@ -38,13 +38,14 @@ public class WebTileProvider implements TileProvider {
     private int mTileSizePixels;
 
     protected boolean mEnableSSL = false;
-    protected boolean mHdpi = false;
+    protected float mDpi = 1.0f;
     
-    private float mScale = 1.0f;
     private boolean mVisible = true;
     private float mOpacity = 1.0f;
     Picasso picasso;
     private Paint tilePaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+
+    private boolean mAutoHD = false;
     
     public WebTileProvider(final String pId, final String url, final boolean enableSSL) {
         this(pId, url, enableSSL, true);
@@ -55,7 +56,7 @@ public class WebTileProvider implements TileProvider {
     
     public WebTileProvider(final String pId, final String url, final boolean enableSSL, final boolean shouldInit, final int tileSize) {
         mEnableSSL = enableSSL;
-        mHdpi = TiApplication.getAppDensity() >= 2;
+        mDpi = TiApplication.getAppDensity();
         mTileSizePixels = tileSize;
         mId = pId;
         if (shouldInit) {
@@ -123,7 +124,9 @@ public class WebTileProvider implements TileProvider {
             t3.join();
             t4.join();
         }
-        catch (InterruptedException e) { e.printStackTrace(); }
+        catch (InterruptedException e) { 
+            e.printStackTrace(); 
+        }
 
         return mergeBitmaps(tiles, Bitmap.CompressFormat.JPEG); // PNG is a lot slower, use it only if you really need to
 
@@ -139,7 +142,7 @@ public class WebTileProvider implements TileProvider {
             return null;
         }
         byte[] tileImage = null;
-        if (mHdpi) {
+        if (mTileSizePixels / mDpi <= 128 && mAutoHD) {
             tileImage = getTileFromNextZoomLevel(x, y, z);
         } else {
             Bitmap bitmap = getTileImage(x, y, z);
@@ -192,17 +195,19 @@ public class WebTileProvider implements TileProvider {
     
     public static byte[] mergeBitmaps(Bitmap[] parts, Bitmap.CompressFormat format) {
 
-        // Check if all the bitmap are null (if so return null) :
-        boolean allNulls = true;
+        // Check if any of the bitmap is null (if so return null) :
+        boolean anyNull = false;
         for (int i = 0; i < parts.length; i++) {
 
-            if(parts[i] != null) {
+            if(parts[i] == null) {
 
-                allNulls = false;
+                anyNull = true;
                 break;
             }
         }
-        if(allNulls) return null;
+        if(anyNull) {
+            return null;
+        }
 
         Bitmap tileBitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(tileBitmap);
@@ -251,7 +256,7 @@ public String getTileUrl(int x, int y, int z) {
         return mUrl.replace("{z}", Integer.toString(zoom))
                 .replace("{x}", Integer.toString(x))
                 .replace("{y}", Integer.toString(y))
-                .replace("{2x}", mHdpi ? "@2x" : "")
+                .replace("{2x}", (mTileSizePixels >= 512) ? "@2x" : "") // for mapbox
                 .replace("{s}", getSubdomain(x, y));
     }
     
@@ -287,11 +292,6 @@ public String getTileUrl(int x, int y, int z) {
         return this;
     }
     
-    public WebTileProvider setHdpi(final boolean hdpi) {
-        this.mHdpi = hdpi;
-        return this;
-    }
-    
     public WebTileProvider setUserAgent(final String agent) {
         this.mUserAgent = agent;
         return this;
@@ -316,6 +316,11 @@ public String getTileUrl(int x, int y, int z) {
     
     public WebTileProvider setVisible(final boolean visible) {
         mVisible = visible;
+        return this;
+    }
+    
+    public WebTileProvider setAutoHD(final boolean hd) {
+        mAutoHD  = hd;
         return this;
     }
     
