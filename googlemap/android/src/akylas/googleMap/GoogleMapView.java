@@ -1184,7 +1184,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
             handler.removeCallbacks(positionUpdaterRunnable);
             positionUpdaterRunnable = null;
         }
-        if (infoWindowContainer != null) {
+        if (showingInfoMarker != null && infoWindowContainer != null) {
             if (currentInfoWindowAnim != null) {
                 currentInfoWindowAnim.cancel();
                 currentInfoWindowAnim = null;
@@ -1234,12 +1234,12 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     public void handleSelectAnnotation(final BaseAnnotationProxy proxy) {
         if (!TiApplication.isUIThread()) {
-            proxy.getActivity().runOnUiThread(new Runnable() {
+            proxy.runInUiThread(new CommandNoReturn() {
                 @Override
-                public void run() {
+                public void execute() {
                     handleSelectAnnotation(selectedAnnotation);
                 }
-            });
+            }, false);
             return;
         }
         if (proxy.getMarker() == null) {
@@ -1260,12 +1260,16 @@ public class GoogleMapView extends AkylasMapBaseView implements
             positionUpdaterRunnable = null;
         }
         AkylasMapInfoView infoView = null;
+        if (currentInfoWindowAnim != null) {
+            // needs to be done before the prepareInfoView
+            currentInfoWindowAnim.cancel();
+        }
         if (proxy != null) {
-//            if (proxy != showingInfoMarker) {
-                showingInfoMarker = (AnnotationProxy) proxy;
-                infoView = (AkylasMapInfoView) mInfoWindowCache.get("infoView");
-                proxy.prepareInfoView(infoView);
-//            }
+            // if (proxy != showingInfoMarker) {
+            showingInfoMarker = (AnnotationProxy) proxy;
+            infoView = (AkylasMapInfoView) mInfoWindowCache.get("infoView");
+            proxy.prepareInfoView(infoView);
+            // }
         }
         if (infoView == null) {
             return;
@@ -1287,9 +1291,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
             // infoWindowContainer.setGravity(Gravity.LEFT | Gravity.TOP);
             container.addView(infoWindowContainer);
         } else {
-            if (currentInfoWindowAnim != null) {
-                currentInfoWindowAnim.cancel();
-            }
+
             infoWindowContainer.removeAllViews();
         }
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
