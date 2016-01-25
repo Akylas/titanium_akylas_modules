@@ -113,8 +113,9 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
         case TiC.PROPERTY_ZINDEX:
             zIndex = TiConvert.toInt(newValue);
             if (polyline != null) {
-                TiMessenger.sendBlockingMainMessage(getMainHandler()
-                        .obtainMessage(MSG_SET_ZINDEX));
+                polyline.setZIndex(zIndex);
+//              TiMessenger.sendBlockingMainMessage(getMainHandler()
+//                        .obtainMessage(MSG_SET_ZINDEX));
             }
             break;
         case TiC.PROPERTY_VISIBLE:
@@ -170,7 +171,7 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
         return options.width(selected?mSelectedStrokeWidth:mStrokeWidth)
                 .addAll(mPoints)
                 .clickable(touchable)
-                .color(selected?selectedTintColor:tintColor).zIndex(zIndex);
+                .color((selected && selectedTintColor != Color.TRANSPARENT)?selectedTintColor:tintColor).zIndex(selected?10000:zIndex);
     }
 
     public void setPolyline(Polyline r) {
@@ -207,6 +208,10 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     
     @Override
     public void onDeselect() {
+        super.onDeselect();
+        if (polyline == null) {
+            return;
+        }
         if (!TiApplication.isUIThread()) {
             runInUiThread(new CommandNoReturn() {
                 @Override
@@ -214,10 +219,6 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
                     onDeselect();
                 }
             }, false);
-            return;
-        }
-        super.onDeselect();
-        if (polyline == null) {
             return;
         }
         polyline.setZIndex(zIndex);
@@ -228,6 +229,10 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     
     @Override
     public void onSelect() {
+        super.onSelect();
+        if (polyline == null) {
+            return;
+        }
         if (!TiApplication.isUIThread()) {
             runInUiThread(new CommandNoReturn() {
                 @Override
@@ -237,10 +242,7 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
             }, false);
             return;
         }
-        super.onSelect();
-        if (polyline == null) {
-            return;
-        }
+        
         polyline.setZIndex(10000);
         if (mSelectedStrokeWidth >= 0 && mSelectedStrokeWidth != mStrokeWidth ) {
             polyline.setWidth(mSelectedStrokeWidth);
