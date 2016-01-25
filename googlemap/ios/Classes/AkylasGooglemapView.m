@@ -1636,7 +1636,7 @@
         [self.proxy fireEvent:@"regionchanged" withObject:@{
                                                             @"mpp":@(_mpp),
                                                             @"idle":@(YES),
-                                                            @"mapdistance":@(distance),
+//                                                            @"mapdistance":@(distance),
                                                             @"region":[self.proxy valueForKey:@"region"],
                                                             @"zoom":@(_internalZoom),
                                                             @"bearing":@(position.bearing),
