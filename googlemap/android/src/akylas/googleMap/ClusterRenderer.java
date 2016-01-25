@@ -11,10 +11,11 @@ import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import android.content.Context;
 
 public class ClusterRenderer extends DefaultClusterRenderer<AnnotationProxy> {
-
+    private final GoogleMapView tiMapView;
     public ClusterRenderer(Context context, GoogleMap map,
-            ClusterManager<AnnotationProxy> clusterManager) {
+            ClusterManager<AnnotationProxy> clusterManager, GoogleMapView tiMapView) {
         super(context, map, clusterManager);
+        this.tiMapView = tiMapView;
         setAnimationType(ANIMATION_FADE);
     }
 //    @Override
@@ -73,5 +74,14 @@ public class ClusterRenderer extends DefaultClusterRenderer<AnnotationProxy> {
     protected boolean shouldRenderAsCluster(Cluster cluster) {
         // Always render clusters.
         return cluster.getSize() > 1;
+    }
+    
+    @Override
+    protected void removeMarker(Marker m) {
+        AnnotationProxy proxy = tiMapView.getProxyByMarker(m);
+        if (proxy != null) {
+            proxy.removeFromMap();
+        }
+        super.removeMarker(m);
     }
 }

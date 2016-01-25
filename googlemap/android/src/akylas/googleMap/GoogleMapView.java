@@ -1926,8 +1926,8 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (_clusterManager == null && map != null) {
             _clusterManager = new ClusterManager<AnnotationProxy>(getContext(),
                     map);
-            _clusterManager.setRenderer(
-                    new ClusterRenderer(getContext(), map, _clusterManager));
+            _clusterManager.setRenderer(new ClusterRenderer(getContext(), map,
+                    _clusterManager, this));
             _clusterManager.setOnClusterClickListener(this);
             // _clusterManager.setOnClusterInfoWindowClickListener(this);
             _clusterManager.setOnClusterItemClickListener(this);
