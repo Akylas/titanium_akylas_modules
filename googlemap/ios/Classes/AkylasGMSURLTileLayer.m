@@ -53,6 +53,8 @@
     self.requestTimeoutSeconds = 15;
     self.minZoom = -1;
     self.maxZoom = -1;
+    self.tileSize = 256;
+    self.autoHd = NO;
     self.subdomains = @"abc";
     self.timeFormat = @"yyyy-MM-dd";
     self.showTileAfterMaxZoom = YES;

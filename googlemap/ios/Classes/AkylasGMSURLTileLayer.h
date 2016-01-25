@@ -14,6 +14,7 @@
 @property (nonatomic, assign) CGFloat minZoom;
 @property (nonatomic, assign) CGFloat maxZoom;
 @property (nonatomic, assign) BOOL showTileAfterMaxZoom;
+@property (nonatomic, assign) BOOL autoHd;
 
 @property (nonatomic, readwrite, copy) NSString* cacheKey;
 @property (nonatomic, readwrite, copy) NSString* userAgent;

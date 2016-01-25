@@ -115,8 +115,29 @@
     [super setTileSize:tileSize];
     if (_gTileLayer) {
         TiThreadPerformBlockOnMainThread(^{
-            _gTileLayer.tileSize = self.tileSize;
+            _gTileLayer.tileSize = [self getRealTileSize];
         }, NO);
+    }
+}
+
+-(void)setAutoHd:(id)value
+{
+    [self replaceValue:value forKey:@"autoHd" notification:NO];
+    if (_gTileLayer) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gTileLayer.tileSize = [self getRealTileSize];
+        }, NO);
+    }
+}
+
+-(NSInteger)getRealTileSize {
+    NSInteger tileSize = self.tileSize;
+    BOOL autoHd = [TiUtils boolValue:[self valueForKey:@"autoHd"] def:NO];
+    BOOL shouldBootUpHD = tileSize / [TiUtils screenScale] < 256;
+    if (shouldBootUpHD && autoHd) {
+        return tileSize;
+    } else {
+        return tileSize * 2;
     }
 }
 
@@ -179,6 +200,7 @@
         theLayer.subdomains = [TiUtils stringValue:[self valueForKey:@"subdomains"] def:@"abc"];
         theLayer.cacheKey = [TiUtils stringValue:[self valueForKey:@"id"]];
         theLayer.userAgent = [TiUtils stringValue:[self valueForKey:@"userAgent"]];
+        theLayer.autoHd = [TiUtils boolValue:[self valueForKey:@"autoHd"] def:NO];
         theLayer.cacheable = [TiUtils boolValue:[self valueForKey:@"cacheable"] def:YES];
         theLayer.minZoom = [TiUtils floatValue:[self valueForKey:@"minZoom"] def:-1];
         theLayer.maxZoom = [TiUtils floatValue:[self valueForKey:@"maxZoom"] def:-1];
@@ -202,7 +224,7 @@
         _gTileLayer.fadeIn = self.fadeIn;
         _gTileLayer.zIndex = (int)self.zIndex;
         _gTileLayer.opacity = self.visible?self.opacity:0;
-        _gTileLayer.tileSize = self.tileSize;
+        _gTileLayer.tileSize = [self getRealTileSize];
         [_gTileLayer setMap:mapView];
         if (_needsClearCache) {
             [self clearCache:nil];
