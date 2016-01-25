@@ -21,7 +21,8 @@ import android.database.sqlite.SQLiteDatabase;
 @Kroll.proxy(creatableInModule = AkylasGooglemapModule.class, propertyAccessors = {
     TiC.PROPERTY_VISIBLE,
     TiC.PROPERTY_OPACITY,
-    "tileSize"
+    "tileSize",
+    "autoHd"
 })
 public class TileSourceProxy extends BaseTileSourceProxy {
     private static final String TAG = "TileSourceProxy";
@@ -35,6 +36,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
     private float opacity = 1.0f;
     private float zIndex = -1;
     private int tileSize = 256;
+    private boolean autoHd = false;
     
     public static class MapBoxOnlineTileProvider extends TileJsonProvider {
         private String mToken;
@@ -151,6 +153,12 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             }
             updateTileLayerVisibility();
             break;
+        case "autoHd":
+            autoHd  = TiConvert.toBoolean(newValue);
+            if (mTileProvider instanceof WebTileProvider) {
+                ((WebTileProvider) mTileProvider).setAutoHD(autoHd);
+            }
+            break;
         default:
             break;
         }
@@ -196,8 +204,8 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                     release();
                     Log.e(TAG, "Could not load file " + mSource);
                 }
-            } else if (URL_PATTERN.matcher(sSource).matches()) {
-                mTileProvider = new WebTileProvider(sSource, sSource);
+//            } else if (URL_PATTERN.matcher(sSource).matches()) {
+//                mTileProvider = new WebTileProvider(sSource, sSource);
             } else {
                 final int tileSize = TiConvert.toInt(getProperty("tileSize"), 256);
 //                switch (sSource.toLowerCase()) {
@@ -282,6 +290,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 ((WebTileProvider) mTileProvider).setMaximumZoomLevel(mMaxZoom);
                 ((WebTileProvider) mTileProvider).setVisible(TiConvert.toBoolean(getProperty(TiC.PROPERTY_VISIBLE), true));
                 ((WebTileProvider) mTileProvider).setOpacity(TiConvert.toFloat(getProperty(TiC.PROPERTY_OPACITY), 1.0f));
+                ((WebTileProvider) mTileProvider).setAutoHD(TiConvert.toBoolean(getProperty("autoHd"), true));
             }
         }
         if (mTileProvider != null && hasListeners(TiC.EVENT_LOAD, false)) {
