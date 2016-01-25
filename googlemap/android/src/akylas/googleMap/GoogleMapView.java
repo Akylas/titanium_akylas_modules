@@ -1353,50 +1353,111 @@ public class GoogleMapView extends AkylasMapBaseView implements
         currentInfoWindowAnim.start();
         infoWindowContainer.setVisibility(View.VISIBLE);
     }
+    
+
+    @Override
+    public void handleAddAnnotation(final ArrayList value) {
+        if (map == null) {
+            return;
+        }
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleAddAnnotation(value);
+                }
+            }, false);
+            return;
+        }
+
+        final Activity activity = proxy.getActivity();
+        for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
+            proxy.setActivity(activity);
+            addAnnotationToMap(proxy);
+        }
+    }
+
+    @Override
+    public void handleRemoveAnnotation(final ArrayList value) {
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleRemoveAnnotation(value);
+                }
+            }, false);
+            return;
+        }
+
+        for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
+            GoogleMapMarker marker = (GoogleMapMarker) proxy.getMarker();
+            if (handledMarkers != null) {
+                handledMarkers.remove(marker.getMarker());
+            }
+            proxy.removeFromMap();
+            // timarkers.remove(marker);
+            deselectAnnotation(proxy);
+            proxy.setActivity(null);
+            proxy.setMapView(null);
+            proxy.setParentForBubbling(null);
+        }
+    }
 
     @Override
     public void handleAddRoute(final ArrayList value) {
         if (map == null) {
             return;
         }
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                final Activity activity = proxy.getActivity();
-                for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
-                    proxy.setPolyline(map.addPolyline(
-                            proxy.getAndSetOptions(currentCameraPosition)));
-                    proxy.setMapView(GoogleMapView.this);
-                    proxy.setActivity(activity);
-                    proxy.setParentForBubbling(GoogleMapView.this.proxy);
-//                    addedRoutes.add(proxy);
-                    if (handledPolylines == null) { 
-                        handledPolylines = new WeakHashMap<Polyline, RouteProxy>();
-                    }
-                    handledPolylines.put(proxy.getPolyline(), proxy);
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleAddRoute(value);
                 }
+            }, false);
+            return;
+        }
+        final Activity activity = proxy.getActivity();
+        for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
+            if (proxy.getPolyline() == null) {
+                proxy.setPolyline(map.addPolyline(
+                        proxy.getAndSetOptions(currentCameraPosition)));
+                proxy.setMapView(GoogleMapView.this);
+                proxy.setActivity(activity);
+                proxy.setParentForBubbling(GoogleMapView.this.proxy);
+                if (handledPolylines == null) {
+                    handledPolylines = new WeakHashMap<Polyline, RouteProxy>();
+                }
+                handledPolylines.put(proxy.getPolyline(), proxy);
             }
-        }, true);
+        }
     }
 
     @Override
     public void handleRemoveRoute(final ArrayList value) {
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
-                    if (handledPolylines != null) {
-                        handledPolylines.remove(proxy.getPolyline());
-                    }
-                    proxy.removePolyline();
-                    proxy.setActivity(null);
-                    proxy.setMapView(null);
-                    proxy.setParentForBubbling(null);
-
-                    // addedRoutes.remove(proxy);
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleRemoveRoute(value);
                 }
+            }, false);
+            return;
+        }
+
+        for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
+            if (handledPolylines != null) {
+                handledPolylines.remove(proxy.getPolyline());
             }
-        }, true);
+            proxy.removePolyline();
+            proxy.setActivity(null);
+            proxy.setMapView(null);
+            deselectAnnotation(proxy);
+            proxy.setParentForBubbling(null);
+
+            // addedRoutes.remove(proxy);
+        }
+
     }
 
     @Override
@@ -1404,36 +1465,46 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (map == null) {
             return;
         }
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                final Activity activity = proxy.getActivity();
-               for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
-                    proxy.setGroundOverlay(map.addGroundOverlay(
-                            proxy.getAndSetOptions(currentCameraPosition)));
-                    proxy.setActivity(activity);
-                    proxy.setMapView(GoogleMapView.this);
-                    proxy.setParentForBubbling(GoogleMapView.this.proxy);
-//                    addedGroundOverlays.add(proxy);
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleAddGroundOverlay(value);
                 }
-            }
-        }, true);
+            }, false);
+            return;
+        }
+
+        final Activity activity = proxy.getActivity();
+        for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
+            proxy.setGroundOverlay(map.addGroundOverlay(
+                    proxy.getAndSetOptions(currentCameraPosition)));
+            proxy.setActivity(activity);
+            proxy.setMapView(GoogleMapView.this);
+            proxy.setParentForBubbling(GoogleMapView.this.proxy);
+            // addedGroundOverlays.add(proxy);
+        }
     }
 
     @Override
     public void handleRemoveGroundOverlay(final ArrayList value) {
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
-                    proxy.removeGroundOverlay();
-                    proxy.setActivity(null);
-                    proxy.setMapView(null);
-                    proxy.setParentForBubbling(null);
-//                    addedGroundOverlays.remove(proxy);
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleRemoveGroundOverlay(value);
                 }
-            }
-        }, true);
+            }, false);
+            return;
+        }
+
+        for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
+            proxy.removeGroundOverlay();
+            proxy.setActivity(null);
+            proxy.setMapView(null);
+            proxy.setParentForBubbling(null);
+            // addedGroundOverlays.remove(proxy);
+        }
     }
 
     @Override
@@ -1441,35 +1512,45 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (map == null) {
             return;
         }
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                final Activity activity = proxy.getActivity();
-                for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
-                    proxy.setMapView(GoogleMapView.this);
-                    proxy.setParentForBubbling(GoogleMapView.this.proxy);
-                    proxy.setActivity(activity);
-                    getClusterManager()
-                            .addClusterAlgorithm(proxy.getOrCreateAlgorithm());
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleAddCluster(value);
                 }
-            }
-        }, true);
+            }, false);
+            return;
+       }
+
+        final Activity activity = proxy.getActivity();
+        for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
+            proxy.setMapView(GoogleMapView.this);
+            proxy.setParentForBubbling(GoogleMapView.this.proxy);
+            proxy.setActivity(activity);
+            getClusterManager()
+                    .addClusterAlgorithm(proxy.getOrCreateAlgorithm());
+        }
+
     }
 
     @Override
     public void handleRemoveCluster(final ArrayList value) {
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
-                    proxy.setMapView(null);
-                    proxy.setActivity(null);
-                   proxy.setParentForBubbling(null);
-                    getClusterManager()
-                            .removeClusterAlgorithm(proxy.getAlgorithm());
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleRemoveCluster(value);
                 }
-            }
-        }, true);
+            }, false);
+            return;
+        }
+
+        for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
+            proxy.setMapView(null);
+            proxy.setActivity(null);
+            proxy.setParentForBubbling(null);
+            getClusterManager().removeClusterAlgorithm(proxy.getAlgorithm());
+        }
     }
 
     @Override
@@ -1477,44 +1558,56 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (map == null) {
             return;
         }
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                int realIndex = index;
-                final Activity activity = proxy.getActivity();
-               for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
-                    TileOverlayOptions options = ((TileSourceProxy) proxy)
-                            .getTileOverlayOptions();
-                    if (options != null) {
-                        if (realIndex != -1) {
-                            options.zIndex(realIndex);
-                        }
-                        proxy.setActivity(activity);
-                       proxy.setTileOverlay(map.addTileOverlay(options));
-                        proxy.setParentForBubbling(GoogleMapView.this.proxy);
-//                        addedTileSources.add(proxy);
-                    }
-                    if (realIndex != -1) {
-                        realIndex++;
-                    }
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleAddTileSource(value, index);
                 }
+            }, false);
+            return;
+       }
+        int realIndex = index;
+        final Activity activity = proxy.getActivity();
+        for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
+            TileOverlayOptions options = ((TileSourceProxy) proxy)
+                    .getTileOverlayOptions();
+            if (options != null) {
+                if (realIndex != -1) {
+                    options.zIndex(realIndex);
+                }
+                proxy.setActivity(activity);
+                proxy.setTileOverlay(map.addTileOverlay(options));
+                proxy.setParentForBubbling(GoogleMapView.this.proxy);
+                // addedTileSources.add(proxy);
             }
-        }, true);
+            if (realIndex != -1) {
+                realIndex++;
+            }
+        }
     }
 
     @Override
     public void handleRemoveTileSource(final ArrayList value) {
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
-                    proxy.release();
-                    proxy.setActivity(null);
-                    proxy.setParentForBubbling(null);
-//                    addedTileSources.remove(proxy);
+        if (map == null) {
+            return;
+        }
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    handleRemoveTileSource(value);
                 }
-            }
-        }, true);
+            }, false);
+            return;
+        }
+
+        for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
+            proxy.release();
+            proxy.setActivity(null);
+            proxy.setParentForBubbling(null);
+            // addedTileSources.remove(proxy);
+        }
     }
 
     public void prepareAnnotation(AnnotationProxy proxy) {
@@ -1551,107 +1644,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
         return googlemarker;
     }
 
-    @Override
-    public void handleAddAnnotation(final ArrayList value) {
-        if (map == null) {
-            return;
-        }
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                final Activity activity = proxy.getActivity();
-               for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
-                   proxy.setActivity(activity);
-                    addAnnotationToMap(proxy);
-                }
-            }
-        }, true);
-    }
-
-    @Override
-    public void handleRemoveAnnotation(final ArrayList value) {
-        proxy.runInUiThread(new CommandNoReturn() {
-            @Override
-            public void execute() {
-                for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
-                    GoogleMapMarker marker = (GoogleMapMarker) proxy
-                            .getMarker();
-                    if (handledMarkers != null) {
-                        handledMarkers.remove(marker.getMarker());
-                    }
-                    proxy.removeFromMap();
-//                    timarkers.remove(marker);
-                    deselectAnnotation(proxy);                    
-                    proxy.setActivity(null);
-                    proxy.setMapView(null);
-                    proxy.setParentForBubbling(null);
-                }
-            }
-        }, true);
-
-    }
-
-//    @Override
-//    protected void removeAllAnnotations() {
-//        if (!TiApplication.isUIThread()) {
-//            proxy.getActivity().runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    removeAllAnnotations();
-//                }
-//            });
-//            return;
-//        }
-//        map.clear();
-//    }
-
-//    protected void removeAllRoutes() {
-//        if (!TiApplication.isUIThread()) {
-//            proxy.getActivity().runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    removeAllRoutes();
-//                }
-//            });
-//            return;
-//        }
-//        for (RouteProxy route : addedRoutes) {
-//            route.removePolyline();
-//        }
-//        addedRoutes.clear();
-//    }
-
-//    protected void removeAllGroundOverlays() {
-//        if (!TiApplication.isUIThread()) {
-//            proxy.getActivity().runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    removeAllGroundOverlays();
-//                }
-//            });
-//            return;
-//        }
-//        for (GroundOverlayProxy overlay : addedGroundOverlays) {
-//            overlay.removeGroundOverlay();
-//        }
-//        addedGroundOverlays.clear();
-//    }
-
-//    protected void removeAllTileSources() {
-//        if (!TiApplication.isUIThread()) {
-//            proxy.getActivity().runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    removeAllTileSources();
-//                }
-//            });
-//            return;
-//        }
-//        for (BaseTileSourceProxy tileSource : addedTileSources) {
-//            tileSource.release();
-//        }
-//        addedTileSources.clear();
-//    }
 
     @Override
     public void onMyLocationChange(Location location) {
