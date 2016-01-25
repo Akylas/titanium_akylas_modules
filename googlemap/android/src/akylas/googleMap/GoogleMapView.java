@@ -775,8 +775,10 @@ public class GoogleMapView extends AkylasMapBaseView implements
             onMapClick((LatLng) annoProxy.getPosition());
             return true;
         }
-        setSelectedAnnotation(annoProxy);
+
+        // make sure we fire the click first
         fireClickEvent(annoProxy, AkylasGooglemapModule.PROPERTY_PIN);
+        setSelectedAnnotation(annoProxy);
 
         // Returning false here will enable native behavior, which shows the
         // info window.
