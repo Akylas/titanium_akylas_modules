@@ -105,15 +105,14 @@ public class GoogleMapView extends AkylasMapBaseView implements
         GoogleMap.OnMapLongClickListener, GoogleMap.OnMapLoadedCallback,
         GoogleMap.OnMyLocationChangeListener, OnMyLocationButtonClickListener,
         OnMapReadyCallback, OnClusterClickListener, OnClusterItemClickListener,
-        OnClusterItemInfoWindowClickListener, OnClusterInfoWindowClickListener,    
-        OnPolylineClickListener, OnPolygonClickListener,
-        OnLifecycleEvent {
+        OnClusterItemInfoWindowClickListener, OnClusterInfoWindowClickListener,
+        OnPolylineClickListener, OnPolygonClickListener, OnLifecycleEvent {
     private static final String TAG = "AkylasMapView";
     private GoogleMap map;
     protected boolean animate = false;
     protected boolean preLayout = true;
     protected LatLngBounds preLayoutUpdateBounds;
-//    protected ArrayList<AkylasMarker> timarkers;
+    // protected ArrayList<AkylasMarker> timarkers;
     protected WeakHashMap<Polyline, RouteProxy> handledPolylines;
     protected WeakHashMap<Marker, AnnotationProxy> handledMarkers;
     private Fragment fragment;
@@ -132,10 +131,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
     private RectF padding = null;
     private int cameraAnimationDuration = CAMERA_UPDATE_DURATION;
 
-//    private Set<RouteProxy> addedRoutes = new HashSet<RouteProxy>();
-//    private Set<GroundOverlayProxy> addedGroundOverlays = new HashSet<GroundOverlayProxy>();
-//    private Set<ClusterProxy> addedClusters = new HashSet<ClusterProxy>();
-//    private Set<BaseTileSourceProxy> addedTileSources = new HashSet<BaseTileSourceProxy>();
     private MapView mapView;
     final AbsoluteLayout container;
     protected static final int TIFLAG_NEEDS_CAMERA = 0x00000001;
@@ -146,7 +141,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
     private int popupXOffset;
     private int popupYOffset;
     private static final int POPUP_POSITION_REFRESH_INTERVAL = 16;
-    private static final int ANIMATION_DURATION = 500;
     private ViewTreeObserver.OnGlobalLayoutListener infoWindowLayoutListener;
     private LinearLayout infoWindowContainer;
     private LatLng trackedPosition;
@@ -158,7 +152,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
             implements ViewTreeObserver.OnGlobalLayoutListener {
         @Override
         public void onGlobalLayout() {
-            // размеры окна изменились, обновляем смещения
             popupXOffset = infoWindowContainer.getWidth() / 2;
             popupYOffset = infoWindowContainer.getHeight();
         }
@@ -247,12 +240,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 mapView.onResume();
                 mapView.getMapAsync(this);
                 container.addView(mapView);
-
-                // fragment = createFragment();
-                // fragment.setRetainInstance(true);
-                // TiUIHelper.transactionFragment(fragment, container,
-                // (FragmentActivity) activity);
-                // ((SupportMapFragment) fragment).getMapAsync(this);
             } catch (Exception e) {
             }
         } else {
@@ -265,7 +252,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
         if (activity instanceof TiBaseActivity) {
             ((TiBaseActivity) activity).addOnLifecycleEventListener(this);
         }
-//        timarkers = new ArrayList<AkylasMarker>();
     }
 
     @Override
@@ -350,7 +336,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 transaction.commitAllowingStateLoss();
             }
             fragment = null;
-            // currentMapHolder = null;
         }
     }
 
@@ -403,7 +388,6 @@ public class GoogleMapView extends AkylasMapBaseView implements
                     false);
             GoogleMapOptions gOptions = new GoogleMapOptions();
             gOptions.zOrderOnTop(zOrderOnTop);
-            // gOptions.useViewLifecycleInFragment(true);
             return SupportMapFragment.newInstance(gOptions);
         }
     }
