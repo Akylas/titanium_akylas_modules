@@ -1524,7 +1524,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
             removeAnnotation(marker);
         }
         proxy.setMapView(GoogleMapView.this);
-        proxy.setParentForBubbling(GoogleMapView.this.proxy);
+        if (proxy.getParentForBubbling() == null) {
+            proxy.setParentForBubbling(GoogleMapView.this.proxy);
+        }
         GoogleMapMarker gMarker = new GoogleMapMarker((AnnotationProxy) proxy);
         proxy.setMarker(gMarker);
     }
