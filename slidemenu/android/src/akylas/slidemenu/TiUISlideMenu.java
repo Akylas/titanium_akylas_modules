@@ -15,7 +15,7 @@ import org.appcelerator.titanium.transition.TransitionHelper.SubTypes;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.view.TiCompositeLayout;
-import org.appcelerator.titanium.view.TiUIView;
+import org.appcelerator.titanium.view.TiUINonViewGroupView;
 
 import ti.modules.titanium.ui.widget.TiUIScrollableView.TiViewPagerLayout;
 import android.content.res.Configuration;
@@ -23,7 +23,6 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
@@ -31,7 +30,7 @@ import android.widget.RelativeLayout.LayoutParams;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu.ViewTransformer;
 
-public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListener{
+public class TiUISlideMenu extends TiUINonViewGroupView implements ConfigurationChangedListener{
 	private SlidingMenu slidingMenu;
 	private TiViewProxy leftView;
 	private TiViewProxy rightView;
@@ -46,7 +45,7 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 	private static TiDimension defaultWidth = new TiDimension(200, TiDimension.TYPE_WIDTH);
 	private TiDimension leftViewDisplacement =  defaultDisplacement;
 	private TiDimension rightViewDisplacement =  defaultDisplacement;
-	private TiCompositeLayout parentViewForChildren;
+//	private TiCompositeLayout parentViewForChildren;
 	private int style = SlidingMenu.SLIDING_CONTENT;
 //	private MaterialMenuIconToolbar materialMenu;
     protected static final int TIFLAG_NEEDS_MENU               = 0x00000001;
@@ -81,14 +80,14 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
                 }
 			}
 			
-			@Override
-			public void attachViewToParent(ViewGroup group) {
-				super.attachViewToParent(group);
-				parentViewForChildren = new TiCompositeLayout(this.getContext());
-				RelativeLayout layout = new RelativeLayout(this.getContext());
-				layout.addView(parentViewForChildren, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-				group.addView(layout, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-			}
+//			@Override
+//			public void attachViewToParent(ViewGroup group) {
+//				super.attachViewToParent(group);
+//				parentViewForChildren = new TiCompositeLayout(this.getContext());
+//				RelativeLayout layout = new RelativeLayout(this.getContext());
+//				layout.addView(parentViewForChildren, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+//				group.addView(layout, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+//			}
 		};
 		slidingMenu.setActionBarOverlay(TiConvert.toBoolean(proxy.getProperty(TiC.PROPERTY_ACTIONBAR_OVERLAY), false));
 //		slidingMenu.attachToActivity(activity, style, TiConvert.toBoolean(proxy.getProperty(TiC.PROPERTY_ACTIONBAR_OVERLAY), false));
@@ -164,10 +163,10 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		
 		style = proxy.getProperties().optInt(TiC.PROPERTY_STYLE, style);
 		if (style == SlidingMenu.SLIDING_CONTENT) {
-			parentViewForChildren = new TiCompositeLayout(activity);
-			RelativeLayout layout = new RelativeLayout(activity);
-			layout.addView(parentViewForChildren, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-			slidingMenu.addView(layout);
+//			parentViewForChildren = new TiCompositeLayout(activity);
+//			RelativeLayout layout = new RelativeLayout(activity);
+//			layout.addView(parentViewForChildren, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+//			slidingMenu.addView(layout);
 			slidingMenu.setContent(new TiCompositeLayout(activity));
 		}
 //		else {
@@ -183,6 +182,22 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 		setNativeView(slidingMenu);
 	}
 	
+	@Override
+	protected void createChildrenHolder(){
+        childrenHolder = new TiCompositeLayout(proxy.getActivity(), this);
+        RelativeLayout layout = new RelativeLayout(activity);
+        layout.addView(childrenHolder, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        slidingMenu.getContentParent().addView(layout);
+
+        if (proxy.hasProperty(TiC.PROPERTY_CLIP_CHILDREN)) {
+            boolean value = TiConvert.toBoolean(proxy.getProperty(TiC.PROPERTY_CLIP_CHILDREN));
+            childrenHolder.setClipChildren(value);  
+        }
+        if (TiC.LOLLIPOP_OR_GREATER) {
+            childrenHolder.setElevation(1000);
+        }
+        updateLayoutForChildren(proxy.getProperties()); 
+    }
 	
 	private void updateOffset(final int positionOffsetPixels, int state) {
 	    final String event = (state == 0)?TiC.EVENT_SCROLLSTART: ((state == 1)?TiC.EVENT_SCROLL:TiC.EVENT_SCROLLEND);
@@ -204,12 +219,12 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 //            );
 	}
 	
-	@Override
-	public ViewGroup getParentViewForChild()
-	{
-		return parentViewForChildren;
-	}
-	
+//	@Override
+//	public ViewGroup getParentViewForChild()
+//	{
+//		return parentViewForChildren;
+//	}
+//	
 	public SlidingMenu getSlidingMenu()
 	{
 		return slidingMenu;
@@ -492,6 +507,8 @@ public class TiUISlideMenu extends TiUIView implements ConfigurationChangedListe
 					TiCompositeLayout.LayoutParams params = new TiCompositeLayout.LayoutParams();
 					params.autoFillsHeight = true;
 					params.autoFillsWidth = true;
+					params.sizeOrFillWidthEnabled = true;
+					params.sizeOrFillHeightEnabled = true;
 					content.addView(newProxy.getOrCreateView().getOuterView(), index, params);
 				}
 				if (newProxy instanceof TiWindowProxy) {
