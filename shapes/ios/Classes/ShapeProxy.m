@@ -925,6 +925,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
             } recursive:NO];
         }
         if (self.touchEnabled && (!handledByChildren || bubbles) &&  [self _hasListeners:eventName]) {
+            [data setObject:self forKey:@"source"];
             [self fireEvent:eventName withObject:data checkForListener:NO];
             return YES;
         }
