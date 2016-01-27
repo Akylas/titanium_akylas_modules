@@ -136,60 +136,9 @@ public class ViewProxy extends MapDefaultViewProxy {
         }
         TiUIView view = peekView();
         if (view instanceof GoogleMapView) {
-            ((GoogleMapView) view).updateCamera(TiConvert.toKrollDict(value));
+            ((GoogleMapView) view).updateCamera(TiConvert.toHashMap(value));
         } else {
             applyProperties(value);
         }
     }
-    
-//    private MapView getMapView() {
-//        if (view != null) {
-//            return ((GoogleMapView)view).getMapView();
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public void onDestroy(Activity activity) {
-//        MapView mapView = getMapView();
-//        if (mapView != null) {
-//            mapView.onDestroy();
-//        }
-//    }
-//
-//    @Override
-//    public void onPause(Activity activity) {
-//         MapView mapView = getMapView();
-//        if (mapView != null) {
-//            mapView.onPause();
-//        }
-//    }
-//
-//    @Override
-//    public void onResume(Activity activity) {
-//        MapView mapView = getMapView();
-//        if (mapView != null) {
-//            mapView.onResume();
-//        }
-//    }
-//    
-//    @Override
-//    public void onLowMemory(Activity activity) {
-//        MapView mapView = getMapView();
-//        if (mapView != null) {
-//            mapView.onLowMemory();
-//        }
-//    }
-//
-//    @Override
-//    public void onSaveInstanceState(Bundle bundle) {
-//        MapView mapView = getMapView();
-//        if (mapView != null) {
-//            mapView.onSaveInstanceState(bundle);
-//        }
-//    }
-
-//    @Override
-//    public void onRestoreInstanceState(Bundle bundle) {        
-//    }
 }

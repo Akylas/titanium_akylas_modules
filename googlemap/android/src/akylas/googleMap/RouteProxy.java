@@ -19,8 +19,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import akylas.map.common.BaseRouteProxy;
 import android.graphics.Color;
-import android.graphics.Paint.Cap;
-import android.graphics.Paint.Join;
 import android.os.Message;
 
 @Kroll.proxy(creatableInModule = AkylasGooglemapModule.class)
@@ -144,7 +142,9 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
             runInUiThread(new CommandNoReturn() {
                 @Override
                 public void execute() {
-                    polyline.setPoints(mPoints);
+                    synchronized(mPoints) {
+                        polyline.setPoints(mPoints);
+                    }
                 }
             }, true);
         }
@@ -168,10 +168,13 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     
     public PolylineOptions getAndSetOptions(final CameraPosition position) {
         options = new PolylineOptions();
-        return options.width(selected?mSelectedStrokeWidth:mStrokeWidth)
-                .addAll(mPoints)
-                .clickable(touchable)
-                .color((selected && selectedTintColor != Color.TRANSPARENT)?selectedTintColor:tintColor).zIndex(selected?10000:zIndex);
+        synchronized (mPoints) {
+            return options.width(selected ? mSelectedStrokeWidth : mStrokeWidth)
+                    .addAll(mPoints).clickable(touchable)
+                    .color((selected && selectedTintColor != Color.TRANSPARENT)
+                            ? selectedTintColor : tintColor)
+                    .zIndex(selected ? 10000 : zIndex);
+        }
     }
 
     public void setPolyline(Polyline r) {

@@ -1697,7 +1697,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
     }
 
-    void updateCamera(final KrollDict props) {
+    void updateCamera(final HashMap props) {
         if (props == null)
             return;
         if (preLayout || map == null) {

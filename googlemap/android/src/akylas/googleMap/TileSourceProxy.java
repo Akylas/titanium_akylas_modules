@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiDatabaseHelper;
@@ -90,14 +91,14 @@ public class TileSourceProxy extends BaseTileSourceProxy {
     }
     
     private void updateTileLayerVisibility() {
-        getActivity().runOnUiThread(new Runnable() {
+       runInUiThread(new CommandNoReturn() {
             @Override
-            public void run() {
+            public void execute() {
                 if (mOverlay != null) {
                     mOverlay.setVisible(visible && opacity > 0.0f);
                 }
             }
-        });
+        }, false);
     }
 
     @Override

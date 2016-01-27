@@ -8,7 +8,6 @@ import org.appcelerator.titanium.TiApplication;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -43,9 +42,11 @@ public class WebTileProvider implements TileProvider {
     private boolean mVisible = true;
     private float mOpacity = 1.0f;
     Picasso picasso;
-    private Paint tilePaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+//    private Paint tilePaint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
     private boolean mAutoHD = false;
+
+//    private Paint mMergePaint;
     
     public WebTileProvider(final String pId, final String url, final boolean enableSSL) {
         this(pId, url, enableSSL, true);
@@ -128,7 +129,7 @@ public class WebTileProvider implements TileProvider {
             e.printStackTrace(); 
         }
 
-        return mergeBitmaps(tiles, Bitmap.CompressFormat.JPEG); // PNG is a lot slower, use it only if you really need to
+        return mergeBitmaps(tiles, Bitmap.CompressFormat.PNG); // PNG is a lot slower, use it only if you really need to
 
     }
  
@@ -147,7 +148,7 @@ public class WebTileProvider implements TileProvider {
         } else {
             Bitmap bitmap = getTileImage(x, y, z);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             tileImage = stream.toByteArray();
         }
         if (tileImage != null) {
@@ -193,7 +194,16 @@ public class WebTileProvider implements TileProvider {
         return bitmap;
     }
     
-    public static byte[] mergeBitmaps(Bitmap[] parts, Bitmap.CompressFormat format) {
+//    private Paint getMergePaint() {
+//        if (mMergePaint == null) {
+//            mMergePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+////            mMergePaint.setXfermode(new PorterDuffXfermode(
+////                    PorterDuff.Mode.DST_IN));
+//        }
+//        return mMergePaint;
+//    }
+  
+    public byte[] mergeBitmaps(Bitmap[] parts, Bitmap.CompressFormat format) {
 
         // Check if any of the bitmap is null (if so return null) :
         boolean anyNull = false;
@@ -208,17 +218,22 @@ public class WebTileProvider implements TileProvider {
         if(anyNull) {
             return null;
         }
-
-        Bitmap tileBitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888);
+        Bitmap tileBitmap = null;
+        try {
+            tileBitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888);
+        } catch (Exception e) {
+            return null;
+        }
+//        tileBitmap.eraseColor(Color.TRANSPARENT);
         Canvas canvas = new Canvas(tileBitmap);
-        Paint paint = new Paint();
+//        Paint paint = getMergePaint();
         for (int i = 0; i < parts.length; i++) {
 
-            if(parts[i] == null) {
-
-                parts[i] = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
-            }
-            canvas.drawBitmap(parts[i], parts[i].getWidth() * (i % 2), parts[i].getHeight() * (i / 2), paint);
+//            if(parts[i] == null) {
+//
+//                parts[i] = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
+//            }
+            canvas.drawBitmap(parts[i], parts[i].getWidth() * (i % 2), parts[i].getHeight() * (i / 2), null);
         }
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -326,7 +341,7 @@ public String getTileUrl(int x, int y, int z) {
     
     public WebTileProvider setOpacity(final float opacity) {
         mOpacity = opacity;
-        tilePaint.setAlpha((int) (mOpacity * 255));
+//        tilePaint.setAlpha((int) (mOpacity * 255));
         return this;
     }
     
