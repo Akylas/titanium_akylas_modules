@@ -11,6 +11,7 @@ import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
+import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.ReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
@@ -19,7 +20,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.View;
 
 import com.androidplot.Plot;
 import com.androidplot.xy.FillDirection;
@@ -27,9 +27,13 @@ import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
 import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.XYGraphWidget;
+import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 
-@Kroll.proxy
+@Kroll.proxy(propertyDontEnumAccessors= {
+        "data"
+})
 public class XYSerieProxy extends ReusableProxy {
     
     public static class AkXYSeries extends SimpleXYSeries {
@@ -87,10 +91,18 @@ public class XYSerieProxy extends ReusableProxy {
         }
 		super.handleCreationDict(options);
 	}
-
+	
 	@Kroll.method
+    @Kroll.getProperty(enumerable=false)
+    public Object getData() {
+        return getProperty("data");
+    }
+	
+	@Kroll.method
+    @Kroll.setProperty
 	public void setData(Object args) {
 		Object[] data = (Object[]) args;
+		setPropertyJava("data", args);
 		if (data == null || data.length == 0)
 			series.setModel(new ArrayList<Number>(),
 					SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
@@ -208,7 +220,6 @@ public class XYSerieProxy extends ReusableProxy {
         case "data":
             setData(newValue);
             break;
-
         case AkylasChartsModule.PROPERTY_LINE_WIDTH:
             Utils.styleStrokeWidth(newValue, "1", getFormatter().getLinePaint());
             break;
@@ -310,9 +321,78 @@ public class XYSerieProxy extends ReusableProxy {
         }
     }
     
+    public void addTouchEventData(final long targetValX, final XYPlot xyPlotView, KrollDict data) { 
+        String bindId = getBindId();
+        if (bindId != null) {
+            Long realTargetValX = targetValX;
+            int targetIndex = -1;
+            Long targetValY = null;
+            Long prevValX = null;
+            Long prevValY = null;
+            for (int i = 0; i < series.size(); ++i) {
+                long currValX = series.getX(i).longValue();
+                long currValY = series.getY(i).longValue();
+                // Calculate the range value of the closest
+                // domain value (assumes xyData is sorted in
+                // ascending X order)
+                if (currValX >= targetValX) {
+                    long currDiff = currValX - targetValX;
+                    if (prevValX != null && (targetValX
+                            - prevValX) < currDiff) {
+                        realTargetValX = prevValX;
+                        targetValY = prevValY;
+                    } else {
+                        realTargetValX = currValX;
+                        targetValY = currValY;
+                    }
+                    targetIndex = i;
+                    break;
+                }
+                prevValX = currValX;
+                prevValY = currValY;
+            }
+            if (targetValY != null) {
+                float pixelPosX = xyPlotView.getXPix(targetValX)
+                        .floatValue();
+                float pixelPosY = xyPlotView.getYPix(targetValY)
+                        .floatValue();
+                KrollDict serieData = new KrollDict();
+                serieData.put("plot", this);
+                serieData.put("index", targetIndex);
+                serieData.put("x", new TiDimension(pixelPosX, TiDimension.TYPE_LEFT).getAsDefault());
+                serieData.put("y", new TiDimension(pixelPosY, TiDimension.TYPE_LEFT).getAsDefault());
+                serieData.put("xValue", realTargetValX);
+                serieData.put("yValue", targetValY);
+                data.put(bindId, serieData);
+            }
+        }
+    }
+    
  // Methods
     @Kroll.method
     public void select(int index) {
-//        series.useImplicitXVals();
+        if (index < 0 || index >= series.size()) {
+            return;
+        }
+        String bindId = getBindId();
+        if (bindId != null && hierarchyHasListener(TiC.EVENT_CLICK)) {
+            XYPlot thePlot = (XYPlot) plot.getPlot();
+            XYGraphWidget widget = thePlot.getGraphWidget();
+            Number xVal = series.getX(index);
+            Number yVal = series.getY(index);
+            float xPix = widget.getXPix(xVal.floatValue());
+            float yPix = widget.getYPix(yVal.floatValue());
+            KrollDict serieData = new KrollDict();
+            serieData.put("plot", this);
+            serieData.put("index", index);
+            serieData.put("x", new TiDimension(xPix, TiDimension.TYPE_LEFT).getAsDefault());
+            serieData.put("y", new TiDimension(yPix, TiDimension.TYPE_LEFT).getAsDefault());
+            serieData.put("xValue", xVal);
+            serieData.put("yValue", yVal);
+            
+            KrollDict event = new KrollDict();
+            event.put(bindId, serieData);
+            plot.fireEvent(TiC.EVENT_CLICK, event, true, false);
+        }
     }
 }

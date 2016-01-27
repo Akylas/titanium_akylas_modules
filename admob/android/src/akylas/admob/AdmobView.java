@@ -9,6 +9,7 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 
 import android.graphics.RectF;
+import android.view.ViewGroup;
 
 class AdmobView extends AdmobDefaultView {
     private static final String TAG = "AdMobView";
@@ -34,6 +35,8 @@ class AdmobView extends AdmobDefaultView {
         adView.setAdSize(size);
         adView.setAdUnitId(adProps.getString(AkylasAdmobModule.PROPERTY_ADUNITID));
         // set the listener
+        adView.setFocusable(false);
+        adView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         adView.setAdListener(adListener);
         if (padding != null) {
             adView.setPadding((int) padding.left, (int) padding.top, (int) padding.right, (int) padding.bottom);
@@ -62,6 +65,7 @@ class AdmobView extends AdmobDefaultView {
     }
     
     
+    @Override
     protected void onAdClosed() {
         super.onAdClosed();
         adView = null;
@@ -69,7 +73,9 @@ class AdmobView extends AdmobDefaultView {
 
     @Override
     protected void loadAdWithRequest(AdRequest request) {
-        adView.loadAd(request);
+        if (adView != null) {
+            adView.loadAd(request);
+        }
     }
     
     @Override

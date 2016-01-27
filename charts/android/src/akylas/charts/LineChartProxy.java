@@ -26,7 +26,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -63,7 +62,6 @@ public class LineChartProxy extends ChartProxy {
     private boolean barRenderInitiated = false;
     private KrollFunction formatDomainCallback;
     private KrollFunction formatRangeCallback;
-    private ArrayList<MarkerProxy> preloadMarkers = null;
 
     private final ArrayList<MarkerProxy> mMarkers;
 
@@ -163,17 +161,17 @@ public class LineChartProxy extends ChartProxy {
             }
         }
 
-        public void handleInteraction() {
-            if (userInteractionEnabled || zoomEnabled || panEnabled) {
-                plotView.setOnTouchListener(this);
-            } else {
-                plotView.setOnTouchListener(null);
-            }
-        }
+//        public void handleInteraction() {
+//            if (userInteractionEnabled || zoomEnabled || panEnabled) {
+//                plotView.setOnTouchListener(this);
+//            } else {
+//                plotView.setOnTouchListener(null);
+//            }
+//        }
 
         protected void postCreateNativeView() {
             super.postCreateNativeView();
-            handleInteraction();
+//            handleInteraction();
 
             if (needsBoundarySet && (panEnabled || zoomEnabled)) {
                 xyPlotView.setDomainBoundaries(newMinX, newMaxX,
@@ -813,7 +811,10 @@ public class LineChartProxy extends ChartProxy {
         private Number newMaxX;
 
         public boolean onTouch(View view, MotionEvent motionEvent) {
-
+            if (!userInteractionEnabled) {
+                super.onTouch(view, motionEvent);
+            }
+            
             switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: // start gesture
                 firstFinger = new PointF(motionEvent.getX(),
@@ -971,56 +972,14 @@ public class LineChartProxy extends ChartProxy {
             if (xyPlotView.containsPoint(touchX, touchY)) {
                 Log.d(TAG, "Touched at " + touchX + ", " + touchY);
                 XYGraphWidget widget = xyPlotView.getGraphWidget();
+                long targetValX = Math
+                        .round(widget.getXVal(touchX));
                 for (final XYSeries series : xyPlotView.getSeriesSet()) {
                     if (series instanceof AkXYSeries
                             && ((AkXYSeries) series).proxy != null) {
                         XYSerieProxy serieProxy = ((AkXYSeries) series).proxy
                                 .get();
-                        String bindId = serieProxy.getBindId();
-                        if (bindId != null) {
-                            long targetValX = Math
-                                    .round(widget.getXVal(touchX));
-                            int targetIndex = -1;
-                            Long targetValY = null;
-                            Long prevValX = null;
-                            Long prevValY = null;
-                            for (int i = 0; i < series.size(); ++i) {
-                                long currValX = series.getX(i).longValue();
-                                long currValY = series.getY(i).longValue();
-                                // Calculate the range value of the closest
-                                // domain value (assumes xyData is sorted in
-                                // ascending X order)
-                                if (currValX >= targetValX) {
-                                    long currDiff = currValX - targetValX;
-                                    if (prevValX != null && (targetValX
-                                            - prevValX) < currDiff) {
-                                        targetValX = prevValX;
-                                        targetValY = prevValY;
-                                    } else {
-                                        targetValX = currValX;
-                                        targetValY = currValY;
-                                    }
-                                    targetIndex = i;
-                                    break;
-                                }
-                                prevValX = currValX;
-                                prevValX = currValY;
-                            }
-                            if (targetValY != null) {
-                                float pixelPosX = xyPlotView.getXPix(targetValX)
-                                        .floatValue();
-                                float pixelPosY = xyPlotView.getYPix(targetValY)
-                                        .floatValue();
-                                KrollDict serieData = new KrollDict();
-                                serieData.put("plot", serieProxy);
-                                serieData.put("index", targetIndex);
-                                serieData.put("x", new TiDimension(pixelPosX, TiDimension.TYPE_LEFT).getAsDefault());
-                                serieData.put("y", new TiDimension(pixelPosY, TiDimension.TYPE_LEFT).getAsDefault());
-                                serieData.put("xValue", targetValX);
-                                serieData.put("yValue", targetValY);
-                                data.put(bindId, serieData);
-                            }
-                        }
+                        serieProxy.addTouchEventData(targetValX, xyPlotView, data);
                     }
                 }
             }

@@ -17,6 +17,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
@@ -64,6 +65,12 @@ public class ChartProxy extends TiViewProxy {
 	                    TiUIHelper.firePostLayoutEvent(ChartView.this);
 	                }
 				}
+				
+				@Override
+	            public boolean dispatchTouchEvent(MotionEvent event) {
+	                if (touchPassThrough(getParentViewForChild(), event)) return false;
+	                return super.dispatchTouchEvent(event);
+	            }
 			};
 			try {
 				plotView = (Plot) viewClass().getConstructor(Context.class, String.class, RenderMode.class).newInstance(proxy.getActivity(), mTitle, RenderMode.USE_MAIN_THREAD);
@@ -87,7 +94,7 @@ public class ChartProxy extends TiViewProxy {
 			plotView.setPlotMargins(0, 0, 0, 0);
 			plotView.setPlotPadding(0, 0, 0, 0);
 			plotView.setPadding(0, 0, 0, 0);
-
+			plotView.setShouldSupportHwAcceleration(true);
 //			plotView.setOnTouchListener(this);
 			// reposition the grid so that it rests above the bottom-left
 			// edge of the graph widget:

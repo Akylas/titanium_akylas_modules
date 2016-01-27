@@ -21,10 +21,10 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.mediation.admob.AdMobExtras;
 
-public  abstract class AdmobDefaultView extends TiUIView {
+public abstract class AdmobDefaultView extends TiUIView {
     private static final String TAG = "AdMobDefaultView";
     private static final int MSG_LOAD = 10001;
-    
+
     String prop_color_bg;
     String prop_color_bg_top;
     String prop_color_border;
@@ -34,7 +34,7 @@ public  abstract class AdmobDefaultView extends TiUIView {
     protected KrollDict adProps = new KrollDict();
     protected Handler mainHandler = new Handler(Looper.getMainLooper(), this);
     protected AdListener adListener = new AdListener() {
-        
+
         @Override
         public void onAdLoaded() {
             AdmobDefaultView.this.onAdLoaded();
@@ -54,20 +54,19 @@ public  abstract class AdmobDefaultView extends TiUIView {
         public void onAdOpened() {
             AdmobDefaultView.this.onAdOpened();
         }
-        
+
         @Override
         public void onAdClosed() {
             AdmobDefaultView.this.onAdClosed();
         }
     };
-   
-    protected static final int TIFLAG_NEEDS_LOAD               = 0x00000001;
 
+    protected static final int TIFLAG_NEEDS_LOAD = 0x00000001;
 
     public AdmobDefaultView(final TiViewProxy proxy) {
         super(proxy);
     }
-    
+
     public boolean handleMessage(Message msg) {
         switch (msg.what) {
         case MSG_LOAD:
@@ -79,33 +78,36 @@ public  abstract class AdmobDefaultView extends TiUIView {
     }
 
     protected abstract void createAdView();
+
     protected abstract void loadAdWithRequest(final AdRequest request);
-    
+
     private void handleLoadAd() {
         final AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
         if (adProps.containsKey(AkylasAdmobModule.PROPERTY_TEST_DEVICES)) {
-            for (String device : adProps.getStringArray(AkylasAdmobModule.PROPERTY_TEST_DEVICES)) {
-                adRequestBuilder .addTestDevice(device);
+            for (String device : adProps
+                    .getStringArray(AkylasAdmobModule.PROPERTY_TEST_DEVICES)) {
+                adRequestBuilder.addTestDevice(device);
             }
         }
         if (adProps.containsKey(AkylasAdmobModule.PROPERTY_KEYWORDS)) {
-            for (String device : adProps.getStringArray(AkylasAdmobModule.PROPERTY_KEYWORDS)) {
-                adRequestBuilder .addKeyword(device);
+            for (String device : adProps
+                    .getStringArray(AkylasAdmobModule.PROPERTY_KEYWORDS)) {
+                adRequestBuilder.addKeyword(device);
             }
         }
-        if (adProps.containsKey(TiC.PROPERTY_BIRTHDAY))
-        {
-            adRequestBuilder.setBirthday((Date) adProps.get(TiC.PROPERTY_BIRTHDAY));
+        if (adProps.containsKey(TiC.PROPERTY_BIRTHDAY)) {
+            adRequestBuilder
+                    .setBirthday((Date) adProps.get(TiC.PROPERTY_BIRTHDAY));
         }
-        if (adProps.containsKey(AkylasAdmobModule.PROPERTY_GENDER))
-        {
-            adRequestBuilder.setGender(adProps.getInt(AkylasAdmobModule.PROPERTY_GENDER));
+        if (adProps.containsKey(AkylasAdmobModule.PROPERTY_GENDER)) {
+            adRequestBuilder.setGender(
+                    adProps.getInt(AkylasAdmobModule.PROPERTY_GENDER));
         }
-        if (adProps.containsKey(TiC.PROPERTY_LOCATION))
-        {
-            adRequestBuilder.setLocation((Location) adProps.get(TiC.PROPERTY_LOCATION));
+        if (adProps.containsKey(TiC.PROPERTY_LOCATION)) {
+            adRequestBuilder
+                    .setLocation((Location) adProps.get(TiC.PROPERTY_LOCATION));
         }
-        
+
         Bundle bundle = createAdRequestProperties();
         if (bundle.size() > 0) {
             adRequestBuilder.addNetworkExtras(new AdMobExtras(bundle));
@@ -115,7 +117,7 @@ public  abstract class AdmobDefaultView extends TiUIView {
 
     // load the adMob ad
     public void loadAd() {
-        
+
         if (!TiApplication.isUIThread()) {
             TiMessenger.sendBlockingMainMessage(
                     mainHandler.obtainMessage(MSG_LOAD));
@@ -129,19 +131,23 @@ public  abstract class AdmobDefaultView extends TiUIView {
             boolean changedProperty) {
         switch (key) {
         case AkylasAdmobModule.PROPERTY_ADUNITID:
-            adProps.put(AkylasAdmobModule.PROPERTY_ADUNITID, TiConvert.toString(newValue));
+            adProps.put(AkylasAdmobModule.PROPERTY_ADUNITID,
+                    TiConvert.toString(newValue));
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOAD;
             break;
         case AkylasAdmobModule.PROPERTY_ADSIZE:
-            adProps.put(AkylasAdmobModule.PROPERTY_ADSIZE, AkylasAdmobModule.sizeFromString(TiConvert.toString(newValue)));
+            adProps.put(AkylasAdmobModule.PROPERTY_ADSIZE, AkylasAdmobModule
+                    .sizeFromString(TiConvert.toString(newValue)));
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOAD;
             break;
         case AkylasAdmobModule.PROPERTY_TEST_DEVICES:
-            adProps.put(AkylasAdmobModule.PROPERTY_TEST_DEVICES, TiConvert.toStringArray(newValue));
+            adProps.put(AkylasAdmobModule.PROPERTY_TEST_DEVICES,
+                    TiConvert.toStringArray(newValue));
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOAD;
             break;
         case AkylasAdmobModule.PROPERTY_KEYWORDS:
-            adProps.put(AkylasAdmobModule.PROPERTY_KEYWORDS, TiConvert.toStringArray(newValue));
+            adProps.put(AkylasAdmobModule.PROPERTY_KEYWORDS,
+                    TiConvert.toStringArray(newValue));
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOAD;
             break;
         case TiC.PROPERTY_BIRTHDAY:
@@ -149,22 +155,22 @@ public  abstract class AdmobDefaultView extends TiUIView {
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOAD;
             break;
         case TiC.PROPERTY_LOCATION:
-            adProps.put(TiC.PROPERTY_LOCATION, AkylasAdmobModule.toLocation(newValue));
+            adProps.put(TiC.PROPERTY_LOCATION,
+                    AkylasAdmobModule.toLocation(newValue));
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOAD;
             break;
         case AkylasAdmobModule.PROPERTY_GENDER:
             String gender = TiConvert.toString(newValue);
-            int adGender =  AdRequest.GENDER_UNKNOWN;
+            int adGender = AdRequest.GENDER_UNKNOWN;
             if (gender.equals("male")) {
-                adGender =  AdRequest.GENDER_MALE;
+                adGender = AdRequest.GENDER_MALE;
             } else if (gender.equals("female")) {
-                adGender =  AdRequest.GENDER_FEMALE;
+                adGender = AdRequest.GENDER_FEMALE;
             }
             adProps.put(AkylasAdmobModule.PROPERTY_GENDER, adGender);
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOAD;
             break;
-        case AkylasAdmobModule.PROPERTY_COLOR_BG: 
-        {
+        case AkylasAdmobModule.PROPERTY_COLOR_BG: {
             prop_color_bg = convertColorProp(newValue);
             mProcessUpdateFlags |= TIFLAG_NEEDS_LOAD;
             break;
@@ -199,7 +205,7 @@ public  abstract class AdmobDefaultView extends TiUIView {
             break;
         }
     }
-    
+
     @Override
     protected void didProcessProperties() {
         super.didProcessProperties();
@@ -238,22 +244,33 @@ public  abstract class AdmobDefaultView extends TiUIView {
     }
 
     protected void onAdLoaded() {
-        proxy.fireEvent(AkylasAdmobModule.AD_RECEIVED);
+        if (proxy.hasListeners(AkylasAdmobModule.AD_RECEIVED, false)) {
+            proxy.fireEvent(AkylasAdmobModule.AD_RECEIVED);
+        }
     }
 
     protected void onAdFailedToLoad(int errorCode) {
-        proxy.fireEvent(AkylasAdmobModule.AD_NOT_RECEIVED);
+        if (proxy.hasListeners(AkylasAdmobModule.AD_NOT_RECEIVED, false)) {
+            proxy.fireEvent(AkylasAdmobModule.AD_NOT_RECEIVED);
+        }
     }
 
     protected void onAdLeftApplication() {
-        proxy.fireEvent(AkylasAdmobModule.AD_LEFT_APP);
+        if (proxy.hasListeners(AkylasAdmobModule.AD_LEFT_APP, false)) {
+            proxy.fireEvent(AkylasAdmobModule.AD_LEFT_APP);
+        }
     }
 
     protected void onAdOpened() {
-        proxy.fireEvent(AkylasAdmobModule.AD_OPENED);
+        if (proxy.hasListeners(AkylasAdmobModule.AD_OPENED, false)) {
+            proxy.fireEvent(AkylasAdmobModule.AD_OPENED);
+        }
     }
-    
+
     protected void onAdClosed() {
-        proxy.fireEvent(AkylasAdmobModule.AD_CLOSED);
+        loadAd();
+        if (proxy.hasListeners(AkylasAdmobModule.AD_CLOSED, false)) {
+            proxy.fireEvent(AkylasAdmobModule.AD_CLOSED);
+        }
     }
 }
