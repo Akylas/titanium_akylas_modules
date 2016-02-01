@@ -129,7 +129,7 @@ public class GroundOverlayProxy extends BaseGroundOverlayProxy<LatLng, LatLngBou
         return overlay;
     }
 
-    public void removeGroundOverlay() {
+    public void removeFromMap() {
         if (overlay != null) {
             overlay.remove();
             overlay = null;

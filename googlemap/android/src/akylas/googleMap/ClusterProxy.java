@@ -284,4 +284,10 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
             markerOptions.icon(icon);
         }
     }
+    
+    public void removeFromMap() {
+        if (mapView != null) {
+            ((GoogleMapView) mapView).getClusterManager().removeClusterAlgorithm(_algorithm);
+        }
+    }
 }

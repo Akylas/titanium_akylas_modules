@@ -23,6 +23,7 @@ import android.database.sqlite.SQLiteDatabase;
     TiC.PROPERTY_VISIBLE,
     TiC.PROPERTY_OPACITY,
     "tileSize",
+    "showTileAfterMaxZoom",
     "autoHd"
 })
 public class TileSourceProxy extends BaseTileSourceProxy {
@@ -38,6 +39,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
     private float zIndex = -1;
     private int tileSize = 256;
     private boolean autoHd = false;
+    private boolean showTileAfterMaxZoom = true;
     
     public static class MapBoxOnlineTileProvider extends TileJsonProvider {
         private String mToken;
@@ -158,6 +160,12 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             autoHd  = TiConvert.toBoolean(newValue);
             if (mTileProvider instanceof WebTileProvider) {
                 ((WebTileProvider) mTileProvider).setAutoHD(autoHd);
+            }
+            break;
+        case "showTileAfterMaxZoom":
+            showTileAfterMaxZoom  = TiConvert.toBoolean(newValue);
+            if (mTileProvider instanceof WebTileProvider) {
+                ((WebTileProvider) mTileProvider).setShowTileAfterMaxZoom(showTileAfterMaxZoom);
             }
             break;
         default:
@@ -289,9 +297,10 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 ((WebTileProvider) mTileProvider).setUserAgent(TiConvert.toString(getProperty("userAgent")));
                 ((WebTileProvider) mTileProvider).setMinimumZoomLevel(mMinZoom);
                 ((WebTileProvider) mTileProvider).setMaximumZoomLevel(mMaxZoom);
-                ((WebTileProvider) mTileProvider).setVisible(TiConvert.toBoolean(getProperty(TiC.PROPERTY_VISIBLE), true));
-                ((WebTileProvider) mTileProvider).setOpacity(TiConvert.toFloat(getProperty(TiC.PROPERTY_OPACITY), 1.0f));
-                ((WebTileProvider) mTileProvider).setAutoHD(TiConvert.toBoolean(getProperty("autoHd"), true));
+                ((WebTileProvider) mTileProvider).setVisible(visible);
+                ((WebTileProvider) mTileProvider).setOpacity(opacity);
+                ((WebTileProvider) mTileProvider).setAutoHD(autoHd);
+                ((WebTileProvider) mTileProvider).setShowTileAfterMaxZoom(showTileAfterMaxZoom);
             }
         }
         if (mTileProvider != null && hasListeners(TiC.EVENT_LOAD, false)) {

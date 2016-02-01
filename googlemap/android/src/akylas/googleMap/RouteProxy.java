@@ -185,29 +185,23 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
         return polyline;
     }
 
-    public void removePolyline() {
+    @Override
+    public void removeFromMap() {
         if (polyline != null) {
             polyline.remove();
             polyline = null;
         }
     }
-    
-    @Override
-    public void removeFromMap() {
-        removePolyline();
-    }
 
-//    private float widthThickness = 1.2f;
-
-    public void onMapCameraChange(final GoogleMap map,
-            final CameraPosition position) {
-        // if (polyline != null) {
-        // if (widthThickness != 1.0f) {
-        // float newWidth = getPathPaint().getStrokeWidth() * widthThickness;
-        // polyline.setWidth(newWidth);
-        // }
-        // }
-    }
+//    public void onMapCameraChange(final GoogleMap map,
+//            final CameraPosition position) {
+//        // if (polyline != null) {
+//        // if (widthThickness != 1.0f) {
+//        // float newWidth = getPathPaint().getStrokeWidth() * widthThickness;
+//        // polyline.setWidth(newWidth);
+//        // }
+//        // }
+//    }
     
     @Override
     public void onDeselect() {

@@ -1329,8 +1329,11 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 currentInfoWindowAnim = null;
             }
         });
-        currentInfoWindowAnim.setInterpolator(
-                new PathInterpolator(0.59367f, 0.12066f, 0.18878f, 1.5814f));
+        if (TiC.LOLLIPOP_OR_GREATER) {
+            currentInfoWindowAnim.setInterpolator(
+                    new PathInterpolator(0.59367f, 0.12066f, 0.18878f, 1.5814f));
+        }
+        
         currentInfoWindowAnim.playTogether(
                 ObjectAnimator.ofFloat(infoWindowContainer, "alpha", 0.0f,
                         1.0f),
@@ -1382,12 +1385,8 @@ public class GoogleMapView extends AkylasMapBaseView implements
             if (handledMarkers != null) {
                 handledMarkers.remove(marker.getMarker());
             }
-            proxy.removeFromMap();
-            // timarkers.remove(marker);
             deselectAnnotation(proxy);
-            proxy.setActivity(null);
-            proxy.setMapView(null);
-            proxy.setParentForBubbling(null);
+            proxy.wasRemoved();
         }
     }
 
@@ -1437,13 +1436,8 @@ public class GoogleMapView extends AkylasMapBaseView implements
             if (handledPolylines != null) {
                 handledPolylines.remove(proxy.getPolyline());
             }
-            proxy.removePolyline();
-            proxy.setActivity(null);
-            proxy.setMapView(null);
             deselectAnnotation(proxy);
-            proxy.setParentForBubbling(null);
-
-            // addedRoutes.remove(proxy);
+            proxy.wasRemoved();
         }
 
     }
@@ -1487,11 +1481,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
 
         for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
-            proxy.removeGroundOverlay();
-            proxy.setActivity(null);
-            proxy.setMapView(null);
-            proxy.setParentForBubbling(null);
-            // addedGroundOverlays.remove(proxy);
+            proxy.wasRemoved();
         }
     }
 
@@ -1534,10 +1524,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
 
         for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
-            proxy.setMapView(null);
-            proxy.setActivity(null);
-            proxy.setParentForBubbling(null);
-            getClusterManager().removeClusterAlgorithm(proxy.getAlgorithm());
+            proxy.wasRemoved();
         }
     }
 
@@ -1591,10 +1578,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
 
         for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
-            proxy.release();
-            proxy.setActivity(null);
-            proxy.setParentForBubbling(null);
-            // addedTileSources.remove(proxy);
+            proxy.wasRemoved();
         }
     }
 

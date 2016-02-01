@@ -20,7 +20,9 @@ public class AnnotationProxy extends BaseAnnotationProxy<LatLng>
 
     @Override
     public void infoWindowDidClose() {
-        ((GoogleMapView) mapView).infoWindowDidClose(infoView);
+        if (mapView != null) {
+            ((GoogleMapView) mapView).infoWindowDidClose(infoView);
+        }
         infoView = null;
     }
 
