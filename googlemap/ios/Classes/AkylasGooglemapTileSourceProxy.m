@@ -17,14 +17,14 @@
 
 @implementation AkylasGooglemapTileSourceProxy
 {
+    @protected
     GMSTileLayer*  _gTileLayer;
     BOOL _needsClearCache;
-    NSString* _url;
 }
 -(void)dealloc
 {
     RELEASE_TO_NIL(_gTileLayer);
-    RELEASE_TO_NIL(_url);
+//    RELEASE_TO_NIL(_url);
     [super dealloc];
 }
 -(void)_configure
@@ -32,6 +32,7 @@
     _needsClearCache = NO;
     [super _configure];
     self.zIndex = [[self class] gZIndexDelta];
+    self.canChangeTileSize = YES;
 }
 
 -(NSString*)apiName
@@ -131,6 +132,9 @@
 }
 
 -(NSInteger)getRealTileSize {
+    if (!self.canChangeTileSize) {
+        return self.tileSize;
+    }
     NSInteger tileSize = self.tileSize;
     BOOL autoHd = [TiUtils boolValue:[self valueForKey:@"autoHd"] def:NO];
     BOOL shouldBootUpHD = tileSize / [TiUtils screenScale] < 256;
@@ -177,6 +181,24 @@
     static int lastIndex = 0;
     return lastIndex;
 }
+
+-(void)initializeLayer
+{
+    if (IS_OF_CLASS(_gTileLayer, AkylasGMSURLTileLayer)) {
+        AkylasGMSURLTileLayer* theLayer = (AkylasGMSURLTileLayer*)_gTileLayer;
+//        theLayer.url = _url;
+        if ([theLayer.url containsString:@"{bbox}"]) {
+            theLayer.wmsFormat = YES;
+        }
+        theLayer.subdomains = [TiUtils stringValue:[self valueForKey:@"subdomains"] def:@"abc"];
+        theLayer.cacheKey = [TiUtils stringValue:[self valueForKey:@"id"]];
+        theLayer.userAgent = [TiUtils stringValue:[self valueForKey:@"userAgent"]];
+        theLayer.autoHd = [TiUtils boolValue:[self valueForKey:@"autoHd"] def:NO];
+        theLayer.cacheable = [TiUtils boolValue:[self valueForKey:@"cacheable"] def:YES];
+        theLayer.minZoom = [TiUtils floatValue:[self valueForKey:@"minZoom"] def:-1];
+        theLayer.maxZoom = [TiUtils floatValue:[self valueForKey:@"maxZoom"] def:-1];
+    }
+}
 -(GMSTileLayer*)tileLayer
 {
     id source = [self valueForKey:@"source"];
@@ -185,26 +207,19 @@
     }
     NSString* typeLower = [source lowercaseString];
     GMSTileLayer* result = nil;
-    GMSTileURLConstructor constructor = nil;
-    
+//    GMSTileURLConstructor constructor = nil;
+    NSString* url  = [TiUtils stringValue:[self valueForKey:@"url"]];
     if ([typeLower hasSuffix:@"mbtiles"])
     {
         result = [[AkylasGMSMBTilesLayer alloc] initWithTileSetURL:[TiUtils toURL:source proxy:self]];
-    } else {
-        _url = [TiUtils stringValue:[self valueForKey:@"url"]];
+//    } else {
+//        _url = [TiUtils stringValue:[self valueForKey:@"url"]];
     }
     
-    if (!result) {
-        AkylasGMSURLTileLayer* theLayer = [[AkylasGMSURLTileLayer alloc] initWithConstructor:constructor];
-        theLayer.url = _url;
-        theLayer.subdomains = [TiUtils stringValue:[self valueForKey:@"subdomains"] def:@"abc"];
-        theLayer.cacheKey = [TiUtils stringValue:[self valueForKey:@"id"]];
-        theLayer.userAgent = [TiUtils stringValue:[self valueForKey:@"userAgent"]];
-        theLayer.autoHd = [TiUtils boolValue:[self valueForKey:@"autoHd"] def:NO];
-        theLayer.cacheable = [TiUtils boolValue:[self valueForKey:@"cacheable"] def:YES];
-        theLayer.minZoom = [TiUtils floatValue:[self valueForKey:@"minZoom"] def:-1];
-        theLayer.maxZoom = [TiUtils floatValue:[self valueForKey:@"maxZoom"] def:-1];
-        result = theLayer;
+    if (!result && url) {
+
+        result = [[AkylasGMSURLTileLayer alloc] initWithConstructor:nil];
+        ((AkylasGMSURLTileLayer*)result).url = url;
     }
     return [result autorelease];
 }
@@ -220,7 +235,7 @@
     if (_gTileLayer == nil) {
         _gTileLayer = [[self tileLayer] retain];
         if (!_gTileLayer) return nil;
-
+        [self initializeLayer];
         _gTileLayer.fadeIn = self.fadeIn;
         _gTileLayer.zIndex = (int)self.zIndex;
         _gTileLayer.opacity = self.visible?self.opacity:0;

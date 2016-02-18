@@ -116,9 +116,10 @@
              
              if (![self dbHadError:db] && [results next]) {
                  
-                 NSData *data = ([[results columnNameToIndexMap] count] ? [results dataForColumn:@"tile_data"] : nil);
+                 NSString *string = ([[results columnNameToIndexMap] count] ? [results stringForColumn:@"tile_data"] : nil);
                  
-                 if (data) {
+                 if (string) {
+                     NSData *data = [[NSData alloc]initWithBase64EncodedString:string options:NSDataBase64DecodingIgnoreUnknownCharacters];
                      image = [UIImage imageWithData:data];
                  }
              }

@@ -78,10 +78,8 @@ public class ClusterRenderer extends DefaultClusterRenderer<AnnotationProxy> {
     
     @Override
     protected void removeMarker(Marker m) {
-        AnnotationProxy proxy = tiMapView.getProxyByMarker(m);
-        if (proxy != null) {
-            proxy.removeFromMap();
-        }
+        tiMapView.removeMarker(m);
+        
         super.removeMarker(m);
     }
 }

@@ -11,6 +11,8 @@
 @class GMSTileLayer;
 @class GMSMapView;
 @interface AkylasGooglemapTileSourceProxy : AkylasMapBaseTileSourceProxy
+@property (nonatomic, readwrite, assign) BOOL canChangeTileSize;
+//@property (nonatomic, readwrite, copy) NSString* url;
 
 -(GMSTileLayer*)getGTileLayerForMapView:(GMSMapView*)mapView;
 -(GMSTileLayer*)gTileLayer;

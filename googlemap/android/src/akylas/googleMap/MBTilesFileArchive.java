@@ -11,13 +11,17 @@ import com.google.android.gms.maps.model.Tile;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.util.Log;
 
 public class MBTilesFileArchive {
 
     private final SQLiteDatabase mDatabase;
 
-    // TABLE tiles (zoom_level INTEGER, tile_column INTEGER, tile_row INTEGER, tile_data BLOB);
+    // TABLE tiles (zoom_level INTEGER, tile_column INTEGER, tile_row INTEGER,
+    // tile_data BLOB);
     public static final String TABLE_TILES = "tiles";
     public static final String TABLE_METADATA = "metadata";
     public static final String COL_TILES_TILE_DATA = "tile_data";
@@ -29,38 +33,74 @@ public class MBTilesFileArchive {
 
     public static MBTilesFileArchive getDatabaseFileArchive(final File pFile)
             throws SQLiteException {
-        return new MBTilesFileArchive(SQLiteDatabase.openDatabase(pFile.getAbsolutePath(), null,
-                SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READONLY)
-        );
+        return new MBTilesFileArchive(
+                SQLiteDatabase.openDatabase(pFile.getAbsolutePath(), null,
+                        SQLiteDatabase.NO_LOCALIZED_COLLATORS
+                                | SQLiteDatabase.OPEN_READONLY));
     }
-    
-    public InputStream getInputStream(final int x, final int y, final int zoom) {
+
+    public InputStream getInputStream(final int x, final int y,
+            final int zoom) {
 
         try {
             InputStream ret = null;
             final String[] tile = { COL_TILES_TILE_DATA };
-            final String[] xyz = {
-                    Integer.toString(x),
+            final String[] xyz = { Integer.toString(x),
                     Double.toString(Math.pow(2, zoom) - y - 1),
-                    Integer.toString(zoom)
-            };
+                    Integer.toString(zoom) };
 
             final Cursor cur = mDatabase.query(TABLE_TILES, tile,
-                    "tile_column=? and tile_row=? and zoom_level=?", xyz, null, null, null);
+                    "tile_column=? and tile_row=? and zoom_level=?", xyz, null,
+                    null, null);
 
             if (cur.getCount() != 0) {
                 cur.moveToFirst();
-                ret = new ByteArrayInputStream(cur.getBlob(0));
+                ret = new ByteArrayInputStream(
+                        Base64.decode(cur.getBlob(0), Base64.DEFAULT));
+                // ret = new ByteArrayInputStream(cur.getBlob(0));
             }
             cur.close();
-            if (ret != null) {
-                return ret;
-            }
+            return ret;
         } catch (final Throwable e) {
             Log.e(TAG, "Error getting db stream: ", e);
         }
 
         return null;
+    }
+
+    public Bitmap getBitmap(final int x, final int y, final int zoom) {
+        synchronized (mDatabase) {
+            try {
+                Bitmap ret = null;
+                final String[] tile = { COL_TILES_TILE_DATA };
+                final String[] xyz = { Integer.toString(x),
+                        Double.toString(Math.pow(2, zoom) - y - 1),
+                        Integer.toString(zoom) };
+
+                final Cursor cur = mDatabase.query(TABLE_TILES, tile,
+                        "tile_column=? and tile_row=? and zoom_level=?", xyz,
+                        null, null, null);
+
+                if (cur.getCount() != 0) {
+                    cur.moveToFirst();
+                    byte[] data = Base64.decode(cur.getBlob(0), Base64.DEFAULT);
+                    ret = BitmapFactory.decodeByteArray(data, 0, data.length);
+                    // ret = new
+                    // ByteArrayInputStream(Base64.decode(cur.getBlob(0),
+                    // Base64.DEFAULT));
+                    // ret = new ByteArrayInputStream(cur.getBlob(0));
+                }
+                Log.d(TAG, "getBitmap " + x + "," + y + "," + zoom + ","
+                        + (ret != null));
+                cur.close();
+                return ret;
+            } catch (final Throwable e) {
+                Log.e(TAG, "Error getting db stream: ", e);
+            }
+
+            return null;
+        }
+
     }
 
     @Override
@@ -72,8 +112,8 @@ public class MBTilesFileArchive {
         final String[] column = { COL_VALUE };
         final String[] query = { key };
 
-        Cursor c =
-                this.mDatabase.query(TABLE_METADATA, column, "name = ?", query, null, null, null);
+        Cursor c = this.mDatabase.query(TABLE_METADATA, column, "name = ?",
+                query, null, null, null);
         try {
             c.moveToFirst();
             return c.getString(0);
@@ -124,9 +164,11 @@ public class MBTilesFileArchive {
         String result = getStringValue("bounds");
         if (result != null) {
             String[] boundsArray = result.split(",\\s*");
-            return (LatLngBounds) AkylasGooglemapModule.getFactory().createRegion(Double.parseDouble(boundsArray[3]),
-                    Double.parseDouble(boundsArray[2]), Double.parseDouble(boundsArray[1]),
-                    Double.parseDouble(boundsArray[0]));
+            return (LatLngBounds) AkylasGooglemapModule.getFactory()
+                    .createRegion(Double.parseDouble(boundsArray[3]),
+                            Double.parseDouble(boundsArray[2]),
+                            Double.parseDouble(boundsArray[1]),
+                            Double.parseDouble(boundsArray[0]));
         }
         return null;
     }

@@ -23,7 +23,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
-@Kroll.proxy(creatableInModule = AkylasGooglemapModule.class)
+@Kroll.proxy(creatableInModule = AkylasGooglemapModule.class, propertyAccessors = {
+        "maxDistance",
+        "minDistance"
+    })
 public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
 
     private AkylasClusterAlgorithm _algorithm;
@@ -65,11 +68,11 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
     @Override
     public void cluster() {
         if (mapView != null) {
-            runInUiThread(new CommandNoReturn() {
-                public void execute() {
+//            runInUiThread(new CommandNoReturn() {
+//                public void execute() {
                     ((GoogleMapView) mapView).getClusterManager().clusterAlgo(_algorithm);
-                }
-            }, false);
+//                }
+//            }, false);
         }
     }
 
@@ -176,6 +179,7 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
             _algorithm = new AkylasClusterAlgorithm();
             _algorithm.setProxy(this);
             _algorithm.maxDistanceAtZoom = maxDistance;
+            _algorithm.minDistance = minDistance;
         }
         return _algorithm;
     }

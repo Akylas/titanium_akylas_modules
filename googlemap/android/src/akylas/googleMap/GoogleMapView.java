@@ -737,7 +737,8 @@ public class GoogleMapView extends AkylasMapBaseView implements
     }
 
     protected KrollDict dictFromPoint(LatLng point) {
-        KrollDict d = new KrollDict();
+        KrollDict d = TiViewHelper.dictFromMotionEvent(getTouchView(),
+                lastDownEvent);
         d.put(TiC.PROPERTY_LATITUDE, point.latitude);
         d.put(TiC.PROPERTY_LONGITUDE, point.longitude);
         d.put(TiC.PROPERTY_REGION, getRegionDict());
@@ -1381,13 +1382,17 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
 
         for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
-            GoogleMapMarker marker = (GoogleMapMarker) proxy.getMarker();
-            if (handledMarkers != null) {
-                handledMarkers.remove(marker.getMarker());
-            }
-            deselectAnnotation(proxy);
-            proxy.wasRemoved();
+            handleRemoveSingleAnnotation(proxy);
         }
+    }
+    
+    public void handleRemoveSingleAnnotation(AnnotationProxy proxy) {
+        GoogleMapMarker marker = (GoogleMapMarker) proxy.getMarker();
+        if (handledMarkers != null) {
+            handledMarkers.remove(marker.getMarker());
+        }
+        deselectAnnotation(proxy);
+        proxy.wasRemoved();
     }
 
     @Override
@@ -1892,5 +1897,20 @@ public class GoogleMapView extends AkylasMapBaseView implements
     protected KrollDict fromScreenLocation(Point p) {
         return AkylasGooglemapModule
                 .latLongToDict(getProjection().fromScreenLocation(p));
+    }
+
+    public void removeMarker(Marker m) {
+        AnnotationProxy proxy = getProxyByMarker(m);
+        if (proxy != null) {
+            GoogleMapMarker marker = (GoogleMapMarker) proxy.getMarker();
+            if (handledMarkers != null) {
+                handledMarkers.remove(marker.getMarker());
+            }
+            deselectAnnotation(proxy);
+            proxy.removeFromMap(); //only remove from map
+        } else {
+            m.remove();
+        }
+        
     }
 }

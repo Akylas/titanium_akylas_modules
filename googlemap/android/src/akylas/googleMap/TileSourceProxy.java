@@ -24,53 +24,56 @@ import android.database.sqlite.SQLiteDatabase;
     TiC.PROPERTY_OPACITY,
     "tileSize",
     "showTileAfterMaxZoom",
-    "autoHd"
+    "autoHd",
+    "cacheable"
 })
 public class TileSourceProxy extends BaseTileSourceProxy {
     private static final String TAG = "TileSourceProxy";
     private TileOverlay mOverlay;
     private TileOverlayOptions mOverlayOptions;
-    private TileProvider mTileProvider;
-    public static final String MAPBOX_BASE_URL_V4 = "https://a.tiles.mapbox.com/v4/";
-    public static final String MAPBOX_BRANDED_JSON_URL_V4 = MAPBOX_BASE_URL_V4 + "%s.json?access_token=%s&secure=1";
+    protected TileProvider mTileProvider;
+//    public static final String MAPBOX_BASE_URL_V4 = "https://a.tiles.mapbox.com/v4/";
+//    public static final String MAPBOX_BRANDED_JSON_URL_V4 = MAPBOX_BASE_URL_V4 + "%s.json?access_token=%s&secure=1";
     private boolean fadeIn = true;
     private boolean visible = true;
     private float opacity = 1.0f;
     private float zIndex = -1;
     private int tileSize = 256;
     private boolean autoHd = false;
+    private boolean cacheable = true;
     private boolean showTileAfterMaxZoom = true;
+    private String mSRS = "4326";
     
-    public static class MapBoxOnlineTileProvider extends TileJsonProvider {
-        private String mToken;
-        
-        public MapBoxOnlineTileProvider(final String pId, final String token) {
-            super(pId, pId, false, false);
-            mToken = token;
-            initialize(pId, pId, false);
-        }
-
-        @Override
-        public void setURL(final String aUrl) {
-            if (aUrl != null && !aUrl.contains("http://") && !aUrl.contains("https://")) {
-                super.setURL(MAPBOX_BASE_URL_V4 + aUrl + "/{z}/{x}/{y}{2x}.png?access_token=" + mToken);
-            } else {
-                super.setURL(aUrl);
-            }
-        }
-
-        @Override
-        protected String getBrandedJSONURL() {
-            String url = String.format(MAPBOX_BRANDED_JSON_URL_V4, mId, mToken);
-            if (!mEnableSSL) {
-                url = url.replace("https://", "http://");
-                url = url.replace("&secure=1", "");
-            }
-
-            return url;
-        }
-        
-    }
+//    public static class MapBoxOnlineTileProvider extends TileJsonProvider {
+//        private String mToken;
+//        
+//        public MapBoxOnlineTileProvider(final String pId, final String token) {
+//            super(pId, pId, false, false);
+//            mToken = token;
+//            initialize(pId, pId, false);
+//        }
+//
+//        @Override
+//        public void setURL(final String aUrl) {
+//            if (aUrl != null && !aUrl.contains("http://") && !aUrl.contains("https://")) {
+//                super.setURL(MAPBOX_BASE_URL_V4 + aUrl + "/{z}/{x}/{y}{2x}.png?access_token=" + mToken);
+//            } else {
+//                super.setURL(aUrl);
+//            }
+//        }
+//
+//        @Override
+//        protected String getBrandedJSONURL() {
+//            String url = String.format(MAPBOX_BRANDED_JSON_URL_V4, mId, mToken);
+//            if (!mEnableSSL) {
+//                url = url.replace("https://", "http://");
+//                url = url.replace("&secure=1", "");
+//            }
+//
+//            return url;
+//        }
+//        
+//    }
 
     @Override
     public void releaseSource() {
@@ -162,6 +165,15 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 ((WebTileProvider) mTileProvider).setAutoHD(autoHd);
             }
             break;
+        case "cacheable":
+            cacheable  = TiConvert.toBoolean(newValue);
+            if (mTileProvider instanceof WebTileProvider) {
+                ((WebTileProvider) mTileProvider).setCacheable(cacheable);
+            }
+            if (!cacheable && changedProperty) {
+                clearCache();
+            }
+            break;
         case "showTileAfterMaxZoom":
             showTileAfterMaxZoom  = TiConvert.toBoolean(newValue);
             if (mTileProvider instanceof WebTileProvider) {
@@ -182,8 +194,8 @@ public class TileSourceProxy extends BaseTileSourceProxy {
         }
     }
     
-    private static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
-    private static Pattern URL_PATTERN = Pattern.compile(URL_REGEX);
+//    private static final String URL_REGEX = "^((https?|ftp)://|(www|ftp)\\.)[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
+//    private static Pattern URL_PATTERN = Pattern.compile(URL_REGEX);
     
     public TileProvider getTileProvider() {
         if (mTileProvider == null && mSource != null) {
@@ -192,7 +204,9 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 Object db = getMethod(mSource, "getDatabase");
                 if (db instanceof SQLiteDatabase) {
                     mDb = (SQLiteDatabase) db;
-                    mTileProvider = new MBTilesProvider((SQLiteDatabase) db);
+                    
+                    mTileProvider = new MBTilesProvider(TiConvert.toString(getProperty("id")),
+                            (SQLiteDatabase) db,tileSize);
                     return mTileProvider;
                 } else {
                     Object path = getMethod(mSource, "getNativePath");
@@ -208,105 +222,44 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             }
             if (sSource.toLowerCase().endsWith("mbtiles")) {
                 try {
-                    mTileProvider = new MBTilesProvider(TiDatabaseHelper.getDatabase(this, sSource, false));
+//                    mTileProvider = new MBTilesProvider(TiDatabaseHelper.getDatabase(this, sSource, false));
+                    mTileProvider = new MBTilesProvider(TiConvert.toString(getProperty("id")),
+                            TiDatabaseHelper.getDatabase(this, sSource, false),tileSize);
                 } catch (Exception e) {
                     release();
                     Log.e(TAG, "Could not load file " + mSource);
                 }
-//            } else if (URL_PATTERN.matcher(sSource).matches()) {
-//                mTileProvider = new WebTileProvider(sSource, sSource);
             } else {
                 final int tileSize = TiConvert.toInt(getProperty("tileSize"), 256);
-//                switch (sSource.toLowerCase()) {
-//                case "websource":
-//                {
                     mTileProvider = new WebTileProvider(TiConvert.toString(getProperty("id")),
                             TiConvert.toString(getProperty("url")),tileSize)
                             .setName(TiConvert.toString(getProperty("name"))).setAttribution(
                                     TiConvert.toString(getProperty("attribution")));
-//                    break;
-//                }
-//                case "openstreetmap":
-//                    mTileProvider = new WebTileProvider("openstreetmap",
-//                            "http://tile.openstreetmap.org/{z}/{x}/{y}.png", tileSize)
-//                            .setName("OpenStreetMap").setAttribution(
-//                                    "© OpenStreetMap Contributors");
-//                    break;
-//                case "openseamap":
-//                    mTileProvider = new WebTileProvider("openseamap",
-//                            "http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png", tileSize)
-//                            .setName("OpenSeaMap").setAttribution(
-//                                    "© Map data © OpenStreetMap, licensed under Creative Commons Share Alike By Attribution.");
-//                    break;
-//                case "mapquest":
-//                    mTileProvider = new WebTileProvider("mapquest",
-//                            "http://otile1.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png", tileSize)
-//                            .setName("MapQuest Open Aerial")
-//                            .setAttribution(
-//                                    "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
-//                    break;
-//                case "mapquest-sat":
-//                    mTileProvider = new WebTileProvider("mapquest-sat",
-//                            "http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png", tileSize)
-//                            .setName("MapQuest Open Aerial")
-//                            .setAttribution(
-//                                    "Tiles courtesy of MapQuest and OpenStreetMap contributors.");
-//                    break;
-//                case "ign":
-//                {
-//                    final String key = TiConvert.toString(getProperty("key"));
-//                    String realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
-//                    final String layer = TiConvert.toString(getProperty("layer"), realLayer);
-//                    final String format = TiConvert.toString(getProperty("format"), "image/jpeg");
-//                    if (layer.equals("express")) {
-//                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.CLASSIQUE";
-//                    } else if (layer.equals("expressStandard")) {
-//                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD";
-//                    } else if (layer.equals("plan")) {
-//                        realLayer = "GEOGRAPHICALGRIDSYSTEMS.PLANIGN";
-//                    } else if (layer.equals("buildings")) {
-//                        realLayer = "BUILDINGS.BUILDINGS";
-//                    } else if (layer.equals("parcels")) {
-//                        realLayer = "CADASTRALPARCELS.PARCELS";
-//                    } else if (layer.equals("slopes")) {
-//                        realLayer = "ELEVATION.SLOPES.HIGHRES";
-//                    }
-//                    final String url  = "http://gpp3-wxs.ign.fr/" + key + "/geoportail/wmts?LAYER=" + realLayer + "&EXCEPTIONS=text/xml&FORMAT=" + format + "&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}";
-//                    mTileProvider = new WebTileProvider("ign",
-//                            url, tileSize)
-//                            .setName("IGN")
-//                            .setAttribution(
-//                                    "Copyright (c) 2008-2014, Institut National de l'Information Géographique et Forestière France");
-//                    break;
-//                }
-//                case "mapbox":
-//                {
-//                    final String mapId = TiConvert.toString(getProperty("mapId"));
-////                    final String imageQuality = TiConvert.toString(getProperty("imageQuality"), "png");
-//                    final String token = TiConvert.toString(getProperty("accessToken"));
-//                    mTileProvider = new MapBoxOnlineTileProvider(mapId, token);
-//                    break;
-//                }
-//                default:
-//                    break;
-//                }
             }
             
-            if (mTileProvider instanceof WebTileProvider) {
-                ((WebTileProvider) mTileProvider).setSubdomains(TiConvert.toString(getProperty("subdomains"), "abc"));
-                ((WebTileProvider) mTileProvider).setUserAgent(TiConvert.toString(getProperty("userAgent")));
-                ((WebTileProvider) mTileProvider).setMinimumZoomLevel(mMinZoom);
-                ((WebTileProvider) mTileProvider).setMaximumZoomLevel(mMaxZoom);
-                ((WebTileProvider) mTileProvider).setVisible(visible);
-                ((WebTileProvider) mTileProvider).setOpacity(opacity);
-                ((WebTileProvider) mTileProvider).setAutoHD(autoHd);
-                ((WebTileProvider) mTileProvider).setShowTileAfterMaxZoom(showTileAfterMaxZoom);
-            }
+            initTileProvider();
         }
-        if (mTileProvider != null && hasListeners(TiC.EVENT_LOAD, false)) {
+        
+        return mTileProvider;
+    }
+    
+    protected void initTileProvider() {
+        if (mTileProvider == null) {
+            return;
+        }
+        if (mTileProvider instanceof WebTileProvider) {
+            ((WebTileProvider) mTileProvider).setSubdomains(TiConvert.toString(getProperty("subdomains"), "abc"));
+            ((WebTileProvider) mTileProvider).setUserAgent(TiConvert.toString(getProperty("userAgent")));
+            ((WebTileProvider) mTileProvider).setMinimumZoomLevel(mMinZoom);
+            ((WebTileProvider) mTileProvider).setMaximumZoomLevel(mMaxZoom);
+            ((WebTileProvider) mTileProvider).setVisible(visible);
+            ((WebTileProvider) mTileProvider).setOpacity(opacity);
+            ((WebTileProvider) mTileProvider).setAutoHD(autoHd);
+            ((WebTileProvider) mTileProvider).setShowTileAfterMaxZoom(showTileAfterMaxZoom);
+        }
+        if (hasListeners(TiC.EVENT_LOAD, false)) {
             fireEvent(TiC.EVENT_LOAD, null, false, false);
         }
-        return mTileProvider;
     }
 
     public TileOverlayOptions getTileOverlayOptions() {

@@ -35,6 +35,7 @@
 
 @implementation AkylasGMSURLTileLayer
 {
+    @protected
     NSOperationQueue* _queue;
     id<GMSTileReceiver>  _tileReceiver;
     NSString* _cacheKey;
@@ -55,10 +56,10 @@
     self.maxZoom = -1;
     self.tileSize = 256;
     self.autoHd = NO;
-    self.subdomains = @"abc";
+    self.wmsFormat = NO;
+//    self.subdomains = @"abc";
     self.timeFormat = @"yyyy-MM-dd";
     self.showTileAfterMaxZoom = YES;
-    _dateFormat = [[NSDateFormatter alloc] init];
     [_dateFormat setDateFormat:self.timeFormat];
     _queue = [NSOperationQueue new];
     [_queue setMaxConcurrentOperationCount:10];
@@ -86,6 +87,9 @@
 -(void)setTimeFormat:(NSString *)timeFormat
 {
     _timeFormat = [timeFormat copy];
+    if (!_dateFormat) {
+        _dateFormat = [[NSDateFormatter alloc] init];
+    }
     [_dateFormat setDateFormat:_timeFormat];
 
 }
@@ -110,20 +114,36 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
     return [self.subdomains substringWithRange:NSMakeRange(index, 1)];
 }
 
--(void)getImageForTileX:(NSUInteger)x
-                     y:(NSUInteger)y
-                  zoom:(NSUInteger)zoom
-              comletion:(void(^)(UIImage*)) completion
+
+#define WMS_ORIGIN_X -20037508.34789244
+#define WMS_ORIGIN_Y 20037508.34789244
+#define WMS_MAP_SIZE 20037508.34789244 * 2
+
+-(NSURL*)getURLForTileX:(NSUInteger)x
+                        y:(NSUInteger)y
+                     zoom:(NSUInteger)zoom
 {
-    
     NSString* urlString = self.url;
     if (self.urlBlock) {
         urlString = [self.urlBlock(x, y, zoom) absoluteString];
     }
-    NSMutableDictionary* args = [NSMutableDictionary dictionaryWithObjectsAndKeys:@(x), @"{x}",
-                                 @(y), @"{y}",
-                                 [_dateFormat stringFromDate:[NSDate date]], @"{time}",
-                                 @(zoom), @"{z}", nil];
+    NSMutableDictionary* args ;
+    
+    if (self.wmsFormat) {
+        double tileSize = WMS_MAP_SIZE / pow(2, zoom);
+        double minx = WMS_ORIGIN_X + x * tileSize;
+        double maxx = WMS_ORIGIN_X + (x+1) * tileSize;
+        double miny = WMS_ORIGIN_Y - (y+1) * tileSize;
+        double maxy = WMS_ORIGIN_Y - y * tileSize;
+        args = [NSMutableDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%f,%f,%f,%f", minx, miny, maxx, maxy], @"{bbox}", nil];
+    } else {
+        args = [NSMutableDictionary dictionaryWithObjectsAndKeys:@(x), @"{x}",
+                @(y), @"{y}",
+                @(zoom), @"{z}", nil];
+    }
+    if (_dateFormat) {
+        [args setObject:[_dateFormat stringFromDate:[NSDate date]] forKey:@"{time}"];
+    }
     if (self.subdomains) {
         [args setObject:[self getSubdomainForX:x y:y] forKey:@"{s}"];
     }
@@ -133,7 +153,15 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
     
     //    NSLog(@"%@ %@", self.cacheKey, urlString)
     
-    NSURL *theUrl = [NSURL URLWithString:urlString];
+    return [NSURL URLWithString:urlString];
+}
+
+-(void)getImageForTileX:(NSUInteger)x
+                     y:(NSUInteger)y
+                  zoom:(NSUInteger)zoom
+              comletion:(void(^)(UIImage*)) completion
+{
+    NSURL *theUrl = [self getURLForTileX:x y:y zoom:zoom];
     
     if (!theUrl)
     {
@@ -173,12 +201,12 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
         } else if (!error) {
             image = [UIImage imageWithData:data];
             //https://c.tile.openstreetmap.org/13/4226/2940.png
-//            if (zoom == 13 && x == 4226 && y == 2940) {
-//                NSString* filePath = @"/Volumes/data/dev/titanium/Akylas/akylas.mapme/Resources/images/tilesnew";
-//                filePath = [filePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png", self.cacheKey]];
-//                NSData *imageData = UIImagePNGRepresentation(image);
-//                [imageData writeToFile:filePath atomically:YES];
-//            }
+            if (zoom == 13 && x == 4226 && y == 2940) {
+                NSString* filePath = @"/Volumes/data/mguillon/Desktop/tilesnew";
+                filePath = [filePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png", self.cacheKey]];
+                NSData *imageData = UIImagePNGRepresentation(image);
+                [imageData writeToFile:filePath atomically:YES];
+            }
             if (image && self.cacheable && [self.map isKindOfClass:[AkylasGMSMapView class]]) {
                 TiCache* cache = ((AkylasGMSMapView*)self.map).tileCache;
                 [cache addImage:image forKey:key withCacheKey:[self cacheKey]];
@@ -252,4 +280,5 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
         }];
     }
 }
+
 @end

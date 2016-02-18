@@ -2,25 +2,36 @@ package akylas.googlemap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.appcelerator.titanium.TiApplication;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Tile;
 import com.google.android.gms.maps.model.TileProvider;
 import com.squareup.okhttp.Cache;
+import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Response;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 public class WebTileProvider implements TileProvider {
 
-    private static final String TAG = "WebTileProvider";
+    public static final String TAG = "WebTileProvider";
+    
+    private final static double WMS_MAP_SIZE_2 = 20037508.342789244;
+    private final static double EARTH_RADIUS = 6378137.0;
+    private static final Pattern sSRSPattern = Pattern.compile("(?:SRS=)(.*?)(?=&|$)");
 
     protected String mUrl = null;
     protected String mId = null;
@@ -35,19 +46,33 @@ public class WebTileProvider implements TileProvider {
     protected float mMaximumZoomLevel = -1.0f;
     protected LatLngBounds mBoundingBox = AkylasGooglemapModule.WORLD_BOUNDING_BOX;
     protected LatLng mCenter = new LatLng(0, 0);
-    private int mTileSizePixels;
+    protected int mTileSizePixels;
+    
+    private String mSRS;
+    double[] mBboxReuse = null;
 
     protected boolean mEnableSSL = false;
     protected float mDpi = 1.0f;
 
     private boolean mVisible = true;
     private float mOpacity = 1.0f;
-    private boolean mShowTileAfterMaxZoom = true;
+    protected boolean mShowTileAfterMaxZoom = true;
+    
+    protected boolean wmsFormat = false;
+    protected boolean mCacheable = true;
+    
     Picasso picasso;
     Cache diskCache;
     // private Paint tilePaint = new Paint(Paint.FILTER_BITMAP_FLAG);
 
     private boolean mAutoHD = false;
+    
+    protected static boolean isNetworkAvailable() {
+        ConnectivityManager cm =
+            (ConnectivityManager) TiApplication.getAppSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
 
     // private Paint mMergePaint;
 
@@ -90,6 +115,28 @@ public class WebTileProvider implements TileProvider {
         OkHttpClient client = new OkHttpClient();
         diskCache = TiApplication.getDiskCache("akylas.gmap.tiles");
         client.setCache(diskCache);
+        client.networkInterceptors().add(new Interceptor() {
+            @Override public Response intercept(Chain chain) throws IOException {
+                Response originalResponse = chain.proceed(chain.request());
+                if (mCacheable) {
+                    if (isNetworkAvailable()) {
+                        int maxAge = 60 * 3600; // read from cache for 1 day
+                        return originalResponse.newBuilder()
+                                .header("Cache-Control", "private, max-age=" + maxAge)
+                                .build();
+                    } else {
+                        int maxStale = 60 * 60 * 24; // tolerate 4-weeks stale
+                        return originalResponse.newBuilder()
+                                .header("Cache-Control", "private, only-if-cached, max-stale=" + maxStale)
+                                .build();
+                    }
+                } else {
+                    return originalResponse.newBuilder()
+                            .header("Cache-Control", "no-cache")
+                            .build();
+                }
+            }
+        });
         client.interceptors().add(new com.squareup.okhttp.Interceptor() {
             @Override
             public com.squareup.okhttp.Response intercept(Chain chain)
@@ -155,8 +202,7 @@ public class WebTileProvider implements TileProvider {
             e.printStackTrace();
         }
 
-        return mergeBitmaps(tiles); // PNG is a lot slower, use it only if you
-                                    // really need to
+        return mergeBitmaps(tiles);
 
     }
 
@@ -248,7 +294,7 @@ public class WebTileProvider implements TileProvider {
      * @return byte data of the image or <i>null</i> if the image could not be
      *         loaded.
      */
-    private Bitmap getTileImage(int x, int y, int z) {
+    protected Bitmap getTileImage(int x, int y, int z) {
         Bitmap bitmap = null;
         try {
             final String url = getTileUrl(x, y, z);
@@ -271,19 +317,21 @@ public class WebTileProvider implements TileProvider {
     // return mMergePaint;
     // }
 
+    protected boolean shouldMergeIfNull = false;;  
+    private Rect drawingRect = new Rect();
     public Bitmap mergeBitmaps(Bitmap[] parts) {
 
         // Check if any of the bitmap is null (if so return null) :
         boolean anyNull = false;
+        boolean allNull = false;
         for (int i = 0; i < parts.length; i++) {
-
             if (parts[i] == null) {
-
                 anyNull = true;
-                break;
+            } else {
+                allNull = false;
             }
         }
-        if (anyNull) {
+        if (allNull || (!shouldMergeIfNull && anyNull)) {
             return null;
         }
         Bitmap tileBitmap = null;
@@ -297,13 +345,18 @@ public class WebTileProvider implements TileProvider {
         // Paint paint = getMergePaint();
         for (int i = 0; i < parts.length; i++) {
 
-            // if(parts[i] == null) {
+             if(parts[i] != null) {
             //
             // parts[i] = Bitmap.createBitmap(256, 256,
             // Bitmap.Config.ARGB_8888);
             // }
-            canvas.drawBitmap(parts[i], parts[i].getWidth() * (i % 2),
-                    parts[i].getHeight() * (i / 2), null);
+                final int left = parts[i].getWidth() * (i % 2);
+                final int top = parts[i].getHeight() * (i / 2);
+                drawingRect.set(left, top, left + 256, top + 256);
+                canvas.drawBitmap(parts[i], null, drawingRect, null);
+             }
+//            canvas.drawBitmap(parts[i], parts[i].getWidth() * (i % 2),
+//                    parts[i].getHeight() * (i / 2), null);
         }
 
         return tileBitmap;
@@ -314,38 +367,55 @@ public class WebTileProvider implements TileProvider {
         return mSubdomains.substring(index, index + 1);
     }
 
-    /**
-     * Return the url to your tiles. For example:
-     * 
-     * <pre>
-     * public String getTileUrl(int x, int y, int z) {
-     *     return String.format(
-     *             "https://a.tile.openstreetmap.org/%3$s/%1$s/%2$s.png", x, y,
-     *             z);
-     * }
-     * </pre>
-     * 
-     * See
-     * <a href="http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames">http://
-     * wiki.openstreetmap.org/wiki/Slippy_map_tilenames</a> for more details
-     *
-     * @param x
-     *            x coordinate of the tile
-     * @param y
-     *            y coordinate of the tile
-     * @param z
-     *            the zoom level
-     * @return the url to the tile specified by the parameters
-     */
+    static double born(double value, double max) {
+        return Math.max(-max, Math.min(max, value));
+    }
+
+    public double[] convertSRS(double[] bbox, final boolean to900913) {
+        if (to900913) {
+            bbox[0] = born(EARTH_RADIUS * Math.toRadians(bbox[0]), WMS_MAP_SIZE_2);
+            bbox[1] = born(EARTH_RADIUS * Math.log(Math.tan((Math.PI*0.25) + (0.5 * Math.toRadians(bbox[1])))), WMS_MAP_SIZE_2);
+            
+            bbox[2] = born(EARTH_RADIUS * Math.toRadians(bbox[2]), WMS_MAP_SIZE_2);
+            bbox[3] = born(EARTH_RADIUS * Math.log(Math.tan((Math.PI*0.25) + (0.5 * Math.toRadians(bbox[3])))), WMS_MAP_SIZE_2);
+            
+        } else {
+            bbox[0] = Math.toDegrees(bbox[0]) / EARTH_RADIUS;
+            bbox[1] = Math.toDegrees((Math.PI*0.5) - 2.0 * Math.atan(Math.exp(-bbox[1] / EARTH_RADIUS)));
+            
+            bbox[2] = Math.toDegrees(bbox[2]) / EARTH_RADIUS;
+            bbox[3] = Math.toDegrees((Math.PI*0.5) - 2.0 * Math.atan(Math.exp(-bbox[3] / EARTH_RADIUS)));
+        }
+        return bbox;
+    }
+    
+    public double[] bbox(int x, int y, int zoom, final String SRS, double[] reuse) {
+        double[] result = (reuse != null)?reuse:new double[4];
+        double tileSize = WMS_MAP_SIZE_2 * 2 / Math.pow(2, zoom);
+        result[0] = - WMS_MAP_SIZE_2 + x * tileSize;
+        result[1] = WMS_MAP_SIZE_2 - (y+1) * tileSize;
+        result[2] = - WMS_MAP_SIZE_2 + (x+1) * tileSize;
+        result[3] = WMS_MAP_SIZE_2 - y * tileSize;
+        if (SRS.indexOf("900913") == -1) {
+            return convertSRS(result, false);
+        }
+        return result;
+    }
 
     public String getTileUrl(int x, int y, int zoom) {
         if (mUrl == null) {
             return null;
         }
-        return mUrl.replace("{z}", Integer.toString(zoom))
-                .replace("{x}", Integer.toString(x))
-                .replace("{y}", Integer.toString(y))
-                .replace("{2x}", (mTileSizePixels >= 512) ? "@2x" : "") // for
+        String result = mUrl;
+        if (wmsFormat) {
+            double[] bbox = bbox(x, y, zoom, mSRS, null);
+            result = result.replace("{bbox}", bbox[0] + "," +  bbox[1] + "," +  bbox[2] + "," +  bbox[3]);
+        } else {
+            result = result.replace("{z}", Integer.toString(zoom))
+                    .replace("{x}", Integer.toString(x))
+                    .replace("{y}", Integer.toString(y));
+        }
+        return result.replace("{2x}", (mTileSizePixels >= 512) ? "@2x" : "") // for
                                                                         // mapbox
                 .replace("{s}", getSubdomain(x, y));
     }
@@ -355,6 +425,13 @@ public class WebTileProvider implements TileProvider {
             mUrl = aUrl.replace("https://", "http://");
         } else {
             mUrl = aUrl;
+        }
+        if (mUrl.contains("{bbox}")) {
+            wmsFormat = true;
+            Matcher matcher = sSRSPattern.matcher(mUrl);
+            if (matcher.find()) {
+                mSRS = matcher.group();
+            }
         }
     }
 
@@ -474,6 +551,10 @@ public class WebTileProvider implements TileProvider {
     public void setSubdomains(String string) {
         // TODO Auto-generated method stub
 
+    }
+
+    public void setCacheable(boolean cacheable) {
+        mCacheable = cacheable;
     }
 
 }
