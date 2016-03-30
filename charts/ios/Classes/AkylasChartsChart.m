@@ -389,7 +389,7 @@
             [plot.plotSpace plotPoint:plotPoint numberOfCoordinates:2 forPlotAreaViewPoint:pointInPlotArea];
             //                NSUInteger idx        = [plot dataIndexFromInteractionPoint:pointInPlotArea];
             CGFloat xVal = [[NSDecimalNumber decimalNumberWithDecimal:plotPoint[0]] floatValue];
-            CGFloat yVal = [[NSDecimalNumber decimalNumberWithDecimal:plotPoint[1]] floatValue];
+//            CGFloat yVal = [[NSDecimalNumber decimalNumberWithDecimal:plotPoint[1]] floatValue];
             NSArray* range = [plotProxy rangeForXValue:xVal];
             //                NSUInteger idx = [plotProxy indexForXValue:xVal];
             if (range) {

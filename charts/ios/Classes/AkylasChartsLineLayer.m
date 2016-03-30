@@ -239,10 +239,10 @@
 #pragma mark -
 #pragma mark Drawing of text
 
--(CGPathRef) getPath
+-(CGPathRef) newPath
 {
     CGMutablePathRef pathRef = CGPathCreateMutable();
-    CGFloat inset      = self.lineStyle.lineWidth * CPTFloat(0.5);
+//    CGFloat inset      = self.lineStyle.lineWidth * CPTFloat(0.5);
     CGSize size = self.bounds.size;
     if (direction == CPTLineDirectionHorizontal) {
         float yPos = (size.height) / 2.0f;
@@ -269,7 +269,7 @@
     
     CPTLineStyle *theLineStyle = self.lineStyle;
     if ( theLineStyle ) {
-        CGPathRef path = [self getPath];
+        CGPathRef path = [self newPath];
         CGContextAddPath(context, path);
 
         [theLineStyle setLineStyleInContext:context];

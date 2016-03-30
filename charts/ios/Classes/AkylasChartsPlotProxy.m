@@ -238,7 +238,7 @@
 -(void)addData:(NSArray*)values startingAtIndex:(NSUInteger)index
 {
 	if (values != nil) {
-		Class dictionaryClass = [NSDictionary class];
+//		Class dictionaryClass = [NSDictionary class];
 		Class arrayClass = [NSArray class];
 		NSUInteger length = [values count];
         if (dataX == nil) {

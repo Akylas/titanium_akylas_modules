@@ -49,7 +49,7 @@
             newLayer.insets = insets;
         }
         newLayer.shadow = [AkylasChartsParsers parseShadow:@"shadow" inProperties:properties def:nil];
-        self.contentLayer = newLayer;
+        self.contentLayer = [newLayer autorelease];
 
 	}
 	

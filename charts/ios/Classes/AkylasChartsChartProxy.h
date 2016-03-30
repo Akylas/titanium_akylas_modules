@@ -9,7 +9,7 @@
 @interface AkylasChartsChartProxy : TiViewProxy {
 
 @private
-    int markerId;
+//    int markerId;
 @protected
 }
 

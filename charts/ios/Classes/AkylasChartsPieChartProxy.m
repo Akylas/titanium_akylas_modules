@@ -45,7 +45,7 @@
 {
     AkylasChartsPieSegmentProxy* segment = [[self plots] objectAtIndex:idx];
     if (segment)
-        return [[CPTTextLayer alloc] initWithText:segment.title style:segment.labelStyle];
+        return [[[CPTTextLayer alloc] initWithText:segment.title style:segment.labelStyle] autorelease];
     return nil;
 }
 
