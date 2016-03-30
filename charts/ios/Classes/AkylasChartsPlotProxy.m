@@ -70,8 +70,8 @@
 	
 	[self configurePlot: [self allProperties]];
     
-    if ([self valueForUndefinedKey:@"bindId"]) {
-        plot.identifier = [self valueForUndefinedKey:@"bindId"];
+    if (self.bindId) {
+        plot.identifier = self.bindId;
     }
 	
 	// Make sure to set the frame to match the graph
