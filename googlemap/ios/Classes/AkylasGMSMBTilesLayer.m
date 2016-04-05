@@ -57,7 +57,7 @@
 
 - (id)initWithTileSetURL:(NSURL *)tileSetURL
 {
-    if (self = [super init]) {
+    if (self = [super initWithConstructor:nil]) {
         _minZoom = -1;
         _maxZoom = -1;
         queue = [[FMDatabaseQueue databaseQueueWithPath:[tileSetURL path]] retain];

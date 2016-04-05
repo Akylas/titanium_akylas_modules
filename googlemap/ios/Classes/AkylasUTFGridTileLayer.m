@@ -210,7 +210,7 @@ int utfDecode(int c) {
     
     int gridX = (int) ((xfloat - x) * self.tileSize / self.resolution);
     int gridY = (int) ((yfloat - y) * self.tileSize / self.resolution);
-    NSLog(@"%lu,%lu,%lu, %d, %d",x,(unsigned long)y,(unsigned long)realZoom, gridX, gridY)
+//    NSLog(@"%lu,%lu,%lu, %d, %d",x,(unsigned long)y,(unsigned long)realZoom, gridX, gridY)
     NSString* gridData = [self getDataForTileX:x y:y zoom:realZoom cacheOnly:YES completion:nil];
     if (gridData != nil) {
         NSError *error = nil;
@@ -218,11 +218,11 @@ int utfDecode(int c) {
         if (!error && IS_OF_CLASS(result, NSDictionary)) {
             @try {
                 unichar theChar = [[TiUtils stringValue:[[result objectForKey:@"grid"] objectAtIndex:gridY]] characterAtIndex:gridX];
-                NSLog(@"theChar %C %d",theChar, (int)theChar)
+//                NSLog(@"theChar %C %d",theChar, (int)theChar)
                 NSInteger idx = utfDecode((int)theChar); //converting to int is really important
                 NSString* key  = [TiUtils stringValue:[[result objectForKey:@"keys"] objectAtIndex:idx]];
-                NSLog(@"idx %lu,",idx)
-                NSLog(@"key %@,",key)
+//                NSLog(@"idx %lu,",idx)
+//                NSLog(@"key %@,",key)
                 return [[result objectForKey:@"data"] objectForKey:key];
             }
             @catch (NSException * e) {

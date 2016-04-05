@@ -1598,7 +1598,7 @@
 //    CLLocationCoordinate2D topLeft = mapView.projection.visibleRegion.farLeft;
 //    CLLocationCoordinate2D bottomLeft = mapView.projection.visibleRegion.nearLeft;
 //    CGFloat lat = fabs(topLeft.latitude - bottomLeft.latitude);
-//    _mpp = cos(lat * M_PI / 180) * 2 * M_PI * 6378137 / (256 * pow(2, _internalZoom)) / [TiUtils screenScale];
+//    _mpp = cos(lat * M_PI / 180) * 2 * M_PI * 6378137 / (256 * pow(2, _internalZoom));
     _mpp = 156543.03392 * cos(position.target.latitude * M_PI / 180) / pow(2, _internalZoom);
     if (ignoreRegionChanged) {
         return;

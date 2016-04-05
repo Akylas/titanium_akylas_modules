@@ -18,7 +18,7 @@
 
 #define MODULE_ID @"akylas.googlemap"
 #define REGEX @"(?!"  MODULE_ID  @"/)(GoogleMaps)\\.bundle$"
-#define TOADD @"modules/"  MODULE_ID
+#define TOADD MODULE_ID
 #define TEMPLATE TOADD @"/$0"
 
 GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)

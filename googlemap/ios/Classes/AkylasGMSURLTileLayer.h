@@ -34,4 +34,7 @@
                       y:(NSUInteger)y
                    zoom:(NSUInteger)zoom;
 -(BOOL)hasTileForX:(NSUInteger)x y:(NSUInteger)y zoom:(NSUInteger)zoom;
+-(UIImage*)getCachedImageForX:(NSUInteger)x
+                            y:(NSUInteger)y
+                         zoom:(NSUInteger)zoom;
 @end

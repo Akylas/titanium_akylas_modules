@@ -281,4 +281,18 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
     }
 }
 
+-(UIImage*)getCachedImageForX:(NSUInteger)x
+                            y:(NSUInteger)y
+                         zoom:(NSUInteger)zoom
+{
+    if (self.cacheable) {
+        NSNumber* key = [NSNumber numberWithUnsignedLongLong:TileKey(x, y, zoom)];
+        TiCache* cache = ((AkylasGMSMapView*)self.map).tileCache;
+        return [cache cachedImage:key withCacheKey:[self cacheKey]];
+        
+    }
+    return nil;
+    
+}
+
 @end

@@ -260,4 +260,20 @@
     return _gTileLayer;
 }
 
+-(id)getCachedImage:(id)args
+{
+    ENSURE_TYPE(args, NSArray)
+    NSNumber *x = nil;
+    NSNumber *y = nil;
+    NSNumber *z = nil;
+    ENSURE_ARG_AT_INDEX(x, args, 0, NSNumber);
+    ENSURE_ARG_AT_INDEX(y, args, 1, NSNumber);
+    ENSURE_ARG_AT_INDEX(z, args, 1, NSNumber);
+    if (IS_OF_CLASS(_gTileLayer, AkylasGMSURLTileLayer)) {
+        UIImage* image = [(AkylasGMSURLTileLayer*)_gTileLayer getCachedImageForX:[x integerValue] y:[y integerValue] zoom:[z integerValue]];
+    } else {
+        return nil;
+    }
+}
+
 @end

@@ -57,6 +57,7 @@ public class WebTileProvider implements TileProvider {
     private boolean mVisible = true;
     private float mOpacity = 1.0f;
     protected boolean mShowTileAfterMaxZoom = true;
+    protected boolean mShowTileBeforeMaxZoom = false;
     
     protected boolean wmsFormat = false;
     protected boolean mCacheable = true;
@@ -208,12 +209,16 @@ public class WebTileProvider implements TileProvider {
 
     @Override
     public Tile getTile(int x, int y, int z) {
-        if (mMinimumZoomLevel >= 0 && z < mMinimumZoomLevel) {
+        boolean needsHd = mTileSizePixels / mDpi <= 128 && mAutoHD;
+        int hdZ = (needsHd ? z + 1 : z);
+        boolean passedMin =mMinimumZoomLevel >= 0 && hdZ < mMinimumZoomLevel;
+                
+        if (passedMin && !mShowTileBeforeMaxZoom) {
             return NO_TILE;
         }
-        boolean needsHd = mTileSizePixels / mDpi <= 128 && mAutoHD;
+
         boolean passedMax = mMaximumZoomLevel >= 0
-                && (needsHd ? z + 1 : z) > mMaximumZoomLevel;
+                && hdZ > mMaximumZoomLevel;
         if (passedMax && !mShowTileAfterMaxZoom) {
             return NO_TILE;
         }
@@ -226,7 +231,20 @@ public class WebTileProvider implements TileProvider {
         double deltaCropX = 0.0f;
         double deltaCropY = 0.0f;
         double cropSize = 0.0f;
-        if (passedMax) {
+        if (passedMin) {
+//            needsCrop = true;
+//            int minZoom = (int) (needsHd ? (mMinimumZoomLevel - 1)
+//                    : mMinimumZoomLevel);
+//            float currentTileDepth = mMinimumZoomLevel - z;
+//            double nextx = x / Math.pow(2.0, currentTileDepth);
+//            double nexty = y / Math.pow(2.0, currentTileDepth);
+//            x = (int) Math.floor(nextx);
+//            y = (int) Math.floor(nexty);
+//            z = maxZoom;
+//            cropSize = 1.0f / Math.pow(2.0, currentTileDepth);
+//            deltaCropX = nextx - x;
+//            deltaCropY = nexty - y;
+        } else if (passedMax) {
             needsCrop = true;
             int maxZoom = (int) (needsHd ? (mMaximumZoomLevel - 1)
                     : mMaximumZoomLevel);

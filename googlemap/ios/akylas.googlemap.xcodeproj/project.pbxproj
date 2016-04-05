@@ -579,7 +579,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"$PROJECT_DIR/build.py\" compilejs";
+			shellScript = "if [ \"x$TITANIUM_CLI_XCODEBUILD\" == \"x\" ]; then\n/usr/local/bin/node \"/usr/local/bin/titanium\" build --platform ios --project-dir \"$PROJECT_DIR\" --no-prompt --no-progress-bars --no-banner --no-colors --compilejs=1\nexit $?\nelse\necho \"skipping pre-compile phase\"\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 
