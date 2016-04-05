@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
 
@@ -49,8 +50,8 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     public static final UUID DIS_UUID = UUID
             .fromString("0000180a-0000-1000-8000-00805f9b34fb");
 
-    private boolean uartMode = true;
-    private boolean uartModeWaitingToConnect = false;
+    private boolean uartMode = false;
+//    private boolean uartModeWaitingToConnect = false;
 
     BLEService tiService = null;
     private BluetoothDevice mDevice = null;
@@ -263,7 +264,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
                     .getCharacteristic(getUUIDFromString(serviceUUID),
                             getUUIDFromString(charUUID));
             if (!this.tiService.setCharacteristicNotification(charac, true)) {
-                setState(AkylasBluetoothModule.STATE_DISCONNECTED);
+//                setState(AkylasBluetoothModule.STATE_DISCONNECTED);
             }
         }
     }
@@ -332,9 +333,9 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 
     @Override
     public void notifyConnectedGATT() {
-        if (!uartMode) {
+//        if (!uartMode) {
             setState(AkylasBluetoothModule.STATE_CONNECTED);
-        }
+//        }
     }
 
     @Override
@@ -343,21 +344,31 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     }
 
     @Override
-    public void onServicesDiscovered(int status) {
+    public void onServicesDiscovered(int status, List<String> services) {
+        uartMode = false;
         if (status != BluetoothGatt.GATT_SUCCESS) {
             fireError(status, "error while discovering services");
             stop();
             return;
         }
-        if (uartMode) {
-            uartModeWaitingToConnect = true;
+        if (hasListeners("discoveredServices", false)) {
+            HashMap data = new HashMap<>();
+            data.put("services", services.toArray());
+            fireEvent("discoveredServices", data, false, false);
+        }
+        if (services.contains(RX_SERVICE_UUID)) {
+            uartMode = true;
+//            uartModeWaitingToConnect = true;
             BluetoothGattCharacteristic charac = this.tiService
                     .getCharacteristic(RX_SERVICE_UUID, RX_CHAR_UUID);
             this.tiService.setCharacteristicNotification(charac, true);
+        }
+//        if (uartMode) {
+            
             // charac = this.tiService.getCharacteristic(DIS_UUID,
             // FIRMWARE_REVISON_UUID);
             // this.tiService.readCharacteristic(charac);
-        }
+//        }
     }
 
     @Override
@@ -402,15 +413,15 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     public void onDescriptorWrite(BluetoothGattDescriptor descriptor, int status) {
         if (status != BluetoothGatt.GATT_SUCCESS) {
             fireError(status, "error while writing descriptor");
-            if (uartModeWaitingToConnect) {
-                uartModeWaitingToConnect = false;
+//            if (uartModeWaitingToConnect) {
+//                uartModeWaitingToConnect = false;
                 stop();
-            }
+//            }
         } else {
-            if (uartModeWaitingToConnect) {
-                uartModeWaitingToConnect = false;
-                setState(AkylasBluetoothModule.STATE_CONNECTED);
-            }
+//            if (uartModeWaitingToConnect) {
+//                uartModeWaitingToConnect = false;
+//                setState(AkylasBluetoothModule.STATE_CONNECTED);
+//            }
         }
         
     }

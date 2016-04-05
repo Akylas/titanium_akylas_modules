@@ -1,5 +1,6 @@
 package akylas.bluetooth;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -116,15 +117,18 @@ public class BLEService extends TiEnhancedService {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             Log.d(TAG,"onServicesDiscovered status = " + status);
-            if (mBLEServiceCb != null) {
-                mBLEServiceCb.onServicesDiscovered(status);
-            }
+            
+            
+            List<String> services = new ArrayList<>();
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                
                 for (BluetoothGattService service : gatt.getServices()) {
-                    Log.d(TAG,"onServicesDiscovered : " + service.getUuid().toString());
+                    services.add(service.getUuid().toString());
                 }
             }
+            if (mBLEServiceCb != null) {
+                mBLEServiceCb.onServicesDiscovered(status, services);
+            }
+            
         }
 
         @Override
@@ -414,7 +418,7 @@ public class BLEService extends TiEnhancedService {
                 public Boolean call() throws Exception {
                     return setCharacteristicNotification(characteristic, enabled);
                 }
-            });
+            }); 
             // this block until the result is calculated!
             try {
                 this.runOnUiThread(futureResult);
@@ -425,9 +429,9 @@ public class BLEService extends TiEnhancedService {
         }
         boolean status = mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
         if (status) {
-            status = false;
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG));
             if (descriptor != null) {
+                status = false;
                 byte[] currentValue = descriptor.getValue();
                 if (currentValue != BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE) {
                     descriptor.setValue(enabled?BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE:BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
@@ -483,7 +487,7 @@ public class BLEService extends TiEnhancedService {
 
         public void notifyDisconnectedGATT();
 
-        public void onServicesDiscovered(int status);
+        public void onServicesDiscovered(int status, List<String> services);
         public void nameChanged(final String name);
 
      }

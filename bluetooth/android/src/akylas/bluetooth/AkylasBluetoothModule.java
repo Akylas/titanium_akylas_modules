@@ -20,6 +20,8 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.TiBaseActivity;
+import org.appcelerator.titanium.TiBaseActivity.PermissionCallback;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiContext;
@@ -29,6 +31,7 @@ import org.appcelerator.titanium.util.TiActivitySupport;
 import org.appcelerator.titanium.util.TiConvert;
 
 import uk.co.alt236.bluetoothlelib.device.BluetoothLeDevice;
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -36,6 +39,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 
 @Kroll.module(name = "AkylasBluetooth", id = "akylas.bluetooth")
 public class AkylasBluetoothModule extends ProtectedModule {
@@ -53,7 +58,9 @@ public class AkylasBluetoothModule extends ProtectedModule {
     @Kroll.constant
     public static final int STATE_CONNECTED = 3; // now connected to a remote
                                                  // device
-
+    
+    @Kroll.constant
+    public static final int ERROR_PERMISSION_DENIED = -1;
     @Kroll.constant
     public static final int ERROR_BT_NOT_SUPPORTED = -2;
     @Kroll.constant
@@ -369,9 +376,88 @@ public class AkylasBluetoothModule extends ProtectedModule {
     }
     
     @Kroll.method
-    public void discoverBLE(KrollFunction onDone, @Kroll.argument(optional = true) final Object timeoutObj) {
+    public boolean hasBluetoothPermissions()
+    {
+        if (Build.VERSION.SDK_INT < 23) {
+            return true;
+        }
+        Activity currentActivity  = TiApplication.getInstance().getCurrentActivity();
+        if (currentActivity != null && (currentActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                currentActivity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED )) {
+            return true;
+        } 
+        return false;
+    }
+    
+    @Kroll.method
+    public void requestBluetoothPermissions(@Kroll.argument(optional=true) Object type, @Kroll.argument(optional=true) KrollFunction permissionCallback)
+    {
+        if (hasBluetoothPermissions()) {
+            return;
+        }
+
+//      if (TiBaseActivity.locationCallbackContext == null) {
+//          TiBaseActivity.locationCallbackContext = getKrollObject();
+//      }
+//
+//      if (type instanceof KrollFunction && permissionCallback == null) {
+//          TiBaseActivity.locationPermissionCallback = (KrollFunction) type;
+//      } else {
+//          TiBaseActivity.locationPermissionCallback = permissionCallback;
+//      }
+        KrollFunction callback = (KrollFunction) ((type instanceof KrollFunction && permissionCallback == null)?type:permissionCallback);
+        if (callback != null) {
+            TiBaseActivity.addPermissionListener(TiC.PERMISSION_CODE_LOCATION, getKrollObject(), callback);
+            
+        }
+        Activity currentActivity  = TiApplication.getInstance().getCurrentActivity();
+        if (currentActivity != null) {
+            currentActivity.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, TiC.PERMISSION_CODE_LOCATION);       
+        }
+    }
+    
+    @Kroll.method
+    public void discoverBLE(final KrollFunction onDone, @Kroll.argument(optional = true) final Object timeoutObj) {
+        if (!hasBluetoothPermissions()) {
+            TiBaseActivity.addPermissionListener(TiC.PERMISSION_CODE_LOCATION, new PermissionCallback() {
+                
+                @Override
+                public void onRequestPermissionsResult(String[] permissions,
+                        int[] grantResults) {
+                    
+                  boolean granted = true;
+                    for (int i = 0; i < grantResults.length; ++i) {
+                        if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                            granted = false;
+                            break;
+                        }
+                    }
+                    if (granted) {
+                        discoverBLE(onDone, timeoutObj);
+                    } else if (hasListeners(TiC.EVENT_ERROR, false)) {
+                        KrollDict data = new KrollDict();
+                        data.putCodeAndMessage(ERROR_PERMISSION_DENIED,
+                                "Permission denied");
+                        fireEvent(TiC.EVENT_ERROR, data, false, false);
+                        stopDiscoverBLE();
+                        if (onDone != null) {
+                            onDone.callAsync(getKrollObject(), new Object[] {});
+                        }
+                    }
+                }
+            });
+            requestBluetoothPermissions(null, null);
+            return;
+        }
+        
         final BluetoothAdapter adapter = getBTAdapter();
         if (adapter == null || !CAN_LTE) {
+            if (!CAN_LTE && hasListeners(TiC.EVENT_ERROR, false)) {
+                KrollDict data = new KrollDict();
+                data.putCodeAndMessage(ERROR_BT_NOT_SUPPORTED,
+                        "Bluetooth not supported");
+                fireEvent(TiC.EVENT_ERROR, data, false, false);
+            }
             return;
         }
         fDiscoveryCallback = onDone;
