@@ -737,7 +737,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     if (CGRectIsNull(_currentPreviewRectInImage) || CGRectIsNull(_currentPreviewRectInImage))
         return;
     
-    AVCaptureVideoPreviewLayer *videoPreviewLayer = preview.prevLayer;
+//    AVCaptureVideoPreviewLayer *videoPreviewLayer = preview.prevLayer;
     CGSize frameSize = [preview frame].size;
     
     if (mirrored) {
@@ -863,7 +863,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     [stillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection completionHandler:^(CMSampleBufferRef imageSampleBuffer, NSError *error) {
         if(imageSampleBuffer != NULL) { //this code gets executed if a photo is taken
             NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageSampleBuffer];
-            UIImage* image = [[UIImage alloc] initWithData:imageData];
+            UIImage* image = [[[UIImage alloc] initWithData:imageData] autorelease];
             id callback = [options objectForKey:@"callback"];
             TiBlob* media = [[[TiBlob alloc] initWithImage:image] autorelease];
             

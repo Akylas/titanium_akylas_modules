@@ -4,6 +4,6 @@
 @interface AkylasCameraViewProxy : TiViewProxy
 
 
-- (void) didTakePicture:(UIImage*)image withRotation:(CGFloat)rotation metaData:(NSDictionary*)dict;
+//- (void) didTakePicture:(UIImage*)image withRotation:(CGFloat)rotation metaData:(NSDictionary*)dict;
 
 @end
