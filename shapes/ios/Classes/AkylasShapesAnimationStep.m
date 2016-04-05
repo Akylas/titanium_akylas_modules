@@ -153,6 +153,7 @@ static NSString * const kLayerAnimationGroupKey = @"AkylasShapesAnimation";
             animationGroup.duration = duration;
             animationGroup.timeOffset = startTime;
             animationGroup.fillMode = kCAFillModeBoth;
+            animationGroup.removedOnCompletion = NO;
             animationGroup.timingFunction = self.timingFunction;
             animationGroup.autoreverses = shapeAnimation.autoreverse;
             animationGroup.completion = ^void(BOOL finished)
@@ -164,6 +165,7 @@ static NSString * const kLayerAnimationGroupKey = @"AkylasShapesAnimation";
 //                    [self applyAnimProps:animationGroup toLayer:layer];
 //                }
                 [self notifyAsynchronousAnimationStepDidStopFinished:finished];
+                [layer removeAnimationForKey:self.animationKey];
             };
             
             [layer addAnimation:animationGroup forKey:self.animationKey];

@@ -497,45 +497,44 @@ public class Utils {
  }
 
 	
-	public static void styleShadow(KrollDict shadowOptions, Paint[] paints, Context context) {
+	public static void styleShadow(HashMap shadowOptions, Paint[] paints, Context context) {
 		float offsetx = 0.0f;
 		float offsety = 0.0f;
-		KrollDict offset = shadowOptions.getKrollDict("offset");
+		HashMap offset = TiConvert.toHashMap(shadowOptions.get("offset"));
 		
 		if (offset != null) {
 			offsetx = Utils.getRawSizeOrZero(offset, "x", context);
 			offsety = Utils.getRawSizeOrZero(offset, "y", context);
 		}
 		float blurRadius =  Utils.getRawSize(shadowOptions, "radius", "3");
-		int color = shadowOptions.optColor("color", Color.BLACK);	
+		int color = TiConvert.toColor(shadowOptions, "color", Color.BLACK);	
 		for (int i = 0; i < paints.length; i++) {
 			Paint paint = paints[i];
 			paint.setShadowLayer(blurRadius, offsetx, offsety, color);
 		}
 	}
 	
-	public static void styleShadow(KrollDict shadowOptions, Paint paint, Context context) {
+	public static void styleShadow(HashMap shadowOptions, Paint paint, Context context) {
 		styleShadow(shadowOptions, new Paint[]{paint}, context);
 	}
-	public static void styleShadow(KrollDict shadowOptions, Paint paint) {
+	public static void styleShadow(HashMap shadowOptions, Paint paint) {
 		styleShadow(shadowOptions, new Paint[]{paint}, null);
 	}
-	public static void styleShadow(KrollDict dict, String property, Paint[] paints, Context context) {
+	public static void styleShadow(HashMap dict, String property, Paint[] paints, Context context) {
 		if (dict.containsKey(property)) {
-			KrollDict shadowOptions = dict.getKrollDict(property);
-			styleShadow(shadowOptions, paints, context);
+			styleShadow(TiConvert.toHashMap(dict.get(property)), paints, context);
 		}
 	}
 	
-	public static void styleShadow(KrollDict dict, String property, Paint paint, Context context) {
+	public static void styleShadow(HashMap dict, String property, Paint paint, Context context) {
 		styleShadow(dict, property, new Paint[]{paint}, context);
 	}
 
-	public static void styleShadow(KrollDict dict, String property, Paint[] paints) {
+	public static void styleShadow(HashMap dict, String property, Paint[] paints) {
 		styleShadow(dict, property, paints, null);
 	}
 	
-	public static void styleShadow(KrollDict dict, String property, Paint paint) {
+	public static void styleShadow(HashMap dict, String property, Paint paint) {
 		styleShadow(dict, property, new Paint[]{paint}, null);
 	}
 	

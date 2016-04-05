@@ -342,7 +342,9 @@
     CABasicAnimation *caAnim = [self animation];
     caAnim.keyPath = keyPath_;
     caAnim.toValue = (!value_ || IS_OF_CLASS(value_, NSNull))?[_layer valueForKeyPath:keyPath_]:value_;
-    if (restartFromBeginning_) caAnim.fromValue = [_layer valueForKeyPath:keyPath_];
+    if (restartFromBeginning_) {
+        caAnim.fromValue = [_layer valueForKeyPath:keyPath_];
+    }
     return caAnim;
 }
 

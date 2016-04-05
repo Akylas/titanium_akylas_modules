@@ -707,6 +707,7 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 -(void)setTransform:(id)transform
 {
     _realTransform = CGAffineTransformIdentity;
+    [_transform release];
     _transform = [[TiUtils matrixValue:transform] retain];
     [self replaceValue:transform forKey:@"transform" notification:NO];
     if (!_configurationSet)  return;
@@ -787,6 +788,11 @@ CGPathRef CGPathCreateRoundRect( const CGRect r, const CGFloat cornerRadius )
 -(BOOL)handlesAutoReverse
 {
     return YES;
+}
+
+-(Class)animationClassType
+{
+    return [AkylasShapesAnimation class];
 }
 
 -(HLSAnimation*)animationForAnimation:(TiAnimation*)animation

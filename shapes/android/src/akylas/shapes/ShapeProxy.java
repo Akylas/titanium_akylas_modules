@@ -62,6 +62,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	private static final String TAG = "PathProxy";
 	
 	private static final Point NODECALEPOINT = new Point(0,0);
+	private boolean visible = true;
 	private ShapeViewProxy shapeViewProxy;
 	protected Paint fillPaint;
 	protected Paint linePaint;
@@ -615,7 +616,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 			
 			int colorAlpha = paint_.getAlpha();
 			if (hasShadow  || shader != null) {
-				if (hasShadow) Utils.styleShadow(new KrollDict((HashMap<String, Object>)getProperty(shadowProperty_)), paint_);
+				if (hasShadow) Utils.styleShadow(TiConvert.toHashMap(getProperty(shadowProperty_)), paint_);
 				canvas_.save();
 				if (lineClipped) canvas_.clipPath(path_);
 				paint_.setShader(null);
@@ -638,48 +639,51 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	}
 	
 	public void drawOnCanvas(Canvas canvas) {
+		if (!visible) {
+		    return;
+		}
+	    path.reset();
+        if (pathable != null) {
+            pathable.updatePathForRect(context, path, currentBounds.width(), currentBounds.height());
+        } else if (pathables != null) {
+            for (int i = 0; i < pathables.size(); i++) {
+                pathables.get(i).updatePathForRect(context, path, currentBounds.width(), currentBounds.height());
+            }
+        }
+        
+        {
+            this.currentRegion = clipRectWithPath(currentBounds, path);
+            Rect rect = currentRegion.getBounds();
+            boolean sizeChanged = !rect.equals(currentPathBounds);
+            if (sizeChanged) {
+                this.currentPathBounds = rect;
+                for (int i = 0; i < mShapes.size(); i++) {
+                    ShapeProxy shapeProxy = mShapes.get(i);
+                    shapeProxy.onLayoutChanged(this.context, currentPathBounds);
+                }
+                
+            }
+            if (sizeChanged || needsMatrix) {
+                prepareMatrix();
+            }
+        }
+        if (matrix != null) {
+            path.transform(matrix);
+        }
+        synchronized (paintLock) {
+            Path inversedPath = null;
+            if (fillInversed || lineInversed) {
+                inversedPath = new Path();
+                inversedPath.addRect(0, 0, currentBounds.width(), currentBounds.height(), Direction.CCW);
+                inversedPath.addPath(path);
+            }
+            drawPathWithPaint(fillInversed?inversedPath:path, fillPaint, canvas, AkylasShapesModule.PROPERTY_FILL_SHADOW, fillOpacity);
+            drawPathWithPaint(lineInversed?inversedPath:path, linePaint, canvas, AkylasShapesModule.PROPERTY_LINE_SHADOW, lineOpacity);
+            if (inversedPath != null) {
+                inversedPath = null;
+            }
+        }
 		
-		path.reset();
-		if (pathable != null) {
-			pathable.updatePathForRect(context, path, currentBounds.width(), currentBounds.height());
-		} else if (pathables != null) {
-			for (int i = 0; i < pathables.size(); i++) {
-				pathables.get(i).updatePathForRect(context, path, currentBounds.width(), currentBounds.height());
-			}
-		}
-		
-		{
-			this.currentRegion = clipRectWithPath(currentBounds, path);
-			Rect rect = currentRegion.getBounds();
-			boolean sizeChanged = !rect.equals(currentPathBounds);
-			if (sizeChanged) {
-				this.currentPathBounds = rect;
-				for (int i = 0; i < mShapes.size(); i++) {
-					ShapeProxy shapeProxy = mShapes.get(i);
-					shapeProxy.onLayoutChanged(this.context, currentPathBounds);
-				}
-				
-			}
-			if (sizeChanged || needsMatrix) {
-				prepareMatrix();
-			}
-		}
-		if (matrix != null) {
-			path.transform(matrix);
-		}
-		synchronized (paintLock) {
-		    Path inversedPath = null;
-		    if (fillInversed || lineInversed) {
-		        inversedPath = new Path();
-		        inversedPath.addRect(0, 0, currentBounds.width(), currentBounds.height(), Direction.CCW);
-		        inversedPath.addPath(path);
-		    }
-			drawPathWithPaint(fillInversed?inversedPath:path, fillPaint, canvas, AkylasShapesModule.PROPERTY_FILL_SHADOW, fillOpacity);
-			drawPathWithPaint(lineInversed?inversedPath:path, linePaint, canvas, AkylasShapesModule.PROPERTY_LINE_SHADOW, lineOpacity);
-			if (inversedPath != null) {
-			    inversedPath = null;
-			}
-		}
 		canvas.save();
 		canvas.translate(currentPathBounds.left, currentPathBounds.top);
 		for (int i = 0; i < mShapes.size(); i++) {
@@ -920,6 +924,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
         return super.hasListeners(eventName, checkParent);
     }
 	
+    private boolean firing = false;
 	protected boolean handleTouchEvent(String eventName, Object data, boolean bubbles, boolean checkListeners, int x, int y) {
 		if (context != null) {
 			if (currentPathBounds.contains(x, y)) {
@@ -936,7 +941,11 @@ public class ShapeProxy extends AnimatableReusableProxy {
 					if (data instanceof HashMap) {
 						((HashMap)data).put(TiC.EVENT_PROPERTY_SOURCE, this);
 					}
-					fireEvent(eventName, data, bubbles, false);
+					if (!firing) {
+					    firing = true;
+	                    fireEvent(eventName, data, bubbles, false);
+                        firing = false;
+					}
 					return true;
 				}
 			}
@@ -1189,123 +1198,139 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	@Override
 	public void propertySet(String key, Object newValue, Object oldValue,
             boolean changedProperty) {
-	    switch (key) {
-            case AkylasShapesModule.PROPERTY_LINE_EMBOSS:
-			Utils.styleEmboss(TiConvert.toKrollDict(newValue), getOrCreateLinePaint());
-		break;
+        switch (key) {
+        case TiC.PROPERTY_VISIBLE:
+            visible = TiConvert.toBoolean(newValue, true);
+            break;
+        case AkylasShapesModule.PROPERTY_LINE_EMBOSS:
+            Utils.styleEmboss(TiConvert.toKrollDict(newValue),
+                    getOrCreateLinePaint());
+            break;
         case AkylasShapesModule.PROPERTY_LINE_WIDTH:
-			Utils.styleStrokeWidth(newValue, "1", getOrCreateLinePaint());
-		break;
+            Utils.styleStrokeWidth(newValue, "1", getOrCreateLinePaint());
+            break;
         case AkylasShapesModule.PROPERTY_LINE_OPACITY:
-			lineOpacity = TiConvert.toFloat(newValue, 1.0f);
-		break;
+            lineOpacity = TiConvert.toFloat(newValue, 1.0f);
+            break;
         case AkylasShapesModule.PROPERTY_LINE_JOIN:
             if (newValue instanceof String) {
-                Utils.styleJoin(AkylasShapesModule.lineJoinFromString((String) newValue), getOrCreateLinePaint());
+                Utils.styleJoin(AkylasShapesModule.lineJoinFromString(
+                        (String) newValue), getOrCreateLinePaint());
             } else {
-                Utils.styleJoin(TiConvert.toInt(newValue), getOrCreateLinePaint());
+                Utils.styleJoin(TiConvert.toInt(newValue),
+                        getOrCreateLinePaint());
             }
-		break;
+            break;
         case AkylasShapesModule.PROPERTY_LINE_COLOR:
-			Utils.styleColor(TiConvert.toColor(newValue), getOrCreateLinePaint());
-		break;
+            Utils.styleColor(TiConvert.toColor(newValue),
+                    getOrCreateLinePaint());
+            break;
         case AkylasShapesModule.PROPERTY_LINE_CAP:
             if (newValue instanceof String) {
-                Utils.styleCap(AkylasShapesModule.lineCapFromString((String) newValue), getOrCreateLinePaint());
+                Utils.styleCap(
+                        AkylasShapesModule.lineCapFromString((String) newValue),
+                        getOrCreateLinePaint());
             } else {
-                Utils.styleCap(TiConvert.toInt(newValue), getOrCreateLinePaint());
+                Utils.styleCap(TiConvert.toInt(newValue),
+                        getOrCreateLinePaint());
             }
-		break;
+            break;
         case AkylasShapesModule.PROPERTY_LINE_SHADOW:
-//			Utils.styleShadow(properties, ShapeModule.PROPERTY_LINE_SHADOW, getOrCreateLinePaint());
-		break;
+            // Utils.styleShadow(properties, ShapeModule.PROPERTY_LINE_SHADOW,
+            // getOrCreateLinePaint());
+            break;
         case AkylasShapesModule.PROPERTY_LINE_DASH:
-			Utils.styleDash(TiConvert.toKrollDict(newValue), getOrCreateLinePaint());
-		break;
+            Utils.styleDash(TiConvert.toKrollDict(newValue),
+                    getOrCreateLinePaint());
+            break;
         case AkylasShapesModule.PROPERTY_FILL_OPACITY:
-			fillOpacity = TiConvert.toFloat(newValue, 1.0f);
-		break;
+            fillOpacity = TiConvert.toFloat(newValue, 1.0f);
+            break;
         case AkylasShapesModule.PROPERTY_LINE_IMAGE:
-			setPaintImageDrawable(newValue, getOrCreateLinePaint());
-		break;
+            setPaintImageDrawable(newValue, getOrCreateLinePaint());
+            break;
         case AkylasShapesModule.PROPERTY_FILL_IMAGE:
-			setPaintImageDrawable(newValue, getOrCreateFillPaint());
-		break;
+            setPaintImageDrawable(newValue, getOrCreateFillPaint());
+            break;
         case AkylasShapesModule.PROPERTY_LINE_GRADIENT:
-			 lineGradient = TiUIHelper.buildGradientDrawable(TiConvert.toKrollDict(newValue));
-		break;
+            lineGradient = TiUIHelper
+                    .buildGradientDrawable(TiConvert.toKrollDict(newValue));
+            break;
         case AkylasShapesModule.PROPERTY_FILL_GRADIENT:
-			 fillGradient = TiUIHelper.buildGradientDrawable(TiConvert.toKrollDict(newValue));
-		break;
+            fillGradient = TiUIHelper
+                    .buildGradientDrawable(TiConvert.toKrollDict(newValue));
+            break;
         case AkylasShapesModule.PROPERTY_FILL_COLOR:
-			Utils.styleColor(properties, AkylasShapesModule.PROPERTY_FILL_COLOR, getOrCreateFillPaint());
-		break;
+            Utils.styleColor(properties, AkylasShapesModule.PROPERTY_FILL_COLOR,
+                    getOrCreateFillPaint());
+            break;
         case AkylasShapesModule.PROPERTY_FILL_SHADOW:
-//			Utils.styleShadow(properties, ShapeModule.PROPERTY_FILL_SHADOW, getOrCreateFillPaint());
-		break;
+            // Utils.styleShadow(properties, ShapeModule.PROPERTY_FILL_SHADOW,
+            // getOrCreateFillPaint());
+            break;
         case AkylasShapesModule.PROPERTY_FILL_EMBOSS:
-			Utils.styleEmboss(TiConvert.toKrollDict(newValue), getOrCreateFillPaint());
-		break;
+            Utils.styleEmboss(TiConvert.toKrollDict(newValue),
+                    getOrCreateFillPaint());
+            break;
         case TiC.PROPERTY_CENTER:
-			this.center = TiConvert.toPoint(newValue);
-		break;
+            this.center = TiConvert.toPoint(newValue);
+            break;
         case AkylasShapesModule.PROPERTY_RADIUS:
-			this.radius = newValue;
-		break;
+            this.radius = newValue;
+            break;
         case TiC.PROPERTY_PADDING:
             padding = TiConvert.toPaddingRect(newValue, padding);
             break;
         case AkylasShapesModule.PROPERTY_ANCHOR:
-			this.anchor = AnchorPosition.values()[TiConvert.toInt(newValue)];
-		break;
+            this.anchor = AnchorPosition.values()[TiConvert.toInt(newValue)];
+            break;
         case TiC.PROPERTY_TRANSFORM:
-		    this.transform = TiConvert.toMatrix(newValue);
-			this.matrix = null;
+            this.transform = TiConvert.toMatrix(newValue);
+            this.matrix = null;
             needsMatrix = (this.transform != null);
-		break;
+            break;
         case AkylasShapesModule.PROPERTY_FILL_INVERSED:
-			this.fillInversed = TiConvert.toBoolean(newValue);
-		break;
+            this.fillInversed = TiConvert.toBoolean(newValue);
+            break;
         case AkylasShapesModule.PROPERTY_LINE_INVERSED:
-			this.lineInversed = TiConvert.toBoolean(newValue);
-		break;
+            this.lineInversed = TiConvert.toBoolean(newValue);
+            break;
         case AkylasShapesModule.PROPERTY_LINE_CLIPPED:
-			this.lineClipped = TiConvert.toBoolean(newValue);
-		break;
+            this.lineClipped = TiConvert.toBoolean(newValue);
+            break;
         case TiC.PROPERTY_ANCHOR_POINT:
-			applyAnchorPoint(newValue);
-			needsMatrix = true;
-		break;
+            applyAnchorPoint(newValue);
+            needsMatrix = true;
+            break;
         default:
             super.propertySet(key, newValue, oldValue, changedProperty);
-        break;
+            break;
         }
-	}
-	
+    }
+
     @Override
     protected void didProcessProperties() {
         super.didProcessProperties();
         redraw();
     }
 
-	@Override
-	public void animationFinished(TiAnimator animation) {
-		super.animationFinished(animation);
-		redraw();
-	}
+    @Override
+    public void animationFinished(TiAnimator animation) {
+        super.animationFinished(animation);
+        redraw();
+    }
 
-	public void afterAnimationReset()
-	{
-		super.afterAnimationReset();
-		update();
-	}
-	
-	public void recursiveCancelAllAnimations() {
-		cancelAllAnimations();
-		for (int i = 0; i < mShapes.size(); i++) {
-			ShapeProxy shapeProxy = mShapes.get(i);
-			shapeProxy.recursiveCancelAllAnimations();
-		}
-	}
+    public void afterAnimationReset() {
+        super.afterAnimationReset();
+        update();
+    }
+
+    public void recursiveCancelAllAnimations() {
+        cancelAllAnimations();
+        for (int i = 0; i < mShapes.size(); i++) {
+            ShapeProxy shapeProxy = mShapes.get(i);
+            shapeProxy.recursiveCancelAllAnimations();
+        }
+    }
 
 }
