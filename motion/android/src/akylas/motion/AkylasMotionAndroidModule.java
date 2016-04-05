@@ -23,7 +23,6 @@ import org.appcelerator.titanium.util.TiSensorHelper;
 import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.ProtectedModule.AeSimpleSHA1;
 
 import android.app.Activity;
 import android.hardware.Sensor;
