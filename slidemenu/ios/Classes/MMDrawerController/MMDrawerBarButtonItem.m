@@ -54,7 +54,7 @@
 }
 
 -(UIColor *)menuButtonColorForState:(UIControlState)state{
-    UIColor * color;
+    UIColor * color = nil;
     switch (state) {
         case UIControlStateNormal:
             color = self.menuButtonNormalColor;
@@ -83,7 +83,7 @@
 }
 
 -(UIColor *)shadowColorForState:(UIControlState)state{
-    UIColor * color;
+    UIColor * color = nil;
     switch (state) {
         case UIControlStateNormal:
             color = self.shadowNormalColor;
@@ -261,7 +261,7 @@
 
 -(instancetype)initWithCoder:(NSCoder *)aDecoder{
     // non-ideal way to get the target/action, but it works
-    UIBarButtonItem* barButtonItem = [[UIBarButtonItem alloc] initWithCoder: aDecoder];
+    UIBarButtonItem* barButtonItem = [[[UIBarButtonItem alloc] initWithCoder: aDecoder] autorelease];
     return [self initWithTarget:barButtonItem.target action:barButtonItem.action];
 }
 

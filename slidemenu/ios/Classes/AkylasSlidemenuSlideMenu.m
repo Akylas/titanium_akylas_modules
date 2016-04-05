@@ -32,21 +32,21 @@
 
 @implementation AkylasSlidemenuSlideMenu
 
--(UIViewController *) controllerForViewProxy:(TiViewProxy * )proxy withFrame:(CGRect)frame
+-(UIViewController *) controllerForViewProxy:(TiViewProxy * )theProxy withFrame:(CGRect)frame
 {
-    proxy.sandboxBounds = CGRectMake(0, 0, frame.size.width, frame.size.height);
-    if ([proxy isKindOfClass:[TiWindowProxy class]]) {
-        TiWindowProxy* window = (TiWindowProxy*)proxy;
+    theProxy.sandboxBounds = CGRectMake(0, 0, frame.size.width, frame.size.height);
+    if ([theProxy isKindOfClass:[TiWindowProxy class]]) {
+        TiWindowProxy* window = (TiWindowProxy*)theProxy;
         [window setIsManaged:YES]; // has to be done before windowWillOpen!
     }
-    UIViewController* controller;
-    if([proxy respondsToSelector:@selector(hostingController)])
+    UIViewController* controller = nil;
+    if([theProxy respondsToSelector:@selector(hostingController)])
     {
-        controller = [proxy hostingController];
+        controller = [theProxy hostingController];
     }
-    [proxy windowWillOpen];
+    [theProxy windowWillOpen];
 //    [proxy setParent:(AkylasSlidemenuSlideMenuProxy*)self.proxy];
-    [proxy windowDidOpen];
+    [theProxy windowDidOpen];
     return controller;
 }
 
@@ -151,7 +151,8 @@
 {
     __block TiViewProxy* oldCenterView = nil;
     UIViewController* ctlr;
-    CGRect frame = [[self controller] childControllerContainerViewFrame];
+    //to ensure childControllerContainerView existence
+    [[self controller] childControllerContainerViewFrame];
     if ([value isKindOfClass:[UIViewController class]]) {
         ctlr = value;
     }
@@ -161,6 +162,8 @@
         
         oldCenterView = [[[self viewProxy] holdedProxyForKey:@"centerView"] retain];
         if (value == oldCenterView) {
+            
+            RELEASE_TO_NIL(oldCenterView);
             [[self controller] closeDrawerAnimated:YES completion:nil];
             return;
         }
@@ -253,7 +256,7 @@
 
 -(void)setLeftViewWidth_:(id)value withObject:(id)object
 {
-	BOOL boolValue = [TiUtils boolValue:value];
+//	BOOL boolValue = [TiUtils boolValue:value];
 	BOOL animated = [TiUtils boolValue:@"animated" properties:object def:NO];
 	//TODO: Value checking and exception generation, if necessary.
     
@@ -264,7 +267,7 @@
 
 -(void)setRightViewWidth_:(id)value withObject:(id)object
 {
-	BOOL boolValue = [TiUtils boolValue:value];
+//	BOOL boolValue = [TiUtils boolValue:value];
 	BOOL animated = [TiUtils boolValue:@"animated" properties:object def:NO];
 	//TODO: Value checking and exception generation, if necessary.
     
@@ -361,7 +364,7 @@
 {
     ENSURE_UI_THREAD(setPanningMode_,args);
     if(args !=nil){
-        NSInteger num = [TiUtils intValue:args];
+//        NSInteger num = [TiUtils intValue:args];
         [self controller].openDrawerGestureModeMask = [TiUtils intValue:args];
     }
 }
@@ -381,7 +384,7 @@
         MMDrawerControllerDrawerVisualStateBlock visualStateBlock =
         ^(MMDrawerController * drawerController, MMDrawerSide drawerSide, CGFloat percentVisible){
             if(percentVisible <= 1.f){
-                CGFloat maxDrawerWidth = MAX(drawerController.maximumLeftDrawerWidth,drawerController.visibleLeftDrawerWidth);
+//                CGFloat maxDrawerWidth = MAX(drawerController.maximumLeftDrawerWidth,drawerController.visibleLeftDrawerWidth);
                 [_leftTransition transformView:drawerController.leftDrawerViewController.view withPosition:percentVisible-1];
             }
         };
@@ -401,7 +404,7 @@
         MMDrawerControllerDrawerVisualStateBlock visualStateBlock =
         ^(MMDrawerController * drawerController, MMDrawerSide drawerSide, CGFloat percentVisible){
             if(percentVisible <= 1.f){
-                CGFloat maxDrawerWidth = MAX(drawerController.maximumRightDrawerWidth,drawerController.visibleRightDrawerWidth);
+//                CGFloat maxDrawerWidth = MAX(drawerController.maximumRightDrawerWidth,drawerController.visibleRightDrawerWidth);
                 [_rightTransition transformView:drawerController.rightDrawerViewController.view withPosition:1-percentVisible];
             }
         };

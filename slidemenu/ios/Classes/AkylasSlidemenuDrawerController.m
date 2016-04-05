@@ -14,6 +14,7 @@
 @interface MMDrawerController ()
 
 -(UIView*)childControllerContainerView;
+-(void)setOpenSide:(MMDrawerSide)openSide;
 @end
 
 @interface AkylasSlidemenuDrawerController ()
@@ -248,7 +249,7 @@
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateEnded:{
             event = @"scrollend";
-            CGRect newFrame = self.startingPanRect;
+//            CGRect newFrame = self.startingPanRect;
             ending = true;
             break;
         }

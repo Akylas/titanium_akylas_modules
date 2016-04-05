@@ -33,7 +33,7 @@
         CGFloat maxDistance = 50;
         CGFloat distance = maxDistance * percentVisible;
         CATransform3D translateTransform = CATransform3DIdentity;
-        UIViewController * sideDrawerViewController;
+        UIViewController * sideDrawerViewController = nil;
         if(drawerSide == MMDrawerSideLeft) {
             sideDrawerViewController = drawerController.leftDrawerViewController;
             translateTransform = CATransform3DMakeTranslation((maxDistance-distance), 0.0, 0.0);
@@ -43,8 +43,11 @@
             translateTransform = CATransform3DMakeTranslation(-(maxDistance-distance), 0.0, 0.0);
         }
         
-        [sideDrawerViewController.view.layer setTransform:CATransform3DConcat(scaleTransform, translateTransform)];
-        [sideDrawerViewController.view setAlpha:percentVisible];
+        if (sideDrawerViewController) {
+            [sideDrawerViewController.view.layer setTransform:CATransform3DConcat(scaleTransform, translateTransform)];
+            [sideDrawerViewController.view setAlpha:percentVisible];
+        }
+        
     };
     return visualStateBlock;
 }
@@ -118,7 +121,7 @@
     ^(MMDrawerController * drawerController, MMDrawerSide drawerSide, CGFloat percentVisible){
         NSParameterAssert(parallaxFactor >= 1.0);
         CATransform3D transform = CATransform3DIdentity;
-        UIViewController * sideDrawerViewController;
+        UIViewController * sideDrawerViewController = nil;
         if(drawerSide == MMDrawerSideLeft) {
             sideDrawerViewController = drawerController.leftDrawerViewController;
             CGFloat distance = MAX(drawerController.maximumLeftDrawerWidth,drawerController.visibleLeftDrawerWidth);
@@ -141,8 +144,9 @@
                 transform = CATransform3DTranslate(transform, -drawerController.maximumRightDrawerWidth*(percentVisible-1.f)/2, 0.f, 0.f);
             }
         }
-        
-        [sideDrawerViewController.view.layer setTransform:transform];
+        if (sideDrawerViewController) {
+            [sideDrawerViewController.view.layer setTransform:transform];
+        }
     };
     return visualStateBlock;
 }
