@@ -97,16 +97,17 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 -(void)_initWithProperties:(NSDictionary *)properties
 {
     uartMode = false;
-    id arg = [properties valueForKey:@"identifier"];
+    id arg = [properties valueForKey:@"id"];
     
     if (IS_NULL_OR_NIL(arg)) {
         [self throwException:@"Invalid argument passed to protocol property" subreason:@"You must pass a protocol String" location:CODELOCATION];
     }
     _identifier = [[TiUtils stringValue:arg] retain];
     [super _initWithProperties:properties];
+    [self setParentForBubbling:[AkylasBluetoothModule sharedInstance]];
 }
 
--(NSString*)identifier {
+-(NSString*)id {
     return _identifier;
 }
 
@@ -201,14 +202,53 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
     if (!characteristic || !data) {
         return;
     }
+    NSInteger writeType;
     if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) != 0)
     {
-        [_peripheral writeValue:data forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
+        writeType = CBCharacteristicWriteWithoutResponse;
+//        [_peripheral writeValue:data forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
     }
     else if ((characteristic.properties & CBCharacteristicPropertyWrite) != 0)
     {
-        [_peripheral writeValue:data forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+        writeType = CBCharacteristicWriteWithResponse;
+//        [_peripheral writeValue:data forCharacteristic:characteristic type:CBCharacteristicWriteWithResponse];
+    } else {
+        [self fireEvent:@"error" withObject:[TiUtils dictionaryWithCode:0 message:@"Unable to write data without characteristic write property"]];
+        return;
     }
+    
+    //send data in lengths of <= 20 bytes
+//    NSUInteger dataLength = data.length;
+//    NSUInteger limit = 20;
+//    
+//    //Below limit, send as-is
+//    if (dataLength <= limit) {
+        [_peripheral writeValue:data forCharacteristic:characteristic type:writeType];
+//    }
+    
+    //Above limit, send in lengths <= 20 bytes
+//    else {
+//        
+//        NSUInteger len = limit;
+//        NSUInteger loc = 0;
+//        NSUInteger idx = 0; //for debug
+//        
+//        while (loc < dataLength) {
+//            
+//            NSUInteger rmdr = dataLength - loc;
+//            if (rmdr <= len) {
+//                len = rmdr;
+//            }
+//            
+//            NSRange range = NSMakeRange(loc, len);
+//            NSInteger newBytes[len];
+//            [data getBytes:newBytes range:range];
+//            NSData* newData = [NSData dataWithBytes:newBytes length:len];
+//            [_peripheral writeValue:newData forCharacteristic:characteristic type:writeType];
+//            loc += len;
+//            idx += 1;
+//        }
+//    }
 }
 
 -(void)writeToCharacteristic:(id)args
@@ -230,13 +270,18 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 
 -(NSData*)dataFromArgs:(id)args
 {
-    ENSURE_SINGLE_ARG(args, NSObject)
+//    ENSURE_SINGLE_ARG(args, NSObject)
     if (IS_OF_CLASS(args, NSString)) {
         // called within this class
         return [args dataUsingEncoding:NSUTF8StringEncoding];
-    }else if (IS_OF_CLASS(args, NSArray)) {
-        //supposed to be a byte array
-        return [NSKeyedArchiver archivedDataWithRootObject:args];
+    }else if (IS_OF_CLASS(args, NSArray) || IS_OF_CLASS(args, NSMutableArray)) {
+        NSMutableData *data = [[NSMutableData alloc] initWithCapacity: [args count]];
+        for( NSString *string in args) {
+            char byte = (char)[string intValue];
+            [data appendBytes: &byte length: 1];
+        }
+        return [data autorelease];
+//        return [NSKeyedArchiver archivedDataWithRootObject:args];
     } else if ([args respondsToSelector:@selector(data)]) {
        return [args data];
     }
@@ -533,7 +578,7 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
     {
         [characteristicsIds addObject:c.UUID.UUIDString];
 //            DebugLog(@"didDiscoverCharacteristics %@ ForService %@", c.UUID.UUIDString, service.UUID.UUIDString);
-        if (uartMode && [service isEqual:self.class.uartServiceUUID]) {
+        if (uartMode && [service.UUID isEqual:self.class.uartServiceUUID]) {
             if ([c.UUID isEqual:self.class.rxCharacteristicUUID])
             {
                 rxCharacteristic = [c retain];
@@ -571,5 +616,11 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
                                                                           @"service":characteristic.service.UUID.UUIDString
                                                                           }];
 }
-
+- (void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(nullable NSError *)error
+{
+    if (error)
+    {
+        [self fireEvent:@"error" withObject:[TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]]];
+    }
+}
 @end

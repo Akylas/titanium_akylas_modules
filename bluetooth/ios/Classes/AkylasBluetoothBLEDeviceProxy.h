@@ -6,7 +6,7 @@
  */
 
 
-#import "TiProxy.h"
+#import "TiParentingProxy.h"
 
 @class AkylasBluetoothBLEDeviceProxy;
 @interface CBPeripheral (AkylasBluetoothBLEDeviceProxy)
@@ -16,7 +16,7 @@
 -(void)didDisconnect;
 @end
 
-@interface AkylasBluetoothBLEDeviceProxy : TiProxy<CBPeripheralDelegate>
+@interface AkylasBluetoothBLEDeviceProxy : TiParentingProxy<CBPeripheralDelegate>
 
 
 -(NSString*)identifier;

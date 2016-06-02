@@ -107,7 +107,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     {
         setParentForBubbling(AkylasBluetoothModule.getInstance());
         super.handleCreationDict(dict);
-        mMacAdress = TiConvert.toString(dict, "identifier", null);
+        mMacAdress = TiConvert.toString(dict, "id", null);
     }
 
     @Override

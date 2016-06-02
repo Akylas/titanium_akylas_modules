@@ -159,7 +159,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     return @{
              @"connected" : NUMBOOL([peripheral state] == CBPeripheralStateConnected),
              @"name" : peripheral.name,
-             @"identifier" : [[peripheral identifier] UUIDString]
+             @"id" : [[peripheral identifier] UUIDString]
              };
 }
 
@@ -190,13 +190,13 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 -(NSString*)advKeyNameForKey:(NSString*)key {
     if([key isEqualToString:@"kCBAdvDataTxPowerLevel"]) {
-        return @"power_level";
+        return @"txPowerLevel";
     }
     if([key isEqualToString:@"kCBAdvDataLocalName"]) {
-        return @"local_name";
+        return @"localName";
     }
     if([key isEqualToString:@"kCBAdvDataServiceUUIDs"]) {
-        return @"services";
+        return @"serviceUuids";
     }
     if([key isEqualToString:@"kCBAdvDataIsConnectable"]) {
         return @"connectable";
@@ -205,13 +205,13 @@ static AkylasBluetoothModule *_sharedInstance = nil;
         return @"channel";
     }
     if([key isEqualToString:@"kCBAdvDataManufacturerData"]) {
-        return @"manufacturer";
+        return @"manufacturerData";
     }
     return key;
 }
 -(NSDictionary *)summarizeAdvertisement:(NSDictionary*)advertisementData
 {
-    DebugLog(@"[TRACE] advertisementData = %@", advertisementData);
+//    DebugLog(@"[TRACE] advertisementData = %@", advertisementData);
     
     NSMutableDictionary *summary = [[NSMutableDictionary alloc] init];
     NSMutableArray *services = [[NSMutableArray alloc] init];
@@ -223,7 +223,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
         
         NSString *keyName = [self advKeyNameForKey:(NSString *) key];
         NSObject *value = [advertisementData objectForKey: key];
-        DebugLog(@"[TRACE] advertisementData handling %@=%@", keyName, value);
+//        DebugLog(@"[TRACE] advertisementData handling %@=%@", keyName, value);
         
         if ([value isKindOfClass: [NSArray class]]) {
             
@@ -246,7 +246,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
             }
         }
         else if ([value isKindOfClass: [NSDictionary class]]) {
-            NSLog(@"skipping advertised NSDictionary %@", value);
+//            NSLog(@"skipping advertised NSDictionary %@", value);
             /*
              NSDictionary *subvalues = (NSDictionary *)value;
              NSArray *subkeys = [subvalues allKeys];
@@ -276,8 +276,8 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     }
     [summary setObject:services forKey:@"services"];
     [services release];
-    
-    DebugLog(@"[TRACE] advertisementData return %@", summary);
+//    
+//    DebugLog(@"[TRACE] advertisementData return %@", summary);
     return [summary autorelease];
 }
 
@@ -449,7 +449,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     RELEASE_TO_NIL(_discoveryCallback)
     _discoveryCallback = [(KrollCallback*)value retain];
     [[self btManager] scanForPeripheralsWithServices:nil options:@{CBCentralManagerScanOptionAllowDuplicatesKey: @(NO)}];
-    if (num) {
+    if (num && [num integerValue] > 0) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, [num integerValue] * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
             [self stopDiscoverBLE:nil];
         });
@@ -476,9 +476,20 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 }
 
--(void)connectBLEDevice:(CBPeripheral*)peripheral {
-    [[self btManager] connectPeripheral:peripheral options:@{CBConnectPeripheralOptionNotifyOnDisconnectionKey: [NSNumber numberWithBool:YES]}];
+-(void)handleError:(NSError*)error forDevice:(CBPeripheral*)peripheral
+{
+    NSMutableDictionary* data = [TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]];
+    if (peripheral.proxy)
+    {
+        [peripheral.proxy fireEvent:@"error" withObject:data];
+    } else {
+        [data setObject:[self dictFromPeripheral:peripheral] forKey:@"device"];
+        [self fireEvent:@"error" withObject:data];
+    }
+}
 
+-(void)connectBLEDevice:(CBPeripheral*)peripheral {
+        [[self btManager] connectPeripheral:peripheral options:@{CBConnectPeripheralOptionNotifyOnDisconnectionKey: [NSNumber numberWithBool:YES]}];
 }
 
 -(void)disconnectBLEDevice:(CBPeripheral*)peripheral {
@@ -496,13 +507,14 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 - (void) centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
 {
-    if (_discovering) {
+    if (_discovering && peripheral.name) {
         NSLog(@"found %@", peripheral.name);
         [self addDiscoveredBLEDevice:peripheral];
         if ([self _hasListeners:@"found"]) {
             [self fireEvent:@"found" withObject:@{
                                                   @"discovering":@(_discovering),
-                                                  @"advertising":[self summarizeAdvertisement:advertisementData],
+                                                  @"id":[[peripheral identifier] UUIDString],
+                                                  @"advertisement":[self summarizeAdvertisement:advertisementData],
                                                   @"device":[self dictFromPeripheral:peripheral],
                                                   @"rssi":RSSI} propagate:NO checkForListener:NO];
         }
@@ -512,26 +524,31 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 - (void) centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
 {
     [peripheral didConnect];
-    if ([self _hasListeners:@"connected"]) {
-        [self fireEvent:@"connected" withObject:@{
-                                              @"device":[self dictFromPeripheral:peripheral]
-                                              } propagate:NO checkForListener:NO];
-    }
+//    if ([self _hasListeners:@"connected"]) {
+//        [self fireEvent:@"connected" withObject:@{
+//                                              @"device":[self dictFromPeripheral:peripheral]
+//                                              } propagate:NO checkForListener:NO];
+//    }
+}
+
+- (void)centralManager:(CBCentralManager *)central
+didFailToConnectPeripheral:(CBPeripheral *)peripheral
+                 error:(NSError *)error
+{
+    [self handleError:error forDevice:peripheral];
 }
 
 - (void) centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error
 {
     if(error) {
-        NSDictionary* data = [TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]];
-        [self fireEvent:@"error" withObject:data];
-        [peripheral.proxy fireEvent:@"error" withObject:data];
+        [self handleError:error forDevice:peripheral];
     }
     [peripheral didDisconnect];
-    if ([self _hasListeners:@"disconnected"]) {
-        [self fireEvent:@"disconnected" withObject:@{
-                                                  @"device":[self dictFromPeripheral:peripheral]
-                                                  } propagate:NO checkForListener:NO];
-    }
+//    if ([self _hasListeners:@"disconnected"]) {
+//        [self fireEvent:@"disconnected" withObject:@{
+//                                                  @"device":[self dictFromPeripheral:peripheral]
+//                                                  } propagate:NO checkForListener:NO];
+//    }
 }
 
 - (void) centralManagerDidUpdateState:(CBCentralManager *)central

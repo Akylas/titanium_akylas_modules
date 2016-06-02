@@ -123,10 +123,11 @@ public class AkylasBluetoothModule extends ProtectedModule {
                             }
                             KrollDict data = new KrollDict();
                             data.put("device", dict);
+                            data.put("id", dict.get("id"));
                             data.put("discovering", true);
-                            data.put("advertising", adv);
+                            data.put("advertisement", adv);
                             data.put("rssi", rssi);
-                           fireEvent("found", data, false, false);
+                            fireEvent("found", data, false, false);
                         }
                     } else {
                         KrollDict dict = mNewDevicesArrayAdapter.get(address);
@@ -624,7 +625,7 @@ public class AkylasBluetoothModule extends ProtectedModule {
         KrollDict data = new KrollDict();
         data.put("paired", device.getBondState() == BluetoothDevice.BOND_BONDED);
         data.put("name", device.getName());
-        data.put("identifier", device.getAddress());
+        data.put("id", device.getAddress());
         return data;
     }
 

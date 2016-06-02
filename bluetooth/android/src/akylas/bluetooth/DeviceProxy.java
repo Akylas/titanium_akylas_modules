@@ -85,7 +85,7 @@ public class DeviceProxy extends KrollProxy
     public void handleCreationDict(HashMap dict)
     {
         super.handleCreationDict(dict);
-        mMacAdress = TiConvert.toString(dict, "identifier", null);
+        mMacAdress = TiConvert.toString(dict, "id", null);
         mUUID = UUID.fromString(TiConvert.toString(dict, "UUID", "00001101-0000-1000-8000-00805F9B34FB"));
     }
 	

@@ -17,4 +17,5 @@
 +(void)connectBLEDevice:(CBPeripheral*)peripheral;
 +(void)disconnectBLEDevice:(CBPeripheral*)peripheral;
 +(CBCentralManager*) btManager;
++(AkylasBluetoothModule*)sharedInstance;
 @end

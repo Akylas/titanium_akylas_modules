@@ -192,19 +192,19 @@ public final class AdRecord implements Parcelable {
             case TYPE_FLAGS:
                 return "flags";
             case TYPE_MANUFACTURER_SPECIFIC_DATA:
-                return "manufacturer";
+                return "manufacturerData";
             case TYPE_LOCAL_NAME_COMPLETE:
-                return "local_name";
+                return "localName";
             case TYPE_LOCAL_NAME_SHORT:
                 return "local_name_short";
             case TYPE_SECURITY_MANAGER_OOB_FLAGS:
                 return "OOb_flags";
             case TYPE_SERVICE_UUIDS_LIST_128BIT:
-                return "services";
+                return "serviceUuids";
             case TYPE_SERVICE_UUIDS_LIST_16BIT:
                 return "services_16";
             case TYPE_SERVICE_DATA:
-                return "service_data";
+                return "serviceData";
             case TYPE_SIMPLE_PAIRING_HASH_C:
                 return "hash_c";
             case TYPE_SIMPLE_PAIRING_RANDOMIZER_R:
@@ -212,7 +212,7 @@ public final class AdRecord implements Parcelable {
             case TYPE_TK_VALUE:
                 return "tk_value";
             case TYPE_TX_POWER_LEVEL:
-                return "power_level";
+                return "txPowerLevel";
             case TYPE_UUID128:
                 return "uuids";
             case TYPE_UUID128_INC:
