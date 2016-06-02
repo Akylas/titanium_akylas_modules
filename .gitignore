@@ -21,3 +21,7 @@ libs
 .tags
 
 *.sublime-workspace
+browse.VC.db
+typings
+node_modules
+lint.xml
