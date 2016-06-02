@@ -11,9 +11,9 @@ extern NSData* filterDataInRange(NSData* thedata, NSRange range);
 {
     //##TI_AUTOGEN_BEGIN asset
     //Compiler generates code for asset here
-    
+	
 
-    return nil;
+	return nil;
     //##TI_AUTOGEN_END asset
 }
 
@@ -21,9 +21,9 @@ extern NSData* filterDataInRange(NSData* thedata, NSRange range);
 {
     //##TI_AUTOGEN_BEGIN resolve_asset
     //Compiler generates code for asset here
-    
+	
 
-    return nil;
+	return nil;
     //##TI_AUTOGEN_END resolve_asset
 }
 
