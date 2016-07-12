@@ -31,3 +31,6 @@
 [submodule "charts2/ios/ios-charts"]
 	path = charts2/ios/ios-charts
 	url = git@github.com:danielgindi/ios-charts.git
+[submodule "tiws/ios/SocketRocket"]
+	path = tiws/ios/SocketRocket
+	url = git@github.com:Akylas/SocketRocket.git

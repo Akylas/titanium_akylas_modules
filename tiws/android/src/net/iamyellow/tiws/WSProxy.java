@@ -23,6 +23,7 @@ import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.titanium.TiBaseActivity;
+import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiContext.OnLifecycleEvent;
 
 import java.lang.ref.WeakReference;
@@ -39,197 +40,204 @@ import com.codebutler.android_websockets.WebSocketClient;
 
 @Kroll.proxy(creatableInModule = TiwsModule.class)
 public class WSProxy extends KrollProxy implements OnLifecycleEvent {
-	private WebSocketClient client;
-	private boolean connected = false;
+    private WebSocketClient client;
+    private boolean connected = false;
 
-	// Constructor
-	public WSProxy() {
-		super();
-	}
+    // Constructor
+    public WSProxy() {
+        super();
+    }
 
-	// Websocket stuff
-	private void cleanup() {
-		if (client == null || !connected) {
-			return;
-		}
+    // Websocket stuff
+    private void cleanup() {
+        if (client == null || !connected) {
+            return;
+        }
 
-		connected = false;
-		try {
-			client.disconnect();
-		}
-		catch (Exception ex) {
-		}
-		client = null;
+        connected = false;
+        try {
+            client.disconnect();
+        } catch (Exception ex) {
+        }
+        client = null;
 
-		if (TiwsModule.DBG) {
-			Log.d(TiwsModule.LCAT, "* websocket destroyed");
-		}
-	}
-	
-	@Override
-    public void setActivity(Activity activity)
-    {
+        if (TiwsModule.DBG) {
+            Log.d(TiwsModule.LCAT, "* websocket destroyed");
+        }
+    }
+
+    @Override
+    public void setActivity(Activity activity) {
         TiBaseActivity oldActivity = (TiBaseActivity) getActivity();
         TiBaseActivity newActivity = (TiBaseActivity) activity;
-        if (newActivity == oldActivity) return;
+        if (newActivity == oldActivity)
+            return;
         super.setActivity(activity);
-        
+
         if (oldActivity != null) {
             oldActivity.removeOnLifecycleEventListener(this);
         }
-        
+
         if (newActivity != null) {
             newActivity.addOnLifecycleEventListener(this);
         }
     }
 
-	// Context Lifecycle events
-	@Override
-	public void onStart(Activity activity) {
-	}
+    // Context Lifecycle events
+    @Override
+    public void onStart(Activity activity) {
+    }
 
-	@Override
-	public void onStop(Activity activity) {
-	}
+    @Override
+    public void onStop(Activity activity) {
+    }
 
-	@Override
-	public void onPause(Activity activity) {
-	}
+    @Override
+    public void onPause(Activity activity) {
+    }
 
-	@Override
-	public void onResume(Activity activity) {
-	}
+    @Override
+    public void onResume(Activity activity) {
+    }
 
-	@Override
-	public void onDestroy(Activity activity) {
-		cleanup();
-	}
+    @Override
+    public void onDestroy(Activity activity) {
+        cleanup();
+    }
 
-	// Handle creation options
-	@Override
-	public void handleCreationDict(HashMap options) {
-		super.handleCreationDict(options);
-	}
+    // Handle creation options
+    @Override
+    public void handleCreationDict(HashMap options) {
+        super.handleCreationDict(options);
+    }
 
-	// Methods
+    // Methods
 
-	@Kroll.method
-	public void open(Object[] args) {
-		final KrollProxy self = this;
+    @Kroll.method
+    public void open(Object[] args) {
+        final KrollProxy self = this;
 
-		if (args.length == 0) {
-			throw new IllegalArgumentException("URI argument expected");
-		}
+        if (args.length == 0) {
+            throw new IllegalArgumentException("URI argument expected");
+        }
 
-		Object uri = args[0];
-		if (!(uri instanceof String)) {
-			throw new IllegalArgumentException("URI argument must be a string");
-		}
-		String wsUri = (String)uri;
-		List<BasicNameValuePair> extraHeaders = new ArrayList<BasicNameValuePair>();
-		if (args.length > 1) {
-			Object proto = args[1];
-			if (!(proto instanceof Object[])) {
-				throw new IllegalArgumentException("protocols argument must be an array of strings");
-			}
-			Object[] protocols = (Object[])proto;
-			for (int i = 0; i < protocols.length; i++) {
-				if (!(protocols[i] instanceof String)) {
-					throw new IllegalArgumentException("protocol at index " + i + " is not a string");
-				}
-			}
-			BasicNameValuePair protocolHeader = new BasicNameValuePair("Sec-WebSocket-Protocol", TextUtils.join(", ", protocols));
-			extraHeaders.add(protocolHeader);
-		}
-		try {
-			if (TiwsModule.DBG) {
-				Log.d(TiwsModule.LCAT, "* creating websocket");
-			}
+        Object uri = args[0];
+        if (!(uri instanceof String)) {
+            throw new IllegalArgumentException("URI argument must be a string");
+        }
+        String wsUri = (String) uri;
+        List<BasicNameValuePair> extraHeaders = new ArrayList<BasicNameValuePair>();
+        if (args.length > 1) {
+            Object proto = args[1];
+            if (!(proto instanceof Object[])) {
+                throw new IllegalArgumentException(
+                        "protocols argument must be an array of strings");
+            }
+            Object[] protocols = (Object[]) proto;
+            for (int i = 0; i < protocols.length; i++) {
+                if (!(protocols[i] instanceof String)) {
+                    throw new IllegalArgumentException(
+                            "protocol at index " + i + " is not a string");
+                }
+            }
+            BasicNameValuePair protocolHeader = new BasicNameValuePair(
+                    "Sec-WebSocket-Protocol", TextUtils.join(", ", protocols));
+            extraHeaders.add(protocolHeader);
+        }
+        try {
+            if (TiwsModule.DBG) {
+                Log.d(TiwsModule.LCAT, "* creating websocket");
+            }
 
-			URI wsURI = new URI(wsUri);
-			Log.d(TiwsModule.LCAT, "* URI: " + wsURI);
-			client = new WebSocketClient(wsURI, new WebSocketClient.Listener() {
-				@Override
-				public void onMessage(byte[] data) {
-					if (client == null) {
-						return;
-					}
-				}
+            URI wsURI = new URI(wsUri);
+            Log.d(TiwsModule.LCAT, "* URI: " + wsURI);
+            client = new WebSocketClient(wsURI, new WebSocketClient.Listener() {
+                @Override
+                public void onMessage(byte[] data) {
+                    if (client == null) {
+                        return;
+                    }
+                }
 
-				@Override
-				public void onMessage(String message) {
-					if (client == null) {
-						return;
-					}
+                @Override
+                public void onMessage(String message) {
+                    if (client == null) {
+                        return;
+                    }
 
-					KrollDict event = new KrollDict();
-					event.put("data", message);
-					self.fireEvent("message", event);
-				}
+                    KrollDict event = new KrollDict();
+                    event.put("data", message);
+                    self.fireEvent("message", event);
+                }
 
-				@Override
-				public void onError(Exception error) {
-					if (client == null) {
-						return;
-					}
+                @Override
+                public void onError(Exception error) {
+                    if (client == null) {
+                        return;
+                    }
 
-					if (TiwsModule.DBG) {
-						Log.d(TiwsModule.LCAT, "* websocket error", error);
-					}
+                    if (TiwsModule.DBG) {
+                        Log.d(TiwsModule.LCAT, "* websocket error", error);
+                    }
 
-					KrollDict event = new KrollDict();
-					event.put("advice", "reconnect");
-					event.put("error", error.toString());
-					self.fireEvent("error", event);
+                    KrollDict event = new KrollDict();
+                    event.put("advice", "reconnect");
+                    event.put("error", error.toString());
+                    self.fireEvent("error", event);
 
-					cleanup();
-				}
+                    cleanup();
+                }
 
-				@Override
-				public void onDisconnect(int code, String reason) {
-					if (client == null) {
-						return;
-					}
+                @Override
+                public void onDisconnect(int code, String reason) {
+                    if (client == null) {
+                        return;
+                    }
 
-					if (TiwsModule.DBG) {
-						Log.d(TiwsModule.LCAT, "* creating disconnected; reason = " + reason + "; code = " + String.valueOf(code));
-					}
-					KrollDict event = new KrollDict();
-					event.put("code", code);
-					event.put("reason", reason);
-					self.fireEvent("close", event);
+                    if (TiwsModule.DBG) {
+                        Log.d(TiwsModule.LCAT,
+                                "* creating disconnected; reason = " + reason
+                                        + "; code = " + String.valueOf(code));
+                    }
+                    KrollDict event = new KrollDict();
+                    event.put("code", code);
+                    event.put("reason", reason);
+                    self.fireEvent("close", event);
 
-					cleanup();
-				}
+                    cleanup();
+                }
 
-				@Override
-				public void onConnect() {
-					connected = true;
+                @Override
+                public void onConnect() {
+                    connected = true;
 
-					KrollDict event = new KrollDict();
-					self.fireEvent("open", event);
-				}
-			}, extraHeaders);
+                    KrollDict event = new KrollDict();
+                    self.fireEvent("open", event);
+                }
+            }, extraHeaders);
 
-			client.connect();
-		}
-		catch (URISyntaxException ex) {
-			if (TiwsModule.DBG) {
-				Log.d(TiwsModule.LCAT, "* creating exception", ex);
-			}
-			cleanup();
-		}
-	}
+            client.connect();
+        } catch (URISyntaxException ex) {
+            if (TiwsModule.DBG) {
+                Log.d(TiwsModule.LCAT, "* creating exception", ex);
+            }
+            cleanup();
+        }
+    }
 
-	@Kroll.method
-	public void close() {
-		cleanup();
-	}
+    @Kroll.method
+    public void close() {
+        cleanup();
+    }
 
-	@Kroll.method
-	public void send(String message) {
-		if (client != null && connected) {
-			client.send(message);
-		}
-	}
+    @Kroll.method
+    public void send(Object message) {
+        if (client != null && connected) {
+            if (message instanceof TiBlob) {
+                client.send(((TiBlob) message).getBytes());
+            } else if (message instanceof String) {
+                client.send((String) message);
+            }
+        }
+    }
 }

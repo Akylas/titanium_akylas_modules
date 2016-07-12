@@ -25,4 +25,4 @@
 //
 // IMPORTANT NOTE: always use $(inherited) in your overrides
 // 
-OTHER_LDFLAGS=$(inherited) -framework Security -framework CFNetwork
+OTHER_LDFLAGS=$(inherited) -F$(SRCROOT)/platform -framework CFSecurity

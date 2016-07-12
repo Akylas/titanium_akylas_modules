@@ -15,7 +15,7 @@
 //
 
 #import "TiProxy.h"
-#import "SRWebSocket.h"
+#import "SocketRocket/SRWebSocket.h"
 
 @interface NetIamyellowTiwsWSProxy : TiProxy <SRWebSocketDelegate> 
 {

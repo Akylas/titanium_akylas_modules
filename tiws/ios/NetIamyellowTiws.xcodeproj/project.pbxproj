@@ -26,14 +26,9 @@
 		24DD6CFA1134B3F500162E58 /* NetIamyellowTiwsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 24DD6CF81134B3F500162E58 /* NetIamyellowTiwsModule.m */; };
 		AA747D9F0F9514B9006C5449 /* NetIamyellowTiws_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* NetIamyellowTiws_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
+		D55630DB1D34C7CC00A9CE1D /* libSocketRocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D55630D81D34C7C700A9CE1D /* libSocketRocket.a */; };
 		FDA4B23E15A9A22B002FA1A7 /* NetIamyellowTiwsWSProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = FDA4B23C15A9A22B002FA1A7 /* NetIamyellowTiwsWSProxy.h */; };
 		FDA4B23F15A9A22B002FA1A7 /* NetIamyellowTiwsWSProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = FDA4B23D15A9A22B002FA1A7 /* NetIamyellowTiwsWSProxy.m */; };
-		FDA4B24815A9A2A4002FA1A7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
-		FDA4B25A15A9A2E5002FA1A7 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = FDA4B25415A9A2E5002FA1A7 /* base64.c */; };
-		FDA4B25B15A9A2E5002FA1A7 /* base64.h in Headers */ = {isa = PBXBuildFile; fileRef = FDA4B25515A9A2E5002FA1A7 /* base64.h */; };
-		FDA4B25E15A9A2E5002FA1A7 /* SRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = FDA4B25815A9A2E5002FA1A7 /* SRWebSocket.h */; };
-		FDA4B25F15A9A2E5002FA1A7 /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = FDA4B25915A9A2E5002FA1A7 /* SRWebSocket.m */; };
-		FDA4B26015A9A56B002FA1A7 /* libSocketRocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA4B24715A9A2A4002FA1A7 /* libSocketRocket.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,11 +39,60 @@
 			remoteGlobalIDString = D2AAC07D0554694100DB518D;
 			remoteInfo = tiws;
 		};
-		FDA4B25215A9A2BA002FA1A7 /* PBXContainerItemProxy */ = {
+		D55630A41D34C61B00A9CE1D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			containerPortal = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 81D6478D1D2CA78800690609;
+			remoteInfo = "SocketRocket-iOS";
+		};
+		D55630A61D34C61B00A9CE1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2D4227621BB4358C000C1A6C;
+			remoteInfo = "SocketRocket-iOS-Dynamic";
+		};
+		D55630A81D34C61B00A9CE1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F668C880153E91210044DBAC;
+			remoteInfo = "SocketRocket-macOS";
+		};
+		D55630AA1D34C61B00A9CE1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3345DC901C52ACD70083CCB8;
+			remoteInfo = "SocketRocket-tvOS";
+		};
+		D55630AC1D34C61B00A9CE1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F6BDA802145900D200FE3253;
+			remoteInfo = "SocketRocketTests-iOS";
+		};
+		D55630AE1D34C61B00A9CE1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F62417E314D52F3C003CE997;
+			remoteInfo = TestChat;
+		};
+		D55630D71D34C7C700A9CE1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D55630B61D34C6D400A9CE1D;
+			remoteInfo = SocketRocket;
+		};
+		D55630D91D34C7CA00A9CE1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = FDA4B24615A9A2A4002FA1A7;
+			remoteGlobalIDString = D55630B51D34C6D400A9CE1D;
 			remoteInfo = SocketRocket;
 		};
 /* End PBXContainerItemProxy section */
@@ -60,14 +104,10 @@
 		AA747D9E0F9514B9006C5449 /* NetIamyellowTiws_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetIamyellowTiws_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libNetIamyellowTiws.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNetIamyellowTiws.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D55630871D33FCC300A9CE1D /* module.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = module.xcconfig; sourceTree = "<group>"; };
+		D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SocketRocket.xcodeproj; path = SocketRocket/SocketRocket.xcodeproj; sourceTree = "<group>"; };
 		FDA4B23C15A9A22B002FA1A7 /* NetIamyellowTiwsWSProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetIamyellowTiwsWSProxy.h; path = Classes/NetIamyellowTiwsWSProxy.h; sourceTree = "<group>"; };
 		FDA4B23D15A9A22B002FA1A7 /* NetIamyellowTiwsWSProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NetIamyellowTiwsWSProxy.m; path = Classes/NetIamyellowTiwsWSProxy.m; sourceTree = "<group>"; };
-		FDA4B24715A9A2A4002FA1A7 /* libSocketRocket.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSocketRocket.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		FDA4B24B15A9A2A4002FA1A7 /* SocketRocket-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SocketRocket-Prefix.pch"; sourceTree = "<group>"; };
-		FDA4B25415A9A2E5002FA1A7 /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
-		FDA4B25515A9A2E5002FA1A7 /* base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
-		FDA4B25815A9A2E5002FA1A7 /* SRWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SRWebSocket.h; sourceTree = "<group>"; };
-		FDA4B25915A9A2E5002FA1A7 /* SRWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SRWebSocket.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,16 +115,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FDA4B26015A9A56B002FA1A7 /* libSocketRocket.a in Frameworks */,
+				D55630DB1D34C7CC00A9CE1D /* libSocketRocket.a in Frameworks */,
 				AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FDA4B24415A9A2A4002FA1A7 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FDA4B24815A9A2A4002FA1A7 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,7 +127,6 @@
 			isa = PBXGroup;
 			children = (
 				D2AAC07E0554694100DB518D /* libNetIamyellowTiws.a */,
-				FDA4B24715A9A2A4002FA1A7 /* libSocketRocket.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -103,6 +134,7 @@
 		0867D691FE84028FC02AAC07 /* tiws */ = {
 			isa = PBXGroup;
 			children = (
+				D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				FDA4B24915A9A2A4002FA1A7 /* SocketRocket */,
@@ -134,19 +166,30 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				D55630871D33FCC300A9CE1D /* module.xcconfig */,
 				AA747D9E0F9514B9006C5449 /* NetIamyellowTiws_Prefix.pch */,
 				24DD6D1B1134B66800162E58 /* titanium.xcconfig */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
+		D556309C1D34C61B00A9CE1D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D55630A51D34C61B00A9CE1D /* SocketRocket.framework */,
+				D55630A71D34C61B00A9CE1D /* SocketRocket.framework */,
+				D55630A91D34C61B00A9CE1D /* SocketRocket.framework */,
+				D55630AB1D34C61B00A9CE1D /* SocketRocket.framework */,
+				D55630AD1D34C61B00A9CE1D /* SocketRocketTests-iOS.xctest */,
+				D55630AF1D34C61B00A9CE1D /* TestChat.app */,
+				D55630D81D34C7C700A9CE1D /* libSocketRocket.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		FDA4B24915A9A2A4002FA1A7 /* SocketRocket */ = {
 			isa = PBXGroup;
 			children = (
-				FDA4B25415A9A2E5002FA1A7 /* base64.c */,
-				FDA4B25515A9A2E5002FA1A7 /* base64.h */,
-				FDA4B25815A9A2E5002FA1A7 /* SRWebSocket.h */,
-				FDA4B25915A9A2E5002FA1A7 /* SRWebSocket.m */,
 				FDA4B24A15A9A2A4002FA1A7 /* Supporting Files */,
 			);
 			path = SocketRocket;
@@ -155,7 +198,6 @@
 		FDA4B24A15A9A2A4002FA1A7 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				FDA4B24B15A9A2A4002FA1A7 /* SocketRocket-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -173,21 +215,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FDA4B24515A9A2A4002FA1A7 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FDA4B25B15A9A2E5002FA1A7 /* base64.h in Headers */,
-				FDA4B25E15A9A2E5002FA1A7 /* SRWebSocket.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D2AAC07D0554694100DB518D /* tiws */ = {
+		D2AAC07D0554694100DB518D /* NetIamyellowTiws */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "tiws" */;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "NetIamyellowTiws" */;
 			buildPhases = (
 				D2AAC07A0554694100DB518D /* Headers */,
 				D2AAC07B0554694100DB518D /* Sources */,
@@ -196,28 +229,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				FDA4B25315A9A2BA002FA1A7 /* PBXTargetDependency */,
+				D55630DA1D34C7CA00A9CE1D /* PBXTargetDependency */,
 			);
-			name = tiws;
+			name = NetIamyellowTiws;
 			productName = tiws;
 			productReference = D2AAC07E0554694100DB518D /* libNetIamyellowTiws.a */;
-			productType = "com.apple.product-type.library.static";
-		};
-		FDA4B24615A9A2A4002FA1A7 /* SocketRocket */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FDA4B24F15A9A2A4002FA1A7 /* Build configuration list for PBXNativeTarget "SocketRocket" */;
-			buildPhases = (
-				FDA4B24315A9A2A4002FA1A7 /* Sources */,
-				FDA4B24415A9A2A4002FA1A7 /* Frameworks */,
-				FDA4B24515A9A2A4002FA1A7 /* Headers */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = SocketRocket;
-			productName = SocketRocket;
-			productReference = FDA4B24715A9A2A4002FA1A7 /* libSocketRocket.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -228,7 +244,7 @@
 			attributes = {
 				LastUpgradeCheck = 0610;
 			};
-			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "tiws" */;
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "NetIamyellowTiws" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -241,14 +257,71 @@
 			mainGroup = 0867D691FE84028FC02AAC07 /* tiws */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = D556309C1D34C61B00A9CE1D /* Products */;
+					ProjectRef = D556309B1D34C61B00A9CE1D /* SocketRocket.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
-				D2AAC07D0554694100DB518D /* tiws */,
+				D2AAC07D0554694100DB518D /* NetIamyellowTiws */,
 				24416B8111C4CA220047AFDD /* Build & Test */,
-				FDA4B24615A9A2A4002FA1A7 /* SocketRocket */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		D55630A51D34C61B00A9CE1D /* SocketRocket.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SocketRocket.framework;
+			remoteRef = D55630A41D34C61B00A9CE1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D55630A71D34C61B00A9CE1D /* SocketRocket.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SocketRocket.framework;
+			remoteRef = D55630A61D34C61B00A9CE1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D55630A91D34C61B00A9CE1D /* SocketRocket.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SocketRocket.framework;
+			remoteRef = D55630A81D34C61B00A9CE1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D55630AB1D34C61B00A9CE1D /* SocketRocket.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SocketRocket.framework;
+			remoteRef = D55630AA1D34C61B00A9CE1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D55630AD1D34C61B00A9CE1D /* SocketRocketTests-iOS.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "SocketRocketTests-iOS.xctest";
+			remoteRef = D55630AC1D34C61B00A9CE1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D55630AF1D34C61B00A9CE1D /* TestChat.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = TestChat.app;
+			remoteRef = D55630AE1D34C61B00A9CE1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D55630D81D34C7C700A9CE1D /* libSocketRocket.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSocketRocket.a;
+			remoteRef = D55630D71D34C7C700A9CE1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		24416B8011C4CA220047AFDD /* ShellScript */ = {
@@ -276,27 +349,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FDA4B24315A9A2A4002FA1A7 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				FDA4B25A15A9A2E5002FA1A7 /* base64.c in Sources */,
-				FDA4B25F15A9A2E5002FA1A7 /* SRWebSocket.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
 		24416B8511C4CA280047AFDD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D2AAC07D0554694100DB518D /* tiws */;
+			target = D2AAC07D0554694100DB518D /* NetIamyellowTiws */;
 			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
 		};
-		FDA4B25315A9A2BA002FA1A7 /* PBXTargetDependency */ = {
+		D55630DA1D34C7CA00A9CE1D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = FDA4B24615A9A2A4002FA1A7 /* SocketRocket */;
-			targetProxy = FDA4B25215A9A2BA002FA1A7 /* PBXContainerItemProxy */;
+			name = SocketRocket;
+			targetProxy = D55630D91D34C7CA00A9CE1D /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -307,7 +371,10 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DSTROOT = /tmp/NetIamyellowTiws.dst;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/platform",
+				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -324,7 +391,6 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				INSTALL_PATH = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CFLAGS = (
 					"-DDEBUG",
@@ -345,7 +411,10 @@
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				DSTROOT = /tmp/NetIamyellowTiws.dst;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/platform",
+				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -362,7 +431,6 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CFLAGS = "-DTI_POST_1_2";
@@ -380,13 +448,11 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DSTROOT = /tmp/NetIamyellowTiws.dst;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = NetIamyellowTiws_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
-				GCC_THUMB_SUPPORT = NO;
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
@@ -397,7 +463,6 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = (
@@ -419,13 +484,10 @@
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				DSTROOT = /tmp/NetIamyellowTiws.dst;
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = NetIamyellowTiws_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
-				GCC_THUMB_SUPPORT = NO;
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
@@ -436,7 +498,6 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				INSTALL_PATH = /usr/local/lib;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				OTHER_LDFLAGS = "-ObjC";
@@ -472,64 +533,10 @@
 			};
 			name = Release;
 		};
-		FDA4B25015A9A2A4002FA1A7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
-				CONFIGURATION_TEMP_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
-				COPY_PHASE_STRIP = NO;
-				DSTROOT = /tmp/SocketRocket.dst;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "SocketRocket/SocketRocket-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_THUMB_SUPPORT = NO;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
-		FDA4B25115A9A2A4002FA1A7 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
-				CONFIGURATION_TEMP_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
-				COPY_PHASE_STRIP = YES;
-				DSTROOT = /tmp/SocketRocket.dst;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "SocketRocket/SocketRocket-Prefix.pch";
-				GCC_THUMB_SUPPORT = NO;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "tiws" */ = {
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "NetIamyellowTiws" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB921F08733DC00010E9CD /* Debug */,
@@ -538,7 +545,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "tiws" */ = {
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "NetIamyellowTiws" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB922308733DC00010E9CD /* Debug */,
@@ -552,15 +559,6 @@
 			buildConfigurations = (
 				24416B8211C4CA220047AFDD /* Debug */,
 				24416B8311C4CA220047AFDD /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		FDA4B24F15A9A2A4002FA1A7 /* Build configuration list for PBXNativeTarget "SocketRocket" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FDA4B25015A9A2A4002FA1A7 /* Debug */,
-				FDA4B25115A9A2A4002FA1A7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

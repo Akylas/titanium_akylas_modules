@@ -15,6 +15,7 @@
 //
 
 #import "NetIamyellowTiwsWSProxy.h"
+#import "TiBuffer.h"
 
 @implementation NetIamyellowTiwsWSProxy
 
@@ -130,10 +131,15 @@
 
 -(void)send:(id)msg
 {
-    ENSURE_SINGLE_ARG(msg, NSString);
+    
+    ENSURE_SINGLE_ARG(msg, NSObject);
 
     if (WS && connected) {
-        [WS send:msg];
+        if (IS_OF_CLASS(msg, TiBlob)) {
+            [WS send:[msg data]];
+        } else if (IS_OF_CLASS(msg, NSString)) {
+            [WS send:msg];
+        }
     }
 }
 
