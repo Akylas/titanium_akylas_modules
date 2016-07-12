@@ -692,6 +692,11 @@
     [self map].trafficEnabled = [TiUtils boolValue:value];
 }
 
+-(void)setPreferredFrameRate_:(id)value
+{
+    [self map].preferredFrameRate = (GMSFrameRate)[TiUtils intValue:value];
+}
+
 #pragma mark Methods
 
 - (void)zoomInAt:(CGPoint)pivot animated:(BOOL)animated
@@ -1578,6 +1583,30 @@
     if (map.selectedMarker == marker) {
         [self showCalloutForOverlay:marker];
     }
+}
+
+/**
+ * Called when tiles have just been requested or labels have just started rendering.
+ */
+- (void)mapViewDidStartTileRendering:(GMSMapView *)mapView{
+    [self.proxy fireEvent:@"startTileRendering"];
+
+}
+
+/**
+ * Called when all tiles have been loaded (or failed permanently) and labels have been rendered.
+ */
+- (void)mapViewDidFinishTileRendering:(GMSMapView *)mapView {
+    [self.proxy fireEvent:@"finishTileRendering"];
+
+}
+
+/**
+ * Called when map is stable (tiles loaded, labels rendered, camera idle) and overlay objects have
+ * been rendered.
+ */
+- (void)mapViewSnapshotReady:(GMSMapView *)mapView {
+    [self.proxy fireEvent:@"ready"];
 }
 
 /**

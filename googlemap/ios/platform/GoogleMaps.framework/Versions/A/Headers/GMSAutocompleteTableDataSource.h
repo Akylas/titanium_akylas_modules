@@ -10,10 +10,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import <GoogleMaps/GMSCompatabilityMacros.h>
 #import <GoogleMaps/GMSCoordinateBounds.h>
 #import <GoogleMaps/GMSAutocompleteFilter.h>
 #import <GoogleMaps/GMSAutocompletePrediction.h>
 #import <GoogleMaps/GMSPlace.h>
+
+GMS_ASSUME_NONNULL_BEGIN
 
 @class GMSAutocompleteTableDataSource;
 
@@ -106,22 +109,48 @@
     UITableViewDataSource, UITableViewDelegate>
 
 /** Delegate to be notified when a place is selected or picking is cancelled. */
-@property(nonatomic, weak) id<GMSAutocompleteTableDataSourceDelegate> delegate;
+@property(nonatomic, weak)
+    IBOutlet id<GMSAutocompleteTableDataSourceDelegate> GMS_NULLABLE_PTR delegate;
 
 /** Bounds used to bias the autocomplete search (can be nil). */
-@property(nonatomic, strong) GMSCoordinateBounds *autocompleteBounds;
+@property(nonatomic, strong) GMSCoordinateBounds *GMS_NULLABLE_PTR autocompleteBounds;
 
 /** Filter to apply to autocomplete suggestions (can be nil). */
-@property(nonatomic, strong) GMSAutocompleteFilter *autocompleteFilter;
+@property(nonatomic, strong) GMSAutocompleteFilter *GMS_NULLABLE_PTR autocompleteFilter;
 
-/** Default initializer */
-- (instancetype)init;
+/** The background color of table cells. */
+@property(nonatomic, strong) UIColor *tableCellBackgroundColor;
+
+/** The color of the separator line between table cells. */
+@property(nonatomic, strong) UIColor *tableCellSeparatorColor;
+
+/** The color of result name text in autocomplete results */
+@property(nonatomic, strong) UIColor *primaryTextColor;
+
+/** The color used to highlight matching text in autocomplete results */
+@property(nonatomic, strong) UIColor *primaryTextHighlightColor;
+
+/** The color of the second row of text in autocomplete results. */
+@property(nonatomic, strong) UIColor *secondaryTextColor;
+
+/** The tint color applied to controls in the Autocomplete view. */
+@property(nonatomic, strong) UIColor *GMS_NULLABLE_PTR tintColor;
+
+/** Designated initializer */
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 
 /**
- * Notify the data source that the source text to autocomplete has changed. This method is
- * non-blocking.
+ * Notify the data source that the source text to autocomplete has changed.
+ *
+ * This method should only be called from the main thread. Calling this method from another thread
+ * will result in undefined behavior. Calls to |GMSAutocompleteTableDataSourceDelegate| methods will
+ * also be called on the main thread.
+ *
+ * This method is non-blocking.
  * @param text The partial text to autocomplete.
  */
-- (void)sourceTextHasChanged:(NSString *)text;
+- (void)sourceTextHasChanged:(NSString *GMS_NULLABLE_PTR)text;
 
 @end
+
+GMS_ASSUME_NONNULL_END

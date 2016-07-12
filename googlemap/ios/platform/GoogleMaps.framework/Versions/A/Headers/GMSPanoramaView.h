@@ -10,6 +10,7 @@
 
 #import <CoreLocation/CoreLocation.h>
 
+#import <GoogleMaps/GMSCompatabilityMacros.h>
 #import <GoogleMaps/GMSOrientation.h>
 #import <GoogleMaps/GMSPanoramaLayer.h>
 
@@ -19,8 +20,10 @@
 @class GMSPanoramaCameraUpdate;
 @class GMSPanoramaView;
 
+GMS_ASSUME_NONNULL_BEGIN
+
 /** Delegate for events on GMSPanoramaView. */
-@protocol GMSPanoramaViewDelegate <NSObject>
+@protocol GMSPanoramaViewDelegate<NSObject>
 @optional
 
 /**
@@ -38,7 +41,7 @@
  * This is invoked every time the |view|.panorama property changes.
  */
 - (void)panoramaView:(GMSPanoramaView *)view
-    didMoveToPanorama:(GMSPanorama *)panorama;
+    didMoveToPanorama:(GMSPanorama *GMS_NULLABLE_PTR)panorama;
 
 /**
  * Called when the panorama change was caused by invoking
@@ -119,10 +122,10 @@
  *
  * Can be set to nil to clear the view.
  */
-@property(nonatomic, strong) GMSPanorama *panorama;
+@property(nonatomic, strong) GMSPanorama *GMS_NULLABLE_PTR panorama;
 
 /** GMSPanoramaView delegate. */
-@property(nonatomic, weak) IBOutlet id<GMSPanoramaViewDelegate> delegate;
+@property(nonatomic, weak) IBOutlet id<GMSPanoramaViewDelegate> GMS_NULLABLE_PTR delegate;
 
 /**
  * Sets the preference for whether all gestures should be enabled (default) or
@@ -256,5 +259,6 @@
                    nearCoordinate:(CLLocationCoordinate2D)coordinate
                            radius:(NSUInteger)radius;
 
-
 @end
+
+GMS_ASSUME_NONNULL_END

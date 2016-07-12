@@ -10,10 +10,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import <GoogleMaps/GMSCompatabilityMacros.h>
 #import <GoogleMaps/GMSCoordinateBounds.h>
 #import <GoogleMaps/GMSAutocompleteFilter.h>
 #import <GoogleMaps/GMSAutocompletePrediction.h>
 #import <GoogleMaps/GMSPlace.h>
+
+GMS_ASSUME_NONNULL_BEGIN
 
 @class GMSAutocompleteResultsViewController;
 
@@ -31,7 +34,7 @@
  * @param place The |GMSPlace| that was returned.
  */
 - (void)resultsController:(GMSAutocompleteResultsViewController *)resultsController
- didAutocompleteWithPlace:(GMSPlace *)place;
+    didAutocompleteWithPlace:(GMSPlace *)place;
 
 /**
  * Called when a non-retryable error occurred when retrieving autocomplete predictions or place
@@ -97,12 +100,33 @@
     UISearchResultsUpdating>
 
 /** Delegate to be notified when a place is selected. */
-@property(nonatomic, weak) id<GMSAutocompleteResultsViewControllerDelegate> delegate;
+@property(nonatomic, weak)
+    id<GMSAutocompleteResultsViewControllerDelegate> GMS_NULLABLE_PTR delegate;
 
 /** Bounds used to bias the autocomplete search (can be nil). */
-@property(nonatomic, strong) GMSCoordinateBounds *autocompleteBounds;
+@property(nonatomic, strong) GMSCoordinateBounds *GMS_NULLABLE_PTR autocompleteBounds;
 
 /** Filter to apply to autocomplete suggestions (can be nil). */
-@property(nonatomic, strong) GMSAutocompleteFilter *autocompleteFilter;
+@property(nonatomic, strong) GMSAutocompleteFilter *GMS_NULLABLE_PTR autocompleteFilter;
+
+/** The background color of table cells. */
+@property(nonatomic, strong) IBInspectable UIColor *tableCellBackgroundColor;
+
+/** The color of the separator line between table cells. */
+@property(nonatomic, strong) IBInspectable UIColor *tableCellSeparatorColor;
+
+/** The color of result name text in autocomplete results */
+@property(nonatomic, strong) IBInspectable UIColor *primaryTextColor;
+
+/** The color used to highlight matching text in autocomplete results */
+@property(nonatomic, strong) IBInspectable UIColor *primaryTextHighlightColor;
+
+/** The color of the second row of text in autocomplete results. */
+@property(nonatomic, strong) IBInspectable UIColor *secondaryTextColor;
+
+/** The tint color applied to controls in the Autocomplete view. */
+@property(nonatomic, strong) IBInspectable UIColor *GMS_NULLABLE_PTR tintColor;
 
 @end
+
+GMS_ASSUME_NONNULL_END

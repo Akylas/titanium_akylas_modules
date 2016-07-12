@@ -41,6 +41,7 @@
 {
     [super _configure];
     _appearAnimation = YES;
+    _tracksViewChanges = NO;
     _selected = NO;
     _mAnchorPoint = CGPointMake(0.5, 1.0);
     _calloutAnchorPoint = CGPointMake(0, 1.0f);
@@ -204,6 +205,17 @@
     }
 }
 
+-(void)setTracksViewChanges:(BOOL)value
+{
+    _tracksViewChanges = value;
+    if (configurationSet && _gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.tracksViewChanges = _tracksViewChanges;
+        }, NO);
+    }
+}
+
+
 -(void)setAppearAnimation:(BOOL)value
 {
     _appearAnimation = value;
@@ -288,6 +300,15 @@
     }
 }
 
+- (void)setPinView:(id)value
+{
+    [self replaceValue:value forKey:@"pinView" notification:NO];
+    if (_gmarker) {
+        TiThreadPerformBlockOnMainThread(^{
+            _gmarker.iconView = [self nGetPinViewAccessory];
+        }, NO);
+    }
+}
 
 -(CGSize)getSize {
     if (_internalImage) {
@@ -322,6 +343,7 @@
         _gmarker.snippet = [self subtitle];
         _gmarker.userData = self;
         _gmarker.appearAnimation = _appearAnimation?kGMSMarkerAnimationPop:kGMSMarkerAnimationNone;
+        _gmarker.tracksViewChanges = _tracksViewChanges;
         if (_internalImage) {
             _gmarker.icon = _internalImage;
         } else if ([self nGetTintColor]){
@@ -336,6 +358,7 @@
         _gmarker.canBeClustered = self.canBeClustered;
         _gmarker.infoWindowAnchor = [self nGetCalloutAnchorPoint];
         _gmarker.groundAnchor = [self nGetAnchorPoint];
+        _gmarker.iconView = [self nGetPinViewAccessory];
     }
     return _gmarker;
 }

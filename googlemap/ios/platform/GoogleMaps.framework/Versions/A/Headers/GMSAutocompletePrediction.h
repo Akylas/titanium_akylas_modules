@@ -9,6 +9,10 @@
 //
 
 
+#import <GoogleMaps/GMSCompatabilityMacros.h>
+
+GMS_ASSUME_NONNULL_BEGIN
+
 /*
  * Attribute name for match fragments in |GMSAutocompletePrediction| attributedFullText.
  */
@@ -61,18 +65,20 @@ extern NSString *const kGMSAutocompleteMatchAttribute;
  *
  * May be nil.
  */
-@property(nonatomic, copy, readonly) NSAttributedString *attributedSecondaryText;
+@property(nonatomic, copy, readonly) NSAttributedString *GMS_NULLABLE_PTR attributedSecondaryText;
 
 /**
  * An optional property representing the place ID of the prediction, suitable for use in a place
  * details request.
  */
-@property(nonatomic, copy, readonly) NSString *placeID;
+@property(nonatomic, copy, readonly) NSString *GMS_NULLABLE_PTR placeID;
 
 /**
  * The types of this autocomplete result.  Types are NSStrings, valid values are any types
  * documented at <https://developers.google.com/places/supported_types>.
  */
-@property(nonatomic, copy, readonly) NSArray *types;
+@property(nonatomic, copy, readonly) GMS_NSArrayOf(NSString *) *types;
 
 @end
+
+GMS_ASSUME_NONNULL_END
