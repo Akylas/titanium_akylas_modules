@@ -24,7 +24,6 @@ import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBaseActivity.PermissionCallback;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.util.TiActivityResultHandler;
 import org.appcelerator.titanium.util.TiActivitySupport;
@@ -136,10 +135,6 @@ public class AkylasBluetoothModule extends ProtectedModule {
                 }
             };
         }
-    }
-
-    public AkylasBluetoothModule(TiContext tiContext) {
-        this();
     }
 
     @Kroll.onVerifyModule

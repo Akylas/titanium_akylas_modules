@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 
@@ -36,10 +33,6 @@ public class LineProxy extends ArcProxy{
 		pathable = new Line();
 		points = new ArrayList<TiBezierPoint>();
 		anchor = AnchorPosition.LEFT_MIDDLE;
-	}
-	
-	public LineProxy(TiContext context) {
-		this();
 	}
 	
 	@Override

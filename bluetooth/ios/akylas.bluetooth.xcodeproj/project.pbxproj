@@ -184,11 +184,6 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/platform",
-				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -202,14 +197,6 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(TITANIUM_BASE_SDK)/**",
-					"$(TITANIUM_BASE_SDK2)/**",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)",
-				);
 				OTHER_CFLAGS = (
 					"-DDEBUG",
 					"-DTI_POST_1_2",
@@ -229,11 +216,6 @@
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/platform",
-				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
@@ -246,14 +228,6 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(TITANIUM_BASE_SDK)/**",
-					"$(TITANIUM_BASE_SDK2)/**",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)",
-				);
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				PRODUCT_NAME = akylas.bluetooth;
 				PROVISIONING_PROFILE = "";
@@ -272,10 +246,6 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/platform",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -312,10 +282,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/platform",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${PROJECT_NAME}_Prefix.pch";

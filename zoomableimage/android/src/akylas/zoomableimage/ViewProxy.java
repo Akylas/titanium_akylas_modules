@@ -6,7 +6,6 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
@@ -34,11 +33,6 @@ public class ViewProxy extends TiViewProxy
 	{
 		super();
 		defaultValues.put(TiC.PROPERTY_SCALE_TYPE, UIModule.SCALE_TYPE_ASPECT_FIT);
-	}
-
-	public ViewProxy(TiContext tiContext)
-	{
-		this();
 	}
 
 	@Override

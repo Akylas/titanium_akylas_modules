@@ -10,7 +10,6 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.ReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
@@ -56,14 +55,9 @@ public class XYSerieProxy extends ReusableProxy {
     
     private KrollDict fillGradientProps;
     private KrollDict lineGradientProps;
-    
-	// Constructor
-	public XYSerieProxy(TiContext tiContext) {
-		super();
-	}
 
 	public XYSerieProxy() {
-		this(null);
+		super();
 	}
 
 	public void setContext(Context context) {

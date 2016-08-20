@@ -6,7 +6,6 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.proxy.ReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
 
@@ -69,11 +68,6 @@ public class InterstitialViewProxy extends ReusableProxy {
     public InterstitialViewProxy() {
         super();
     }
-    
-    public InterstitialViewProxy(TiContext context) {
-        super();
-    }
-    
     
     private void handleLoadAd() {
         final AdRequest.Builder adRequestBuilder = new AdRequest.Builder();

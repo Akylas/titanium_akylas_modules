@@ -7,4 +7,17 @@
 	<property file="build.properties" />
 
 	<import file="${titanium.platform}/../module/android/build.xml"/>
+	
+<!-- 	<exec executable="/usr/local/bin/node" dir="${basedir}">
+            <arg value="/usr/local/bin/titanium"/>
+            <arg value="build"/>
+            <arg value="-p"/>
+            <arg value="android"/>
+            <arg value="--sdk"/>
+            <arg value="6.0.0.AKYLAS"/>
+            <arg value="--no-prompt"/>
+            <arg value="--no-progress-bars"/>
+            <arg value="--no-banner"/>
+            <arg value="--no-colors"/>
+     </exec> -->
 </project>

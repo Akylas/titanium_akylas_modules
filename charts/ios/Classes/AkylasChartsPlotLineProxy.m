@@ -170,6 +170,16 @@ typedef enum AkylasChartsFillDirection {
 	[self notifyOfDataClickedEvent:index atPlotPoint:plotPoint];
 }
 
+-(void)scatterPlot:(CPTScatterPlot*)plot plotWasClickedAtRecordIndex:(NSUInteger)index withEvent:(CPTNativeEvent *)event
+{
+    double pts[2];
+    pts[CPTCoordinateX] = [[self numberForPlot:index forCoordinate:CPTCoordinateX] doubleValue];
+    pts[CPTCoordinateY] = [[self numberForPlot:index forCoordinate:CPTCoordinateY] doubleValue];
+    CGPoint plotPoint = [self.plot.plotSpace plotAreaViewPointForDoublePrecisionPlotPoint:pts numberOfCoordinates:2];
+    
+    [self notifyOfDataClickedEvent:index atPlotPoint:plotPoint];
+}
+
 -(NSArray *)numbersForPlot:(CPTPlot *)plot field:(NSUInteger)fieldEnum recordIndexRange:(NSRange)indexRange;
 {
     if (fieldEnum == CPTScatterPlotFieldX) {

@@ -255,10 +255,6 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(TITANIUM_BASE_SDK)/**",
-					"$(TITANIUM_BASE_SDK2)/**",
-				);
 				OTHER_CFLAGS = (
 					"-DDEBUG",
 					"-DTI_POST_1_2",
@@ -288,10 +284,6 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(TITANIUM_BASE_SDK)/**",
-					"$(TITANIUM_BASE_SDK2)/**",
-				);
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				RUN_CLANG_STATIC_ANALYZER = NO;
@@ -305,11 +297,6 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/platform",
-				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -324,15 +311,7 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(TITANIUM_BASE_SDK)/**",
-					"$(TITANIUM_BASE_SDK2)/**",
-				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)",
-				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-DDEBUG",
@@ -351,11 +330,6 @@
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/platform",
-				);
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = AkylasCamera_Prefix.pch;
@@ -369,15 +343,7 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
 				GCC_WARN_UNUSED_VARIABLE = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(TITANIUM_BASE_SDK)/**",
-					"$(TITANIUM_BASE_SDK2)/**",
-				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)",
-				);
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				PRODUCT_NAME = akylas.camera;
 				RUN_CLANG_STATIC_ANALYZER = NO;

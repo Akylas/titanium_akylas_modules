@@ -12,7 +12,6 @@ import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.animation.TiAnimator;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
@@ -451,12 +450,7 @@ public class ShapeProxy extends AnimatableReusableProxy {
 	public Path getPath() {
 		return path;
 	}
-	
-	public ShapeProxy(TiContext context) {
-		this();
-		this.anchor = AnchorPosition.CENTER;
-	}
-	
+
 	protected void onLayoutChanged(Context context, Rect parentBounds) {
 		this.context = context;
 		update(context, parentBounds);

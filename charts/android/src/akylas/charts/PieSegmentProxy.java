@@ -7,7 +7,6 @@ import java.util.Random;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 import org.appcelerator.titanium.proxy.AnimatableReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
@@ -42,10 +41,6 @@ public class PieSegmentProxy extends AnimatableReusableProxy{
 	private PieChartProxy pieChartProxy;
 
 	public PieSegmentProxy() {
-		super();
-	}
-	
-	public PieSegmentProxy(TiContext context) {
 		super();
 	}
 

@@ -10,7 +10,11 @@
 
 #import <GoogleMaps/GMSOverlay.h>
 
-#import <GoogleMaps/GMSCompatabilityMacros.h>
+#if __has_feature(modules)
+@import GoogleMapsBase;
+#else
+#import <GoogleMapsBase/GoogleMapsBase.h>
+#endif
 
 @class GMSCoordinateBounds;
 

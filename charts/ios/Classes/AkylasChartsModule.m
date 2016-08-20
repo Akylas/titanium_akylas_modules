@@ -100,6 +100,21 @@ MAKE_SYSTEM_PROP(VERTICAL,1);
 	return @"akylas.charts";
 }
 
+//-(void)startup
+//{
+//    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasCharts.View", [AkylasChartsViewProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasCharts.RoundedRect", [AkylasChartsRoundedRectProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasCharts.Rect", [AkylasChartsRectProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasCharts.PieSlice", [AkylasChartsPieSliceProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasCharts.Line", [AkylasChartsLineProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasCharts.Ellipse", [AkylasChartsEllipseProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasCharts.Circle", [AkylasChartsCircleProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"AkylasCharts.Arc", [AkylasChartsArcProxy class]);
+//    // this method is called when the module is first loaded
+//    // you *must* call the superclass
+//    [super startup];
+//}
+
 #pragma mark Password
 -(NSString*)getPasswordKey {
     return @"akylas.modules.key";

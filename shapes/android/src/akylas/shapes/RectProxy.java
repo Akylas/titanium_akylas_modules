@@ -2,7 +2,6 @@
 package akylas.shapes;
 
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.titanium.TiContext;
 
 @Kroll.proxy(creatableInModule = AkylasShapesModule.class, propertyAccessors={
 })
@@ -14,9 +13,4 @@ public class RectProxy extends ShapeProxy{
 		super();
 		pathable = new PRect();
 	}
-	
-	public RectProxy(TiContext context) {
-		this();
-	}
-
 }

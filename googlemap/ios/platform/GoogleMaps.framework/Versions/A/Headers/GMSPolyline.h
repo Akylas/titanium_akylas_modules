@@ -8,7 +8,11 @@
 //  Service: https://developers.google.com/maps/terms
 //
 
-#import <GoogleMaps/GMSCompatabilityMacros.h>
+#if __has_feature(modules)
+@import GoogleMapsBase;
+#else
+#import <GoogleMapsBase/GoogleMapsBase.h>
+#endif
 #import <GoogleMaps/GMSOverlay.h>
 
 @class GMSPath;

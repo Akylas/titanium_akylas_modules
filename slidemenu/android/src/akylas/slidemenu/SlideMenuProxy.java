@@ -13,7 +13,6 @@ import org.appcelerator.titanium.TiActivityWindow;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiWindowManager;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.proxy.TiWindowProxy;
@@ -64,11 +63,6 @@ public class SlideMenuProxy extends WindowProxy implements TiActivityWindow, TiW
 	{
 		super();
         defaultValues.put(AkylasSlidemenuModule.PROPERTY_PANNING_MODE, AkylasSlidemenuModule.MENU_PANNING_CENTER_VIEW);
-	}
-
-	public SlideMenuProxy(TiContext tiContext)
-	{
-		this();
 	}
 
 	@Override

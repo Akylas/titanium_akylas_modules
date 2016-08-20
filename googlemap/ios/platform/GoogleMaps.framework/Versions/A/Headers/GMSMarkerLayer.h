@@ -11,7 +11,11 @@
 #import <CoreLocation/CoreLocation.h>
 #import <QuartzCore/QuartzCore.h>
 
-#import <GoogleMaps/GMSCompatabilityMacros.h>
+#if __has_feature(modules)
+@import GoogleMapsBase;
+#else
+#import <GoogleMapsBase/GoogleMapsBase.h>
+#endif
 
 GMS_ASSUME_NONNULL_BEGIN
 

@@ -10,7 +10,11 @@
 
 #import <CoreLocation/CoreLocation.h>
 
-#import <GoogleMaps/GMSCompatabilityMacros.h>
+#if __has_feature(modules)
+@import GoogleMapsBase;
+#else
+#import <GoogleMapsBase/GoogleMapsBase.h>
+#endif
 #import <GoogleMaps/GMSDeprecationMacros.h>
 
 GMS_ASSUME_NONNULL_BEGIN

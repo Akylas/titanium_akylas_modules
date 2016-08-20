@@ -3,10 +3,8 @@ package akylas.shapes;
 import java.util.HashMap;
 import java.util.List;
 
-import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 import org.appcelerator.titanium.util.TiConvert;
 
@@ -22,10 +20,6 @@ public class ArcProxy extends ShapeProxy {
     public ArcProxy() {
         super();
         pathable = new Arc();
-    }
-
-    public ArcProxy(TiContext context) {
-        this();
     }
 
     @Override

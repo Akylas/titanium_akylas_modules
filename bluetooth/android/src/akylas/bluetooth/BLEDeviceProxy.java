@@ -20,7 +20,6 @@ import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.proxy.TiEnhancedServiceProxy;
 import org.appcelerator.titanium.util.TiConvert;
 
@@ -73,10 +72,6 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     public BLEDeviceProxy() {
         super();
         this.stopOnDestroy = true;
-    }
-
-    public BLEDeviceProxy(TiContext tiContext) {
-        this();
     }
 
     @SuppressWarnings("rawtypes")

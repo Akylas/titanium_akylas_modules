@@ -21,7 +21,6 @@ import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.util.TiConvert;
 
 import android.app.Activity;
@@ -76,11 +75,6 @@ public class DeviceProxy extends KrollProxy
 		super();
 	}
 
-	public DeviceProxy(TiContext tiContext)
-	{
-		this();
-	}
-	
 	@Override
     public void handleCreationDict(HashMap dict)
     {

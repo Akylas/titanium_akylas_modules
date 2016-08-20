@@ -308,10 +308,10 @@ GMSCoordinateBounds* boundsFromRegion(AkRegion trapez)
     [NSURLConnection setupSwizzle];
     // this method is called when the module is first loaded
 	// you *must* call the superclass
-    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.View", [AkylasGooglemapViewProxy class]);
-    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.Annotation", [AkylasGooglemapAnnotationProxy class]);
-    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.TileSource", [AkylasGooglemapTileSourceProxy class]);
-    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.Route", [AkylasGooglemapRouteProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.View", [AkylasGooglemapViewProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.Annotation", [AkylasGooglemapAnnotationProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.TileSource", [AkylasGooglemapTileSourceProxy class]);
+//    CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Googlemap.Route", [AkylasGooglemapRouteProxy class]);
 	[super startup];
 	
 	NSLog(@"[INFO] %@ loaded",self);

@@ -268,9 +268,13 @@ static AkylasBluetoothModule *_sharedInstance = nil;
              */
         }
         else {
-            NSData* data = IS_OF_CLASS(value, NSData) ? (NSData*)value : [NSKeyedArchiver archivedDataWithRootObject:value];
-            if (data)  {
-                [summary setObject:[[[TiBlob alloc] initWithData:data mimetype:@"application/octet-stream"] autorelease] forKey:keyName];
+            if (IS_OF_CLASS(value, NSString)) {
+                [summary setObject:[[[TiBlob alloc] initWithData:[(NSString*)value dataUsingEncoding:NSUTF8StringEncoding]  mimetype:@"application/text"] autorelease] forKey:keyName];
+            } else {
+                NSData* data = IS_OF_CLASS(value, NSData) ? (NSData*)value : [NSKeyedArchiver archivedDataWithRootObject:value];
+                if (data)  {
+                    [summary setObject:[[[TiBlob alloc] initWithData:data mimetype:@"application/octet-stream"] autorelease] forKey:keyName];
+                }
             }
         }
     }
@@ -508,15 +512,14 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 - (void) centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
 {
     if (_discovering && peripheral.name) {
-        NSLog(@"found %@", peripheral.name);
         [self addDiscoveredBLEDevice:peripheral];
         if ([self _hasListeners:@"found"]) {
             [self fireEvent:@"found" withObject:@{
-                                                  @"discovering":@(_discovering),
-                                                  @"id":[[peripheral identifier] UUIDString],
-                                                  @"advertisement":[self summarizeAdvertisement:advertisementData],
-                                                  @"device":[self dictFromPeripheral:peripheral],
-                                                  @"rssi":RSSI} propagate:NO checkForListener:NO];
+              @"discovering":@(_discovering),
+              @"id":[[peripheral identifier] UUIDString],
+              @"advertisement":[self summarizeAdvertisement:advertisementData],
+              @"device":[self dictFromPeripheral:peripheral],
+              @"rssi":RSSI} propagate:NO checkForListener:NO];
         }
     }
 }

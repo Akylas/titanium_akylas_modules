@@ -5,10 +5,8 @@ import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 import org.appcelerator.titanium.proxy.AnimatableReusableProxy;
 import org.appcelerator.titanium.util.TiConvert;
@@ -36,10 +34,6 @@ public class MarkerProxy extends AnimatableReusableProxy {
 
     public MarkerProxy() {
         super();
-    }
-
-    public MarkerProxy(TiContext context) {
-        this();
     }
 
     public ValueMarker getMarker() {

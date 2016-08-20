@@ -3,9 +3,9 @@
 # ScriptPath=$(cd "$(dirname "$0")"; pwd)
 Directory=$(pwd)
 Platform="all"
-MODULES_REGEX=".*(shapes|googlemap|slidemenu|commonjs|charts|shapes|motion|bluetooth|camera|zoomableimage)"
+MODULES_REGEX=".*(ti\.paint|shapes|googlemap|slidemenu|commonjs|charts|shapes|motion|bluetooth|camera|zoomableimage|admob)"
 IPHONE_REGEX=$MODULES_REGEX".*titanium\.xcconfig"
-ANDROID_REGEX=$MODULES_REGEX".*build\.xml"
+ANDROID_REGEX=$MODULES_REGEX".*build\.properties"
 OutputDir="/Volumes/data/dev/titanium/dist_modules"
 Usage()
 {
@@ -50,6 +50,13 @@ GetOpts() {
                 Directory="$1"
                 shift
                 ;;
+            -o|--output)
+                if [ $# -eq 0 -o "${1:0:1}" = "-" ]; then
+                    Die "The ${opt} option requires an argument."
+                fi
+                OutputDir="$1"
+                shift
+                ;;
             -m|--module)
                 if [ $# -eq 0 -o "${1:0:1}" = "-" ]; then
                     Die "The ${opt} option requires an argument."
@@ -78,29 +85,37 @@ echo "Platform ${Platform}"
 
 if ([ "$Platform" = "all" -o "$Platform" = "ios" ]); then
     echo "Building ios modules with $IPHONE_REGEX in ${Directory}"
-    for file in $(find -E "${Directory}" -type f -iregex "$IPHONE_REGEX")
+    for file in $(find -E "${Directory}" . ! \( -type d \) -iregex "$IPHONE_REGEX")
     do
         dir=$(dirname "${file}")
         cd $dir
-        ./build.py
+        rm -fr build/
         version=$(grep -oEi "(?:^version\s*:\s*)(([0-9])+(\.{0,1}([0-9]))*)+" manifest  | awk '{print $2}')
         moduleid=$(grep -oEi "(?:^moduleid\s*:\s*)(.*)" manifest  | awk '{print $2}')
-        cp "$moduleid-iphone-$version.zip" $OutputDir
+        echo "Building ios module ${moduleid} version ${version} in ${dir}"
+        ti build -p ios --output-dir="$OutputDir"
+        # if [ $? -e 0 ] ; then
+        #     cp "$moduleid-iphone-$version.zip" "$OutputDir"
+        # fi
         cd -
     done
 fi
 
 if ([ "$Platform" = "all" -o "$Platform" = "android" ]); then
     echo "Building android modules with $ANDROID_REGEX in ${Directory}"
-    for file in $(find -E "${Directory}" -type f -iregex "$ANDROID_REGEX")
+    for file in $(find -E "${Directory}" . ! \( -type d \) -iregex "$ANDROID_REGEX")
     do
+        echo "test ${file}"
         dir=$(dirname "${file}")
         cd $dir
+        rm -fr build/
         moduleid=$(grep -oEi "(?:^moduleid\s*:\s*)(.*)" manifest  | awk '{print $2}')
         version=$(grep -oEi "(?:^version\s*:\s*)(([0-9])+(\.{0,1}([0-9]))*)+" manifest  | awk '{print $2}')
         echo "Building android module ${moduleid} version ${version} in ${dir}"
-        ant clean;ant
-        cp "./dist/$moduleid-android-$version.zip" "$OutputDir"
+        ti build -p android --output-dir="$OutputDir"
+        # if [ $? -e 0 ] ; then
+        #     cp "./dist/$moduleid-android-$version.zip" "$OutputDir"
+        # fi
         cd -
     done
 fi

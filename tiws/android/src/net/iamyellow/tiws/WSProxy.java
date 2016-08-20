@@ -24,9 +24,8 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBlob;
-import org.appcelerator.titanium.TiContext.OnLifecycleEvent;
+import org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent;
 
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;

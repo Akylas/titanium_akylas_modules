@@ -3,10 +3,7 @@ package akylas.shapes;
 import java.util.HashMap;
 import java.util.List;
 
-import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.animation.TiAnimatorSet;
 
@@ -26,11 +23,7 @@ public class PieSliceProxy extends ArcProxy{
 		super();
 		pathable = new PieSlice();
 	}
-	
-	public PieSliceProxy(TiContext context) {
-		this();
-	}
-	
+
 	@Override
 	protected void updatePath() {
 		int width = currentBounds.width();

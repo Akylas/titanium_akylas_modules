@@ -1,7 +1,6 @@
 package akylas.charts;
 
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.titanium.TiContext;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -53,11 +52,6 @@ public class PlotLineProxy extends XYSerieProxy {
             }
             super.drawLinePath(canvas, path);
         }
-    }
-
-    // Constructor
-    public PlotLineProxy(TiContext tiContext) {
-        super(tiContext);
     }
 
     public PlotLineProxy() {

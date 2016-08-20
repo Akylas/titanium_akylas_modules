@@ -35,6 +35,7 @@
 		D53E80831C6229E700D0B972 /* AkylasGooglemapUTFGridProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D53E807F1C6229E700D0B972 /* AkylasGooglemapUTFGridProxy.m */; };
 		D53E80841C6229E700D0B972 /* AkylasUTFGridTileLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = D53E80801C6229E700D0B972 /* AkylasUTFGridTileLayer.h */; };
 		D53E80851C6229E700D0B972 /* AkylasUTFGridTileLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D53E80811C6229E700D0B972 /* AkylasUTFGridTileLayer.m */; };
+		D550468D1D684A960047F408 /* GoogleMapsBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D550468C1D684A960047F408 /* GoogleMapsBase.framework */; };
 		D55B299F1ACBFBEC008C0279 /* AkylasGooglemapModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D578CAEF19234D2B0019CA5A /* AkylasGooglemapModule.m */; };
 		D55C81871AD673C700339334 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D55C81861AD673C700339334 /* CoreLocation.framework */; };
 		D55C81FE1AD6B8B600339334 /* AkylasMapBaseView.h in Headers */ = {isa = PBXBuildFile; fileRef = D55C81FC1AD6B8B600339334 /* AkylasMapBaseView.h */; };
@@ -149,6 +150,7 @@
 		D53E807F1C6229E700D0B972 /* AkylasGooglemapUTFGridProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasGooglemapUTFGridProxy.m; path = Classes/AkylasGooglemapUTFGridProxy.m; sourceTree = "<group>"; };
 		D53E80801C6229E700D0B972 /* AkylasUTFGridTileLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasUTFGridTileLayer.h; path = Classes/AkylasUTFGridTileLayer.h; sourceTree = "<group>"; };
 		D53E80811C6229E700D0B972 /* AkylasUTFGridTileLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasUTFGridTileLayer.m; path = Classes/AkylasUTFGridTileLayer.m; sourceTree = "<group>"; };
+		D550468C1D684A960047F408 /* GoogleMapsBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleMapsBase.framework; path = platform/GoogleMapsBase.framework; sourceTree = "<group>"; };
 		D55C81861AD673C700339334 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		D55C81FC1AD6B8B600339334 /* AkylasMapBaseView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapBaseView.h; path = Classes/common/AkylasMapBaseView.h; sourceTree = "<group>"; };
 		D55C81FD1AD6B8B600339334 /* AkylasMapBaseView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapBaseView.m; path = Classes/common/AkylasMapBaseView.m; sourceTree = "<group>"; };
@@ -231,6 +233,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D550468D1D684A960047F408 /* GoogleMapsBase.framework in Frameworks */,
 				D55C81871AD673C700339334 /* CoreLocation.framework in Frameworks */,
 				D5B4A8FB1ACAD15D003B8608 /* GLKit.framework in Frameworks */,
 				D599F23E1AC933A400EB7A9B /* GoogleMaps.framework in Frameworks */,
@@ -264,6 +267,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D550468C1D684A960047F408 /* GoogleMapsBase.framework */,
 				D55C81861AD673C700339334 /* CoreLocation.framework */,
 				D5B4A9031ACAD87E003B8608 /* GoogleMaps.bundle */,
 				D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */,
