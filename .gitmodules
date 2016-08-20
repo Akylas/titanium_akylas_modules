@@ -22,15 +22,15 @@
 [submodule "googlemap/android/src/akylas/map"]
 	path = googlemap/android/src/akylas/map
 	url = git@bitbucket.org:farfromrefuge/akylas.map.common.android.git
+[submodule "mapbox/android/src/akylas/map"]
+	path = mapbox/android/src/akylas/map
+	url = git@bitbucket.org:farfromrefuge/akylas.map.common.android.git
 [submodule "statusbarnotification/ios/CWStatusBarNotification"]
 	path = statusbarnotification/ios/CWStatusBarNotification
 	url = git@github.com:Akylas/CWStatusBarNotification.git
 [submodule "ti.paypal"]
 	path = ti.paypal
 	url = git@github.com:Akylas/ti.paypal.git
-[submodule "charts2/ios/ios-charts"]
-	path = charts2/ios/ios-charts
-	url = git@github.com:danielgindi/ios-charts.git
 [submodule "tiws/ios/SocketRocket"]
 	path = tiws/ios/SocketRocket
 	url = git@github.com:Akylas/SocketRocket.git
