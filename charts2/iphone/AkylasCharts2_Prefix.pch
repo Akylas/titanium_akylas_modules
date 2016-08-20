@@ -1,0 +1,8 @@
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+    #import <UIKit/UIKit.h>
+    #import <Charts/Charts-Swift.h>
+    #import "TiUtils.h"
+    #import "AkylasCharts2Module.h"
+#endif

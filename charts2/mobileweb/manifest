@@ -1,0 +1,17 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 2
+description: charts2
+author: Your Name
+license: Specify your license
+copyright: Copyright (c) 2016 by Your Company
+
+# these should not be edited
+name: charts2
+moduleid: akylas.charts2
+guid: 16741bb0-b237-43fa-b5de-64b0b75c0097
+platform: mobileweb
+minsdk: 6.0.0.AKYLAS
