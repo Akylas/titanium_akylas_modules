@@ -1,7 +1,5 @@
 package akylas.googlemap;
 
-import java.util.HashMap;
-
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;

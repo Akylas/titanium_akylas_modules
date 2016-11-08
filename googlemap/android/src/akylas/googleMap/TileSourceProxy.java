@@ -119,8 +119,18 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             updateTileLayerVisibility();
             break;
         case TiC.PROPERTY_OPACITY:
+           opacity = TiConvert.toFloat(newValue, 1.0f);
+           if (mOverlay != null) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mOverlay != null) {
+                            mOverlay.setTransparency(1-opacity);
+                        }
+                    }
+                });
+            }
             if (mTileProvider instanceof WebTileProvider) {
-                opacity = TiConvert.toFloat(newValue, 1.0f);
                 ((WebTileProvider) mTileProvider).setOpacity(opacity);
             }
             updateTileLayerVisibility();
@@ -268,6 +278,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
             if (mTileProvider != null) {
                 mOverlayOptions = new TileOverlayOptions()
                 .fadeIn(fadeIn)
+                .transparency(1-opacity)
                 .tileProvider(mTileProvider);
                 if (zIndex != -1) {
                     mOverlayOptions.zIndex(zIndex);

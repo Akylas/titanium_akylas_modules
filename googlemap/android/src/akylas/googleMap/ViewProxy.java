@@ -25,6 +25,7 @@ import android.os.Message;
         AkylasMapBaseModule.PROPERTY_BUILDINGS_ENABLED,
         AkylasMapBaseModule.PROPERTY_INDOOR_ENABLED,
         AkylasMapBaseModule.PROPERTY_INDOOR_CONTROLS_ENABLED,
+        AkylasMapBaseModule.PROPERTY_MAPSTYLE,
         TiC.PROPERTY_PADDING,
 })
 public class ViewProxy extends MapDefaultViewProxy {

@@ -122,6 +122,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             markerOptions = new MarkerOptions()
                     .position((LatLng) proxy.getPosition())
                     .rotation(proxy.heading)
+                    .zIndex(proxy.zIndex)
 //                    .title(proxy.annoTitle)
 //                    .snippet(proxy.annoSubtitle)
                     .draggable(proxy.draggable)
@@ -335,6 +336,20 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             runInUiThread(new CommandNoReturn() {
                 public void execute() {
                     marker.setFlat(flat);
+                }
+            });
+        }
+    }
+    
+    @Override
+    public void setZIndex(final float value) {
+        if (markerOptions != null) {
+            markerOptions.zIndex(value);
+        }
+        if (marker != null) {
+            runInUiThread(new CommandNoReturn() {
+                public void execute() {
+                    marker.setZIndex(value);
                 }
             });
         }

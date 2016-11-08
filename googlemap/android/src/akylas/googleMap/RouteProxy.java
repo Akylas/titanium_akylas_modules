@@ -143,7 +143,9 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
                 @Override
                 public void execute() {
                     synchronized(mPoints) {
-                        polyline.setPoints(mPoints);
+                        if (polyline != null) {
+                            polyline.setPoints(mPoints);
+                        }
                     }
                 }
             }, true);
