@@ -3,6 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.0
+apiversion: 3
 description: bluetooth module
 author: Martin Guillon
 license: Proprietary

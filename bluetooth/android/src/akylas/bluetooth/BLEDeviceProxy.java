@@ -7,6 +7,7 @@
 package akylas.bluetooth;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -17,6 +18,7 @@ import java.util.UUID;
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
@@ -29,6 +31,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.support.v4.util.Pair;
 
 @Kroll.proxy(creatableInModule = AkylasBluetoothModule.class, propertyAccessors = { TiC.PROPERTY_ADDRESS })
@@ -107,8 +110,10 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 
     @Override
     protected void initActivity(Activity activity) {
-        super.initActivity(activity);
-        ((TiBaseActivity) activity).addOnLifecycleEventListener(this);
+        TiBaseActivity realActivity = (TiBaseActivity) TiApplication.getAppRootOrCurrentActivity();
+        super.initActivity(realActivity);
+        //we only destroy if main app activity is destroyed
+        realActivity.addOnLifecycleEventListener(this);
     }
 
     // @Override
@@ -121,22 +126,22 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     // super.onPause(activity);
     // }
 
-//    @Override
-//    public void onDestroy(Activity activity) {
-//        super.onDestroy(activity);
-//        stop();
-//    }
+    @Override
+    public void onDestroy(Activity activity) {
+        super.onDestroy(activity);
+        stop();
+    }
 
     private void stop() {
         stopService();
         setState(AkylasBluetoothModule.STATE_DISCONNECTED);
     }
 
-    @Override
-    public void onDestroy(Activity activity) {
-        stop();
-        super.onDestroy(activity);
-    }
+//    @Override
+//    public void onDestroy(Activity activity) {
+//        stop();
+//        super.onDestroy(activity);
+//    }
 
     @Override
     public String getApiName() {
@@ -258,9 +263,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
             BluetoothGattCharacteristic charac = this.tiService
                     .getCharacteristic(getUUIDFromString(serviceUUID),
                             getUUIDFromString(charUUID));
-            if (!this.tiService.setCharacteristicNotification(charac, true)) {
-//                setState(AkylasBluetoothModule.STATE_DISCONNECTED);
-            }
+            this.tiService.setCharacteristicNotification(charac, true);
         }
     }
 
@@ -299,11 +302,18 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
             this.tiService.requestMTU(mtu);
         }
     }
-
+    
     @Kroll.method
     public void readRSSI() {
         if (this.tiService != null) {
             this.tiService.readRssi();
+        }
+    }
+
+    @Kroll.method
+    public void discoverServices() {
+        if (this.tiService != null) {
+            this.tiService.discoverServices();
         }
     }
 
@@ -339,7 +349,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     }
 
     @Override
-    public void onServicesDiscovered(int status, List<String> services) {
+    public void onServicesDiscovered(int status, List<String> serviceNames) {
         uartMode = false;
         if (status != BluetoothGatt.GATT_SUCCESS) {
             fireError(status, "error while discovering services");
@@ -348,10 +358,25 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
         }
         if (hasListeners("discoveredServices", false)) {
             HashMap data = new HashMap<>();
-            data.put("services", services.toArray());
+            data.put("services", serviceNames.toArray());
             fireEvent("discoveredServices", data, false, false);
         }
-        if (services.contains(RX_SERVICE_UUID)) {
+        if (hasListeners("discoveredCharacteristics", false)) {
+            List<BluetoothGattService> services = this.tiService.getServices();
+            if (services != null)
+            for(BluetoothGattService service : services) {
+                HashMap data = new HashMap<>();
+                data.put("service", stringFromUUID(service.getUuid()));
+                List<String> chararcteristicNames = new ArrayList<>();
+                for(BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                    chararcteristicNames.add(stringFromUUID(characteristic.getUuid()));
+                }
+                data.put("characteristics", chararcteristicNames.toArray());
+                fireEvent("discoveredCharacteristics", data, false, false);
+            }
+            
+        }
+        if (serviceNames.contains(RX_SERVICE_UUID)) {
             uartMode = true;
 //            uartModeWaitingToConnect = true;
             BluetoothGattCharacteristic charac = this.tiService

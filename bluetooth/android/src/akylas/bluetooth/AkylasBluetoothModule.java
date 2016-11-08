@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
@@ -412,6 +414,8 @@ public class AkylasBluetoothModule extends ProtectedModule {
         }
     }
     
+    
+    private Timer stopTimer = null;
     @Kroll.method
     public void discoverBLE(final KrollFunction onDone, @Kroll.argument(optional = true) final Object timeoutObj) {
         if (!hasBluetoothPermissions()) {
@@ -461,14 +465,33 @@ public class AkylasBluetoothModule extends ProtectedModule {
             return;
         }
         handleStartScan();
+        if (stopTimer != null) {
+            stopTimer.cancel();
+            stopTimer.purge();
+            stopTimer = null;
+        }
         if (timeoutObj != null) {
-            getMainHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.stopLeScan(mLeScanCallback);
-                    handleFinishedScan();
-                }
-            }, ((Number)timeoutObj).intValue());
+            stopTimer = new Timer();
+            stopTimer.schedule(  
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        stopTimer.cancel();
+                        stopTimer.purge();
+                        stopTimer = null;
+                        adapter.stopLeScan(mLeScanCallback);
+                        handleFinishedScan();
+                    }
+                },
+                ((Number)timeoutObj).intValue()
+            );
+//            getMainHandler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    adapter.stopLeScan(mLeScanCallback);
+//                    handleFinishedScan();
+//                }
+//            }, ((Number)timeoutObj).intValue());
         }
         
         adapter.startLeScan(mLeScanCallback);
@@ -476,6 +499,11 @@ public class AkylasBluetoothModule extends ProtectedModule {
     
     @Kroll.method
     public void stopDiscoverBLE() {
+        if (stopTimer != null) {
+            stopTimer.cancel();
+            stopTimer.purge();
+            stopTimer = null;
+        }
         BluetoothAdapter adapter = getBTAdapter();
         if (adapter == null || !CAN_LTE) {
             return;
@@ -625,7 +653,7 @@ public class AkylasBluetoothModule extends ProtectedModule {
     }
 
     @Kroll.method
-    @Kroll.getProperty
+    @Kroll.getProperty(enumerable=false)
     public Object getPairedDevices() {
         BluetoothAdapter adapter = getBTAdapter();
         if (adapter == null) {

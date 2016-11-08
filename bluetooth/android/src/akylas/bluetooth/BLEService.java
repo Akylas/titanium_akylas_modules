@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
@@ -24,12 +23,10 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 
 
 public class BLEService extends TiEnhancedService {
@@ -68,7 +65,7 @@ public class BLEService extends TiEnhancedService {
 //            }
 //        }
 //    };
-
+    
     public void readRssi() {
         if (mBluetoothGatt != null) {
             if (!TiApplication.isUIThread()) {
@@ -81,6 +78,21 @@ public class BLEService extends TiEnhancedService {
                 return;
             }
             mBluetoothGatt.readRemoteRssi();
+        }
+    }
+
+    public void discoverServices() {
+        if (mBluetoothGatt != null) {
+            if (!TiApplication.isUIThread()) {
+                this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mBluetoothGatt.discoverServices();
+                    }
+                });
+                return;
+            }
+            mBluetoothGatt.discoverServices();
         }
     }
     // Implements callback methods for GATT events that the app cares about. For
@@ -97,8 +109,9 @@ public class BLEService extends TiEnhancedService {
                 }
 
                 Log.d(TAG,"Connected to GATT server.");
+                mBluetoothGatt.discoverServices();
                 // Attempts to discover services after successful connection.
-                Log.d(TAG,"Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
+//                Log.d(TAG,"Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 if (mConnectionState == BluetoothProfile.STATE_CONNECTING) {
                     //this is an android bug? try again!
@@ -345,6 +358,13 @@ public class BLEService extends TiEnhancedService {
         BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
         return characteristic;
     }
+    
+    public List<BluetoothGattService> getServices() {
+        if (mBluetoothGatt == null) {
+            return null;
+        }
+        return  mBluetoothGatt.getServices();
+    }
 
     /**
      * Requst a write on a give {@code BluetoothGattCharacteristic}. The write
@@ -407,25 +427,32 @@ public class BLEService extends TiEnhancedService {
      * @param enabled
      *            If true, enable notification. False otherwise.
      */
-    public boolean setCharacteristicNotification(final BluetoothGattCharacteristic characteristic, final boolean enabled) {
+    public void setCharacteristicNotification(final BluetoothGattCharacteristic characteristic, final boolean enabled) {
         if (mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
-            return false;
+            return;
         }
+        
         if (!TiApplication.isUIThread()) {
-            FutureTask<Boolean> futureResult = new FutureTask<Boolean>(new Callable<Boolean>() {
+            this.runOnUiThread(new Runnable() {
                 @Override
-                public Boolean call() throws Exception {
-                    return setCharacteristicNotification(characteristic, enabled);
+                public void run() {
+                    setCharacteristicNotification(characteristic, enabled);
                 }
-            }); 
-            // this block until the result is calculated!
-            try {
-                this.runOnUiThread(futureResult);
-                return futureResult.get();
-            } catch (Exception e) {
-                return false;
-            }
+            });
+//            FutureTask<Boolean> futureResult = new FutureTask<Boolean>(new Callable<Boolean>() {
+//                @Override
+//                public Boolean call() throws Exception {
+//                    return setCharacteristicNotification(characteristic, enabled);
+//                }
+//            }); 
+//            // this block until the result is calculated!
+//            try {
+//                this.runOnUiThread(futureResult);
+//                return futureResult.get();
+//            } catch (Exception e) {
+//                return false;
+//            }
         }
         boolean status = mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
         if (status) {
@@ -445,7 +472,7 @@ public class BLEService extends TiEnhancedService {
                 
             }
         }
-        return status;
+//        return status;
         
     }
     

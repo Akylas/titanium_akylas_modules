@@ -134,7 +134,6 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 //    [_peripheral didConnect];
     
     [[self peripheral] discoverServices:nil];
-    [self fireEvent:@"connected"];
 }
 -(void)didDisconnect
 {
@@ -547,7 +546,7 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
         for (CBService *s in [peripheral services])
         {
             [servicesIds addObject:s.UUID.UUIDString];
-//            DebugLog(@"didDiscoverService %@", s.UUID.UUIDString);
+            DebugLog(@"didDiscoverService %@", s.UUID.UUIDString);
             if ([s.UUID isEqual:self.class.uartServiceUUID])
             {
                 uartMode = true;
@@ -563,6 +562,9 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
 //    }
     if ([self _hasListeners:@"discoveredServices"]) {
         [self fireEvent:@"discoveredServices" withObject:@{@"services":servicesIds}];
+    }
+    if (!uartMode) {
+        [self fireEvent:@"connected"];
     }
 }
 
@@ -588,6 +590,9 @@ NSString * const kAkylasBTProxy = @"kAkylasBTProxy";
             {
                 txCharacteristic = [c retain];
             }
+        }
+        if (rxCharacteristic && txCharacteristic) {
+            [self fireEvent:@"connected"];
         }
 //            else if ([c.UUID isEqual:self.class.hardwareRevisionStringUUID])
 //            {

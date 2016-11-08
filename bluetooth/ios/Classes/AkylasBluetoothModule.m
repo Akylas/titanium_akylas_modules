@@ -35,6 +35,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     CBCentralManager *_centralManager;
     CBPeripheralManager* _peripheralManager;
     NSMutableDictionary* _discoveredBLEDevices;
+    NSMutableDictionary* _connectingBLEDevices;
     KrollCallback * _discoveryCallback;
     dispatch_queue_t _cbQueue;
     dispatch_queue_t _cpQueue;
@@ -66,6 +67,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     RELEASE_TO_NIL(_peripheralManager)
     RELEASE_TO_NIL(_discoveryCallback)
     RELEASE_TO_NIL(_discoveredBLEDevices)
+    RELEASE_TO_NIL(_connectingBLEDevices)
     [super dealloc];
 }
 
@@ -493,10 +495,24 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 }
 
 -(void)connectBLEDevice:(CBPeripheral*)peripheral {
-        [[self btManager] connectPeripheral:peripheral options:@{CBConnectPeripheralOptionNotifyOnDisconnectionKey: [NSNumber numberWithBool:YES]}];
+    if (!_connectingBLEDevices) {
+        _connectingBLEDevices = [[NSMutableDictionary alloc] init];
+    }
+    __block NSUUID* identifier = [peripheral identifier];
+    [_connectingBLEDevices setObject:peripheral forKey:identifier];
+    
+    //if the device is turned off just after the connect, we wont get notified, this is a trick to be notified
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5000 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+        if([_connectingBLEDevices objectForKey:identifier]) {
+            // we timeout
+            [self centralManager:[self btManager] didFailToConnectPeripheral:peripheral error:[NSError errorWithDomain:@"failed to connect" code:-1 userInfo:nil]];
+        }
+    });
+    [[self btManager] connectPeripheral:peripheral options:nil];
 }
 
 -(void)disconnectBLEDevice:(CBPeripheral*)peripheral {
+//    [_connectedBLEDevices removeObjectForKey:[peripheral identifier]];
     [[self btManager] cancelPeripheralConnection:peripheral];
 }
 
@@ -511,7 +527,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 - (void) centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
 {
-    if (_discovering && peripheral.name) {
+    if (_discovering && peripheral.name && [_discoveredBLEDevices objectForKey:peripheral.identifier] == nil) {
         [self addDiscoveredBLEDevice:peripheral];
         if ([self _hasListeners:@"found"]) {
             [self fireEvent:@"found" withObject:@{
@@ -526,6 +542,7 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 - (void) centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
 {
+    [_connectingBLEDevices removeObjectForKey:[peripheral identifier]];
     [peripheral didConnect];
 //    if ([self _hasListeners:@"connected"]) {
 //        [self fireEvent:@"connected" withObject:@{
@@ -538,11 +555,13 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 didFailToConnectPeripheral:(CBPeripheral *)peripheral
                  error:(NSError *)error
 {
+    [_connectingBLEDevices removeObjectForKey:[peripheral identifier]];
     [self handleError:error forDevice:peripheral];
 }
 
 - (void) centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error
 {
+    [_connectingBLEDevices removeObjectForKey:[peripheral identifier]];
     if(error) {
         [self handleError:error forDevice:peripheral];
     }

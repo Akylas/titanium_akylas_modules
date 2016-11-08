@@ -18,6 +18,7 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
@@ -121,11 +122,13 @@ public class DeviceProxy extends KrollProxy
 
 	@Override
 	protected void initActivity(Activity activity) {
-		super.initActivity(activity);
-		((TiBaseActivity) activity).addOnLifecycleEventListener(this);
+	    TiBaseActivity realActivity = (TiBaseActivity) TiApplication.getAppRootOrCurrentActivity();
+        super.initActivity(realActivity);
+        //we only destroy if main app activity is destroyed
+        realActivity.addOnLifecycleEventListener(this);
 		IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        activity.registerReceiver(mReceiver, filter);
+        realActivity.registerReceiver(mReceiver, filter);
 	}
 	
 //	@Override
@@ -164,6 +167,7 @@ public class DeviceProxy extends KrollProxy
                 case AkylasBluetoothModule.STATE_CONNECTING:
                     break;
                 case AkylasBluetoothModule.STATE_LISTEN:
+                    break;
                 case AkylasBluetoothModule.STATE_DISCONNECTED:
                     fireEvent("disconnected");
                     break;
