@@ -7,26 +7,9 @@
 //
 
 #import "BarLineChartBase.h"
-#import "ChartYAxisProxy.h"
+#import "BarLineChartViewBaseProxy.h"
+@implementation BarLineChartBase
 
-@implementation BarLineChartBase {
-    ChartYAxisProxy* _leftAxisProxy;
-    ChartYAxisProxy* _rightAxisProxy;
-}
-
--(void)dealloc
-{
-    
-    if (_leftAxisProxy) {
-        _leftAxisProxy.parentChartViewProxy = nil;
-        RELEASE_TO_NIL(_leftAxisProxy)
-    }
-    if (_rightAxisProxy) {
-        _rightAxisProxy.parentChartViewProxy = nil;
-        RELEASE_TO_NIL(_rightAxisProxy)
-    }
-    [super dealloc];
-}
 
 - (void)prepareForReuse
 {
@@ -43,68 +26,22 @@
     return (BarLineChartViewBase*)[self getOrCreateChartView];
 }
 
--(void)unarchivedWithRootProxy:(TiProxy*)rootProxy
-{
-    [super unarchivedWithRootProxy:rootProxy];
-    [_leftAxisProxy unarchivedWithRootProxy:rootProxy];
-    [_rightAxisProxy unarchivedWithRootProxy:rootProxy];
-    //    [_xAxisProxy unarchivedWithRootProxy:rootProxy];
-}
 
 -(void) notifyDataSetChanged
 {
     [_chartView notifyDataSetChanged];
 }
 
--(ChartYAxis*)rightAxis {
-    return [[self getOrCreateLineChartView] rightAxis];
-}
-
-
--(ChartYAxis*)leftAxis {
-    return [[self getOrCreateLineChartView] leftAxis];
-}
-
-
--(ChartYAxisProxy*)leftAxisProxy {
-    if (!_leftAxisProxy) {
-        _leftAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[[self proxy] getContext] args:nil axis:[self  leftAxis]];
-        _leftAxisProxy.parentChartViewProxy = (AkylasCharts2BaseChartViewProxy*)proxy;
-    }
-    return _leftAxisProxy;
-}
-
--(ChartYAxisProxy*)rightAxisProxy {
-    if (!_rightAxisProxy) {
-        _rightAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[[self proxy] getContext] args:nil axis:[self rightAxis]];
-        _rightAxisProxy.parentChartViewProxy = (AkylasCharts2BaseChartViewProxy*)proxy;
-    }
-    return _rightAxisProxy;
-}
 
 -(void)setLeftAxis_:(id)value
 {
-    ENSURE_DICT(value)
-    [[self proxy] applyProperties:value onBindedProxy:[self leftAxisProxy]];
-}
-
--(id)leftAxis_
-{
-    return [self leftAxisProxy];
+    [(BarLineChartViewBaseProxy*)[self proxy] setLeftAxis:value];
 }
 
 -(void)setRightAxis_:(id)value
 {
-    ENSURE_DICT(value)
-    [[self proxy] applyProperties:value onBindedProxy:[self rightAxisProxy]];
+    [(BarLineChartViewBaseProxy*)[self proxy] setRightAxis:value];
 }
-
--(id)rightAxis_
-{
-    return [self rightAxisProxy];
-}
-
-
 
 -(void)setDrag_:(id)value
 {
@@ -147,10 +84,10 @@
     [[self getOrCreateLineChartView] setHighlightPerDragEnabled:[TiUtils boolValue:value]];
 }
 
--(void)setHighlightFullBar_:(id)value
-{
-    [[self getOrCreateLineChartView] setHighlightFullBarEnabled:[TiUtils boolValue:value]];
-}
+//-(void)setHighlightFullBar_:(id)value
+//{
+//    [[self getOrCreateLineChartView] setHighlightFullBarEnabled:[TiUtils boolValue:value]];
+//}
 
 -(void)setDrawGridBackground_:(id)value
 {
@@ -189,7 +126,7 @@
 
 -(void)setMaxVisibleValueCount_:(id)value
 {
-    [[self getOrCreateLineChartView] setMaxVisibleValueCount:[TiUtils intValue:value]];
+    [[self getOrCreateLineChartView] setMaxVisibleCount:[TiUtils intValue:value]];
 }
 
 @end

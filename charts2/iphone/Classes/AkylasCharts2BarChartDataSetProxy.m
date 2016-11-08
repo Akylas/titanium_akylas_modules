@@ -29,11 +29,11 @@
 }
 
 
--(void)setBarSpace:(id)value
-{
-    [[self set] setBarSpace:[TiUtils floatValue:value]];
-    [self replaceValue:value forKey:@"barSpace" notification:NO];
-}
+//-(void)setBarSpace:(id)value
+//{
+//    [[self set] setBarSpace:[TiUtils floatValue:value]];
+//    [self replaceValue:value forKey:@"barSpace" notification:NO];
+//}
 
 -(void)setBarShadowColor:(id)value
 {

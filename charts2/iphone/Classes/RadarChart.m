@@ -7,22 +7,12 @@
 //
 
 #import "RadarChart.h"
-#import "AkylasCharts2RadarChartDataProxy.h"
-#import "ChartYAxisProxy.h"
+#import "AkylasCharts2RadarChartProxy.h"
 
 @implementation RadarChart
-{
-    ChartYAxisProxy* _yAxisProxy;
-}
 
--(void)dealloc
-{
-    if (_yAxisProxy) {
-        _yAxisProxy.parentChartViewProxy = nil;
-        RELEASE_TO_NIL(_yAxisProxy)
-    }
-    [super dealloc];
-}
+
+
 
 -(ChartViewBase*)newChartView {
     
@@ -37,33 +27,10 @@
     return (RadarChartView*)_chartView;
 }
 
--(Class)dataClass {
-    return [AkylasCharts2RadarChartDataProxy class];
-}
-
--(ChartYAxis*)yAxis {
-    return [[self getOrCreateRadarChartView] yAxis];
-}
-
--(ChartYAxisProxy*)yAxisProxy {
-    if (!_yAxisProxy) {
-        _yAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[[self proxy] getContext] args:nil axis:[self yAxis]];
-        _yAxisProxy.parentChartViewProxy = (AkylasCharts2BaseChartViewProxy*)proxy;
-    }
-    return _yAxisProxy;
-}
-
 -(void)setYAxis_:(id)value
 {
-    ENSURE_DICT(value)
-    [[self proxy] applyProperties:value onBindedProxy:[self yAxisProxy]];
+    [(AkylasCharts2RadarChartProxy*)[self proxy] setYAxis:value];
 }
-
--(id)yAxis_
-{
-    return [self yAxisProxy];
-}
-
 
 -(void)setWebLineWidth_:(id)value
 {

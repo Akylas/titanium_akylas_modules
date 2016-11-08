@@ -6,22 +6,15 @@
  */
 #import "TiUIView.h"
 
-@class ChartXAxisProxy;
-@class ChartDataProxy;
-@class ChartLegendProxy;
+
 @interface BaseChart : TiUIView<ChartViewDelegate> {
     ChartViewBase* _chartView;
-    ChartXAxisProxy* _xAxisProxy;
-    ChartLegendProxy* _legendProxy;
-    ChartDataProxy* _dataProxy;
 }
 
 -(ChartViewBase*)newChartView;
 -(ChartViewBase*)getOrCreateChartView;
--(void)setData_:(id)value;
--(ChartDataProxy*)dataProxy;
--(void)unarchivedWithRootProxy:(TiProxy*)rootProxy;
+-(ChartViewBase*)chartView;
+
 - (void)prepareForReuse;
--(Class)dataClass;
 -(void) notifyDataSetChanged;
 @end

@@ -1,5 +1,6 @@
 package akylas.charts2.view;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.appcelerator.titanium.proxy.TiViewProxy;
@@ -29,7 +30,20 @@ public class RadarChartView extends PieRadarChartViewBase {
     
     public YAxis getYAxis() {
         return getChart().getYAxis();
-    }    
+    }
+    
+    protected static final ArrayList<String> KEY_SEQUENCE;
+
+    static {
+        ArrayList<String> tmp = BaseChart.KEY_SEQUENCE;
+        tmp.add("yAxis");
+        KEY_SEQUENCE = tmp;
+    }
+
+    @Override
+    protected ArrayList<String> keySequence() {
+        return KEY_SEQUENCE;
+    }
     
     @Override
     public void propertySet(String key, Object newValue, Object oldValue,

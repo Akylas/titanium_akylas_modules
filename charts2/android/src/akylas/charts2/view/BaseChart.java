@@ -1,5 +1,6 @@
 package akylas.charts2.view;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
@@ -91,6 +92,19 @@ public class BaseChart extends TiUIView implements OnChartGestureListener, OnCha
         }
     }
 
+    protected static final ArrayList<String> KEY_SEQUENCE;
+
+    static {
+        ArrayList<String> tmp = new ArrayList<>();
+        tmp.add("xAxis");
+        tmp.add("legend");
+        KEY_SEQUENCE = tmp;
+    }
+
+    @Override
+    protected ArrayList<String> keySequence() {
+        return KEY_SEQUENCE;
+    }
     
     @Override
     public void propertySet(String key, Object newValue, Object oldValue,
@@ -190,10 +204,12 @@ public class BaseChart extends TiUIView implements OnChartGestureListener, OnCha
         boolean hasClick = proxy.hasListeners("click");
         if (hasHighlight || hasClick)
         {
-            final int dataSetIndex = h.getDataIndex();
-            DataSetProxy dataSetProxy = getDataProxy().getDataSet(dataSetIndex);
+            final int dataSetIndex = h.getDataSetIndex();
             KrollDict result = new KrollDict();
-            result.put("data", dataSetProxy.chartDataEntryDict(e));
+            DataSetProxy dataSetProxy = getDataProxy().getDataSet(dataSetIndex);
+            if (dataSetProxy != null) {
+                result.put("data", dataSetProxy.chartDataEntryDict(e));
+            }
             result.put("dataSetIndex", dataSetIndex);
             if (hasHighlight) {
                 proxy.fireEvent("highlight", result, false, false);

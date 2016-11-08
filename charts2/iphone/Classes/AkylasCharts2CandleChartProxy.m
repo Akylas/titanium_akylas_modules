@@ -8,6 +8,7 @@
 
 #import "AkylasCharts2CandleChartProxy.h"
 #import "CandleStickChart.h"
+#import "AkylasCharts2CandleChartDataProxy.h"
 
 @implementation AkylasCharts2CandleChartProxy
 
@@ -15,5 +16,9 @@
 {
     CandleStickChart *newView = [[CandleStickChart alloc] init];
     return newView;
+}
+
+-(Class)dataClass {
+    return [AkylasCharts2CandleChartDataProxy class];
 }
 @end

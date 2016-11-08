@@ -24,9 +24,9 @@
 
 -(ChartDataEntry*)dataEntryFromNumber:(NSNumber*)number index:(NSUInteger)idx {
     BubbleChartDataEntry* result = [[[[self dataEntryClass] class] alloc] init];
-    [result setValue:[number doubleValue]];
+    [result setY:[number doubleValue]];
     [result setSize:[number doubleValue]];
-    [result setXIndex:idx];
+    [result setX:idx];
     return [result autorelease];
 }
 

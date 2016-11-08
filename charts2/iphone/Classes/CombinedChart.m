@@ -7,7 +7,6 @@
 //
 
 #import "CombinedChart.h"
-#import "AkylasCharts2CombinedChartDataProxy.h"
 
 @implementation CombinedChart
 
@@ -25,14 +24,10 @@
     return (CombinedChartView*)_chartView;
 }
 
--(Class)dataClass {
-    return [AkylasCharts2CombinedChartDataProxy class];
-}
-
--(void)setDrawHighlightArrow_:(id)value
-{
-    [[self getOrCreateCombinedChartView] setDrawHighlightArrowEnabled:[TiUtils boolValue:value]];
-}
+//-(void)setDrawHighlightArrow_:(id)value
+//{
+//    [[self getOrCreateCombinedChartView] setDrawHighlightArrowEnabled:[TiUtils boolValue:value]];
+//}
 -(void)setDrawValueAboveBar_:(id)value
 {
     [[self getOrCreateCombinedChartView] setDrawValueAboveBarEnabled:[TiUtils boolValue:value]];

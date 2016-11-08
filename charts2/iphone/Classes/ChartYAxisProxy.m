@@ -23,22 +23,22 @@
     [self replaceValue:value forKey:@"drawTopYLabelEntry" notification:NO];
 }
 
--(void)setShowOnlyMinMax:(id)value
-{
-    [[self axis] setShowOnlyMinMaxEnabled:[TiUtils boolValue:value]];
-    [self replaceValue:value forKey:@"showOnlyMinMax" notification:NO];
-}
+//-(void)setShowOnlyMinMax:(id)value
+//{
+//    [[self axis] setShowOnlyMinMaxEnabled:[TiUtils boolValue:value]];
+//    [self replaceValue:value forKey:@"showOnlyMinMax" notification:NO];
+//}
 
 -(void)setInverted:(id)value
 {
     [[self axis] setInverted:[TiUtils boolValue:value]];
     [self replaceValue:value forKey:@"inverted" notification:NO];
 }
--(void)setStartAtZero:(id)value
-{
-    [[self axis] setStartAtZeroEnabled:[TiUtils boolValue:value]];
-    [self replaceValue:value forKey:@"startAtZero" notification:NO];
-}
+//-(void)setStartAtZero:(id)value
+//{
+//    [[self axis] setStartAtZeroEnabled:[TiUtils boolValue:value]];
+//    [self replaceValue:value forKey:@"startAtZero" notification:NO];
+//}
 
 -(void)setLabelCount:(id)value
 {
@@ -135,9 +135,9 @@
 -(void)setValueFormatter:(id)value
 {
     if (IS_OF_CLASS(value, KrollCallback)) {
-        [[self axis] setValueFormatter:[[[CallbackNumberFormatter alloc] initWithCallback:value] autorelease]];
+        [[self axis] setValueFormatter:[[[AxisCallbackNumberFormatter alloc] initWithCallback:value] autorelease]];
     } else {
-        [[self axis] setValueFormatter:[AkylasCharts2Module numberFormatterValue:value]];
+        [[self axis] setValueFormatter:[AkylasCharts2Module axisNumberFormatterValue:value]];
     }
     [self replaceValue:value forKey:@"valueFormatter" notification:NO];
 }

@@ -13,25 +13,14 @@
 
 @implementation XAxisValueCallbackFormatter
 {
-    KrollCallback* _callback;
     NSNumberFormatter* _formatter;
-    NSNumberFormatter* _numberformatter;
+//    NSNumberFormatter* _numberformatter;
 }
 
--(id)initWithCallback:(KrollCallback*)callback
-{
-    if ([super init]) {
-        _callback = [callback retain];
-    }
-    return self;
-}
-
--(id)initWithNSNumberFormatter:(NSNumberFormatter*)formatter
+-(id)initWithNumberFormatter:(NSNumberFormatter*)formatter
 {
     if ([super init]) {
         _formatter = [formatter retain];
-        _numberformatter = [[NSNumberFormatter alloc] init];
-        _numberformatter.numberStyle = NSNumberFormatterDecimalStyle;
     }
     return self;
 }
@@ -40,21 +29,19 @@
 {
     RELEASE_TO_NIL(_callback)
     RELEASE_TO_NIL(_formatter)
-    RELEASE_TO_NIL(_numberformatter)
+//    RELEASE_TO_NIL(_numberformatter)
     [super dealloc];
 }
 
--(NSString * _Nonnull)stringForXValue:(NSInteger)index original:(NSString * _Nonnull)original viewPortHandler:(ChartViewPortHandler * _Nonnull)viewPortHandler {
+- (NSString * _Nonnull)stringForValue:(double)value axis:(ChartAxisBase * _Nullable)axis
+{
     if (_callback) {
-        NSArray * invocationArray = [NSArray arrayWithObjects:index, original, nil];
+        NSArray * invocationArray = [NSArray arrayWithObjects:@(value), nil];
         id result = [_callback call:invocationArray thisObject:nil];
         NSString* strresult = [TiUtils stringValue:result];
         return strresult;
     } else {
-        NSNumber *myNumber = [_numberformatter numberFromString:original];
-        if (myNumber) {
-            [_formatter stringFromNumber:myNumber];
-        }
+        return [_formatter stringFromNumber:@(value)];
     }
     return nil;
 }
@@ -65,6 +52,12 @@
     NSMutableArray* _limitLines;
 }
 
+-(id)_initWithPageContext:(id<TiEvaluator>)context_ args:(NSArray* _Nullable)args axis:(ChartAxisBase* _Nullable)axis
+{
+    [self setAxis:axis];
+    return [self _initWithPageContext:context_ args:args];
+}
+
 -(void)dealloc
 {
     _axis = nil;
@@ -72,10 +65,9 @@
     [super dealloc];
 }
 
--(id)_initWithPageContext:(id<TiEvaluator>)context args:(NSArray*)args axis:(ChartAxisBase*)axis
-{
+
+-(void)setAxis:(ChartAxisBase* _Nullable)axis {
     _axis = axis;
-    return [super _initWithPageContext:context args:args];
 }
 
 -(void)unarchivedWithRootProxy:(TiProxy*)rootProxy {

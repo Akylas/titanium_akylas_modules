@@ -8,6 +8,7 @@
 
 #import "AkylasCharts2BubbleChartProxy.h"
 #import "BubbleChart.h"
+#import "AkylasCharts2BubbleChartDataProxy.h"
 
 @implementation AkylasCharts2BubbleChartProxy
 
@@ -16,4 +17,9 @@
     BubbleChart *newView = [[BubbleChart alloc] init];
     return newView;
 }
+
+-(Class)dataClass {
+    return [AkylasCharts2BubbleChartDataProxy class];
+}
+
 @end

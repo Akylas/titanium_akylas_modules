@@ -7,7 +7,6 @@
 //
 
 #import "BubbleChart.h"
-#import "AkylasCharts2BubbleChartDataProxy.h"
 
 @implementation BubbleChart
 
@@ -25,9 +24,6 @@
     return (BubbleChartView*)_chartView;
 }
 
--(Class)dataClass {
-    return [AkylasCharts2BubbleChartDataProxy class];
-}
 
 
 @end

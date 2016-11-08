@@ -22,9 +22,9 @@
     return [AkylasCharts2BarChartDataSetProxy class];
 }
 
--(void)setGroupSpace:(id)value
-{
-    [[self data] setGroupSpace:[TiUtils floatValue:value]];
-    [self replaceValue:value forKey:@"groupSpace" notification:NO];
-}
+//-(void)setGroupSpace:(id)value
+//{
+//    [[self data] setGroupSpace:[TiUtils floatValue:value]];
+//    [self replaceValue:value forKey:@"groupSpace" notification:NO];
+//}
 @end

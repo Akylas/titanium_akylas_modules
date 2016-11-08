@@ -25,11 +25,11 @@
 
 -(ChartDataEntry*)dataEntryFromNumber:(NSNumber*)number index:(NSUInteger)idx {
     CandleChartDataEntry* result = [[[[self dataEntryClass] class] alloc] init];
-    [result setValue:[number doubleValue]];
+    [result setY:[number doubleValue]];
     [result setHigh:[number doubleValue]];
     [result setLow:[number doubleValue]];
     [result setClose:[number doubleValue]];
-    [result setXIndex:idx];
+    [result setX:idx];
     return [result autorelease];
 }
 

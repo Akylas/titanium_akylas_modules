@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiUIView;
 
 import com.github.mikephil.charting.components.YAxis;
@@ -28,14 +29,22 @@ public class RadarChartProxy extends PieRadarChartViewBaseProxy {
     public TiUIView createView(Activity activity) {
         return new RadarChartView(this);
     }
+    
+    @Override
+    public void handleCreationDict(HashMap dict) {
+        super.handleCreationDict(dict);
+        if (dict.containsKey("yAxis")) {
+            setYAxis(TiConvert.toHashMap(dict .get("yAxis")));
+        }
+    }
 
     @Override
-    protected void viewDidRealize(final boolean enableModelListener,
+    public void realizeViews(TiUIView view, final boolean enableModelListener,
             final boolean processProperties) {
-        super.viewDidRealize(enableModelListener, processProperties);
         if (_yAxisProxy != null) {
             _yAxisProxy.setAxis(getChartYAxis());
         }
+        super.realizeViews(view, enableModelListener, processProperties);
     }
 
     @Override
@@ -60,25 +69,32 @@ public class RadarChartProxy extends PieRadarChartViewBaseProxy {
         }
         return null;
     }
-
-    @Kroll.method
-    @Kroll.getProperty
-    public YAxisProxy getYAxis() {
+    
+    public YAxisProxy getOrCreateYAxis(HashMap value) {
         if (_yAxisProxy == null) {
             _yAxisProxy = (YAxisProxy) KrollProxy.createProxy(YAxisProxy.class,
-                    null);
+                    value);
             _yAxisProxy.setActivity(getActivity());
             _yAxisProxy.updateKrollObjectProperties();
             _yAxisProxy.setAxis(getChartYAxis());
             _yAxisProxy.setParentChartProxy(this);
+            if (_yAxisProxy != null) {
+                _yAxisProxy.unarchivedWithRootProxy(_rootProxy);
+            }
         }
         return _yAxisProxy;
     }
 
     @Kroll.method
+    @Kroll.getProperty
+    public YAxisProxy getYAxis() {
+        return getOrCreateYAxis(null);
+    }
+
+    @Kroll.method
     @Kroll.setProperty
     public void setYAxis(HashMap value) {
-        getYAxis().applyProperties(value);
+        getOrCreateYAxis(value);
     }
 
 }

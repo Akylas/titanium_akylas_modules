@@ -2,10 +2,17 @@ package akylas.charts2.proxy;
 
 import java.util.HashMap;
 
+import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.kroll.common.Log;
+import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.proxy.ActivityProxy;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.proxy.TiWindowProxy;
 import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.util.TiUrl;
 import org.appcelerator.titanium.view.TiUIView;
 
 import com.github.mikephil.charting.components.Legend;
@@ -45,6 +52,20 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             _dataProxy = null;
         }
     }
+    
+    @Override
+    public void handleCreationDict(HashMap dict) {
+        super.handleCreationDict(dict);
+        if (dict.containsKey(TiC.PROPERTY_DATA)) {
+            setData(TiConvert.toHashMap(dict .get(TiC.PROPERTY_DATA)));
+        }
+        if (dict.containsKey("xAxis")) {
+            setXAxis(TiConvert.toHashMap(dict .get("xAxis")));
+        }
+        if (dict.containsKey("legend")) {
+            setXAxis(TiConvert.toHashMap(dict .get("legend")));
+        }
+    }
 
     protected void unarchivedWithRootProxy(KrollProxy rootProxy) {
         if (_legendProxy != null) {
@@ -63,26 +84,32 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             _rootProxy = rootProxy;
             return;
         }
-        if (view != null) {
+        if (_rootProxy == null) {
+            _rootProxy = rootProxy;
             unarchivedWithRootProxy(rootProxy);
             rootProxy.updatePropertiesNativeSide();
-            _rootProxy = null;
-        } else {
-            // store the root proxy until the view is created
-            _rootProxy = rootProxy;
         }
+
+        // if (view != null) {
+        // unarchivedWithRootProxy(rootProxy);
+        // rootProxy.updatePropertiesNativeSide();
+        // _rootProxy = null;
+        // } else {
+        // // store the root proxy until the view is created
+        // _rootProxy = rootProxy;
+        // }
     }
 
     @Override
-    public void handleCreationDict(HashMap dict) {
-        super.handleCreationDict(dict);
+    protected void setupProxy(KrollObject object, Object[] creationArguments,
+            TiUrl creationUrl) {
         setRootProxy(this);
+        super.setupProxy(object, creationArguments, creationUrl);
     }
 
     @Override
-    protected void viewDidRealize(final boolean enableModelListener,
+    public void realizeViews(TiUIView view, final boolean enableModelListener,
             final boolean processProperties) {
-        setRootProxy(_rootProxy);
         if (_dataProxy != null) {
             getOrCreateChartView().setData(_dataProxy.getData());
         }
@@ -92,7 +119,7 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
         if (_legendProxy != null) {
             _legendProxy.setLegend(getChartLegend());
         }
-        super.viewDidRealize(enableModelListener, processProperties);
+        super.realizeViews(view, enableModelListener, processProperties);
     }
 
     @Override
@@ -114,25 +141,34 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
         return null;
     }
 
-    @Kroll.method
-    @Kroll.getProperty
-    public LegendProxy getLegend() {
+    private LegendProxy getOrCreateLegend(HashMap value) {
         if (_legendProxy == null) {
             _legendProxy = (LegendProxy) KrollProxy
-                    .createProxy(LegendProxy.class, null);
+                    .createProxy(LegendProxy.class, value);
             _legendProxy.setActivity(getActivity());
             _legendProxy.updateKrollObjectProperties();
             ;
             _legendProxy.setLegend(getChartLegend());
             _legendProxy.setParentChartProxy(this);
-       }
+            if (_legendProxy != null) {
+                _legendProxy.unarchivedWithRootProxy(_rootProxy);
+            }
+        } else {
+            _legendProxy.applyProperties(value);
+        }
         return _legendProxy;
+    }
+
+    @Kroll.method
+    @Kroll.getProperty
+    public LegendProxy getLegend() {
+        return getOrCreateLegend(null);
     }
 
     @Kroll.method
     @Kroll.setProperty
     public void setLegend(HashMap value) {
-        getLegend().applyProperties(value);
+        getOrCreateLegend(value);
     }
 
     protected XAxis getChartXAxis() {
@@ -142,30 +178,39 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
         return null;
     }
 
-    @Kroll.method
-    @Kroll.getProperty
-    public XAxisProxy getXAxis() {
+    private XAxisProxy getOrCreateXAxis(HashMap value) {
         if (_xAxisProxy == null) {
             _xAxisProxy = (XAxisProxy) KrollProxy.createProxy(XAxisProxy.class,
-                    null);
+                    value);
             _xAxisProxy.setActivity(getActivity());
             _xAxisProxy.updateKrollObjectProperties();
             _xAxisProxy.setAxis(getChartXAxis());
             _xAxisProxy.setParentChartProxy(this);
+            if (_xAxisProxy != null) {
+                _xAxisProxy.unarchivedWithRootProxy(_rootProxy);
+            }
+        } else {
+            _xAxisProxy.applyProperties(value);
         }
         return _xAxisProxy;
     }
 
     @Kroll.method
+    @Kroll.getProperty
+    public XAxisProxy getXAxis() {
+        return getOrCreateXAxis(null);
+    }
+
+    @Kroll.method
     @Kroll.setProperty
     public void setXAxis(HashMap value) {
-        getXAxis().applyProperties(value);
+        getOrCreateXAxis(value);
     }
 
     @Kroll.method
     @Kroll.setProperty
     public void setData(HashMap value) {
-        getData().applyProperties(value);
+        getOrCreateData(value);
     }
 
     protected ChartData getChartData() {
@@ -175,37 +220,51 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
         return null;
     }
 
-    @Kroll.method
-    @Kroll.getProperty
-    public DataProxy getData() {
+    private DataProxy getOrCreateData(HashMap value) {
         if (_dataProxy == null) {
-            _dataProxy = (DataProxy) KrollProxy.createProxy(dataClass(), null);
+            _dataProxy = (DataProxy) KrollProxy.createProxy(dataClass(), value);
             _dataProxy.setActivity(getActivity());
             _dataProxy.setParentChartProxy(this);
+            if (_rootProxy != null) {
+                _dataProxy.unarchivedWithRootProxy(_rootProxy);
+            }
             _dataProxy.updateKrollObjectProperties();
-            ;
             // _dataProxy.setData(getChartData());
             if (peekView() != null) {
                 getOrCreateChartView().setData(_dataProxy.getData());
             }
+        } else {
+            _dataProxy.applyProperties(value);
         }
         return _dataProxy;
     }
 
     @Kroll.method
+    @Kroll.getProperty
+    public DataProxy getData() {
+        return getOrCreateData(null);
+    }
+
+    @Kroll.method
     public void highlightValue(HashMap args) {
-        getOrCreateChartView().getChart().highlightValue(
-                TiConvert.toInt(args, "xIndex"),
-                TiConvert.toInt(args, "dataSetIndex"), true);
+        if (view != null) {
+            getOrCreateChartView().getChart().highlightValue(
+                    TiConvert.toInt(args, "x"),
+                    TiConvert.toInt(args, "dataSetIndex"), true);
+        }
     }
 
     @Kroll.method
     public void notifyDataSetChanged() {
-        getOrCreateChartView().notifyDataSetChanged();
+        if (view != null) {
+            getOrCreateChartView().notifyDataSetChanged();
+        }
     }
-    
+
     @Kroll.method
     public void redraw() {
-        getOrCreateChartView().redraw();
+        if (view != null) {
+            getOrCreateChartView().redraw();
+        }
     }
 }

@@ -7,7 +7,6 @@
 //
 
 #import "PieChart.h"
-#import "AkylasCharts2PieChartDataProxy.h"
 #import "TiUtils.h"
 
 @implementation PieChart
@@ -24,14 +23,6 @@
 
 -(PieChartView*)pieChartView {
     return (PieChartView*)_chartView;
-}
-
--(Class)dataClass {
-    return [AkylasCharts2PieChartDataProxy class];
-}
-
--(void)setXAxis_:(id)value
-{
 }
 
 

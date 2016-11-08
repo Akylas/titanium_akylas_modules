@@ -3,11 +3,12 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.0.0
-apiversion: 2
+apiversion: 3
 description: charts2
 author: Your Name
 license: Specify your license
 copyright: Copyright (c) 2016 by Your Company
+debug_project_subpath: charts2/android
 
 # these should not be edited
 name: akylas-charts2

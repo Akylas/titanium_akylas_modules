@@ -6,14 +6,23 @@
  */
 
 #import "TiProtectedModule.h"
-@interface CallbackNumberFormatter: NSNumberFormatter
--(id)initWithCallback:(KrollCallback*)callback;
 
+@interface BaseCallbackNumberFormatter: NSObject
+{
+    KrollCallback* _callback;
+}
+-(id)initWithCallback:(KrollCallback*)callback;
+@end
+@interface CallbackNumberFormatter: BaseCallbackNumberFormatter<IChartValueFormatter>
+@end
+
+@interface AxisCallbackNumberFormatter: BaseCallbackNumberFormatter<IChartAxisValueFormatter>
 @end
 @interface AkylasCharts2Module : TiProtectedModule
 {
 }
-+(NSNumberFormatter*)numberFormatterValue:(id)value;
++(ChartDefaultValueFormatter*)numberFormatterValue:(id)value;
++(ChartDefaultAxisValueFormatter*)axisNumberFormatterValue:(id)value;
 +(CGLineJoin)lineJoinFromString:(NSString*)value;
 +(CGLineCap)lineCapFromString:(NSString*)value;
 +(ChartLimitLabelPosition)labelPositionFromString:(NSString*)value;

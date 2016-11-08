@@ -8,6 +8,7 @@
 
 #import "AkylasCharts2LineChartProxy.h"
 #import "LineChart.h"
+#import "AkylasCharts2LineChartDataProxy.h"
 
 @implementation AkylasCharts2LineChartProxy
 
@@ -17,4 +18,8 @@
     return newView;
 }
 
+
+-(Class)dataClass {
+    return [AkylasCharts2LineChartDataProxy class];
+}
 @end

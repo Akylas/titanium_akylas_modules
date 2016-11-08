@@ -35,7 +35,7 @@ import android.content.Context;
         "valueTextColor",
         "valueTextColors",
         "valueFormatter",
-        "yVals",
+        "values",
         })
 public abstract class DataSetProxy extends ReusableProxy {
     DataSet _set;
@@ -70,8 +70,8 @@ public abstract class DataSetProxy extends ReusableProxy {
     public KrollDict chartDataEntryDict(Entry entry) {
         if (entry != null) {
             KrollDict result = new KrollDict();
-            result.put("value", entry.getY());
-            result.put("xIndex", entry.getX());
+            result.put("y", entry.getY());
+            result.put("x", entry.getX());
             if (entry.getData() != null)
             {
                 result.put("data", entry.getData());
@@ -90,8 +90,8 @@ public abstract class DataSetProxy extends ReusableProxy {
             } catch (Exception e) {
                 return null;
             }
-            entry.setX(TiConvert.toFloat(dict, "xIndex", 0));
-            entry.setY(TiConvert.toFloat(dict, "value"));
+            entry.setX(TiConvert.toFloat(dict, "x", 0));
+            entry.setY(TiConvert.toFloat(dict, "y"));
             if (dict.containsKey("data"))
             {
                 entry.setData(dict.get("data"));
@@ -154,7 +154,7 @@ public abstract class DataSetProxy extends ReusableProxy {
         case "valueFormatter":
             getSet().setValueFormatter(Charts2Module.formatterValue(newValue, this));
             break;   
-        case "yVals":
+        case "values":
             List values = new ArrayList<>();
             if (newValue instanceof Object[]) {
                 Object[] array = (Object[]) newValue;
@@ -218,18 +218,28 @@ public abstract class DataSetProxy extends ReusableProxy {
     }
     
     @Kroll.method
-    public float yValForXIndex(int index) {
+    public float yValForX(int index) {
         Entry entry = _set.getEntryForIndex(index);
         if (entry != null) {
             return entry.getY();
         }
         return Float.NaN;
     }
+    
+    @Kroll.method
+    public float[] yValsForX(int index) {
+        List<Entry> entries = _set.getEntriesForXValue(index);
+        float[] results = new float[entries.size()];
+        for (int i = 0; i < entries.size(); i++) {
+            results[i] = entries.get(i).getY();
+        }
+        return results;
+    }
 
     @Kroll.method
-    public KrollDict entryForXIndex(HashMap args) {
+    public KrollDict entryForX(HashMap args) {
         Entry entry = _set.getEntryForXValue(
-                TiConvert.toInt(args, "xIndex"), Charts2Module.toRounding(args.get("round")));
+                TiConvert.toInt(args, "x"), Charts2Module.toRounding(args.get("round")));
         return chartDataEntryDict(entry);
     }
     
@@ -244,8 +254,8 @@ public abstract class DataSetProxy extends ReusableProxy {
     }
     
     @Kroll.method
-    public float entryIndexWithXIndex(HashMap args) {
-        Entry entry = _set.getEntryForXValue(TiConvert.toInt(args, "xIndex"), Charts2Module.toRounding(args.get("round")));
+    public float entryIndexWithX(HashMap args) {
+        Entry entry = _set.getEntryForXValue(TiConvert.toInt(args, "x"), Charts2Module.toRounding(args.get("round")));
         if (entry != null) {
             return entry.getX();
         }

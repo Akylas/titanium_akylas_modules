@@ -18,10 +18,19 @@
     [super dealloc];
 }
 
--(id)_initWithPageContext:(id<TiEvaluator>)context args:(NSArray*)args axis:(ChartLegend*)legend
+-(id)_initWithPageContext:(id<TiEvaluator>)context_ args:(NSArray* _Nullable)args legend:(ChartLegend* _Nullable)legend
 {
-    _legend = [legend retain];
-    return [super _initWithPageContext:context args:args];
+    [self setLegend:legend];
+    return [self _initWithPageContext:context_ args:args];
+}
+
+-(void)setLegend:(ChartLegend* _Nullable)legend{
+    RELEASE_TO_NIL(_legend)
+   _legend = [legend retain];
+}
+
+-(ChartLegend* _Nullable)legend{
+    return _legend;
 }
 
 -(void)unarchivedWithRootProxy:(TiProxy*)rootProxy {

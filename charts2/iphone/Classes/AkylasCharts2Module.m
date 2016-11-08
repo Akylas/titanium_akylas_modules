@@ -11,9 +11,8 @@
 #import "TiUtils.h"
 #import "NSData+Additions.h"
 
-@implementation CallbackNumberFormatter
+@implementation BaseCallbackNumberFormatter
 {
-    KrollCallback* _callback;
 }
 
 -(id)initWithCallback:(KrollCallback*)callback
@@ -31,10 +30,38 @@
     [super dealloc];
 }
 
-- (nullable NSString *)stringFromNumber:(NSNumber *)number;
+- (NSString * _Nonnull)stringForValue:(double)value entry:(ChartDataEntry * _Nonnull)entry dataSetIndex:(NSInteger)dataSetIndex viewPortHandler:(ChartViewPortHandler * _Nullable)viewPortHandler;
 {
     if (_callback) {
-        NSArray * invocationArray = [NSArray arrayWithObjects:number, nil];
+        NSArray * invocationArray = [NSArray arrayWithObjects:@(value), @(dataSetIndex), nil];
+        id result = [_callback call:invocationArray thisObject:nil];
+        NSString* strresult = [TiUtils stringValue:result];
+        return strresult;
+    }
+    
+}
+@end
+
+@implementation CallbackNumberFormatter
+
+- (NSString * _Nonnull)stringForValue:(double)value entry:(ChartDataEntry * _Nonnull)entry dataSetIndex:(NSInteger)dataSetIndex viewPortHandler:(ChartViewPortHandler * _Nullable)viewPortHandler;
+{
+    if (_callback) {
+        NSArray * invocationArray = [NSArray arrayWithObjects:@(value), @(dataSetIndex), nil];
+        id result = [_callback call:invocationArray thisObject:nil];
+        NSString* strresult = [TiUtils stringValue:result];
+        return strresult;
+    }
+    
+}
+@end
+
+@implementation AxisCallbackNumberFormatter
+
+- (NSString * _Nonnull)stringForValue:(double)value axis:(ChartAxisBase * _Nullable)axis;
+{
+    if (_callback) {
+        NSArray * invocationArray = [NSArray arrayWithObjects:@(value), nil];
         id result = [_callback call:invocationArray thisObject:nil];
         NSString* strresult = [TiUtils stringValue:result];
         return strresult;
@@ -69,7 +96,7 @@
 
 #pragma mark Lifecycle
 
-+(NSNumberFormatter*)numberFormatterValue:(id)value {
++(ChartDefaultValueFormatter*)numberFormatterValue:(id)value {
     NSNumberFormatter* formatter = nil;
     if (value) {
         formatter = [[NSNumberFormatter alloc] init];
@@ -91,7 +118,32 @@
                                                         def:[TiUtils stringValue:@"suffix" properties:value def:formatter.negativeSuffix]];
         }
     }
-    return [formatter autorelease];
+    return [[[ChartDefaultValueFormatter alloc] initWithFormatter:[formatter autorelease]] autorelease];
+}
+
++(ChartDefaultAxisValueFormatter*)axisNumberFormatterValue:(id)value {
+    NSNumberFormatter* formatter = nil;
+    if (value) {
+        formatter = [[NSNumberFormatter alloc] init];
+        if (IS_OF_CLASS(value, NSString)) {
+            formatter.positiveFormat = value;
+            formatter.negativeFormat = value;
+        } else if (IS_OF_CLASS(value, NSDictionary)) {
+            formatter.positiveFormat = [TiUtils stringValue:@"positiveFormat" properties:value
+                                                        def:[TiUtils stringValue:@"format" properties:value def:formatter.positiveFormat]];
+            formatter.negativeFormat = [TiUtils stringValue:@"negativeFormat" properties:value
+                                                        def:[TiUtils stringValue:@"format" properties:value def:formatter.negativeFormat]];
+            formatter.positivePrefix = [TiUtils stringValue:@"positivePrefix" properties:value
+                                                        def:[TiUtils stringValue:@"prefix" properties:value def:formatter.positivePrefix]];
+            formatter.negativePrefix = [TiUtils stringValue:@"negativePrefix" properties:value
+                                                        def:[TiUtils stringValue:@"prefix" properties:value def:formatter.negativePrefix]];
+            formatter.positiveSuffix = [TiUtils stringValue:@"positiveSuffix" properties:value
+                                                        def:[TiUtils stringValue:@"suffix" properties:value def:formatter.positiveSuffix]];
+            formatter.negativeSuffix = [TiUtils stringValue:@"negativeSuffix" properties:value
+                                                        def:[TiUtils stringValue:@"suffix" properties:value def:formatter.negativeSuffix]];
+        }
+    }
+    return [[[ChartDefaultAxisValueFormatter alloc] initWithFormatter:[formatter autorelease]] autorelease];
 }
 
 +(ChartDataSetRounding)entryRoundValue:(id)value

@@ -149,8 +149,8 @@
 
 -(ChartDataEntry*)dataEntryFromNumber:(NSNumber*)number index:(NSUInteger)idx {
     ChartDataEntry* result = [[[[self dataEntryClass] class] alloc] init];
-    [result setValue:[number doubleValue]];
-    [result setXIndex:idx];
+    [result setY:[number doubleValue]];
+    [result setX:idx];
     return [result autorelease];
 }
 
@@ -169,7 +169,7 @@
     }
 }
 
--(void)setYVals:(id)value
+-(void)setValues:(id)value
 {
     NSMutableArray* result = [NSMutableArray array];
     Class dataEntryClass = [self dataEntryClass];
@@ -178,15 +178,15 @@
             [result addObject:[self dataEntryFromNumber:obj index:idx]];
         } else if (IS_OF_CLASS(obj, NSDictionary)) {
             ChartDataEntry* entry = [self dictToChartDataEntry:obj];
-            entry.xIndex = idx;
+            entry.x = idx;
             [result addObject:entry];
         }
     }];
-    [[self set] setYVals:result];
+    [[self set] setValues:result];
     
     //TODO: optimize and do not do it here but when batch props are applied 
     [self notifyDataSetChanged:nil];
-    [self replaceValue:value forKey:@"yVals" notification:NO];
+    [self replaceValue:value forKey:@"values" notification:NO];
 }
 
 
@@ -210,18 +210,26 @@
     return @([_set entryCount]);
 }
 
-- (id)yValForXIndex:(id)x {
-    return @([_set yValForXIndex:[TiUtils intValue:x]]);
+- (id)yValForX:(id)x {
+    ChartDataEntry* entry = [self entryForX:x];
+    if (entry) {
+        return @(entry.y);
+    }
 }
-- (id)yValsForXIndex:(id)x {
-    return [_set yValsForXIndex:[TiUtils intValue:x]];
+- (id)yValsForX:(id)x {
+    NSArray<ChartDataEntry *> * entries = [[self set] entriesForXValue:[TiUtils intValue:x]];
+    NSMutableArray* result = [NSMutableArray array];
+    [entries enumerateObjectsUsingBlock:^(ChartDataEntry * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [result addObject:@(obj.y)];
+    }];
+    return result;
 }
 
 -(NSMutableDictionary*)chartDataEntryDict:(ChartDataEntry *)entry {
     if (entry) {
         NSMutableDictionary* result = [NSMutableDictionary dictionary];
-        [result setObject:@(entry.value) forKey:@"value"];
-        [result setObject:@(entry.xIndex) forKey:@"xIndex"];
+        [result setObject:@(entry.y) forKey:@"y"];
+        [result setObject:@(entry.x) forKey:@"x"];
         if (entry.data)
         {
             [result setObject:entry.data forKey:@"data"];
@@ -247,22 +255,22 @@
 - (id)entryForIndex:(id)i {
     return [self chartDataEntryDict:[[self set] entryForIndex:[TiUtils intValue:i]]];
 }
-- (id)entryForXIndex:(id)args {
+- (id)entryForX:(id)args {
     ENSURE_SINGLE_ARG(args, NSDictionary)
-    ChartDataEntry * entry = [[self set] entryForXIndex:[TiUtils intValue:@"xIndex" properties:args] rounding:[AkylasCharts2Module entryRoundValue:[args objectForKey:@"round"]]];
+    ChartDataEntry * entry = [[self set] entryIndexWithX:[TiUtils intValue:@"x" properties:args] rounding:[AkylasCharts2Module entryRoundValue:[args objectForKey:@"round"]]];
     return [self chartDataEntryDict:[entry autorelease]];
 }
-- (id)entriesForXIndex:(id)x {
-    NSArray<ChartDataEntry *> * entries = [[self set] entriesForXIndex:[TiUtils intValue:x]];
+- (id)entriesForX:(id)x {
+    NSArray<ChartDataEntry *> * entries = [[self set] entriesForXValue:[TiUtils intValue:x]];
     NSMutableArray* result = [NSMutableArray array];
     [entries enumerateObjectsUsingBlock:^(ChartDataEntry * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         [result addObject:[self chartDataEntryDict:obj]];
     }];
     return result;
 }
-- (id)entryIndexWithXIndex:(id)args {
+- (id)entryIndexWithX:(id)args {
     ENSURE_SINGLE_ARG(args, NSDictionary)
-    NSInteger result = [[self set] entryIndexWithXIndex:[TiUtils intValue:@"xIndex" properties:args] rounding:[AkylasCharts2Module entryRoundValue:[args objectForKey:@"round"]]];
+    NSInteger result = [[self set] entryIndexWithX:[TiUtils intValue:@"x" properties:args] rounding:[AkylasCharts2Module entryRoundValue:[args objectForKey:@"round"]]];
     return @(result);
 }
 
@@ -285,7 +293,10 @@
 }
 
 - (id)removeEntryWithXIndex:(id)x {
-    return @([[self set] removeEntryWithXIndex:[TiUtils intValue:x]]);
+    ChartDataEntry* entry = [self entryForX:x];
+    if (entry) {
+        return [self removeEntry:entry];
+    }
 }
 
 - (id)removeFirst:(id)x {

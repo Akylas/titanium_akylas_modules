@@ -8,6 +8,7 @@
 
 #import "AkylasCharts2BarChartProxy.h"
 #import "BarChart.h"
+#import "AkylasCharts2BarChartDataProxy.h"
 
 @implementation AkylasCharts2BarChartProxy
 
@@ -15,6 +16,11 @@
 {
     BarChart *newView = [[BarChart alloc] init];
     return newView;
+}
+
+
+-(Class)dataClass {
+    return [AkylasCharts2BarChartDataProxy class];
 }
 
 @end

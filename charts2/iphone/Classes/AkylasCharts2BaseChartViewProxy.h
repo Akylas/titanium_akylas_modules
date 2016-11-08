@@ -6,8 +6,26 @@
  */
 #import "TiViewProxy.h"
 
+@class ChartXAxisProxy;
+@class ChartDataProxy;
+@class ChartLegendProxy;
+@class ChartViewBase;
 @interface AkylasCharts2BaseChartViewProxy : TiViewProxy
+{
+    ChartXAxisProxy* _xAxisProxy;
+    ChartLegendProxy* _legendProxy;
+    ChartDataProxy* _dataProxy;
+    TiProxy* _rootProxy;
+}
 
+-(ChartViewBase*)chartView;
+-(void)unarchivedWithRootProxy:(TiProxy*)rootProxy;
+//-(ChartDataProxy*)dataProxy;
+-(Class)dataClass;
 -(void) notifyDataSetChanged:(id)ununsed;
 -(void) redraw:(id)ununsed;
+
+-(void)setXAxis:(id)value;
+-(void)setData:(id)value;
+-(void)setLegend:(id)value;
 @end

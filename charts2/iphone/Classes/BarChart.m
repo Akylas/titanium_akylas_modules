@@ -7,7 +7,6 @@
 //
 
 #import "BarChart.h"
-#import "AkylasCharts2BarChartDataProxy.h"
 
 @implementation BarChart
 
@@ -25,14 +24,11 @@
     return (BarChartView*)_chartView;
 }
 
--(Class)dataClass {
-    return [AkylasCharts2BarChartDataProxy class];
-}
 
--(void)setDrawHighlightArrow_:(id)value
-{
-    [[self getOrCreateBarChartView] setDrawHighlightArrowEnabled:[TiUtils boolValue:value]];
-}
+//-(void)setDrawHighlightArrow_:(id)value
+//{
+//    [[self getOrCreateBarChartView] setDrawHighlightArrowEnabled:[TiUtils boolValue:value]];
+//}
 -(void)setDrawValueAboveBar_:(id)value
 {
     [[self getOrCreateBarChartView] setDrawValueAboveBarEnabled:[TiUtils boolValue:value]];

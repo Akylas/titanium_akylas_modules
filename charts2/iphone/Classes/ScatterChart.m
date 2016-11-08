@@ -7,7 +7,6 @@
 //
 
 #import "ScatterChart.h"
-#import "AkylasCharts2ScatterChartDataProxy.h"
 
 @implementation ScatterChart
 
@@ -24,8 +23,5 @@
     return (ScatterChartView*)_chartView;
 }
 
--(Class)dataClass {
-    return [AkylasCharts2ScatterChartDataProxy class];
-}
 
 @end

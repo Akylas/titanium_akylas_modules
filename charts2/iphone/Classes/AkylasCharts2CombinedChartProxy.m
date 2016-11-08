@@ -8,6 +8,7 @@
 
 #import "AkylasCharts2CombinedChartProxy.h"
 #import "CombinedChart.h"
+#import "AkylasCharts2CombinedChartDataProxy.h"
 @implementation AkylasCharts2CombinedChartProxy
 
 
@@ -16,4 +17,10 @@
     CombinedChart *newView = [[CombinedChart alloc] init];
     return newView;
 }
+
+
+-(Class)dataClass {
+    return [AkylasCharts2CombinedChartDataProxy class];
+}
+
 @end

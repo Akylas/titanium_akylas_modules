@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.0.0
-apiversion: 2
+apiversion: 3
 description: charts2
 author: Your Name
 license: Specify your license

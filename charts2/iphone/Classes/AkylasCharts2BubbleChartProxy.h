@@ -6,8 +6,8 @@
 //
 //
 
-#import "AkylasCharts2BaseChartViewProxy.h"
+#import "BarLineChartViewBaseProxy.h"
 
-@interface AkylasCharts2BubbleChartProxy : AkylasCharts2BaseChartViewProxy
+@interface AkylasCharts2BubbleChartProxy : BarLineChartViewBaseProxy
 
 @end

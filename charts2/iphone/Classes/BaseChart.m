@@ -11,6 +11,7 @@
 #import "ChartDataProxy.h"
 #import "ChartDataSetProxy.h"
 #import "TiViewProxy.h"
+#import "AkylasCharts2BaseChartViewProxy.h"
 
 //#import "akylas_charts2-Swift.h"
 
@@ -29,7 +30,7 @@
 {
     if (_descriptionPosition) {
         CGPoint size = [_descriptionPosition pointWithinSize:bounds.size];
-        [[self getOrCreateChartView] setDescriptionTextPositionWithX:size.x y:size.y];
+//        [[self getOrCreateChartView] setDescriptionTextPositionWithX:size.x y:size.y];
     }
     if (_chartView != nil) {
         [TiUtils setView:_chartView positionRect:bounds];
@@ -38,19 +39,6 @@
 }
 
 -(void)dealloc {
-    if (_dataProxy) {
-        _dataProxy.parentChartViewProxy = nil;
-        [_dataProxy cleanupBeforeRelease];
-        RELEASE_TO_NIL(_dataProxy)
-    }
-    if (_xAxisProxy) {
-        _xAxisProxy.parentChartViewProxy = nil;
-        RELEASE_TO_NIL(_xAxisProxy)
-    }
-    if (_legendProxy) {
-        _legendProxy.parentChartViewProxy = nil;
-        RELEASE_TO_NIL(_legendProxy)
-    }
     RELEASE_WITH_DELEGATE(_chartView)
     RELEASE_TO_NIL(_descriptionPosition)
     [super dealloc];
@@ -70,6 +58,11 @@
     return _chartView;
 }
 
+-(ChartViewBase*)chartView {
+    return _chartView;
+}
+
+
 -(void)configurationSet
 {
     [super configurationSet];
@@ -82,103 +75,46 @@
     [_chartView highlightValues:nil];
 }
 
--(void)unarchivedWithRootProxy:(TiProxy*)rootProxy
-{
-//    [super unarchiveFromTemplate:viewTemplate_ withEvents:withEvents rootProxy:rootProxy];
-    [_dataProxy unarchivedWithRootProxy:rootProxy];
-    [_legendProxy unarchivedWithRootProxy:rootProxy];
-    [_xAxisProxy unarchivedWithRootProxy:rootProxy];
-}
-
 -(void) notifyDataSetChanged
 {
 }
 
--(ChartLegend*)legend {
-    return [[self getOrCreateChartView] legend];
+//-(ChartLegend*)legend {
+//    return [[self getOrCreateChartView] legend];
+//}
+//
+//
+//-(ChartData*)data {
+//    return [[self getOrCreateChartView] data];
+//}
+
+
+-(ChartDataProxy*) dataProxy {
+    return [(AkylasCharts2BaseChartViewProxy*)[self proxy] data];
 }
 
 
--(ChartData*)data {
-    return [[self getOrCreateChartView] data];
-}
 
-
--(ChartXAxisProxy*)xAxisProxy {
-    if (!_xAxisProxy) {
-        _xAxisProxy =[[ChartXAxisProxy alloc] _initWithPageContext:[[self proxy] getContext] args:nil axis:[[self getOrCreateChartView] xAxis]];
-        _xAxisProxy.parentChartViewProxy = (AkylasCharts2BaseChartViewProxy*)proxy;
-   }
-    return _xAxisProxy;
-}
-
--(ChartLegendProxy*)legendProxy {
-    if (!_legendProxy) {
-        _legendProxy =[[ChartLegendProxy alloc] _initWithPageContext:[[self proxy] getContext] args:nil axis:[self legend]];
-        _legendProxy.parentChartViewProxy = (AkylasCharts2BaseChartViewProxy*)proxy;
-    }
-    return _legendProxy;
-}
--(ChartDataProxy*)dataProxy {
-    if (!_dataProxy) {
-        _dataProxy =[[[self dataClass] alloc] _initWithPageContext:[[self proxy] getContext] args:nil data:nil];
-        _dataProxy.parentChartViewProxy = (AkylasCharts2BaseChartViewProxy*)proxy;
-    }
-    return _dataProxy;
-}
-
--(void)setXAxis_:(id)value
+-(void)setData_:(id)value
 {
-    ENSURE_DICT(value)
-    [[self proxy] applyProperties:value onBindedProxy:[self xAxisProxy]];
-}
-
--(id)xAxis_
-{
-    return [self xAxisProxy];
+    [(AkylasCharts2BaseChartViewProxy*)[self proxy] setData:value];
 }
 
 -(void)setLegend_:(id)value
 {
-    ENSURE_DICT(value)
-    [[self proxy] applyProperties:value onBindedProxy:[self legendProxy]];
+    [(AkylasCharts2BaseChartViewProxy*)[self proxy] setLegend:value];
 }
 
--(id)legend_
+-(void)setXAxis_:(id)value
 {
-    return [self legendProxy];
+    [(AkylasCharts2BaseChartViewProxy*)[self proxy] setXAxis:value];
 }
 
 
--(Class)dataClass {
-    return nil;
-}
-
--(void)setData_:(id)value
-{
-    Class theClass = [self dataClass];
-    
-    if (IS_OF_CLASS(value, theClass)) {
-        if (_dataProxy) {
-            _dataProxy.parentChartViewProxy = nil;
-            RELEASE_TO_NIL(_dataProxy)
-        }
-        _dataProxy = [value retain];
-        _dataProxy.parentChartViewProxy = (AkylasCharts2BaseChartViewProxy*)proxy;
-    } else if (IS_OF_CLASS(value, NSDictionary)) {
-//        ChartData* data = [self getOrCreateChartView].data;
-        [[self proxy] applyProperties:value onBindedProxy:[self dataProxy]];
-//        [self getOrCreateChartView].data = [_dataProxy data];
-    } else {
-        [self.proxy throwException:@"Invalid argument passed to data property" subreason:@"You must pass a correct data property" location:CODELOCATION];
-    }
-    [self getOrCreateChartView].data = [_dataProxy data];
-}
-
--(id)data_
-{
-    return [self dataProxy];
-}
+//-(id)data_
+//{
+//    return [self dataProxy];
+//}
 -(void)setDrawMarkers_:(id)value
 {
     [[self getOrCreateChartView] setDrawMarkers:[TiUtils boolValue:value]];
@@ -221,12 +157,12 @@
 
 -(void)setNoDataFont_:(id)value
 {
-    [[self getOrCreateChartView] setInfoFont:[[TiUtils fontValue:value] font]];
+    [[self getOrCreateChartView] setNoDataFont:[[TiUtils fontValue:value] font]];
 }
 
 -(void)setNoDataColor_:(id)value
 {
-    [[self getOrCreateChartView] setInfoTextColor:[[TiUtils colorValue:value] _color]];
+    [[self getOrCreateChartView] setNoDataTextColor:[[TiUtils colorValue:value] _color]];
 }
 
 -(void)setNoData_:(id)value
@@ -234,10 +170,10 @@
     [[self getOrCreateChartView] setNoDataText:[TiUtils stringValue:value]];
 }
 
--(void)setNoDataTextDescription_:(id)value
-{
-    [[self getOrCreateChartView] setNoDataTextDescription:[TiUtils stringValue:value]];
-}
+//-(void)setNoDataTextDescription_:(id)value
+//{
+//    [[self getOrCreateChartView] setNoDataTextDescription:[TiUtils stringValue:value]];
+//}
 
 -(void)setExtraOffset_:(id)value
 {
@@ -260,7 +196,7 @@
     BOOL hasClick = [proxy _hasListeners:@"click"];
     if (hasHighlight || hasClick)
     {
-        ChartDataSetProxy* dataSetProxy = [[self data_] dataSetAtIndex:dataSetIndex];
+        ChartDataSetProxy* dataSetProxy = [[self dataProxy] dataSetAtIndex:dataSetIndex];
         NSDictionary* event = @{
                                 @"data":[dataSetProxy chartDataEntryDict:entry],
                                @"dataSetIndex":@(dataSetIndex)

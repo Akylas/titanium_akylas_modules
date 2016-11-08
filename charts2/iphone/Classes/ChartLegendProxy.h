@@ -15,6 +15,8 @@
 }
 
 @property(nonatomic, readwrite, retain) AkylasCharts2BaseChartViewProxy* _Nullable parentChartViewProxy;
--(id _Nonnull)_initWithPageContext:(id<TiEvaluator> _Nonnull)context args:(NSArray* _Nullable)args axis:(ChartLegend* _Nullable)legend;
+-(id _Nullable)_initWithPageContext:(id<TiEvaluator> _Nullable)context_ args:(NSArray* _Nullable)args legend:(ChartLegend* _Nullable)legend;
+-(void)setLegend:(ChartLegend* _Nullable)legend;
+-(ChartLegend* _Nullable)legend;
 -(void)unarchivedWithRootProxy:(TiProxy* _Nullable)rootProxy;
 @end

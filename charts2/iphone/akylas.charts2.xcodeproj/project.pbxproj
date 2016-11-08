@@ -46,7 +46,6 @@
 		D51EA5311D4CE265004854BC /* AkylasCharts2BarLineScatterCandleBubbleChartDataSetProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D51EA52F1D4CE265004854BC /* AkylasCharts2BarLineScatterCandleBubbleChartDataSetProxy.m */; };
 		D51EA5371D4CE97E004854BC /* CustomChartsMarker.h in Headers */ = {isa = PBXBuildFile; fileRef = D51EA5351D4CE97E004854BC /* CustomChartsMarker.h */; };
 		D51EA5381D4CE97E004854BC /* CustomChartsMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = D51EA5361D4CE97E004854BC /* CustomChartsMarker.m */; };
-		D526B5F11D4D112D001AE285 /* Charts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D526B5F01D4D112D001AE285 /* Charts.framework */; };
 		D53B6F901D4B436B002B9269 /* ChartLegendProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D53B6F8E1D4B436B002B9269 /* ChartLegendProxy.h */; };
 		D53B6F911D4B436B002B9269 /* ChartLegendProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D53B6F8F1D4B436B002B9269 /* ChartLegendProxy.m */; };
 		D53B6F941D4B43EB002B9269 /* ChartDataProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D53B6F921D4B43EB002B9269 /* ChartDataProxy.h */; };
@@ -127,6 +126,8 @@
 		D574E5941D4B3C1300E6AA20 /* ChartXAxisProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D574E5921D4B3C1300E6AA20 /* ChartXAxisProxy.m */; };
 		D574E5971D4B3F7800E6AA20 /* ChartYAxisProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D574E5951D4B3F7800E6AA20 /* ChartYAxisProxy.h */; };
 		D574E5981D4B3F7800E6AA20 /* ChartYAxisProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D574E5961D4B3F7800E6AA20 /* ChartYAxisProxy.m */; };
+		D5DAE6451DA9622300568FB6 /* BarLineChartViewBaseProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5DAE6431DA9622300568FB6 /* BarLineChartViewBaseProxy.h */; };
+		D5DAE6461DA9622300568FB6 /* BarLineChartViewBaseProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5DAE6441DA9622300568FB6 /* BarLineChartViewBaseProxy.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -136,6 +137,41 @@
 			proxyType = 1;
 			remoteGlobalIDString = D2AAC07D0554694100DB518D;
 			remoteInfo = charts2;
+		};
+		D54305C11D91762E00CABE34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 06165F241D8110E600722320;
+			remoteInfo = Charts;
+		};
+		D54305C31D91762E00CABE34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 06165F2E1D8110E600722320;
+			remoteInfo = ChartsTests;
+		};
+		D54305C51D91762E00CABE34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 06B120D51D811E6200D14B02;
+			remoteInfo = ChartsRealm;
+		};
+		D54305C71D91762E00CABE34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 06B120FF1D811F1600D14B02;
+			remoteInfo = ChartsRealmTests;
+		};
+		D54305C91D91763200CABE34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 06165F231D8110E600722320;
+			remoteInfo = Charts;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -166,7 +202,6 @@
 		D51EA52F1D4CE265004854BC /* AkylasCharts2BarLineScatterCandleBubbleChartDataSetProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasCharts2BarLineScatterCandleBubbleChartDataSetProxy.m; path = Classes/AkylasCharts2BarLineScatterCandleBubbleChartDataSetProxy.m; sourceTree = "<group>"; };
 		D51EA5351D4CE97E004854BC /* CustomChartsMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CustomChartsMarker.h; path = Classes/CustomChartsMarker.h; sourceTree = "<group>"; };
 		D51EA5361D4CE97E004854BC /* CustomChartsMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CustomChartsMarker.m; path = Classes/CustomChartsMarker.m; sourceTree = "<group>"; };
-		D526B5F01D4D112D001AE285 /* Charts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Charts.framework; path = platform/embeddedFrameworks/Charts.framework; sourceTree = "<group>"; };
 		D53B6F8E1D4B436B002B9269 /* ChartLegendProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ChartLegendProxy.h; path = Classes/ChartLegendProxy.h; sourceTree = "<group>"; };
 		D53B6F8F1D4B436B002B9269 /* ChartLegendProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ChartLegendProxy.m; path = Classes/ChartLegendProxy.m; sourceTree = "<group>"; };
 		D53B6F921D4B43EB002B9269 /* ChartDataProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ChartDataProxy.h; path = Classes/ChartDataProxy.h; sourceTree = "<group>"; };
@@ -242,12 +277,15 @@
 		D5414AD71D4E74D000337076 /* AkylasCharts2ScatterChartDataSetProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasCharts2ScatterChartDataSetProxy.m; path = Classes/AkylasCharts2ScatterChartDataSetProxy.m; sourceTree = "<group>"; };
 		D5414ADA1D4E75CD00337076 /* AkylasCharts2ScatterChartProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasCharts2ScatterChartProxy.h; path = Classes/AkylasCharts2ScatterChartProxy.h; sourceTree = "<group>"; };
 		D5414ADB1D4E75CD00337076 /* AkylasCharts2ScatterChartProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasCharts2ScatterChartProxy.m; path = Classes/AkylasCharts2ScatterChartProxy.m; sourceTree = "<group>"; };
+		D54305BA1D91762E00CABE34 /* Charts.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Charts.xcodeproj; path = ../../../../../ios/Charts/Charts.xcodeproj; sourceTree = "<group>"; };
 		D574E5851D4B329A00E6AA20 /* AkylasCharts2LimitLineProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasCharts2LimitLineProxy.h; path = Classes/AkylasCharts2LimitLineProxy.h; sourceTree = "<group>"; };
 		D574E5861D4B329A00E6AA20 /* AkylasCharts2LimitLineProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasCharts2LimitLineProxy.m; path = Classes/AkylasCharts2LimitLineProxy.m; sourceTree = "<group>"; };
 		D574E5911D4B3C1300E6AA20 /* ChartXAxisProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ChartXAxisProxy.h; path = Classes/ChartXAxisProxy.h; sourceTree = "<group>"; };
 		D574E5921D4B3C1300E6AA20 /* ChartXAxisProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ChartXAxisProxy.m; path = Classes/ChartXAxisProxy.m; sourceTree = "<group>"; };
 		D574E5951D4B3F7800E6AA20 /* ChartYAxisProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ChartYAxisProxy.h; path = Classes/ChartYAxisProxy.h; sourceTree = "<group>"; };
 		D574E5961D4B3F7800E6AA20 /* ChartYAxisProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ChartYAxisProxy.m; path = Classes/ChartYAxisProxy.m; sourceTree = "<group>"; };
+		D5DAE6431DA9622300568FB6 /* BarLineChartViewBaseProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BarLineChartViewBaseProxy.h; path = Classes/BarLineChartViewBaseProxy.h; sourceTree = "<group>"; };
+		D5DAE6441DA9622300568FB6 /* BarLineChartViewBaseProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BarLineChartViewBaseProxy.m; path = Classes/BarLineChartViewBaseProxy.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,7 +294,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */,
-				D526B5F11D4D112D001AE285 /* Charts.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,6 +311,7 @@
 		0867D691FE84028FC02AAC07 /* charts2 */ = {
 			isa = PBXGroup;
 			children = (
+				D54305BA1D91762E00CABE34 /* Charts.xcodeproj */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
@@ -285,7 +323,6 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D526B5F01D4D112D001AE285 /* Charts.framework */,
 				AACBBE490F95108600F1A2B1 /* Foundation.framework */,
 			);
 			name = Frameworks;
@@ -438,8 +475,21 @@
 				D5414ACB1D4E723300337076 /* AkylasCharts2RadarChartProxy.m */,
 				D5414ADA1D4E75CD00337076 /* AkylasCharts2ScatterChartProxy.h */,
 				D5414ADB1D4E75CD00337076 /* AkylasCharts2ScatterChartProxy.m */,
+				D5DAE6431DA9622300568FB6 /* BarLineChartViewBaseProxy.h */,
+				D5DAE6441DA9622300568FB6 /* BarLineChartViewBaseProxy.m */,
 			);
 			name = proxies;
+			sourceTree = "<group>";
+		};
+		D54305BB1D91762E00CABE34 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D54305C21D91762E00CABE34 /* Charts.framework */,
+				D54305C41D91762E00CABE34 /* ChartsTests.xctest */,
+				D54305C61D91762E00CABE34 /* ChartsRealm.framework */,
+				D54305C81D91762E00CABE34 /* ChartsRealmTests.xctest */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -479,6 +529,7 @@
 				D5414AC41D4E706A00337076 /* AkylasCharts2RadarChartDataProxy.h in Headers */,
 				D5414A9C1D4E5A5300337076 /* AkylasCharts2CombinedChartDataProxy.h in Headers */,
 				D5414AB81D4E6A3100337076 /* AkylasCharts2PieChartDataSetProxy.h in Headers */,
+				D5DAE6451DA9622300568FB6 /* BarLineChartViewBaseProxy.h in Headers */,
 				D51EA5371D4CE97E004854BC /* CustomChartsMarker.h in Headers */,
 				D5414A841D4E409400337076 /* AkylasCharts2BubbleChartProxy.h in Headers */,
 				D5414AD01D4E744300337076 /* ScatterChart.h in Headers */,
@@ -519,6 +570,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				D54305CA1D91763200CABE34 /* PBXTargetDependency */,
 			);
 			name = akylas.charts2;
 			productName = akylas.charts2;
@@ -547,6 +599,12 @@
 			mainGroup = 0867D691FE84028FC02AAC07 /* charts2 */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = D54305BB1D91762E00CABE34 /* Products */;
+					ProjectRef = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				D2AAC07D0554694100DB518D /* akylas.charts2 */,
@@ -554,6 +612,37 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		D54305C21D91762E00CABE34 /* Charts.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Charts.framework;
+			remoteRef = D54305C11D91762E00CABE34 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D54305C41D91762E00CABE34 /* ChartsTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = ChartsTests.xctest;
+			remoteRef = D54305C31D91762E00CABE34 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D54305C61D91762E00CABE34 /* ChartsRealm.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = ChartsRealm.framework;
+			remoteRef = D54305C51D91762E00CABE34 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D54305C81D91762E00CABE34 /* ChartsRealmTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = ChartsRealmTests.xctest;
+			remoteRef = D54305C71D91762E00CABE34 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		24416B8011C4CA220047AFDD /* ShellScript */ = {
@@ -577,6 +666,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D51EA5161D4B8A59004854BC /* AkylasCharts2LineChartProxy.m in Sources */,
+				D5DAE6461DA9622300568FB6 /* BarLineChartViewBaseProxy.m in Sources */,
 				D5414AD11D4E744300337076 /* ScatterChart.m in Sources */,
 				D502AD141D48ED26006F6788 /* AkylasCharts2BaseChartViewProxy.m in Sources */,
 				D53B6FA51D4B504B002B9269 /* AkylasCharts2LineRadarChartDataSetProxy.m in Sources */,
@@ -637,6 +727,11 @@
 			isa = PBXTargetDependency;
 			target = D2AAC07D0554694100DB518D /* akylas.charts2 */;
 			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
+		};
+		D54305CA1D91763200CABE34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Charts;
+			targetProxy = D54305C91D91763200CABE34 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

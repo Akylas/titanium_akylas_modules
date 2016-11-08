@@ -10,7 +10,7 @@
 
 
 
-@interface FillCallbackFormatter: NSObject<ChartFillFormatter>
+@interface FillCallbackFormatter: NSObject<IChartFillFormatter>
 -(id _Nonnull)initWithCallback:(KrollCallback* _Nonnull)callback;
 - (CGFloat)getFillLinePositionWithDataSet:(id <ILineChartDataSet> _Nonnull)dataSet dataProvider:(id <LineChartDataProvider> _Nonnull)dataProvider;
 @end

@@ -8,8 +8,6 @@
 
 #import "LineChart.h"
 #import "ChartYAxisProxy.h"
-#import "AkylasCharts2LineChartDataProxy.h"
-#import "AkylasCharts2LineChartDataProxy.h"
 
 @implementation LineChart {
 }
@@ -20,8 +18,5 @@
     return [[LineChartView alloc] initWithFrame:CGRectZero];
 }
 
--(Class)dataClass {
-    return [AkylasCharts2LineChartDataProxy class];
-}
 
 @end

@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.titanium.util.TiConvert;
+import org.appcelerator.titanium.view.TiUIView;
 
 import com.github.mikephil.charting.components.YAxis;
 
@@ -31,17 +33,28 @@ public abstract class BarLineChartViewBaseProxy extends ChartBaseViewProxy {
             _rightAxisProxy = null;
         }
     }
+    
+    @Override
+    public void handleCreationDict(HashMap dict) {
+        super.handleCreationDict(dict);
+        if (dict.containsKey("leftAxis")) {
+            setLeftAxis(TiConvert.toHashMap(dict .get("leftAxis")));
+        }
+        if (dict.containsKey("rightAxis")) {
+            setRightAxis(TiConvert.toHashMap(dict .get("rightAxis")));
+        }
+    }
 
     @Override
-    protected void viewDidRealize(final boolean enableModelListener,
+    public void realizeViews(TiUIView view, final boolean enableModelListener,
             final boolean processProperties) {
-        super.viewDidRealize(enableModelListener, processProperties);
         if (_leftAxisProxy != null) {
             _leftAxisProxy.setAxis(getChartLeftAxis());
         }
         if (_rightAxisProxy != null) {
             _rightAxisProxy.setAxis(getChartRightAxis());
         }
+        super.realizeViews(view, enableModelListener, processProperties);
     }
 
     public BarLineChartViewBase getOrCreateChartView() {
@@ -64,27 +77,47 @@ public abstract class BarLineChartViewBaseProxy extends ChartBaseViewProxy {
         }
         return null;
     }
+    
+    public YAxisProxy getOrCreateLeftAxis(HashMap value) {
+        if (_leftAxisProxy == null) {
+            _leftAxisProxy = (YAxisProxy) KrollProxy.createProxy(YAxisProxy.class,
+                    value);
+            _leftAxisProxy.setActivity(getActivity());
+            _leftAxisProxy.updateKrollObjectProperties();
+            _leftAxisProxy.setAxis(getChartLeftAxis());
+            _leftAxisProxy.setParentChartProxy(this);
+            if (_leftAxisProxy != null) {
+                _leftAxisProxy.unarchivedWithRootProxy(_rootProxy);
+            }
+        }
+        return _leftAxisProxy;
+    }
+    
+    public YAxisProxy getOrCreateRightAxis(HashMap value) {
+        if (_rightAxisProxy == null) {
+            _rightAxisProxy = (YAxisProxy) KrollProxy.createProxy(YAxisProxy.class,
+                    value);
+            _rightAxisProxy.setActivity(getActivity());
+            _rightAxisProxy.updateKrollObjectProperties();
+            _rightAxisProxy.setAxis(getChartLeftAxis());
+            _rightAxisProxy.setParentChartProxy(this);
+            if (_rightAxisProxy != null) {
+                _rightAxisProxy.unarchivedWithRootProxy(_rootProxy);
+            }
+        }
+        return _rightAxisProxy;
+    }
 
     @Kroll.method
     @Kroll.getProperty
     public YAxisProxy getLeftAxis() {
-        if (_leftAxisProxy == null) {
-            _leftAxisProxy = (YAxisProxy) KrollProxy
-                    .createProxy(YAxisProxy.class, null);
-            _leftAxisProxy.setActivity(getActivity());
-
-            _leftAxisProxy.setAxis(getChartLeftAxis());
-            _leftAxisProxy.updateKrollObjectProperties();
-            _leftAxisProxy.setParentChartProxy(this);
-           ;
-        }
-        return _leftAxisProxy;
+        return getOrCreateLeftAxis(null);
     }
 
     @Kroll.method
     @Kroll.setProperty
     public void setLeftAxis(HashMap value) {
-        getLeftAxis().applyProperties(value);
+        getOrCreateLeftAxis(value);
     }
 
     protected YAxis getChartRightAxis() {
@@ -97,20 +130,12 @@ public abstract class BarLineChartViewBaseProxy extends ChartBaseViewProxy {
     @Kroll.method
     @Kroll.getProperty
     public YAxisProxy getRightAxis() {
-        if (_rightAxisProxy == null) {
-            _rightAxisProxy = (YAxisProxy) KrollProxy
-                    .createProxy(YAxisProxy.class, null);
-            _rightAxisProxy.setActivity(getActivity());
-            _rightAxisProxy.updateKrollObjectProperties();
-            _rightAxisProxy.setAxis(getChartRightAxis());
-            _rightAxisProxy.setParentChartProxy(this);
-        }
-        return _rightAxisProxy;
+        return getOrCreateRightAxis(null);
     }
 
     @Kroll.method
     @Kroll.setProperty
     public void setRightAxis(HashMap value) {
-        getRightAxis().applyProperties(value);
+        getOrCreateRightAxis(value);
     }
 }

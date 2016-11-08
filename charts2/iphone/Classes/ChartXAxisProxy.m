@@ -30,11 +30,11 @@
     [self replaceValue:value forKey:@"labelPosition" notification:NO];
 }
 
--(void)setSpaceBetweenLabels:(id)value
-{
-    [[self axis] setSpaceBetweenLabels:[TiUtils intValue:value]];
-    [self replaceValue:value forKey:@"spaceBetweenLabels" notification:NO];
-}
+//-(void)setSpaceBetweenLabels:(id)value
+//{
+//    [[self axis] setSpaceBetweenLabels:[TiUtils intValue:value]];
+//    [self replaceValue:value forKey:@"spaceBetweenLabels" notification:NO];
+//}
 
 -(void)setLabelWidth:(id)value
 {
@@ -59,9 +59,9 @@
     if (IS_OF_CLASS(value, KrollCallback)) {
         [[self axis] setValueFormatter:[[[XAxisValueCallbackFormatter alloc] initWithCallback:value] autorelease]];
     } else  {
-        NSNumberFormatter* formatter = [AkylasCharts2Module numberFormatterValue:value];
+        ChartDefaultAxisValueFormatter* formatter = [AkylasCharts2Module axisNumberFormatterValue:value];
         if (formatter) {
-            [[self axis] setValueFormatter:[[[XAxisValueCallbackFormatter alloc] initWithNumberFormatter:formatter] autorelease]];
+            [[self axis] setValueFormatter:[formatter autorelease]];
         } else {
             [[self axis] setValueFormatter:nil];
         }
@@ -76,16 +76,16 @@
 }
 
 
--(void)setLabelsToSkip:(id)value
-{
-    NSInteger result = [TiUtils intValue:value];
-    if (result >= 0) {
-        [[self axis] setLabelsToSkip:result];
-    } else {
-        [[self axis] resetLabelsToSkip];
-    }
-    [self replaceValue:value forKey:@"labelsToSkip" notification:NO];
-}
+//-(void)setLabelsToSkip:(id)value
+//{
+//    NSInteger result = [TiUtils intValue:value];
+//    if (result >= 0) {
+//        [[self axis] setLabelsToSkip:result];
+//    } else {
+//        [[self axis] resetLabelsToSkip];
+//    }
+//    [self replaceValue:value forKey:@"labelsToSkip" notification:NO];
+//}
 
 
 @end

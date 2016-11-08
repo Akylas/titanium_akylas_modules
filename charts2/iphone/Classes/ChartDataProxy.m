@@ -55,7 +55,7 @@
 }
 
 -(void)setXVals:(id)args {
-    [[self data] setXValsObjc:args];
+//    [[self data] setXValsObjc:args];
     //TODO: optimize and do not do it here but when batch props are applied
     [self notifyDataChanged:nil];
     [self replaceValue:args forKey:@"xVals" notification:NO];

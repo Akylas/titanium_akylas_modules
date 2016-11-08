@@ -7,6 +7,7 @@
 //
 
 #import "AkylasCharts2ScatterChartDataSetProxy.h"
+#import "AkylasCharts2ScatterChartDataProxy.h"
 
 @implementation AkylasCharts2ScatterChartDataSetProxy
 
@@ -52,4 +53,9 @@
 ////    [[self set] setScatterShapeHoleColor:[[TiUtils colorValue:value] _color]];
 //    [self replaceValue:value forKey:@"customScatterShape" notification:NO];
 //}
+
+
+-(Class)dataClass {
+    return [AkylasCharts2ScatterChartDataProxy class];
+}
 @end

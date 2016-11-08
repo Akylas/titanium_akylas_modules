@@ -303,7 +303,7 @@ public class Charts2Module extends ProtectedModule {
                             int dataSetIndex, ViewPortHandler viewPortHandler) {
                         Object result = labelFormatCallback.call(
                                 theProxy.getKrollObject(),
-                                new Object[] { (Number) value });
+                                new Object[] { (Number) value,  dataSetIndex});
                         return TiConvert.toString(result);
                     }
                 };

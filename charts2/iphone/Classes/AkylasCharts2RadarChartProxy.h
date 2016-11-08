@@ -10,4 +10,5 @@
 
 @interface AkylasCharts2RadarChartProxy : AkylasCharts2BaseChartViewProxy
 
+-(void)setYAxis:(id)value;
 @end
