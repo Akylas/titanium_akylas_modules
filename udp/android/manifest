@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.2
-apiversion: 2
+apiversion: 3
 description: an enhanced UDP module
 author: Martin Guillon
 license: Proprietary

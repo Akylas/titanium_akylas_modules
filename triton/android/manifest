@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.0
-apiversion: 2
+apiversion: 3
 description: Titanium Triton module for Android
 author: Martin Guillon
 license: Proprietary

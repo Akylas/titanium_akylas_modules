@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.0
-apiversion: 2
+apiversion: 3
 description: Total Immersion Module
 author: Martin Guillon
 license: Proprietary

@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.0
-apiversion: 2
+apiversion: 3
 description: An enhanced motion module
 author: Martin Guillon
 license: Proprietary

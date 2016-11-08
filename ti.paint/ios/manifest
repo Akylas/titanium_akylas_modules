@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.4.0
-apiversion: 2
+apiversion: 3
 architectures: armv7 i386 x86_64 arm64
 description: Provides a paint surface user interface view.
 author: Jeff Haynie 

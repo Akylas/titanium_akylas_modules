@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 0.2
-apiversion: 2
+apiversion: 3
 description: Akylas gestures module
 author: Martin Guillon
 license: Proprietary

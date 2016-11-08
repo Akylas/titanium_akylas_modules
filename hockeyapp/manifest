@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.0.1
-apiversion: 2
+apiversion: 3
 description: An hockeyapp module
 author: Martin Guillon
 license: Proprietary

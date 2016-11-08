@@ -3,6 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 1.0
+apiversion: 3
 description: A module to implement the PLCrashReporter SDK
 author: Akylas
 license: See LICENSE file

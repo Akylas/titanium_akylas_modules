@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 2.0
-apiversion: 2
+apiversion: 3
 description: Akylas location module
 author: Martin Guillon
 license: Proprietary
