@@ -9,7 +9,10 @@ import org.appcelerator.titanium.view.TiUINonViewGroupView;
 import akylas.camera.cameramanager.CameraManager;
 import akylas.camera.cameramanager.CameraManager.OnPreviewStartedListener;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.hardware.Camera;
+import android.hardware.Camera.Size;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
@@ -278,6 +281,16 @@ public class CameraView extends TiUINonViewGroupView implements SurfaceHolder.Ca
             }
             break;
         case "quality":
+            break;
+        case "jpegQuality":
+            CameraManager.get().setJpegQuality(TiConvert.toInt(newValue, -1));
+            break;
+        case "pictureSize":
+            PointF point = TiConvert.toPointF(newValue);
+            CameraManager.get().setPictureSize(new Point((int) point.x, (int) point.y));
+            break;
+        case "autoFocusOnTakePicture":
+            CameraManager.get().setAutoFocusOnTakePicture(TiConvert.toBoolean(newValue, true));
             break;
         default:
             super.propertySet(key, newValue, oldValue, changedProperty);

@@ -3,7 +3,7 @@
 # during compilation, packaging, distribution, etc.
 #
 version: 0.1
-apiversion: 2
+apiversion: 3
 description: A simple Camera preview module
 author: Martin Guillon
 license: Proprietary

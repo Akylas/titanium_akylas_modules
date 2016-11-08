@@ -18,6 +18,7 @@ package akylas.camera.cameramanager;
 
 import akylas.camera.AkylasCameraModule;
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
@@ -80,7 +81,7 @@ final class CameraConfigurationManager {
 	
 	public int getQuality()
 	{
-			return quality;
+		return quality;
 	}
 	
 //	private int maxPixels(){
@@ -376,15 +377,30 @@ final class CameraConfigurationManager {
         camera.setParameters(parameters);
     }
 	
-	public void setFocusMode(Camera.Parameters parameters, String newSetting) {
+	public boolean setFocusMode(Camera.Parameters parameters, String newSetting) {
         List<String> supported = parameters.getSupportedFocusModes();
         if (supported != null && supported.contains(newSetting)) {
             parameters.setFocusMode(newSetting);
+            return true;
         }
+        return false;
     }
 	void setFocusMode(Camera camera, String newSetting) {
         Camera.Parameters parameters = camera.getParameters();
         setFocusMode(parameters, newSetting);
+        camera.setParameters(parameters);
+    }
+	
+	void setPictureSize(Camera camera, Point size) {
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.setPictureSize(size.x, size.y);
+        camera.setParameters(parameters);
+    }
+	
+	void setJpegQuality(Camera camera, int quality) {
+        Camera.Parameters parameters = camera.getParameters();
+        parameters.set("jpeg-quality", quality);
+        parameters.setPictureFormat(PixelFormat.JPEG);
         camera.setParameters(parameters);
     }
 

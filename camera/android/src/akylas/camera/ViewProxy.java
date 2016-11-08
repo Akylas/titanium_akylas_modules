@@ -23,7 +23,6 @@ import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiBaseActivity.ConfigurationChangedListener;
 import org.appcelerator.titanium.TiBlob;
-import org.appcelerator.titanium.TiContext;
 import org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent;
 import org.appcelerator.titanium.io.TiFile;
 import org.appcelerator.titanium.io.TiFileFactory;
@@ -40,11 +39,10 @@ import com.drew.metadata.Tag;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import akylas.camera.AkylasCameraModule;
@@ -53,9 +51,9 @@ import akylas.camera.cameramanager.CameraManager;
 // This proxy can be created by calling AkylasCameraAndroid.createExample({message: "hello world"})
 @SuppressWarnings("deprecation")
 @Kroll.proxy(creatableInModule = AkylasCameraModule.class, propertyAccessors = {
-        "torch", "flash", "focus", "whichCamera", "exposure" })
-public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
-        ConfigurationChangedListener {
+        "torch", "flash", "focus", "whichCamera", "exposure", "pictureSize", "jpegQuality", "autoFocusOnTakePicture" })
+public class ViewProxy extends TiViewProxy
+        implements OnLifecycleEvent, ConfigurationChangedListener {
     // Standard Debugging variables
     private static final String LCAT = "AkylasCameraViewProxy";
     private Boolean needsStartOnResume = false;
@@ -65,10 +63,6 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 
     public ViewProxy() {
         super();
-    }
-
-    public ViewProxy(TiContext tiContext) {
-        this();
     }
 
     @Override
@@ -140,7 +134,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 
     }
 
-    private static File writeToFile(Bitmap bitmap, boolean saveToGallery)
+    private static File writeToFile(byte[] data, boolean saveToGallery)
             throws Throwable {
         try {
             File imageFile = null;
@@ -149,11 +143,13 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
             } else {
                 // Save the picture in the internal data directory so it is
                 // private to this application.
-                imageFile = TiFileFactory.createDataFile(IMG_PREFIX, ".jpg");
+                imageFile = TiFileHelper.getInstance().getTempFile(TiFileFactory.getDataDirectory(true), ".jpg", true);
+                
+
             }
 
             FileOutputStream imageOut = new FileOutputStream(imageFile);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, imageOut);
+            imageOut.write(data);
             imageOut.close();
 
             if (saveToGallery) {
@@ -164,11 +160,61 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
                 Activity activity = TiApplication.getAppCurrentActivity();
                 activity.sendBroadcast(mediaScanIntent);
             }
+            
+            int cameraOrientation = CameraManager.get()
+                    .getCameraOrientation();
+            if (cameraOrientation != 0) {
+                ExifInterface exif = new ExifInterface(imageFile.getPath());
+                switch (cameraOrientation) {
+                case 270:
+                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, String
+                            .valueOf(ExifInterface.ORIENTATION_ROTATE_270));
+                    break;
+                case 180:
+                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, String
+                            .valueOf(ExifInterface.ORIENTATION_ROTATE_180));
+                    break;
+                case 90:
+                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, String
+                            .valueOf(ExifInterface.ORIENTATION_ROTATE_90));
+                    break;
+                }
+                exif.saveAttributes();
+            }
             return imageFile;
 
         } catch (Throwable t) {
             throw t;
         }
+    }
+
+    protected static KrollDict createDictForImage(TiBlob imageData,
+            String mimeType) {
+        KrollDict d = new KrollDict();
+        d.putCodeAndMessage(TiC.ERROR_CODE_NO_ERROR, null);
+
+        int width = -1;
+        int height = -1;
+
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inJustDecodeBounds = true;
+
+        // We only need the ContentResolver so it doesn't matter if the root or
+        // current activity is used for
+        // accessing it
+        BitmapFactory.decodeStream(imageData.getInputStream(), null, opts);
+
+        width = opts.outWidth;
+        height = opts.outHeight;
+
+        d.put("width", width);
+        d.put("height", height);
+        d.put("orientation", CameraManager.get().getCameraOrientation());
+
+        d.put("image", imageData);
+        d.put("mimeType", mimeType);
+
+        return d;
     }
 
     private class SaveImageTask extends AsyncTask<byte[], Void, Void> {
@@ -182,31 +228,35 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
         @Override
         protected Void doInBackground(byte[]... data) {
             byte[] realdata = data[0];
-            File file = null;
-            
-            BitmapFactory.Options opts = new BitmapFactory.Options();
-            int cameraOrientation = CameraManager.get()
-                    .getCameraOrientation();
-            Bitmap bm = BitmapFactory.decodeByteArray(realdata, 0,
-                    realdata.length, opts);
 
-            if (cameraOrientation != 0) {
-                Matrix mtx = new Matrix();
-                mtx.postRotate(cameraOrientation);
+            // BitmapFactory.Options opts = new BitmapFactory.Options();
+            // int cameraOrientation = CameraManager.get()
+            // .getCameraOrientation();
+            // Bitmap bm = BitmapFactory.decodeByteArray(realdata, 0,
+            // realdata.length, opts);
 
-                bm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(),
-                        bm.getHeight(), mtx, true);
-            }
+            // if (cameraOrientation != 0) {
+            // Matrix mtx = new Matrix();
+            // mtx.postRotate(cameraOrientation);
+            //
+            // bm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(),
+            // bm.getHeight(), mtx, true);
+            // }
             KrollFunction callback = (KrollFunction) options.get("callback");
             try {
-                if (TiConvert.toBoolean(options, "save", false)
-                        || TiConvert.toBoolean(options, "saveToGallery", false)) {
-                    file = writeToFile(bm, TiConvert.toBoolean(options,
-                            "saveToGallery", false));
-                }
-
+                // if (TiConvert.toBoolean(options, "save", false)
+                // || TiConvert.toBoolean(options, "saveToGallery", false)) {
+                // file = writeToFile(bm, );
+                // }
+                boolean save = TiConvert.toBoolean(options, "save", false)
+                        || TiConvert.toBoolean(options, "saveToGallery", false);
+                File imageFile = writeToFile(realdata, save);
+                TiFile theFile = new TiFile(imageFile,
+                        imageFile.toURI().toURL().toExternalForm(), false);
+                TiBlob theBlob = TiBlob.blobFromObject(theFile);
                 if (callback != null) {
-                    KrollDict result = new KrollDict();
+                    KrollDict result = createDictForImage(theBlob,
+                            theBlob.getMimeType());
                     if (TiConvert.toBoolean(options, "metadata", false)) {
                         InputStream in = new ByteArrayInputStream(realdata);
                         Metadata metadata = ImageMetadataReader
@@ -214,23 +264,24 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
                         KrollDict info = new KrollDict();
                         for (Directory directory : metadata.getDirectories()) {
                             for (Tag tag : directory.getTags()) {
-                                info.put(tag.getTagName(), tag.getDescription());
+                                info.put(tag.getTagName(),
+                                        tag.getDescription());
                             }
                         }
                         result.put("metadata", info);
                     }
-                    if (bm != null) {
-                        result.put("image",
-                                TiBlob.blobFromObject(bm, opts.outMimeType));
-                        result.put("mimeType", opts.outMimeType);
-                        result.put("width", bm.getWidth());
-                        result.put("height", bm.getHeight());
-                    }
-                    if (file != null) {
-                        TiFile theFile = new TiFile(file, file.toURI().toURL()
-                                .toExternalForm(), false);
-                        result.put("file", TiBlob.blobFromObject(theFile));
-                    }
+                    // if (bm != null) {
+                    // result.put("image",
+                    // TiBlob.blobFromObject(bm, opts.outMimeType));
+                    // result.put("mimeType", opts.outMimeType);
+                    // result.put("width", bm.getWidth());
+                    // result.put("height", bm.getHeight());
+                    // }
+                    // if (file != null) {
+                    TiFile file = new TiFile(imageFile,
+                            imageFile.toURI().toURL().toExternalForm(), false);
+                    result.put("file", TiBlob.blobFromObject(file));
+                    // }
 
                     ((KrollFunction) callback).callAsync(getKrollObject(),
                             new Object[] { result });
@@ -249,6 +300,7 @@ public class ViewProxy extends TiViewProxy implements OnLifecycleEvent,
 
     @Kroll.method
     public void takePicture(final HashMap options) {
+        System.gc();
         CameraManager.get().takePicture(new PictureCallback() {
             public void onPictureTaken(byte[] data, Camera camera) {
                 new SaveImageTask(options).execute(data);

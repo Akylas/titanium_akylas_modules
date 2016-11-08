@@ -17,10 +17,10 @@
 package akylas.camera.cameramanager;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
@@ -28,6 +28,7 @@ import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
+import android.hardware.Camera.Size;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
@@ -83,9 +84,12 @@ public final class CameraManager {
 
 	private int currentPreviewHeight;
     private Boolean torch = false;
+    private Boolean mAutoFocusOnTakePicture = true;
     private String mFlashMode = null;
     private String mExposure = null;
     private String mFocusMode = null;
+    private Point mPictureSize = null;
+    private int mJpegQuality = -1;
     
 
 	/**
@@ -143,7 +147,7 @@ public final class CameraManager {
 	 * @throws IOException
 	 *             Indicates the camera driver failed to open.
 	 */
-	public void openDriver(SurfaceHolder holder, int cameraPosition)
+    public void openDriver(SurfaceHolder holder, int cameraPosition)
 	{
 		if (camera == null) {
 			camera = openCamera(cameraPosition);
@@ -175,11 +179,21 @@ public final class CameraManager {
 	            mFlashMode = parameters.getFlashMode();
 	            torch = mFlashMode == Camera.Parameters.FLASH_MODE_TORCH;
             }
+	        
 	        if (mFocusMode != null) {
-                configManager.setFocusMode(parameters, mFocusMode);
+                if (!configManager.setFocusMode(parameters, mFocusMode)) {
+                    mFocusMode = parameters.getFocusMode();
+                }
             } else {
                 mFocusMode = parameters.getFocusMode();
             }
+	        if (mJpegQuality != -1) {
+	            parameters.set("jpeg-quality", mJpegQuality);
+	            parameters.setPictureFormat(PixelFormat.JPEG);
+	        }
+	        if (mPictureSize != null) { 
+	            parameters.setPictureSize(mPictureSize.x, mPictureSize.y);
+	        }
 		    camera.setParameters(parameters);
 
 		}
@@ -281,6 +295,27 @@ public final class CameraManager {
             configManager.setFocusMode(camera, mFocusMode);
         }
     }
+	
+	   
+    public synchronized void setPictureSize(Point size) {
+        if (mPictureSize == size) {
+            return;
+        }
+        mPictureSize = size;
+        if (camera != null) {
+            configManager.setPictureSize(camera, mPictureSize);
+        }
+    }
+    
+    public synchronized void setJpegQuality(int quality) {
+        if (mJpegQuality == quality) {
+            return;
+        }
+        mJpegQuality = quality;
+        if (camera != null) {
+            configManager.setJpegQuality(camera, mJpegQuality);
+        }
+    }
 
 	public synchronized void setTorch(boolean newSetting) {
 		Log.d(TAG, "set torch " + newSetting);
@@ -314,6 +349,10 @@ public final class CameraManager {
 
 	public Boolean getTorch() {
 		return torch;
+	}
+	
+	public void setAutoFocusOnTakePicture(boolean value) {
+	    mAutoFocusOnTakePicture = value;
 	}
 
 
@@ -477,7 +516,6 @@ public final class CameraManager {
 	
 	public void setQuality(int value)
 	{
-//	    Log.d(LCAT, "setTorch3 to: " + value);
 		configManager.setQuality(value);
 		updatePreviewSize();
 	}
@@ -512,8 +550,8 @@ public final class CameraManager {
                     callback.onPictureTaken(data, camera);
                 }
             };
-            String focusMode = camera.getParameters().getFocusMode();
-            if (!(focusMode.equals(Parameters.FOCUS_MODE_EDOF) || focusMode.equals(Parameters.FOCUS_MODE_FIXED) || focusMode
+            String focusMode = mFocusMode;
+            if (mAutoFocusOnTakePicture && !(focusMode.equals(Parameters.FOCUS_MODE_EDOF) || focusMode.equals(Parameters.FOCUS_MODE_FIXED) || focusMode
                 .equals(Parameters.FOCUS_MODE_INFINITY))) {
                 AutoFocusCallback focusCallback = new AutoFocusCallback()
                 {
