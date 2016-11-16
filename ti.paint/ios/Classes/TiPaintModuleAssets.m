@@ -3,13 +3,28 @@
  */
 #import "TiPaintModuleAssets.h"
 
-extern NSData * dataWithHexString (NSString * hexString);
+extern NSData* filterDataInRange(NSData* thedata, NSRange range);
 
 @implementation TiPaintModuleAssets
 
 - (NSData*) moduleAsset
 {
+    //##TI_AUTOGEN_BEGIN asset
+    //Compiler generates code for asset here
+	
+
 	return nil;
+    //##TI_AUTOGEN_END asset
+}
+
+- (NSData*) resolveModuleAsset:(NSString*)path
+{
+    //##TI_AUTOGEN_BEGIN resolve_asset
+    //Compiler generates code for asset here
+	
+
+	return nil;
+    //##TI_AUTOGEN_END resolve_asset
 }
 
 @end
