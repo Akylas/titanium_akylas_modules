@@ -104,6 +104,7 @@
 		D5B4A8F91ACAD0FA003B8608 /* GoogleMaps.framework in Headers */ = {isa = PBXBuildFile; fileRef = D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */; settings = {ATTRIBUTES = (Public, ); }; };
 		D5B4A8FB1ACAD15D003B8608 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */; };
 		D5B4A9081ACAD913003B8608 /* GoogleMaps.bundle in Headers */ = {isa = PBXBuildFile; fileRef = D5B4A9031ACAD87E003B8608 /* GoogleMaps.bundle */; settings = {ATTRIBUTES = (Public, ); }; };
+		D5BCE1AF1DD6085B00573FF0 /* GoogleMapsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5BCE1AE1DD6085B00573FF0 /* GoogleMapsCore.framework */; };
 		D5BD8AE31AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5BD8AE11AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h */; };
 		D5BD8AE41AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D5BD8AE21AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m */; };
 		D5BD8AE71AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D5BD8AE51AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h */; };
@@ -221,6 +222,7 @@
 		D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleMaps.framework; path = platform/GoogleMaps.framework; sourceTree = "<group>"; };
 		D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		D5B4A9031ACAD87E003B8608 /* GoogleMaps.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = GoogleMaps.bundle; path = assets/GoogleMaps.bundle; sourceTree = "<group>"; };
+		D5BCE1AE1DD6085B00573FF0 /* GoogleMapsCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleMapsCore.framework; path = platform/GoogleMapsCore.framework; sourceTree = "<group>"; };
 		D5BD8AE11AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasMapBaseGroundOverlayProxy.h; path = Classes/common/AkylasMapBaseGroundOverlayProxy.h; sourceTree = "<group>"; };
 		D5BD8AE21AFE5E42006B8362 /* AkylasMapBaseGroundOverlayProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AkylasMapBaseGroundOverlayProxy.m; path = Classes/common/AkylasMapBaseGroundOverlayProxy.m; sourceTree = "<group>"; };
 		D5BD8AE51AFE6324006B8362 /* AkylasGooglemapGroundOverlayProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AkylasGooglemapGroundOverlayProxy.h; path = Classes/AkylasGooglemapGroundOverlayProxy.h; sourceTree = "<group>"; };
@@ -234,6 +236,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D550468D1D684A960047F408 /* GoogleMapsBase.framework in Frameworks */,
+				D5BCE1AF1DD6085B00573FF0 /* GoogleMapsCore.framework in Frameworks */,
 				D55C81871AD673C700339334 /* CoreLocation.framework in Frameworks */,
 				D5B4A8FB1ACAD15D003B8608 /* GLKit.framework in Frameworks */,
 				D599F23E1AC933A400EB7A9B /* GoogleMaps.framework in Frameworks */,
@@ -267,6 +270,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D5BCE1AE1DD6085B00573FF0 /* GoogleMapsCore.framework */,
 				D550468C1D684A960047F408 /* GoogleMapsBase.framework */,
 				D55C81861AD673C700339334 /* CoreLocation.framework */,
 				D5B4A9031ACAD87E003B8608 /* GoogleMaps.bundle */,

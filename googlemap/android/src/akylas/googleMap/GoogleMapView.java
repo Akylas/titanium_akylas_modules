@@ -994,12 +994,10 @@ public class GoogleMapView extends AkylasMapBaseView implements
     public void onPoiClick(PointOfInterest poi) {
         if (proxy.hasListeners(AkylasGooglemapModule.EVENT_POI,
                 false)) {
-            KrollDict result = new KrollDict();
-            result.put("name", poi.name);
-            result.put("placeId", poi.placeId);
-            result.put("latitude", poi.latLng.latitude);
-            result.put("longitude", poi.latLng.longitude);
-            proxy.fireEvent(AkylasGooglemapModule.EVENT_POI, result, false, false);
+            KrollDict d = dictFromPoint(poi.latLng);
+            d.put("name", poi.name);
+            d.put("placeId", poi.placeId);
+            proxy.fireEvent(AkylasGooglemapModule.EVENT_POI, d, false, false);
         }
     }
 

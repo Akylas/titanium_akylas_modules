@@ -697,6 +697,16 @@
     [self map].preferredFrameRate = (GMSFrameRate)[TiUtils intValue:value];
 }
 
+-(void)setMapStyle_:(id)value
+{
+    NSError* error = nil;
+    if (IS_OF_CLASS(value, NSDictionary)) {
+        [self map].mapStyle = [GMSMapStyle styleWithJSONString:[TiUtils jsonStringify:value] error:&error];
+    } else if (IS_OF_CLASS(value, NSString)) {
+        [self map].mapStyle = [GMSMapStyle styleWithJSONString:[TiUtils stringValue:value] error:&error];
+    }
+}
+
 #pragma mark Methods
 
 - (void)zoomInAt:(CGPoint)pivot animated:(BOOL)animated
@@ -1757,6 +1767,19 @@
 //            clickSource = @"rightButton";
 //        }
 //        [self fireEvent:@"click" onAnnotation:annotation source:@"label" withRecognizer:recognizer];
+    }
+}
+
+- (void) mapView:(GMSMapView *) mapView didTapPOIWithPlaceID:(NSString *) placeID
+            name:(NSString *) name
+        location:(CLLocationCoordinate2D) location {
+    if ([self.viewProxy _hasListeners:@"poi" checkParent:NO])
+    {
+        NSMutableDictionary *event = [TiUtils dictionaryFromPoint:[[map projection] pointForCoordinate:location] inView:map];
+        [event addEntriesFromDictionary:[AkylasGooglemapModule dictFromLocation2D:location]];
+        [event setObject:name forKey:@"name"];
+        [event setObject:placeID forKey:@"placeId"];
+        [self.proxy fireEvent:@"poi" withObject:event propagate:NO checkForListener:NO];
     }
 }
 
