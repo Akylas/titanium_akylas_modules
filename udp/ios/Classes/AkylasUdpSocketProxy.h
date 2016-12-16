@@ -5,23 +5,9 @@
  * Please see the LICENSE included with this distribution for details.
  */
 #import "TiProxy.h"
-#import "TiUtils.h"
+#import "GCDAsyncUdpSocket.h"
 
-@interface AkylasUdpSocketProxy : TiProxy
-{
-    bool isServer;
-    bool listening;
-    NSString* _hostName;
-    NSData* _hostAddress;
-    NSUInteger _port;
-    CFHostRef _cfHost;
-	CFSocketRef _cfSocket;
-    int maxPacketSize;
-}
+@interface AkylasUdpSocketProxy : TiProxy<GCDAsyncUdpSocketDelegate>
 
--(void)start:(id)args;
--(void)sendString:(id)args;
--(void)sendBytes:(id)args;
--(void)stop:(id)args;
 
 @end

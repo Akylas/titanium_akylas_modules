@@ -11,7 +11,7 @@ copyright: Copyright (c) 2012-2015 by Akylas
 debug_project_subpath: udp/android
 
 # these should not be edited
-name: akylas_udp_android
+name: akylas-udp
 moduleid: akylas.udp
 guid: b87e44ab-f55e-4ecf-809d-0ebc69760b45
 platform: android
