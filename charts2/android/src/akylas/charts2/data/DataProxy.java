@@ -104,7 +104,7 @@ public abstract class DataProxy extends ReusableProxy {
             valueFormatter = Charts2Module.formatterValue(newValue, this);
             getData().setValueFormatter(valueFormatter);
             break;
-        case "xVals":
+        case "labels":
             final String[] xValues = TiConvert.toStringArray(newValue);
             if (xValues != null && xValues.length > 0) {
                 if (_viewProxy != null) {
@@ -127,9 +127,9 @@ public abstract class DataProxy extends ReusableProxy {
             getData().setValueFormatter(
                     Charts2Module.formatterValue(newValue, this));
             break;
-        case "dataSets":
+        case "datasets":
             if (newValue instanceof Object[]) {
-                setDataSets((Object[]) newValue);
+                setDatasets((Object[]) newValue);
                 mProcessUpdateFlags |= TIFLAG_NEEDS_UPDATE;
             }
             break;
@@ -167,7 +167,7 @@ public abstract class DataProxy extends ReusableProxy {
 
     @Kroll.method
     @Kroll.setProperty
-    public void setDataSets(Object[] value) {
+    public void setDatasets(Object[] value) {
         mProcessUpdateFlags &= ~TIFLAG_NEEDS_UPDATE;
         if (_dataSets.size() > 0) {
             for (DataSetProxy setProxy : _dataSets) {

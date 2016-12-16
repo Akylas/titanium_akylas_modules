@@ -512,6 +512,8 @@ public class Charts2Module extends ProtectedModule {
                 return LegendPosition.ABOVE_CHART_RIGHT;
             case "below.center":
                 return LegendPosition.BELOW_CHART_CENTER;
+            case "below.left":
+                return LegendPosition.BELOW_CHART_LEFT;
             case "below.right":
                 return LegendPosition.BELOW_CHART_RIGHT;
             case "pie.center":

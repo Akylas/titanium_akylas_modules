@@ -239,7 +239,7 @@ public abstract class DataSetProxy extends ReusableProxy {
     @Kroll.method
     public KrollDict entryForX(HashMap args) {
         Entry entry = _set.getEntryForXValue(
-                TiConvert.toInt(args, "x"), Charts2Module.toRounding(args.get("round")));
+                TiConvert.toInt(args, "x"), Float.NaN, Charts2Module.toRounding(args.get("round")));
         return chartDataEntryDict(entry);
     }
     
@@ -255,7 +255,7 @@ public abstract class DataSetProxy extends ReusableProxy {
     
     @Kroll.method
     public float entryIndexWithX(HashMap args) {
-        Entry entry = _set.getEntryForXValue(TiConvert.toInt(args, "x"), Charts2Module.toRounding(args.get("round")));
+        Entry entry = _set.getEntryForXValue(TiConvert.toInt(args, "x"), Float.NaN, Charts2Module.toRounding(args.get("round")));
         if (entry != null) {
             return entry.getX();
         }

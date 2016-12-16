@@ -33,6 +33,7 @@ public class LegendProxy extends ReusableProxy {
     public void setLegend(Legend chartLegend) {
         _chartLegend = chartLegend;
         if (_chartLegend != null) {
+            _chartLegend.setWordWrapEnabled(true);
             processProperties(getShallowProperties());
         }
     }

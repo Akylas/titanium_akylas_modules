@@ -127,24 +127,24 @@ public class BaseChart extends TiUIView implements OnChartGestureListener, OnCha
             final Context context = proxy.getActivity();
             FontDesc desc = TiUIHelper.getFontStyle(context, TiConvert.toHashMap(newValue));
             float fontSize = TiUIHelper.getRawSize(desc.sizeUnit, desc.size, context);
-            getChart().setDescriptionTypeface(desc.typeface);
-            getChart().setDescriptionTextSize(Utils.convertPixelsToDp(fontSize));
+            getChart().getDescription().setTypeface(desc.typeface);
+            getChart().getDescription().setTextSize(Utils.convertPixelsToDp(fontSize));
             break;
         }
         case "descriptionColor":
-            getChart().setDescriptionColor(TiConvert.toColor(newValue));
+            getChart().getDescription().setTextColor(TiConvert.toColor(newValue));
             break;
         case "descriptionTextAlign":
-            getChart().setDescriptionTextAlign(Charts2Module.toTextAlign(newValue));
+            getChart().getDescription().setTextAlign(Charts2Module.toTextAlign(newValue));
             break;
         case "descriptionPosition":
         {
             PointF pos = TiConvert.toPointF(newValue);
-            getChart().setDescriptionPosition(pos.x, pos.y);
+            getChart().getDescription().setPosition(pos.x, pos.y);
             break;
         }
         case "description":
-            getChart().setDescription(TiConvert.toString(newValue));
+            getChart().getDescription().setText(TiConvert.toString(newValue));
             break;
         case "noDataFont":
         {
@@ -161,9 +161,9 @@ public class BaseChart extends TiUIView implements OnChartGestureListener, OnCha
         case "noData":
             getChart().setNoDataText(TiConvert.toString(newValue));
             break;
-        case "noDataDescription":
-            getChart().setNoDataTextDescription(TiConvert.toString(newValue));
-            break;
+//        case "noDataDescription":
+//            getChart().setNoDataTextDescription(TiConvert.toString(newValue));
+//            break;
         case "maxHighlightDistance":
             getChart().setMaxHighlightDistance(TiConvert.toFloat(newValue));
             break;
