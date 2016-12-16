@@ -55,7 +55,7 @@
 -(id)_initWithPageContext:(id<TiEvaluator>)context_ args:(NSArray* _Nullable)args axis:(ChartAxisBase* _Nullable)axis
 {
     [self setAxis:axis];
-    return [self _initWithPageContext:context_ args:args];
+    return [self _initWithPageContext:context_ args:axis?args:nil];
 }
 
 -(void)dealloc
@@ -86,6 +86,13 @@
 {
     [_axis setEnabled:[TiUtils boolValue:value]];
     [self replaceValue:value forKey:@"enabled" notification:NO];
+}
+
+-(void)setLabelCount:(id)value
+{
+    NSInteger count = [TiUtils intValue:value];
+    [_axis setLabelCount:count force:(count >= 0)];
+    [self replaceValue:value forKey:@"labelCount" notification:NO];
 }
 
 -(void)setDrawAxisLine:(id)value

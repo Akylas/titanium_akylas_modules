@@ -215,7 +215,10 @@
         }
         [[self chartView] setData:[_dataProxy data]];
         _dataProxy.parentChartViewProxy = self;
+    } else if (value) {
+        [self applyProperties:value onBindedProxy:_dataProxy];
     }
+
     return _dataProxy;
 }
 

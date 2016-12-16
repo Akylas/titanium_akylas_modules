@@ -26,6 +26,12 @@
     return _chartView;
 }
 
+-(void)setTouchEnabled_:(id)arg
+{
+    [super setTouchEnabled_:arg];
+    _chartView.userInteractionEnabled = self.userInteractionEnabled;
+}
+
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
     if (_descriptionPosition) {
@@ -95,10 +101,10 @@
 
 
 
--(void)setData_:(id)value
-{
-    [(AkylasCharts2BaseChartViewProxy*)[self proxy] setData:value];
-}
+//-(void)setData_:(id)value
+//{
+//    [(AkylasCharts2BaseChartViewProxy*)[self proxy] setData:value];
+//}
 
 -(void)setLegend_:(id)value
 {

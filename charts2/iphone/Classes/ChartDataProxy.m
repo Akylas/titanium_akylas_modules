@@ -13,19 +13,19 @@
 
 @implementation ChartDataProxy
 {
-    NSMutableArray* _dataSets;
+    NSMutableArray* _sets;
 }
 
 -(void)dealloc
 {
     RELEASE_TO_NIL(_data)
-    RELEASE_TO_NIL(_dataSets)
+    RELEASE_TO_NIL(_sets)
     [super dealloc];
 }
 
 -(void)cleanupBeforeRelease {
-    if ([_dataSets count] > 0) {
-        [_dataSets enumerateObjectsUsingBlock:^(ChartDataSetProxy*  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    if ([_sets count] > 0) {
+        [_sets enumerateObjectsUsingBlock:^(ChartDataSetProxy*  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [obj cleanupBeforeRelease];
         }];
     }
@@ -34,7 +34,7 @@
 {
     if (self = [super init])
     {
-        _dataSets = [[NSMutableArray alloc] init];
+        _sets = [[NSMutableArray alloc] init];
     }
     return self;
 }
@@ -54,11 +54,11 @@
     return _data;
 }
 
--(void)setXVals:(id)args {
+-(void)setLabels:(id)args {
 //    [[self data] setXValsObjc:args];
     //TODO: optimize and do not do it here but when batch props are applied
     [self notifyDataChanged:nil];
-    [self replaceValue:args forKey:@"xVals" notification:NO];
+    [self replaceValue:args forKey:@"labels" notification:NO];
 }
 
 -(Class)dataSetsClass {
@@ -66,8 +66,8 @@
 }
 
 -(ChartDataSetProxy*)dataSetAtIndex:(NSUInteger)index {
-    if (index < [_dataSets count]) {
-        return [_dataSets objectAtIndex:index];
+    if (index < [_sets count]) {
+        return [_sets objectAtIndex:index];
     }
     return nil;
 }
@@ -86,19 +86,19 @@
     }
 }
 
--(id)dataSets {
-    return _dataSets;
+-(id)datasets {
+    return _sets;
 }
 
--(void)setDataSets:(id)args {
+-(void)setDatasets:(id)args {
     NSMutableArray* result = [NSMutableArray array];
     ENSURE_ARRAY(args)
     
-    if ([_dataSets count] > 0) {
-        [_dataSets enumerateObjectsUsingBlock:^(ChartDataSetProxy*  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    if ([_sets count] > 0) {
+        [_sets enumerateObjectsUsingBlock:^(ChartDataSetProxy*  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [obj cleanupBeforeRelease];
         }];
-        [_dataSets removeAllObjects];
+        [_sets removeAllObjects];
     }
     __block ChartDataSetProxy* setProxy;
     Class theClass = [self dataSetsClass];
@@ -112,7 +112,7 @@
         }
         if (setProxy) {
             setProxy.parentDataProxy = self;
-            [_dataSets addObject:setProxy];
+            [_sets addObject:setProxy];
             [result addObject:[(ChartDataSetProxy*)setProxy set]];
         }
     }];
@@ -121,7 +121,7 @@
 }
 
 
--(void)addDataSet:(id)args
+-(void)addDataset:(id)args
 {
     ChartDataSetProxy* setProxy;
     Class theClass = [self dataSetsClass];
@@ -134,17 +134,17 @@
     }
     if (setProxy) {
         setProxy.parentDataProxy = self;
-        [_dataSets addObject:setProxy];
+        [_sets addObject:setProxy];
         [[self data] addDataSet:[(ChartDataSetProxy*)setProxy set]];
     }
 }
 
--(void)removeDataSet:(id)args
+-(void)removeDataset:(id)args
 {
     Class theClass = [self dataSetsClass];
     if (IS_OF_CLASS(args, theClass)) {
         ((ChartDataSetProxy*)args).parentDataProxy = nil;
-        [_dataSets removeObject:args];
+        [_sets removeObject:args];
         [[self data] removeDataSet:[(ChartDataSetProxy*)args set]];
     }
 
@@ -188,7 +188,7 @@
     if (self.bindId) {
         [rootProxy addBinding:self forKey:self.bindId];
     }
-    [_dataSets enumerateObjectsUsingBlock:^(ChartDataSetProxy*  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [_sets enumerateObjectsUsingBlock:^(ChartDataSetProxy*  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         [obj unarchivedWithRootProxy:rootProxy];
     }];
 }

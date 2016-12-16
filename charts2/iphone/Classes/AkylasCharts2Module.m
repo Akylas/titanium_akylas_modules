@@ -336,10 +336,13 @@
         return ChartLegendPositionAboveChartLeft;
     } else if ([value isEqualToString:@"above.right"])
     {
-        return ChartLegendPositionAboveChartRight;
+        return ChartLegendPositionAboveChartLeft;
     } else if ([value isEqualToString:@"above.center"])
     {
-        return ChartLegendPositionAboveChartCenter;
+        return ChartLegendPositionBelowChartRight;
+    } else if ([value isEqualToString:@"below.left"])
+    {
+        return ChartLegendPositionBelowChartRight;
     } else if ([value isEqualToString:@"below.right"])
     {
         return ChartLegendPositionBelowChartRight;

@@ -61,7 +61,7 @@
     } else  {
         ChartDefaultAxisValueFormatter* formatter = [AkylasCharts2Module axisNumberFormatterValue:value];
         if (formatter) {
-            [[self axis] setValueFormatter:[formatter autorelease]];
+            [[self axis] setValueFormatter:formatter];
         } else {
             [[self axis] setValueFormatter:nil];
         }

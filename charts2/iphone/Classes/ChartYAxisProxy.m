@@ -40,12 +40,6 @@
 //    [self replaceValue:value forKey:@"startAtZero" notification:NO];
 //}
 
--(void)setLabelCount:(id)value
-{
-    NSInteger count = [TiUtils intValue:value];
-    [[self axis] setLabelCount:count force:(count >= 0)];
-    [self replaceValue:value forKey:@"labelCount" notification:NO];
-}
 
 -(void)setDrawZeroLine:(id)value
 {

@@ -159,13 +159,6 @@
 			remoteGlobalIDString = 06B120D51D811E6200D14B02;
 			remoteInfo = ChartsRealm;
 		};
-		D54305C71D91762E00CABE34 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 06B120FF1D811F1600D14B02;
-			remoteInfo = ChartsRealmTests;
-		};
 		D54305C91D91763200CABE34 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
@@ -485,9 +478,8 @@
 			isa = PBXGroup;
 			children = (
 				D54305C21D91762E00CABE34 /* Charts.framework */,
-				D54305C41D91762E00CABE34 /* ChartsTests.xctest */,
 				D54305C61D91762E00CABE34 /* ChartsRealm.framework */,
-				D54305C81D91762E00CABE34 /* ChartsRealmTests.xctest */,
+				D54305C41D91762E00CABE34 /* ChartsTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -633,13 +625,6 @@
 			fileType = wrapper.framework;
 			path = ChartsRealm.framework;
 			remoteRef = D54305C51D91762E00CABE34 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		D54305C81D91762E00CABE34 /* ChartsRealmTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = ChartsRealmTests.xctest;
-			remoteRef = D54305C71D91762E00CABE34 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

@@ -21,7 +21,7 @@
 -(id)_initWithPageContext:(id<TiEvaluator>)context_ args:(NSArray* _Nullable)args legend:(ChartLegend* _Nullable)legend
 {
     [self setLegend:legend];
-    return [self _initWithPageContext:context_ args:args];
+    return [self _initWithPageContext:context_ args:legend?args:nil];
 }
 
 -(void)setLegend:(ChartLegend* _Nullable)legend{
@@ -44,6 +44,7 @@
     [super replaceValue:value forKey:key notification:notify];
     [self.parentChartViewProxy redraw:nil];
 }
+
 
 -(void)setEnabled:(id)value
 {
