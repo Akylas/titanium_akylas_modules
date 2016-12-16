@@ -8,13 +8,13 @@
 
 #import "TiParentingProxy.h"
 
-@class AkylasBluetoothBLEDeviceProxy;
-@interface CBPeripheral (AkylasBluetoothBLEDeviceProxy)
-- (void)setProxy:(AkylasBluetoothBLEDeviceProxy *)proxy;
-- (AkylasBluetoothBLEDeviceProxy*)proxy;
--(void)didConnect;
--(void)didDisconnect;
-@end
+//@class AkylasBluetoothBLEDeviceProxy;
+//@interface CBPeripheral (AkylasBluetoothBLEDeviceProxy)
+//- (void)setProxy:(AkylasBluetoothBLEDeviceProxy *)proxy;
+//- (AkylasBluetoothBLEDeviceProxy*)proxy;
+//-(void)didConnect;
+//-(void)didDisconnect;
+//@end
 
 @interface AkylasBluetoothBLEDeviceProxy : TiParentingProxy<CBPeripheralDelegate>
 
@@ -23,4 +23,5 @@
 -(CBPeripheral*)peripheral;
 -(void)didConnect;
 -(void)didDisconnect;
+@property (atomic, readwrite) BOOL uartMode;
 @end

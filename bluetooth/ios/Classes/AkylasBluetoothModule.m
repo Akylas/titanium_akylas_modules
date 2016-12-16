@@ -24,6 +24,7 @@ index = [num integerValue]; \
 } \
 
 
+static NSMutableDictionary *peripheralMapping = nil;
 static AkylasBluetoothModule *_sharedInstance = nil;
 @implementation AkylasBluetoothModule
 {
@@ -44,6 +45,19 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 +(AkylasBluetoothModule*)sharedInstance
 {
     return _sharedInstance;
+}
+
++(void)addPeripheralMapping:(TiProxy*)proxy forPeripheral:(CBPeripheral*)peripheral
+{
+    if (!peripheralMapping) {
+        peripheralMapping = [[NSMutableDictionary alloc] init];
+    }
+    [peripheralMapping setObject:proxy forKey:peripheral.identifier];
+}
+
++(void)removePeripheralMapping:(CBPeripheral*)peripheral
+{
+    [peripheralMapping removeObjectForKey:peripheral.identifier];
 }
 
 - (void)_configure
@@ -485,9 +499,9 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 -(void)handleError:(NSError*)error forDevice:(CBPeripheral*)peripheral
 {
     NSMutableDictionary* data = [TiUtils dictionaryWithCode:[error code] message:[TiUtils messageFromError:error]];
-    if (peripheral.proxy)
+    if ([peripheralMapping objectForKey:peripheral.identifier])
     {
-        [peripheral.proxy fireEvent:@"error" withObject:data];
+        [[peripheralMapping objectForKey:peripheral.identifier] fireEvent:@"error" withObject:data];
     } else {
         [data setObject:[self dictFromPeripheral:peripheral] forKey:@"device"];
         [self fireEvent:@"error" withObject:data];
@@ -527,7 +541,8 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 
 - (void) centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
 {
-    if (_discovering && peripheral.name && [_discoveredBLEDevices objectForKey:peripheral.identifier] == nil) {
+    if (_discovering && peripheral.name) {
+//        if (_discovering && peripheral.name && [_discoveredBLEDevices objectForKey:peripheral.identifier] == nil) {
         [self addDiscoveredBLEDevice:peripheral];
         if ([self _hasListeners:@"found"]) {
             [self fireEvent:@"found" withObject:@{
@@ -543,7 +558,8 @@ static AkylasBluetoothModule *_sharedInstance = nil;
 - (void) centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
 {
     [_connectingBLEDevices removeObjectForKey:[peripheral identifier]];
-    [peripheral didConnect];
+    [[peripheralMapping objectForKey:peripheral.identifier] didConnect];
+//    [peripheral didConnect];
 //    if ([self _hasListeners:@"connected"]) {
 //        [self fireEvent:@"connected" withObject:@{
 //                                              @"device":[self dictFromPeripheral:peripheral]
@@ -565,7 +581,8 @@ didFailToConnectPeripheral:(CBPeripheral *)peripheral
     if(error) {
         [self handleError:error forDevice:peripheral];
     }
-    [peripheral didDisconnect];
+    
+    [[peripheralMapping objectForKey:peripheral.identifier] didDisconnect];
 //    if ([self _hasListeners:@"disconnected"]) {
 //        [self fireEvent:@"disconnected" withObject:@{
 //                                                  @"device":[self dictFromPeripheral:peripheral]

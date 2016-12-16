@@ -6,7 +6,6 @@
  */
 package akylas.bluetooth;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,7 +16,6 @@ import java.util.UUID;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBlob;
@@ -106,6 +104,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
         setParentForBubbling(AkylasBluetoothModule.getInstance());
         super.handleCreationDict(dict);
         mMacAdress = TiConvert.toString(dict, "id", null);
+        uartMode = TiConvert.toBoolean(dict, "uartMode", uartMode);
     }
 
     @Override
@@ -236,17 +235,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     @Kroll.method
     public void send(Object args) {
         if (this.tiService != null && uartMode) {
-            byte[] bytes = null;
-            if (args instanceof String) {
-                try {
-                    bytes = TiConvert.toString(args).getBytes("UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-            } else if (args instanceof Object[]) {
-            } else if (args instanceof TiBlob) {
-                bytes = ((TiBlob) args).getBytes();
-            }
+            byte[] bytes = TiConvert.toBytes(args);
             if (bytes != null) {
                 BluetoothGattCharacteristic charac = this.tiService
                         .getCharacteristic(RX_SERVICE_UUID, TX_CHAR_UUID);
@@ -299,7 +288,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     @Kroll.method
     public void requestMTU(int mtu) {
         if (this.tiService != null) {
-            this.tiService.requestMTU(mtu);
+            this.tiService.requestMtu(mtu);
         }
     }
     
@@ -338,9 +327,17 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 
     @Override
     public void notifyConnectedGATT() {
-//        if (!uartMode) {
+        if (TiC.LOLLIPOP_OR_GREATER) {
+            int mtu = TiConvert.toInt(getProperty("mtu"), -1);
+            if (mtu >= 0) {
+                this.tiService.requestMtu(mtu);
+            }
+        }
+        if (!uartMode) {
             setState(AkylasBluetoothModule.STATE_CONNECTED);
-//        }
+        } else {
+            discoverServices();
+        }
     }
 
     @Override
@@ -350,7 +347,6 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 
     @Override
     public void onServicesDiscovered(int status, List<String> serviceNames) {
-        uartMode = false;
         if (status != BluetoothGatt.GATT_SUCCESS) {
             fireError(status, "error while discovering services");
             stop();
@@ -376,19 +372,21 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
             }
             
         }
-        if (serviceNames.contains(RX_SERVICE_UUID)) {
-            uartMode = true;
+        if (serviceNames.contains(RX_SERVICE_UUID.toString())) {
 //            uartModeWaitingToConnect = true;
             BluetoothGattCharacteristic charac = this.tiService
                     .getCharacteristic(RX_SERVICE_UUID, RX_CHAR_UUID);
             this.tiService.setCharacteristicNotification(charac, true);
+            charac = this.tiService
+                    .getCharacteristic(RX_SERVICE_UUID, TX_CHAR_UUID);
+//            charac.setWriteType(BluetoothGattCharacteristic.PROPERTY_WRITE);
         }
-//        if (uartMode) {
-            
-            // charac = this.tiService.getCharacteristic(DIS_UUID,
+        if (uartMode) {
+            setState(AkylasBluetoothModule.STATE_CONNECTED);
+//             charac = this.tiService.getCharacteristic(DIS_UUID,
             // FIRMWARE_REVISON_UUID);
             // this.tiService.readCharacteristic(charac);
-//        }
+        }
     }
 
     @Override
@@ -443,6 +441,27 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 //                setState(AkylasBluetoothModule.STATE_CONNECTED);
 //            }
         }
+        
+    }
+    
+    @Override
+    public void onCharacteristicWrite(BluetoothGattCharacteristic characteristic, int status) {
+        KrollDict data = null;
+        if (status != BluetoothGatt.GATT_SUCCESS) {
+            data = new KrollDict();
+            data.putCodeAndMessage(status, "error while writing characteristic");
+//            fireError(status, "error while writing characteristic");
+//            if (uartModeWaitingToConnect) {
+//                uartModeWaitingToConnect = false;
+//                stop();
+//            }
+        } else {
+//            if (uartModeWaitingToConnect) {
+//                uartModeWaitingToConnect = false;
+//                setState(AkylasBluetoothModule.STATE_CONNECTED);
+//            }
+        }
+        fireEvent("didWrite", data, false, true);
         
     }
 }

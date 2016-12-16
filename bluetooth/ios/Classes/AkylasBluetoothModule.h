@@ -18,4 +18,6 @@
 +(void)disconnectBLEDevice:(CBPeripheral*)peripheral;
 +(CBCentralManager*) btManager;
 +(AkylasBluetoothModule*)sharedInstance;
++(void)addPeripheralMapping:(TiProxy*)proxy forPeripheral:(CBPeripheral*)peripheral;
++(void)removePeripheralMapping:(CBPeripheral*)peripheral;
 @end

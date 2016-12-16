@@ -108,8 +108,6 @@ public class BLEService extends TiEnhancedService {
                     mBLEServiceCb.notifyConnectedGATT();
                 }
 
-                Log.d(TAG,"Connected to GATT server.");
-                mBluetoothGatt.discoverServices();
                 // Attempts to discover services after successful connection.
 //                Log.d(TAG,"Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -159,6 +157,10 @@ public class BLEService extends TiEnhancedService {
             writing = false;
             if (writeQueue.size() > 0) {
                 writeCharacteristic(characteristic, writeQueue.poll());
+            } else {
+                if (mBLEServiceCb != null) {
+                    mBLEServiceCb.onCharacteristicWrite(characteristic, status);
+                }
             }
         }
 
@@ -393,6 +395,11 @@ public class BLEService extends TiEnhancedService {
         characteristic.setValue(value);
         boolean status = mBluetoothGatt.writeCharacteristic(characteristic);
         Log.d(TAG, "writeCharacteristic - status=" + status);  
+        if (!status) {
+            if (mBLEServiceCb != null) {
+                mBLEServiceCb.onCharacteristicWrite(characteristic, -1);
+            }
+        }
     }
     
     /**
@@ -476,7 +483,7 @@ public class BLEService extends TiEnhancedService {
         
     }
     
-    public void requestMTU(int mtu) {
+    public void requestMtu(int mtu) {
         if (mBluetoothGatt == null) {
             return;
         }
@@ -507,6 +514,7 @@ public class BLEService extends TiEnhancedService {
      
 
         public void onCharacteristicRead(final BluetoothGattCharacteristic characteristic, byte[] data);
+        public void onCharacteristicWrite(BluetoothGattCharacteristic characteristic, int status);
         public void onDescriptorRead(final BluetoothGattDescriptor descriptor, byte[] data);
         public void onDescriptorWrite(final BluetoothGattDescriptor descriptor, int status);
 
@@ -518,6 +526,7 @@ public class BLEService extends TiEnhancedService {
         public void nameChanged(final String name);
 
      }
+
 
 
 }
