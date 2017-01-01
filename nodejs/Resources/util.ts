@@ -26,6 +26,13 @@ function serializer(replacer, cycleReplacer) {
     }
 }
 
+function createString(str, count) {
+    var array = [];
+    for(var i = 0; i < count;)
+        array[i++] = str;
+    return array.join('');
+}
+
 function prettyStringify(obj, options) {
     options = options || {}
     var indent = get(options, 'indent', 2);
@@ -82,9 +89,9 @@ function prettyStringify(obj, options) {
             if (items.length > 0) {
                 return [
                     delimiters[0],
-                    indent + items.join(',\n' + Array(nextDepth).join(" ")),
+                    items.join(',\n' + createString(" ", nextDepth * indent)),
                     delimiters[1]
-                ].join('\n' + Array(currentDepth).join(" "))
+                ].join('\n' + createString(" ", nextDepth * indent))
             }
         }
 
