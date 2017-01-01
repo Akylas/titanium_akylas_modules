@@ -447,19 +447,7 @@ public class BLEService extends TiEnhancedService {
                     setCharacteristicNotification(characteristic, enabled);
                 }
             });
-//            FutureTask<Boolean> futureResult = new FutureTask<Boolean>(new Callable<Boolean>() {
-//                @Override
-//                public Boolean call() throws Exception {
-//                    return setCharacteristicNotification(characteristic, enabled);
-//                }
-//            }); 
-//            // this block until the result is calculated!
-//            try {
-//                this.runOnUiThread(futureResult);
-//                return futureResult.get();
-//            } catch (Exception e) {
-//                return false;
-//            }
+            return;
         }
         boolean status = mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
         if (status) {
