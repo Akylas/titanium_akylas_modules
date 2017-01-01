@@ -1,0 +1,170 @@
+export class AK implements AK.IAK {
+    osname: string
+    ti: AK.IAKTi
+    // moment: any
+    // numeral: any
+    locale: AK.IAKLang
+    constructor(context, _config) {
+        let module: AK = this;
+        this.osname = Ti.Platform.osname;
+        (function() {
+            akInclude('MicroEvent');
+            __APPLE__ = module.osname === 'ipad' || module.osname === 'iphone';
+            __ANDROID__ = module.osname === 'android';
+            __PRODUCTION__ = Ti.App.deployType === 'production';
+            this.stringify = this.stringify || function(value: any, space: string | number) {
+                var cache = [];
+                var result = JSON.stringify(value, function(key, value) {
+                    if (typeof value === 'object' && value !== null) {
+                        if (cache.indexOf(value) !== -1) {
+                            // Circular reference found, discard key
+                            return;
+                        }
+                        // Store value in our collection
+                        cache.push(value);
+                    }
+                    return value;
+                }, space);
+                cache = null; // Enable garbage collection
+                return result;
+            };
+            if (__PRODUCTION__ === true) {
+                Ti.API.info = Ti.API.debug = this.sdebug = this.sinfo = this.psdebug = this.psinfo =
+                    this.debug = this.info = this.error = console.debug = console.info = console.warn = console.trace = function() {};
+            } else {
+                var stringifyArray = function(array, space?) {
+                    var message = '';
+                    for (var i = 0; i < array.length; i++) {
+                        var msg = array[i];
+                        message += ((typeof msg === 'string') ? msg : stringify(msg, space)) + ' ';
+                    }
+                    return message;
+                };
+                this.debug = this.debug || function(...strings: any[]) {
+                    Ti.API.debug(strings);
+                };
+                this.info = this.info || function(...strings: any[]) {
+                    Ti.API.info(strings);
+                };
+                this.error = this.error || function(...strings: any[]) {
+                    Ti.API.error(strings);
+                };
+
+                this.sdebug = this.sdebug || function(...strings: any[]) {
+                    Ti.API.debug(stringifyArray(strings));
+                };
+                this.sinfo = this.sinfo || function(...strings: any[]) {
+                    Ti.API.debug(stringifyArray(strings));
+                };
+                this.psdebug = this.psdebug || function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    Ti.API.info(stringifyArray(args, '\t'));
+                };
+                this.psinfo = this.psinfo || function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    Ti.API.info(stringifyArray(args, '\t'));
+                };
+
+            }
+
+            var modules = _config.modules || ['ti', 'moment', 'lang'];
+
+            for (var i = 0, j = modules.length; i < j; i++) {
+                var moduleStr = modules[i];
+                if (moduleStr === 'ti') {
+                    module.ti = akRequire('akylas.ti').init(context, _config);
+                } else if (moduleStr === 'moment') {
+                    if (context.moment)
+                        continue;
+                    var path = _config.modulesDir + 'moment/';
+                    _config.momentPath = path;
+                    context.moment = require(path + 'moment');
+                    // module.moment = context.moment;
+                } else if (moduleStr === 'numeral') {
+                    if (context.numeral)
+                        continue;
+                    var path = _config.modulesDir + 'numeral/';
+                    _config.numeralPath = path;
+                    context.numeral = require(path + 'numeral');
+                    // module.numeral = context.numeral;
+                } else if (moduleStr === 'lang') {
+                    if (module.locale)
+                        continue;
+                    module.locale = akRequire('akylas.lang').init(context, _config);
+                } else {
+                    var name = moduleStr.toLowerCase();
+                    if (module[name])
+                        continue;
+                    module[name] = akRequire('akylas.' + name).init(context);
+                }
+
+            }
+
+            var additions = _config.additions || [];
+
+            for (var i = 0, j = additions.length; i < j; i++) {
+                var addition = additions[i];
+                if (addition.indexOf('.') === -1)
+                    addition = 'akylas.additions.' + additions[i].toLowerCase();
+                akInclude(addition);
+            }
+        }).call(context);
+    }
+    getPlatformInfo(): any {
+        const self: any = Ti.Platform.fullInfo;
+
+        Object.assign(self, {
+            isAndroid: __ANDROID__,
+            isApple: __APPLE__,
+            width: self.pixelWidth / self.densityFactor,
+            height: self.pixelHeight / self.densityFactor,
+            isSimulator: /simulator/i.test(self.model)
+        });
+
+        if (__APPLE__) {
+            Object.assign(self, {
+                isIpad: self.isTablet,
+                isIPhone5: (self.height === 1136),
+                isOldiPhone: !self.isSimulator && /iphone\s*[1-4].*/i.test(
+                    self.model),
+                isRetina: (self.densityFactor >= 2),
+                isTablet: /ipad/.test(this.osname)
+            });
+        } else if (__ANDROID__) {
+            const x = Math.pow(self.pixelWidth / self.xdpi, 2);
+            const y = Math.pow(self.pixelHeight / self.ydpi, 2);
+            const screenInches = Math.sqrt(x + y);
+            sdebug("Screen inches", screenInches);
+            self.isTablet = screenInches >= 6;
+        }
+        return self;
+    }
+
+    getAppInfo(): Object {
+        const self: any = Ti.App.fullInfo,
+            tiInfo: any = Ti.tiSDKInfo;
+        Object.assign(self, {
+            production: (self.deployType === 'production'),
+            adhoc: (self.deployType === 'test'),
+
+            tiVersion: tiInfo.version,
+            tiBuildDate: tiInfo.buildDate,
+            tiBuildHash: tiInfo.buildHash
+        });
+        return self;
+    }
+
+    getLocaleInfo(): Object {
+        return Ti.Locale.fullInfo;
+    }
+
+    prepareAppObject(_app: Object) {
+        Object.assign(_app, {
+            deviceinfo: this.getPlatformInfo(),
+            info: this.getAppInfo()
+        });
+    }
+}
+export function init(context, config): AK {
+    return new AK(context, config);
+}
