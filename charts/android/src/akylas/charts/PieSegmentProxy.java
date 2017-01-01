@@ -129,13 +129,6 @@ public class PieSegmentProxy extends AnimatableReusableProxy{
 			list.add(anim);
 		}
 	}
-
-	// Start Utility Methods
-
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-	}
 	
 	@Override
 	public void didProcessProperties() {
