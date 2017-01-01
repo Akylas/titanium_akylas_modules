@@ -140,6 +140,19 @@
     }
 }
 
+-(void)addMembership:(id)args
+{
+    ENSURE_SINGLE_ARG(args, NSString);
+    if (self->socket) {
+        NSError* error = nil;
+        [self->socket joinMulticastGroup:args error:&error];
+        if (error) {
+            [self fireError:error];
+        }
+    }
+}
+
+
 //-(void)setReuseAddress:(id)args
 //{
 //    ENSURE_SINGLE_ARG(args, NSNumber);

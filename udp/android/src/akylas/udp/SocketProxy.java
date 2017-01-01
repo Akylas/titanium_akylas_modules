@@ -32,6 +32,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 
 import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
 
 // This proxy can be created by calling Udp.createExample({message: "hello world"})
 @Kroll.proxy(creatableInModule = AkylasUdpModule.class)
@@ -43,7 +44,7 @@ public class SocketProxy extends KrollProxy {
     // Private Instance Variables
     private boolean _continueListening;
     // private Thread _listeningThread;
-    private DatagramSocket _socket;
+    private MulticastSocket _socket;
     private Integer _port;
     int ref = 0;
     private int maxPacketSize = 256;
@@ -235,10 +236,10 @@ public class SocketProxy extends KrollProxy {
             _socket = null;
         }
         try {
-            _socket = new DatagramSocket(null);
+            _socket = new MulticastSocket(null);
             _socket.setReuseAddress(reuseAddress);
             _socket.bind(new InetSocketAddress(address, _port));
-        } catch (SocketException e) {
+        } catch (IOException e) {
             fireError(e);
         }
 
@@ -538,6 +539,18 @@ public class SocketProxy extends KrollProxy {
             try {
                 _socket.setSoTimeout(value);
             } catch (SocketException e) {
+                fireError(e);
+            }
+        }
+    }
+    
+    @Kroll.method
+    public void addMembership(String address) {
+        if (_socket != null) {
+            try {
+                InetAddress group = InetAddress.getByName(address);
+                _socket.joinGroup(group);
+            } catch (IOException e) {
                 fireError(e);
             }
         }
