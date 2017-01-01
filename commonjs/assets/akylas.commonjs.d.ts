@@ -173,10 +173,10 @@ declare module AK {
 
     }
     export interface IWindowManager {
-        mainwindow: MainWindow
+        // mainwindow: MainWindow
         androidNav?: boolean
         // slidemenu: SlideMenu
-        topWindow: TiWindow
+        // topWindow: TiWindow
         rootWindow: TiWindow
         createAndOpenWindow(_constructor: string, _args?, _openingArgs?, _dontCheckOpening?: Boolean)
         openWindow(_win, _args?, _dontCheckOpening?: Boolean)

@@ -17,7 +17,7 @@ function prepareModalClosingArgs(_args) {
 }
 
 var isAndroid = Ti.Platform.osname === 'android';
-class WindowManager implements IWindowManager {
+class WindowManager implements AK.IWindowManager {
     rootWindow: Ti.UI.Window
     private _winId = 0
     private _managers = {}
@@ -191,7 +191,7 @@ class WindowManager implements IWindowManager {
     }
 
     closeWindow = (_win, _args?, _callGC?: Boolean) => {
-        if (!_win || _win === null)
+        if (!_win)
             return;
         console.debug(_win.title, 'closeWindow1', _args, _win.hideMe, _win._closing);
         _args = _args || {};
