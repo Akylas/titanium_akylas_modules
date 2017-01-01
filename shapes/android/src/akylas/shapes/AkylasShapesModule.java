@@ -2,10 +2,8 @@ package akylas.shapes;
 
 import java.util.HashMap;
 
-import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
-import org.appcelerator.titanium.ProtectedModule.AeSimpleSHA1;
 import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.kroll.common.APIMap;
 

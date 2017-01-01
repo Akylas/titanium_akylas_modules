@@ -893,10 +893,10 @@ public class ShapeProxy extends AnimatableReusableProxy {
 
 	// Start Utility Methods
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-	} 
+//	@Override
+//	protected void finalize() throws Throwable {
+//		super.finalize();
+//	} 
 	
     @Override
     public boolean hasListeners(String eventName, boolean checkParent) {

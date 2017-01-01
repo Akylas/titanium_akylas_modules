@@ -11,7 +11,6 @@ package akylas.slidemenu;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.ProtectedModule;
 import org.appcelerator.titanium.TiApplication;
-import org.appcelerator.titanium.ProtectedModule.AeSimpleSHA1;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
