@@ -377,8 +377,8 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
             BluetoothGattCharacteristic charac = this.tiService
                     .getCharacteristic(RX_SERVICE_UUID, RX_CHAR_UUID);
             this.tiService.setCharacteristicNotification(charac, true);
-            charac = this.tiService
-                    .getCharacteristic(RX_SERVICE_UUID, TX_CHAR_UUID);
+//            charac = this.tiService
+//                    .getCharacteristic(RX_SERVICE_UUID, TX_CHAR_UUID);
 //            charac.setWriteType(BluetoothGattCharacteristic.PROPERTY_WRITE);
         }
         if (uartMode) {
@@ -423,9 +423,27 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     }
 
     @Override
-    public void onDescriptorRead(BluetoothGattDescriptor descriptor, byte[] data) {
-
-    }
+    public void onDescriptorRead(BluetoothGattDescriptor descriptor, byte[] bytes) {
+        long timestamp = (new Date()).getTime();
+        int length = bytes.length;
+        final String eventType = "read";
+        if (length >= 0 && hasListeners(eventType, false)) {
+            KrollDict data = new KrollDict();
+            data.put(TiC.PROPERTY_TIMESTAMP, timestamp);
+            data.put(TiC.PROPERTY_LENGTH, length);
+            data.put("service", stringFromUUID(descriptor.getCharacteristic().getService()
+                    .getUuid()));
+            data.put("characteristic", stringFromUUID(descriptor.getCharacteristic().getUuid()));
+            data.put("descriptor", stringFromUUID(descriptor.getUuid()));
+            data.put(TiC.PROPERTY_DATA, TiBlob.blobFromObject(bytes));
+            fireEvent(eventType, data, false, false);
+        }
+        readingChar = false;
+        if (readCharQueue.size() > 0) {
+            Pair<String, String> value = readCharQueue.poll();
+            readCharacteristicValue(value.first, value.second);
+        }
+    }   
 
     @Override
     public void onDescriptorWrite(BluetoothGattDescriptor descriptor, int status) {
