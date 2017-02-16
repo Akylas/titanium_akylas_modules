@@ -369,11 +369,23 @@ public class SocketProxy extends KrollProxy {
 
     @Kroll.method
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    public KrollDict address() {
+        if (_socket != null) {
+            KrollDict args = new KrollDict();
+            args.put("port", _port);
+            args.put("address", address);
+            return args;
+        }
+        return null;
+    }
+
+    @Kroll.method
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void bind(int port, @Kroll.argument(optional = true) String address,
             @Kroll.argument(optional = true) KrollFunction callback) {
         KrollDict args = new KrollDict();
         args.put("port", port);
-        if (address != null) {
+        if (address != null && !address.equals("undefined")) {
             args.put("address", address);
         }
         if (callback != null) {

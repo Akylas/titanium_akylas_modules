@@ -84,6 +84,17 @@
 
 #pragma mark Public API
 
+-(id)address:(id)unused {
+    if (socket) {
+        return @{
+                 @"address":socket.localHost_IPv4,
+                 @"port":@(socket.localPort)
+                 };
+        
+    }
+    return nil;
+}
+
 -(void)bind:(id)args
 {
     ENSURE_TYPE(args, NSArray)
@@ -248,7 +259,9 @@
     if (error) {
         [self fireError:error];
     } else {
-        [self fireEvent:@"listening"];
+        if ([self _hasListeners:@"listening"]) {
+            [self fireEvent:@"listening"];
+        }
         listening = true;
     }
 }
