@@ -251,11 +251,11 @@ public class GoogleMapView extends AkylasMapBaseView implements
             } catch (Exception e) {
             }
         } else {
-            (new TiExceptionHandler())
-                    .handleException(new KrollExceptionHandler.ExceptionMessage(
-                            "Google Play Services not available",
-                            TiApplication.getGooglePlayServicesErrorString(),
-                            null, 0, null, 0, null));
+            KrollDict data = new KrollDict();
+            data.putCodeAndMessage(-213, "Google Play Services not available");
+            fireEvent(TiC.EVENT_ERROR, data, false,
+                    false);
+            
         }
         if (activity instanceof TiBaseActivity) {
             ((TiBaseActivity) activity).addOnLifecycleEventListener(this);
@@ -658,7 +658,15 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     @Override
     public void setUserLocationEnabled(boolean enabled) {
-        map.setMyLocationEnabled(enabled);
+        try {
+            map.setMyLocationEnabled(enabled);
+        } catch(Exception e) {
+            e.printStackTrace();
+            KrollDict data = new KrollDict();
+            data.putCodeAndMessage(-1, e.getMessage());
+            fireEvent(TiC.EVENT_ERROR, data, false,
+                    false);
+        }
     }
 
     protected void setCompassEnabled(boolean enabled) {
