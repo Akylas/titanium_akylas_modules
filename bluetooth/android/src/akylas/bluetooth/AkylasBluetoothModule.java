@@ -522,7 +522,8 @@ public class AkylasBluetoothModule extends ProtectedModule {
             return;
         }
         discovering = false;
-        if (fDiscoveryCallback != null) {
+        
+        if (activity != null && fDiscoveryCallback != null) {
             fDiscoveryCallback.callAsync(getKrollObject(),
                     new Object[] { mNewDevicesArrayAdapter.values().toArray() });
             fDiscoveryCallback = null;
