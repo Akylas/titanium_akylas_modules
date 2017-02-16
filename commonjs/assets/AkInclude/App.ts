@@ -188,6 +188,7 @@ export class AKApp extends TiEventEmitter {
                 console.debug('App', 'defaultLanguage', ak.locale.defaultLanguage);
                 delete _args.defaultLanguage;
             }
+            console.debug('App', 'loading language', _args);
             if (_args.forceLanguage) {
                 ak.locale.loadLanguage(_app.context, _args.forceLanguage);
                 delete _args.forceLanguage;

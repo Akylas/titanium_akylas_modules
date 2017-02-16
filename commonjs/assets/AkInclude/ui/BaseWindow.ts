@@ -259,7 +259,6 @@ ak.ti.constructors.createBaseWindow = function(_args) {
     }
 
     self.closeMe = function(_args?) {
-        console.log('closeMe2', self.title, app.ui, app.ui.closeWindow);
         app.ui.closeWindow(self, _args);
     };
     self.openMe = function(_args?) {

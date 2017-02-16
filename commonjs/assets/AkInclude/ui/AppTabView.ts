@@ -5,8 +5,10 @@ ak.ti.constructors.createAppTabView = function (_args) {
     var tabs = _args.tabs;
     var currentPage = _args.currentPage || 0;
     var showControls = _.remove(_args, 'showControls', true);
+    var createTab = _.remove(_args, 'createTab');
     var nativeControls = _.remove(_args, 'nativeControls', false);
     var tabsControllerClass = _args.tabsControllerClass;
+    var pagerClass = _args.pagerClass || 'AppTabViewScrollableView';
     var loadedTabs = [];
     delete _args.tabs;
     _args = {
@@ -20,7 +22,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
         type: 'Ti.UI.ScrollableView',
         bindId: 'pager',
         properties: {
-            rclass: 'AppTabViewScrollableView',
+            rclass: pagerClass,
             views: tabs
         },
         'events': {
@@ -80,6 +82,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
         } else {
             tabController = new AppTabController({
                 rclass: tabsControllerClass,
+                createTab:createTab,
                 labels: titles
             });
             tabController.addEventListener('request_tab', function (_event) {
@@ -93,9 +96,14 @@ ak.ti.constructors.createAppTabView = function (_args) {
 
     }
 
-    var self: AppTabView = _.assign(new View(_args), {
+    var self: AppTabView = Object.assign(new View(_args), {
         setTab: function (_index) {
-            self.pager.scrollToView(_index);
+            console.log('setTab', _index, currentPage);
+            if (currentPage != _index) {
+                self.pager.scrollToView(_index);
+            } else {
+                self.fireEvent('tab_should_go_back', {index:_index, view:self.pager.views[_index]});
+            }
         },
         setTabs: function (_tabs) {
             tabs = _tabs;

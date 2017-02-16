@@ -191,7 +191,6 @@ declare module AK {
         deviceinfo: any
         modules: any
         values: any
-        utilities: IUtils
         templates: any
         ui: IWindowManager
         main()

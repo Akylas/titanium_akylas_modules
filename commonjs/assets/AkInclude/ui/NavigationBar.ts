@@ -214,7 +214,7 @@ ak.ti.constructors.createNavigationBar = function(_args) {
             app.ui.closeWindow(win);
         }
     };
-    _.assign(self, {
+    Object.assign(self, {
         getTopWindow: function() {
             if (navWindow !== null) {
                 return navWindow.currentWindow;

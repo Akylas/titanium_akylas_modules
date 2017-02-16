@@ -510,7 +510,14 @@ function inject(context, _options) {
                     return redux.fn.style(undefined, value, orientation, override);
                 });
             }
-            type = (typeof args.type === 'string') ? (args.type.split('.').slice(-1)) : type;
+
+            if ((typeof args.type === 'string')) {
+                if (args.type.indexOf('Ti') === 0) {
+                    type = (args.type.split('.').slice(-1))
+                } else {
+                    type = args.type;
+                }
+            }
             if (args.hasOwnProperty('properties')) {
                 args.properties = redux.fn.style(type, args.properties, orientation, override);
             } else {

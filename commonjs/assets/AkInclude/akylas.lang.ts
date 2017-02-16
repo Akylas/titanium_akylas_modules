@@ -32,8 +32,9 @@ export class AKLang implements AK.IAKLang {
             }
         }
         var dir = Ti.Filesystem.getFile(Ti.Filesystem.resourcesDirectory, 'lang');
-        if (dir.exists()) {
+        // if (dir.exists()) {
             var dir_files = dir.getDirectoryListing();
+            console.log('availableLanguages', dir_files);
             if (dir_files) {
                 if (this.useI18next) {
                     this.availableLanguages = dir_files;
@@ -49,7 +50,7 @@ export class AKLang implements AK.IAKLang {
                 }
 
             }
-        }
+        // }
         console.debug('locale', this, _config);
         var loadModuleLang = (function(moduleName, path, callback, ...langs) {
             langs.forEach(function(value: string) {
@@ -140,6 +141,7 @@ export class AKLang implements AK.IAKLang {
 
         // grab it & use it
         this.currentLanguage = langFile || id;
+        Ti.Locale.setLanguage(this.currentLanguage);
         if (!!this.storeMissingTranslations) {
             this.missings = {};
             this.missingsFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'lang_' + this.currentLanguage + '_missing.json');

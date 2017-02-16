@@ -84,6 +84,7 @@ Object.isObject = function(obj) {
     return !!obj && (typeof obj === 'object' && obj.toString() == '[object Object]');
 }
 
+akRequire('babelHelpers');
 if (Ti.App.deployType !== 'production') {
     akRequire('sourceMap/SourceMap').install();
 }
@@ -128,8 +129,8 @@ export function load(_context, _config: Object) {
 
     if (this.config['userCoreJS'] !== false) {
         delete Function.prototype.bind; // so that we use corejs one and get the sourcemap
-        akRequire('core.min');
-        Promise = akRequire('yaku.min');
+        akRequire('core');
+        Promise = akRequire('yaku.core');
         // Promise.enableLongStackTrace();
         // Promise.onUnhandledRejection = function(reason) {
         //     console.error(reason);
