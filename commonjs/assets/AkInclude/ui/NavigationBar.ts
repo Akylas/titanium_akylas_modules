@@ -1,3 +1,15 @@
+
+declare class NavigationBar extends View {
+    actualNavbar: View
+    titleHolder: View
+    leftButtonViewHolder: View
+    rightButtonViewHolder: View
+    setRootWindow(_window)
+    setMyVisibility(_visible, _animated, _duration?)
+    onstackchange?(event)
+    onBackButton?(event)
+}
+
 ak.ti.constructors.createNavigationBar = function(_args) {
     function debounce(e, t, n) {
         var r;
@@ -89,7 +101,7 @@ ak.ti.constructors.createNavigationBar = function(_args) {
         }]
     }) as NavigationBar;
     // if (_args.inModal === true) {
-    self.actualNavbar.height += $.navBarTop;
+    self.actualNavbar.height = (self.actualNavbar.height as number) + $.navBarTop;
     self.titleHolder.top = self.titleHolder.top || 0 + $.navBarTop;
     self.leftButtonViewHolder.top = self.leftButtonViewHolder.top || 0 + $.navBarTop;
     self.rightButtonViewHolder.top = self.rightButtonViewHolder.top || 0 + $.navBarTop;

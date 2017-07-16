@@ -1,22 +1,34 @@
 
 
+declare class AppTabView extends View {
+    pager: ScrollableView
+    container: View
+    currentView: View
+    setTab(index: number)
+    setTabs(_tabs)
+    getTab(_index)
+    getTabs()
+    moveNext()
+}
 var constructors = ['Ti.UI.createScrollableView'];
+
+type Tabs = Array<TiDictT<View> | View>;
 ak.ti.constructors.createAppTabView = function (_args) {
-    var tabs = _args.tabs;
-    var currentPage = _args.currentPage || 0;
-    var showControls = _.remove(_args, 'showControls', true);
-    var createTab = _.remove(_args, 'createTab');
-    var nativeControls = _.remove(_args, 'nativeControls', false);
-    var tabsControllerClass = _args.tabsControllerClass;
-    var pagerClass = _args.pagerClass || 'AppTabViewScrollableView';
-    var loadedTabs = [];
+    let tabs: Tabs = _args.tabs;
+    let currentPage = _args.currentPage || 0;
+    let showControls = _.remove(_args, 'showControls', true);
+    let createTab = _.remove(_args, 'createTab');
+    let nativeControls = _.remove(_args, 'nativeControls', false);
+    let tabsControllerClass = _args.tabsControllerClass;
+    let pagerClass = _args.pagerClass || 'AppTabViewScrollableView';
+    let loadedTabs = [];
     delete _args.tabs;
     _args = {
         properties: _args,
         childTemplates: []
     };
 
-    var tabController:AppTabController;
+    let tabController: AppTabController | ButtonBar;
 
     _args.childTemplates.push({
         type: 'Ti.UI.ScrollableView',
@@ -51,7 +63,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
             change: function (e) {
                 // console.debug('change', e);
                 self.currentView = e.view;
-                if (loadedTabs.indexOf(e.currentPage) !== -1) {
+                if (loadedTabs.indexOf(e.currentPage) === -1) {
                     loadedTabs.push(e.currentPage);
                     self.currentView.emit('first_load');
                 }
@@ -61,6 +73,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
     });
     if (showControls !== false) {
         var titles = _.map(tabs, 'title');
+        console.log('titles', titles);
         if (nativeControls === true) {
             if (__APPLE__) {
                 tabController = new ButtonBar({
@@ -68,7 +81,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
                     index: 0,
                     rclass: tabsControllerClass,
                     labels: titles
-                }) as AppTabController;
+                });
                 tabController.on('click', function (_event) {
                     self.setTab(_event.index);
                 });
@@ -82,7 +95,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
         } else {
             tabController = new AppTabController({
                 rclass: tabsControllerClass,
-                createTab:createTab,
+                createTab: createTab,
                 labels: titles
             });
             tabController.addEventListener('request_tab', function (_event) {
@@ -91,7 +104,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
         }
 
         if (tabController) {
-            _args.childTemplates.push(tabController);
+            _args.childTemplates.unshift(tabController);
         }
 
     }
@@ -102,14 +115,14 @@ ak.ti.constructors.createAppTabView = function (_args) {
             if (currentPage != _index) {
                 self.pager.scrollToView(_index);
             } else {
-                self.fireEvent('tab_should_go_back', {index:_index, view:self.pager.views[_index]});
+                self.fireEvent('tab_should_go_back', { index: _index, view: self.pager.views[_index] });
             }
         },
-        setTabs: function (_tabs) {
+        setTabs: function (_tabs: Tabs) {
             tabs = _tabs;
             self.pager.views = tabs;
             if (tabController) {
-                tabController.setLabels(_.map(tabs, 'title'));
+                tabController.setLabels(_.map(tabs, 'title') as string[]);
             }
         },
         getTab: function (_index) {

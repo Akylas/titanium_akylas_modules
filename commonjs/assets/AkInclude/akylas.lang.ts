@@ -1,10 +1,10 @@
 // const separator = Ti.Filesystem.getSeparator()
-export class AKLang implements AK.IAKLang {
+export class AKLang {
     defaultLanguage = 'en-US'
     currentLanguage = 'en-US'
-    private jsonLang = {}
+    private jsonLang: { [k: string]: string } = {}
     private storeMissingTranslations = false
-    missings = {}
+    missings: { [k: string]: string } = {}
     private missingsFile = null
     availableLanguages: string[] = []
     useI18next = false
@@ -14,6 +14,7 @@ export class AKLang implements AK.IAKLang {
         _context.tr = this.tr;
         _context.trc = this.trc;
         _context.trt = this.trt;
+        _context.tru = this.tru;
         if (_config && _config.hasOwnProperty('defaultLanguage')) {
             this.defaultLanguage = _config.defaultLanguage;
         }
@@ -24,7 +25,7 @@ export class AKLang implements AK.IAKLang {
             this.i18n = require(path + 'i18next');
             if (this.i18n) {
                 console.debug('i18nnext loaded');
-                _context.t = function(_id, _params) {
+                _context.t = function (_id, _params) {
                     return this.i18n.t(_id, Object.assign({
                         defaultValue: _id
                     }, _params));
@@ -33,27 +34,27 @@ export class AKLang implements AK.IAKLang {
         }
         var dir = Ti.Filesystem.getFile(Ti.Filesystem.resourcesDirectory, 'lang');
         // if (dir.exists()) {
-            var dir_files = dir.getDirectoryListing();
-            console.log('availableLanguages', dir_files);
-            if (dir_files) {
-                if (this.useI18next) {
-                    this.availableLanguages = dir_files;
-                } else {
-                    var reg = /(.*)\.json/,
-                        match;
-                    this.availableLanguages = dir_files.map(function(value: string) {
-                        match = value.match(reg);
-                        if (match && match.length > 1) {
-                            return match[1];
-                        }
-                    })
-                }
-
+        var dir_files = dir.getDirectoryListing();
+        console.log('availableLanguages', dir_files);
+        if (dir_files) {
+            if (this.useI18next) {
+                this.availableLanguages = dir_files;
+            } else {
+                var reg = /(.*)\.json/,
+                    match;
+                this.availableLanguages = dir_files.map(function (value: string) {
+                    match = value.match(reg);
+                    if (match && match.length > 1) {
+                        return match[1];
+                    }
+                })
             }
+
+        }
         // }
         console.debug('locale', this, _config);
-        var loadModuleLang = (function(moduleName, path, callback, ...langs) {
-            langs.forEach(function(value: string) {
+        var loadModuleLang = (function (moduleName, path, callback, ...langs) {
+            langs.forEach(function (value: string) {
                 var lang = null;
                 try {
                     lang = require(path + 'lang/' + value);
@@ -73,7 +74,7 @@ export class AKLang implements AK.IAKLang {
         if (_context.moment) {
             const moment = _context.moment;
             _context.moment.loadLangs = (lang) => {
-                loadModuleLang('moment', _config.momentPath, function(id, value) {
+                loadModuleLang('moment', _config.momentPath, function (id, value) {
                     moment.locale(id, value);
                     moment.locale(id);
                 }, lang);
@@ -81,7 +82,7 @@ export class AKLang implements AK.IAKLang {
             if (_context.numeral) {
                 const numeral = _context.numeral;
                 _context.numeral.loadLangs = (lang) => {
-                    loadModuleLang('numeral', _config.numeralPath, function(id, value) {
+                    loadModuleLang('numeral', _config.numeralPath, function (id, value) {
                         numeral.language(id, value);
                         numeral.language(id);
                     }, lang);
@@ -208,7 +209,7 @@ export class AKLang implements AK.IAKLang {
         if (!str) {
             return _id;
         }
-        var array = str.split(/[\s_]+/).map(function(word: string) {
+        var array = str.split(/[\s_]+/).map(function (word: string) {
             return word.charAt(0).toUpperCase() + word.slice(1);
         });
         return array.join(' ');
@@ -221,7 +222,21 @@ export class AKLang implements AK.IAKLang {
         str = str.split(/[\s_]+/).join(' ');
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
+    tru = (_id: string, _default?: string): string => {
+        let str = this.tr(_id, _default);
+        if (!str) {
+            return _id;
+        }
+        return str.toUpperCase();
+    }
 }
+
+declare global {
+    module AK {
+        class Lang extends AKLang { }
+    }
+}
+
 
 export function init(context, option) {
     return new AKLang(context, option);

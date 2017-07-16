@@ -4,15 +4,14 @@ const LANDSCAPE_LEFT = Ti.UI.LANDSCAPE_LEFT;
 const UPSIDE_PORTRAIT = Ti.UI.UPSIDE_PORTRAIT;
 const PORTRAIT = Ti.UI.PORTRAIT;
 
-export class AKTi implements IAKTi {
+export class AKTi {
     private _logStartTimes = {}
-    redux: IRedux
-    constructors = {}
-    private context: any
+    redux: AK.IRedux
+    constructors: { [key: string]: (args?) => void } = {}
     private callconstructors = {}
     tiUseClass = false
 
-    constructor(context, option) {
+    constructor(private context, option) {
         if (option && option.hasOwnProperty('tiUseClass')) {
             this.tiUseClass = option.tiUseClass;
         }
@@ -43,14 +42,14 @@ export class AKTi implements IAKTi {
         delete this._logStartTimes[_key];
     }
 
-    createFromConstructor = (_constructor: string, _args): any => {
+    createFromConstructor = (_constructor: string, _args?:TiDict): any => {
         return new this.context[_constructor](_args);
     }
 
     setCallConstructor(path: string, id: string): void {
         this.callconstructors[id] = (...args) => {
             if (!this.constructors[id]) {
-                (function() {
+                (function () {
                     Ti.include(path);
                 }).call(this.context);
             }
@@ -76,7 +75,7 @@ export class AKTi implements IAKTi {
         }
     }
 
-    loadCreators = (_toLoad: string[], _forceUseClass?:boolean, _endsWithJS?: boolean): void => {
+    loadCreators = (_toLoad: string[], _forceUseClass?: boolean, _endsWithJS?: boolean): void => {
         let path, filenameWithExt, creatorName, id;
         for (let i = 0, l = _toLoad.length; i < l; i++) {
             path = _toLoad[i];
@@ -93,8 +92,8 @@ export class AKTi implements IAKTi {
             // if (shouldUseClass) {
             //     this.setRequireClassCallConstructor(path, creatorName);
             // } else {
-                id = 'create' + creatorName;
-                this.setCallConstructor(path, id);
+            id = 'create' + creatorName;
+            this.setCallConstructor(path, id);
             // }
             this.redux.fn.addNaturalConstructor(this.context, this.callconstructors, creatorName,
                 creatorName);
@@ -156,7 +155,7 @@ export class AKTi implements IAKTi {
         var dir_files = dir.getDirectoryListing();
         if (!dir_files)
             return;
-        dir_files.forEach(function(dirFile) {
+        dir_files.forEach(function (dirFile) {
             dirFile = dirFile.replace('.rjss.compiled.js', '.rjss');
             if (dirFile.match(/.rjss$/)) {
                 _callback(_dir + separator + dirFile);
@@ -166,7 +165,7 @@ export class AKTi implements IAKTi {
     }
 
     internalLoadRjss = (_callback: (...dirs: string[]) => void, files: string[]): void => {
-        _callback.apply(this.context, files.map(function(n: string) {
+        _callback.apply(this.context, files.map(function (n: string) {
             if (!n.endsWith('.rjss'))
                 n += '.rjss';
             return n;
@@ -204,7 +203,7 @@ export class AKTi implements IAKTi {
         return (o === LANDSCAPE_LEFT || o === LANDSCAPE_RIGHT);
     }
 
-    add = (_view: Ti.UI.View, _children, _index: number): void => {
+    add = (_view: View, _children: View | TiDict | Array<View | TiDict>, _index?: number): void => {
         if (_index !== undefined) {
             _view.add(this.style(_children), _index);
         } else {
@@ -212,7 +211,7 @@ export class AKTi implements IAKTi {
         }
     }
 
-    create = (_type: string, _args: {}, _defaults: {}): any => {
+    create = (_type: string, _args: TiDict, _defaults: TiDict): any => {
         var args = this.style(_args, _type, _defaults);
         if (_defaults) {
             Object.defaults(_args, _defaults);
@@ -220,7 +219,7 @@ export class AKTi implements IAKTi {
         return this.createFromConstructor(_type, _args);
     }
 
-    style = (_template: {}, _type ? : string, _defaults ? : {}): {} => {
+    style = (_template: View | TiDict | Array<View | TiDict>, _type?: string, _defaults?: TiDict): {} => {
         var result = this.redux.fn.style(_type, _template);
         if (_defaults) {
             Object.defaults(result, _defaults);
@@ -228,7 +227,7 @@ export class AKTi implements IAKTi {
         return result;
     }
 
-    applyClass = (_view: Ti.UI.View, _class: string) => {
+    applyClass = (_view: View, _class: string) => {
         var props = this.style({
             rclass: _class
         });
@@ -239,22 +238,30 @@ export class AKTi implements IAKTi {
         }
     }
 
-    prepareTemplate = (_template: {}): {} => {
+    prepareTemplate = (_template: TiDict): {} => {
         this.style(_template);
         return _template;
     }
 
-    prepareListViewTemplate = (_template: {}): {} => {
+    prepareListViewTemplate = (_template: TiDict): {} => {
         return this.style(_template, 'ListItem');
     }
 
-    includeOverloadRJSS(...args: string[]) {}
-    includeRJSS(...args: string[]): void {}
-    loadRjssFromDir(dir: string) {}
-    loadOverloadRjssFromDir(dir: string) {}
-    loadOverloadRjss(...args: string[]) {}
-    loadRjss(...args: string[]) {}
+    includeOverloadRJSS(...args: string[]) { }
+    includeRJSS(...args: string[]): void { }
+    loadRjssFromDir(dir: string) { }
+    loadOverloadRjssFromDir(dir: string) { }
+    loadOverloadRjss(...args: string[]) { }
+    loadRjss(...args: string[]) { }
 }
+
+
+declare global {
+    module AK {
+        class Ti extends AKTi { }
+    }
+}
+
 
 export function init(context, option) {
     return new AKTi(context, option);

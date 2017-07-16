@@ -59,10 +59,10 @@ class EventEmitter implements AK.Emitter {
 };
 
 class TiEventEmitter extends EventEmitter implements AK.TiEmitter {
-    addEventListener(event, fct): this { return this; }
-    addListener(event, fct): this { return this; }
-    removeEventListener(event, fct): this { return this; }
-    fireEvent(event, ...args) { }
+    addEventListener(name: string, callback: (...args: any[]) => any): this { return this; }
+    addListener(name: string, callback: (...args: any[]) => any): this { return this; }
+    removeEventListener(name: string, callback: (...args: any[]) => any): this { return this; }
+    fireEvent(name: string, ...args) { }
 }
 TiEventEmitter.prototype.addEventListener = TiEventEmitter.prototype.on;
 TiEventEmitter.prototype.addListener = TiEventEmitter.prototype.on;

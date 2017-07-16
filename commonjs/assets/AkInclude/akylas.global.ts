@@ -1,20 +1,63 @@
-export class AK implements AK.IAK {
+declare global {
+    type TiPlatformInfo = TiDict & {
+        ostype:string
+        name:string
+        id:string
+        locale:string
+        model:string
+        SDKVersion:number
+        isAndroid: boolean,
+        isApple: boolean,
+        densityFactor: number
+        density: string
+        pixelWidth: number
+        pixelHeight: number
+        width: number
+        height: number
+        isSimulator: boolean
+        isIpad: boolean
+        isIPhone5: boolean
+        isOldiPhone: boolean
+        isRetina: boolean
+        isTablet: boolean
+        dpi: number
+        xdpi: number
+        ydpi: number
+    }
+    type TiAppInfo = TiDict & {
+        deployType: string,
+        version: string,
+        versionName: string,
+        buildDate: number
+        description: string
+        copyright: string
+        publisher: string
+        id: string
+        name: string
+        installId: string
+        buildNumber: number
+        tiBuildHash: string
+        tiBuildDate: number
+        tiVersion: string
+        production: boolean
+        adhoc: boolean
+    }
+}
+export class AKClass {
     osname: string
-    ti: AK.IAKTi
-    // moment: any
-    // numeral: any
-    locale: AK.IAKLang
+    ti: AK.Ti
+    locale: AK.Lang
     constructor(context, _config) {
-        let module: AK = this;
+        let module: AK.AK = this;
         this.osname = Ti.Platform.osname;
-        (function() {
+        (function () {
             akInclude('MicroEvent');
             __APPLE__ = module.osname === 'ipad' || module.osname === 'iphone';
             __ANDROID__ = module.osname === 'android';
             __PRODUCTION__ = Ti.App.deployType === 'production';
-            this.stringify = this.stringify || function(value: any, space: string | number) {
+            this.stringify = this.stringify || function (value: any, space: string | number) {
                 var cache = [];
-                var result = JSON.stringify(value, function(key, value) {
+                var result = JSON.stringify(value, function (key, value) {
                     if (typeof value === 'object' && value !== null) {
                         if (cache.indexOf(value) !== -1) {
                             // Circular reference found, discard key
@@ -30,9 +73,9 @@ export class AK implements AK.IAK {
             };
             if (__PRODUCTION__ === true) {
                 Ti.API.info = Ti.API.debug = this.sdebug = this.sinfo = this.psdebug = this.psinfo =
-                    this.debug = this.info = this.error = console.debug = console.info = console.warn = console.trace = function() {};
+                    this.debug = this.info = this.error = console.debug = console.info = console.warn = console.trace = function () { };
             } else {
-                var stringifyArray = function(array, space?) {
+                var stringifyArray = function (array, space?) {
                     var message = '';
                     for (var i = 0; i < array.length; i++) {
                         var msg = array[i];
@@ -40,27 +83,27 @@ export class AK implements AK.IAK {
                     }
                     return message;
                 };
-                this.debug = this.debug || function(...strings: any[]) {
+                this.debug = this.debug || function (...strings: any[]) {
                     Ti.API.debug(strings);
                 };
-                this.info = this.info || function(...strings: any[]) {
+                this.info = this.info || function (...strings: any[]) {
                     Ti.API.info(strings);
                 };
-                this.error = this.error || function(...strings: any[]) {
+                this.error = this.error || function (...strings: any[]) {
                     Ti.API.error(strings);
                 };
 
-                this.sdebug = this.sdebug || function(...strings: any[]) {
+                this.sdebug = this.sdebug || function (...strings: any[]) {
                     Ti.API.debug(stringifyArray(strings));
                 };
-                this.sinfo = this.sinfo || function(...strings: any[]) {
+                this.sinfo = this.sinfo || function (...strings: any[]) {
                     Ti.API.debug(stringifyArray(strings));
                 };
-                this.psdebug = this.psdebug || function() {
+                this.psdebug = this.psdebug || function () {
                     var args = Array.prototype.slice.call(arguments);
                     Ti.API.info(stringifyArray(args, '\t'));
                 };
-                this.psinfo = this.psinfo || function() {
+                this.psinfo = this.psinfo || function () {
                     var args = Array.prototype.slice.call(arguments);
                     Ti.API.info(stringifyArray(args, '\t'));
                 };
@@ -110,8 +153,8 @@ export class AK implements AK.IAK {
             }
         }).call(context);
     }
-    getPlatformInfo(): any {
-        const self: any = Ti.Platform.fullInfo;
+    getPlatformInfo() {
+        const self = Ti.Platform.fullInfo as TiPlatformInfo;
 
         Object.assign(self, {
             isAndroid: __ANDROID__,
@@ -140,8 +183,8 @@ export class AK implements AK.IAK {
         return self;
     }
 
-    getAppInfo(): Object {
-        const self: any = Ti.App.fullInfo,
+    getAppInfo() {
+        const self = Ti.App.fullInfo as TiAppInfo,
             tiInfo: any = Ti.tiSDKInfo;
         Object.assign(self, {
             production: (self.deployType === 'production'),
@@ -154,7 +197,7 @@ export class AK implements AK.IAK {
         return self;
     }
 
-    getLocaleInfo(): Object {
+    getLocaleInfo() {
         return Ti.Locale.fullInfo;
     }
 
@@ -165,6 +208,12 @@ export class AK implements AK.IAK {
         });
     }
 }
-export function init(context, config): AK {
-    return new AK(context, config);
+
+declare global {
+    module AK {
+        class AK extends AKClass { }
+    }
+}
+export function init(context, config): AKClass {
+    return new AKClass(context, config);
 }

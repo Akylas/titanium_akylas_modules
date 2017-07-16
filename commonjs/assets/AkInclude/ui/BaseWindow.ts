@@ -1,12 +1,45 @@
+declare class BaseWindow extends TiWindow {
+    // navWindow: Boolean
+    isOpened: Boolean
+    navWindow?: boolean
+    exitOnBack?: boolean
+    manager?: NavWindow
+    underContainer?: View
+    openMe(args?)
+    closeMe(args?)
+    onOpen?(args?)
+    onClose?(args?)
+    toDoAfterOpening()
+    shouldShowBackButton(backTitle: string)
+    showLoading(args?)
+    hideLoading(args?)
+    GC()
+    addPropertiesToGC(key: string)
+}
+
+declare class NavWindow extends AppWindow {
+    window: AppWindow
+    navOpenWindow(_win, _args?)
+    createManagedWindow(constructor, args?)
+    createAndOpenWindow(_constructor, _args?, _winArgs?)
+    openWindow(_win: TiWindow, _args?, _dontCheckOpening?: Boolean)
+    closeToRootWindow()
+    canGCWindow(_win: TiWindow)
+    isOpened: Boolean
+    closeAllWindows(_args?: TiDict)
+    closeCurrentWindow(_args?: TiDict)
+    closeWindow(_win: TiWindow, _args?: TiDict)
+}
+
 var constructors = ['Ti.UI.createNavigationWindow', 'Ti.UI.createWindow'];
-ak.ti.constructors.createBaseWindow = function(_args) {
+ak.ti.constructors.createBaseWindow = function (_args) {
     _args = _args || {};
 
     function defaults(obj, args) {
         if (_.isFunction(obj.hasOwnProperty) && !_.isFunction(obj.setPropertiesAndFire)) {
             _.defaults(obj, args);
         } else {
-            _.forEach(args, function(value, key) {
+            _.forEach(args, function (value, key) {
                 if (obj[key] !== undefined) {
                     delete args[key];
                 }
@@ -39,7 +72,7 @@ ak.ti.constructors.createBaseWindow = function(_args) {
         }
     }
 
-    var self:BaseWindow = new this[(!!_args.animatedWindow && 'AnimatedWindow') ||
+    var self: BaseWindow = new this[(!!_args.animatedWindow && 'AnimatedWindow') ||
         (!!_args.navWindow && 'NavigationWindow') || 'Window'](_args);
     // var navWindow;
     var indicator;
@@ -63,11 +96,11 @@ ak.ti.constructors.createBaseWindow = function(_args) {
             properties: _args.containerClass ? {
                 rclass: _args.containerClass
             } : {
-                height: 'FILL',
-                width: 'FILL',
-                touchPassThrough: true,
-                layout: ((_args.verticalContainer === false) ? 'absolute' : 'vertical')
-            }
+                    height: 'FILL',
+                    width: 'FILL',
+                    touchPassThrough: true,
+                    layout: ((_args.verticalContainer === false) ? 'absolute' : 'vertical')
+                }
         });
     }
     ak.ti.add(self, children);
@@ -126,7 +159,10 @@ ak.ti.constructors.createBaseWindow = function(_args) {
         // // }
 
         // self.container.add(container);
-        selfNav.navOpenWindow = function(_win, _args?) {
+        selfNav.navOpenWindow = function (_win, _args?) {
+            if (_.isPlainObject(_win)) {
+                _win = new AppWindow(_win);
+            }
             _args = _args || {};
             var manager = _args.manager || self;
             console.debug('navOpenWindow', app.ui.androidNav, _win.showLeftMenuButton, _win.androidDontUseNavWindow,
@@ -177,13 +213,13 @@ ak.ti.constructors.createBaseWindow = function(_args) {
             _args2.manager = self;
             return ak.ti.createFromConstructor(_constructor, _args2);
         };
-        selfNav.createAndOpenWindow = function(_constructor, _args, _winArgs) {
+        selfNav.createAndOpenWindow = function (_constructor, _args, _winArgs) {
             var win = selfNav.createManagedWindow(_constructor, _args);
             selfNav.navOpenWindow(win, _winArgs);
             return win;
         };
 
-        selfNav.closeToRootWindow = function() {
+        selfNav.closeToRootWindow = function () {
             console.debug('closeToRootWindow');
             if (__ANDROID__) {
                 selfNav.window.closeWindowsInFront();
@@ -196,7 +232,7 @@ ak.ti.constructors.createBaseWindow = function(_args) {
                 //         parentWindow = parentWindow.openedFromWindow;
                 //     }
                 // }
-                // console.debug('androidToClose', _.pluck(androidToClose, 'title'));
+                // console.debug('androidToClose', _.map(androidToClose, 'title'));
                 // _.each(androidToClose, function(win) {
                 //     win.closeMe();
                 // });
@@ -219,16 +255,16 @@ ak.ti.constructors.createBaseWindow = function(_args) {
                 }
             }]
         });
-        self.showLoading = function() {
+        self.showLoading = function () {
             self.add(indicator);
         };
 
-        self.hideLoading = function() {
+        self.hideLoading = function () {
             self.remove(indicator);
         };
     }
 
-    self.shouldShowBackButton = function(_backTitle) {
+    self.shouldShowBackButton = function (_backTitle) {
         if (!self.leftNavButton) {
             if (__APPLE__) {
                 self.leftNavButton = ak.ti.style({
@@ -238,7 +274,7 @@ ak.ti.constructors.createBaseWindow = function(_args) {
                         title: _backTitle || trc('close')
                     },
                     events: {
-                        'click': app.debounce(function() {
+                        'click': app.debounce(function () {
                             self.closeMe();
                         })
                     }
@@ -247,7 +283,7 @@ ak.ti.constructors.createBaseWindow = function(_args) {
                 defaults(self, {
                     homeAsUpIndicator: (_args.modal === true) ? 'images/close.png' : null,
                     displayHomeAsUp: true,
-                    onHomeIconItemSelected: app.debounce(function() {
+                    onHomeIconItemSelected: app.debounce(function () {
                         self.closeMe();
                     })
                 });
@@ -258,28 +294,28 @@ ak.ti.constructors.createBaseWindow = function(_args) {
         self.shouldShowBackButton(_args.ownBackButtonTitle);
     }
 
-    self.closeMe = function(_args?) {
+    self.closeMe = function (_args?) {
         app.ui.closeWindow(self, _args);
     };
-    self.openMe = function(_args?) {
+    self.openMe = function (_args?) {
         app.ui.openWindow(self, _args);
     };
     if (__ANDROID__) {
-        if (_args.exitOnBack === true) {
-            self.onBack = function() {
+        if (self.exitOnBack === true) {
+            self.onBack = function () {
                 app.closeApp();
             };
         } else {
-            self.onBack = function() {
+            self.onBack = function () {
                 self.closeMe();
             };
         }
     }
 
     self.isOpened = false;
-    self.on('open', function() {
+    self.on('open', function () {
         if (self.onOpen) {
-            setTimeout(function() {
+            setTimeout(function () {
                 self.onOpen(!self.isOpened);
             }, 5); //slight delay because on android open is sent to soon
 
@@ -287,7 +323,7 @@ ak.ti.constructors.createBaseWindow = function(_args) {
         self.isOpened = true;
     });
 
-    self.onClose = app.composeFunc(self.onClose, function() {
+    self.onClose = app.composeFunc(self.onClose, function () {
         self.isOpened = false;
         // console.debug('onClose', self.title, !!self.manager, !!self.openedFromWindow);
         // if (self.manager && self.openedFromWindow) {
@@ -297,7 +333,7 @@ ak.ti.constructors.createBaseWindow = function(_args) {
     });
 
     var propertiesToGC = ['navBar', 'window', 'listView'];
-    self.addPropertiesToGC = function(key) {
+    self.addPropertiesToGC = function (key) {
         if (propertiesToGC.indexOf(key) === -1) {
             propertiesToGC.push(key);
         }
@@ -305,10 +341,10 @@ ak.ti.constructors.createBaseWindow = function(_args) {
 
     var toIgnore = ['manager', 'winManager', 'navWindow'];
     //END OF CLASS. NOW GC 
-    self.GC = app.composeFunc(self.GC, function() {
+    self.GC = app.composeFunc(self.GC, function () {
         if (self && self !== null) {
             console.debug('BaseWindow GC', self.title);
-            _.each(propertiesToGC, function(key, index, list) {
+            _.each(propertiesToGC, function (key, index, list) {
                 var value = self[key];
                 if (value && value !== null) {
                     var ignored = toIgnore.indexOf(key) !== -1;

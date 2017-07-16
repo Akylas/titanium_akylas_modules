@@ -1,25 +1,29 @@
 function findDeep(obj, key) {
-        
-        // or efficient:
-        var res = [];
-        if (_.has(obj, key)) // or just (key in obj)
-            res.push(obj);
-        _.forEach(obj, function (v) {
-            if (typeof v == "object" && (v = findDeep(v, key)).length) {
-                res.push.apply(res, v);
-            } else if (Array.isArray(v) && (v = findDeep(v, key)).length) {
-                res.push.apply(res, v);
-            }
-        });
-        return res;
-    }
+
+    // or efficient:
+    var res = [];
+    if (_.has(obj, key)) // or just (key in obj)
+        res.push(obj);
+    _.forEach(obj, function (v) {
+        if (typeof v == "object" && (v = findDeep(v, key)).length) {
+            res.push.apply(res, v);
+        } else if (Array.isArray(v) && (v = findDeep(v, key)).length) {
+            res.push.apply(res, v);
+        }
+    });
+    return res;
+}
 
 class TemplateModule {
-    prepareTemplate(_template, _type?: string, _defaults?: Object) { }
-    constructor() {
-        this.prepareTemplate = ak.ti.style
+    [key: string]: dict | Function | void
+    prepareTemplate(_template: dict, _type?: string, _defaults?: dict): dict | void { }
+    constructor(options?) {
+        this.prepareTemplate = ak.ti.style;
+        if (options) {
+            Object.assign(this, options);
+        }
     }
-    internalAddEvents = (_template, _properties?) => {
+    internalAddEvents = (_template: dict, _properties?: dict) => {
         if (!_template || !_properties) return;
         var props;
         if (_properties.hasOwnProperty('events')) {
@@ -39,7 +43,7 @@ class TemplateModule {
             return !this.internalAddEvents(ele, _properties);
         }, this);
     }
-    internalAddProperties = (_template, _properties?) => {
+    internalAddProperties = (_template: dict, _properties?: dict) => {
 
         if (!_template || !_properties) return;
         // var props;
@@ -91,7 +95,7 @@ class TemplateModule {
         return null;
     }
 
-    
+
 
     cloneTemplateAndFill = (_template, _properties?, _events?) => {
         var template = (Object.isObject(_template)) ? _template : this.getTemplate(_template);

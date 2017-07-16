@@ -1,4 +1,10 @@
 
+declare class AppTabController extends View {
+    container: View
+    setLabels(tabs: string[])
+    addTab(tab: string)
+    setIndex(index: number)
+}
 
 ak.ti.constructors.createAppTabController = function (_args) {
     var createTab = _.remove(_args, 'createTab');

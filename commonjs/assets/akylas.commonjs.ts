@@ -1,30 +1,30 @@
 
 const toRequire = [Ti.UI.createWindow, Ti.UI.createNavigationWindow];
 declare var akPath;
-akPath = function(name: string, _dir?: string) {
+akPath = function (name: string, _dir?: string) {
     // return '/' + __dirname + '/AkInclude/' + (_dir ? _dir : '') + name;
     return __dirname + '/AkInclude/' + (_dir ? _dir : '') + name;
 }
 declare var akRequire;
-akRequire = function(name: string) {
+akRequire = function (name: string) {
     return require(akPath(name));
 }
 
 declare var akInclude;
-akInclude = function(name: string) {
+akInclude = function (name: string) {
     console.log('akInclude', name, __dirname);
     Ti.include(akPath(name) + '.js');
 }
 
 declare var debounce;
-debounce = function(func:Function, wait:number, immediate?:Boolean) {
+debounce = function (func: Function, wait: number, immediate?: Boolean) {
     var r;
-    return function() {
+    return function () {
         var i = this,
             s = arguments;
         clearTimeout(r);
         if (immediate && !r) func.apply(i, s);
-        r = setTimeout(function() {
+        r = setTimeout(function () {
             r = null;
             if (!immediate) func.apply(i, s)
         }, wait)
@@ -32,7 +32,7 @@ debounce = function(func:Function, wait:number, immediate?:Boolean) {
 }
 
 // See if an array contains an object
-Object.assignDeep = function(source: Object, ...targets): Object {
+Object.assignDeep = function (source: Object, ...targets): Object {
     let target, srcValue, dstValue;
     for (var index = 0; index < targets.length; index++) {
         target = targets[index];
@@ -50,7 +50,7 @@ Object.assignDeep = function(source: Object, ...targets): Object {
     }
     return source;
 }
-Object.defaults = function(source: Object, ...targets): Object {
+Object.defaults = function (source: Object, ...targets): Object {
     let target, srcValue, dstValue;
     for (var index = 0; index < targets.length; index++) {
         target = targets[index];
@@ -63,13 +63,13 @@ Object.defaults = function(source: Object, ...targets): Object {
     return source;
 }
 
-Object.deepCopy = function(source: Object): Object {
+Object.deepCopy = function (source: Object): Object {
     return JSON.parse(JSON.stringify(source));
 }
 
-Object.get = function(source: Object, keys:string[]) {
+Object.get = function (source: Object, keys: string[]) {
     let result = source, key;
-    for (var index = 0; index <keys.length; index++) {
+    for (var index = 0; index < keys.length; index++) {
         key = keys[index];
         if (!result.hasOwnProperty(key)) {
             return;
@@ -80,7 +80,7 @@ Object.get = function(source: Object, keys:string[]) {
 }
 
 
-Object.isObject = function(obj) {
+Object.isObject = function (obj) {
     return !!obj && (typeof obj === 'object' && obj.toString() == '[object Object]');
 }
 
@@ -89,21 +89,21 @@ if (Ti.App.deployType !== 'production') {
     akRequire('sourceMap/SourceMap').install();
 }
 
-export function load(_context, _config: Object) {
+export function load(_context, _config: TiDict) {
     _context['exports'] = {};
     if (!Function.prototype.bind) {
-        Function.prototype.bind = function(oThis) {
+        Function.prototype.bind = function (oThis) {
             if (typeof this !== "function") {
                 // closest thing possible to the ECMAScript 5 internal IsCallable function
                 throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
             }
             var aArgs = Array.prototype.slice.call(arguments, 1),
                 fToBind = this,
-                fNOP = function() {},
-                fBound = function() {
+                fNOP = function () { },
+                fBound = function () {
                     return fToBind.apply(this instanceof fNOP && oThis ? this : oThis, aArgs.concat(Array.prototype
                         .slice.call(
-                            arguments)));
+                        arguments)));
                 };
             fNOP.prototype = this.prototype;
             fBound.prototype = new fNOP();
@@ -150,14 +150,14 @@ export function loadExtraWidgets(_context) {
         var isApple = Ti.Platform.osname === 'ipad' || Ti.Platform.osname === 'iphone';
         if (isApple) {
 
-            (function() {
+            (function () {
                 ak.ti.loadCreators(['/' + __dirname + '/AkWidgets/Notification.js']);
             }).call(_context);
         }
     }
 };
 
-export function createApp(_context, _args): AK.App {
+export function createApp(_context, _args: {commonjsOptions?:any}): AK.App {
     _args = _args || {};
     // _args.modules = _args.modules || {};
     // _args.modules.commonjs = this;

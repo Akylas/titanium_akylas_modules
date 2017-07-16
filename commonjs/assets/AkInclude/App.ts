@@ -11,19 +11,33 @@ function setPropertyByPlatform(_object, _property) {
     }
 }
 
+export interface IconicFont {
+
+}
+
+export type AppArgs = {
+    iconicfonts?: { [key: string]: string }
+    mappings?: { [key: string]: string[] }
+    ifAndroid?: (AKApp) => void
+    ifApple?: (AKApp) => void
+    utilities?: any
+    forceLanguage?: string
+    defaultLanguage?: string
+    templatesPreRjss?: string[]
+    templates?: string[]
+} & TiProperties
 
 export class AKApp extends TiEventEmitter {
-    iconicfonts: any
-    modules: any
-    values: any
-    private _args: any
+    iconicfonts: { [key: string]: IconicFont }
+    modules: { [key: string]: string | any }
+    values: { [key: string]: TiDict }
     utilities: any
-    templates: any
-    deviceinfo: any
-    info: any
-    private context
+    templates: { [key: string]: TemplateModule | { load: Function } }
+    deviceinfo: TiPlatformInfo
+    info: TiAppInfo
     ui: AK.IWindowManager
-    constructor(context, _args?) {
+
+    constructor(private context, private _args?: AppArgs) {
         super({
             views: {},
             modules: _args.modules || {},
@@ -37,7 +51,7 @@ export class AKApp extends TiEventEmitter {
             iconicfonts: {}
         })
 
-        _args = this._args = _args || {};
+        _args = _args || {};
         delete _args.modules;
         delete _args.fonts;
         this.context = context;
@@ -107,7 +121,8 @@ export class AKApp extends TiEventEmitter {
         //load modules if not loaded yet
         for (var key in this.modules) {
             if (typeof this.modules[key] === 'string') {
-                this.modules[key] = require(this.modules[key]);
+                console.log('loading module', key);
+                this.modules[key] = require(this.modules[key] as string);
                 // console.debug('loaded module', key);
             }
         }
@@ -167,8 +182,6 @@ export class AKApp extends TiEventEmitter {
         }
 
         (function () {
-            // !CHAIN
-            // akInclude('Chain');
             var map: string[] = [
                 // 'NavigationBar',
                 'AnimatedWindow',
@@ -295,11 +308,11 @@ export class AKApp extends TiEventEmitter {
         }
         delete this._args;
     }
-    debounce(_callback, _time?) {
+    debounce(_callback: (...args: any[]) => any, _time?: number) {
         return debounce(_callback, (_time !== undefined) ? _time : 500, true);
     }
 
-    onDebounce = (_object, _type, _callback) => {
+    onDebounce = (_object: AK.TiEmitter, _type: string, _callback: (...args: any[]) => any) => {
         _object.on(_type, this.debounce(_callback));
     }
     private pendingAlerts = []
@@ -310,7 +323,7 @@ export class AKApp extends TiEventEmitter {
             this.showAlert(this.pendingAlerts.shift());
         }
     }
-    showAlert = (_args) => {
+    showAlert = (_args: TiProperties | string, onClick?: Function) => {
         // (function() {
         if (!this.runningAlert) {
             if ((typeof _args === 'string')) {
@@ -323,11 +336,14 @@ export class AKApp extends TiEventEmitter {
             if (_args.showMe) {
                 alert = _args;
             } else {
-                const constructorName = _args.constructorName || 'AlertDialog';
+                const constructorName = _args.constructorName as string || 'AlertDialog';
                 delete _args.constructorName;
                 alert = ak.ti.createFromConstructor(constructorName, _args);
             }
             alert.once('close', this.onAlertFinished);
+            if (onClick) {
+                alert.once('click', onClick)
+            }
             alert.showMe ? alert.showMe(true) : alert.show();
         } else {
             this.pendingAlerts.push(_args);
@@ -335,9 +351,9 @@ export class AKApp extends TiEventEmitter {
         // }).call(context);
     }
 
-    confirmAction(_args, _callback?: Function, _callbackCancel?: Function) {
+    confirmAction(_args: TiProperties, _callback?: Function, _callbackCancel?: Function) {
         console.log('confirmAction', _args, _callback, _callbackCancel);
-        const alert = ak.ti.create(_args.constructorName || 'AlertDialog', _args, {
+        const alert = ak.ti.create(_args.constructorName as string || 'AlertDialog', _args, {
             cancel: 0,
             buttonNames: [trc('cancel'), trc('ok')],
             message: trc('are_you_sure'),
@@ -354,6 +370,12 @@ export class AKApp extends TiEventEmitter {
         return alert;
     }
 
+    confirm(_args: TiProperties) {
+        return new Promise<any>(function (resolve, reject) {
+            app.confirmAction(_args, resolve, resolve);
+        })
+    }
+
     composeFunc(...funcs: Function[]) {
         return function (...args) {
             for (var i = funcs.length - 1; i >= 0; i--) {
@@ -367,9 +389,40 @@ export class AKApp extends TiEventEmitter {
         this.ui.rootWindow && this.ui.rootWindow.close();
     }
 
-    share(_args, _externalImage) {
+    imageToTempFile = (image) => {
+        return new Promise(function (resolve, reject) {
+            console.log('imageToTempFile', image);
+            if ((typeof image === 'string')) {
+                if (/https?:/.test(image)) {
+                    Titanium.Network.createHTTPClient({
+                        timeout: 10000,
+                        onload: function () {
+                            var filenameBase = 'sharedImage',
+                                tmpFile = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory, filenameBase + '.png');
+                            tmpFile.write(this.responseData);
+                            resolve(tmpFile.nativePath);
+                        },
+                        onerror: () => {
+                            resolve(null);
+                        }
+                    }).open('GET', image).send();
+                    return;
+                } else {
+                    resolve(image);
+                }
+            } else {
+                var filenameBase = 'sharedImage',
+                    tmpFile = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory, filenameBase + '.png');
+                tmpFile.write(image);
+                resolve(tmpFile.nativePath);
+            }
+        })
+    }
+
+    share(_args, _externalImage?, type?: string) {
         var image = _externalImage || _args.image;
         _args.onstart && _args.onstart();
+        console.log('share', _args, _externalImage, type);
         if ((typeof image === 'string')) {
             if (/https?:/.test(image)) {
                 Titanium.Network.createHTTPClient({
@@ -441,9 +494,9 @@ export class AKApp extends TiEventEmitter {
                 tmpFile.write(image);
                 image = tmpFile.nativePath;
             }
-            let packages = Ti.Android.queryIntentActivities(Ti.Android.ACTION_SEND, 'text/plain'),
+            type = type || (hasImage ? 'image/jpeg' : 'text/plain');
+            let packages = Ti.Android.queryIntentActivities(Ti.Android.ACTION_SEND, type),
                 labelIntents = [],
-                type = '*/*',
                 mainIntent;
             if (Array.isArray(_args.excluded)) {
                 var i = packages.length
@@ -461,6 +514,8 @@ export class AKApp extends TiEventEmitter {
                 }, pkg);
                 if (hasSubjectForActivity) {
                     params.subject = _args.subjectForActivityType(pkg.packageName) || _args.subject;
+                } else {
+                    params.subject = _args.subject;
                 }
                 if (hasDataForActivity) {
                     var keys = _args.dataForActivityType(pkg.packageName) || orderedKeys;
@@ -498,6 +553,7 @@ export class AKApp extends TiEventEmitter {
                     }
                     params.stream = image;
                 }
+                // console.log('test', params);
                 labelIntents.push(params);
             });
             if (labelIntents.length > 0) {
@@ -505,11 +561,17 @@ export class AKApp extends TiEventEmitter {
                 var intent = labelIntents.shift();
                 Ti.Android.currentActivity.startActivity(
                     Ti.Android.createIntentChooser(intent,
-                        _args.title || null).putExtraInitialIntents(labelIntents));
+                        _args.title as string || null).putExtraInitialIntents(labelIntents));
             }
 
         }
         if (_args.ondone) _args.ondone();
+    }
+}
+
+declare global {
+    module AK {
+        class App extends AKApp { }
     }
 }
 export function init(context, option) {
