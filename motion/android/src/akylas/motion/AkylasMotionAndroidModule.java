@@ -43,6 +43,8 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
     private static final String EVENT_MAG = "magnetometer";
     private static final String EVENT_MOTION = "motion";
     private static final String EVENT_ROTATION = "rotation";
+    private static final String EVENT_PRESSURE = "pressure";
+    private static final String EVENT_PROXIMITY = "proximity";
     static List<String> POSSIBLE_MOTION_SENSORS = Arrays.asList(EVENT_ACC,
             EVENT_GYRO, EVENT_ORIENTATION, EVENT_MAG, EVENT_ROTATION);
     private static final String PROPERTY_GRAVITY = "gravity";
@@ -91,6 +93,8 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
     private boolean magnetometerRegistered = false;
     private boolean motionRegistered = false;
     private boolean rotationRegistered = false;
+    private boolean pressureRegistered = false;
+    private boolean proximityRegistered = false;
     private int updateInterval = 30; // time between data in MILLI SECONDS
     private int sensorDelay = SensorManager.SENSOR_DELAY_GAME;
     private boolean computeRotationMatrix = true;
@@ -123,6 +127,18 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                 TiSensorHelper.registerListener(
                         Sensor.TYPE_GAME_ROTATION_VECTOR, this, sensorDelay);
                 rotationRegistered = true;
+            }
+        } else if (EVENT_PRESSURE.equals(type)) {
+            if (!pressureRegistered) {
+                TiSensorHelper.registerListener(
+                        Sensor.TYPE_PRESSURE, this, sensorDelay);
+                pressureRegistered = true;
+            }
+        } else if (EVENT_PROXIMITY.equals(type)) {
+            if (!proximityRegistered) {
+                TiSensorHelper.registerListener(
+                        Sensor.TYPE_PRESSURE, this, sensorDelay);
+                proximityRegistered = true;
             }
         } else if (EVENT_ORIENTATION.equals(type)) {
             if (!orientationRegistered) {
@@ -202,6 +218,18 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                 TiSensorHelper.unregisterListener(Sensor.TYPE_MAGNETIC_FIELD,
                         this);
                 magnetometerRegistered = false;
+            }
+        } else if (EVENT_PRESSURE.equals(type)) {
+            if (pressureRegistered) {
+                TiSensorHelper.unregisterListener(Sensor.TYPE_PRESSURE,
+                        this);
+                pressureRegistered = false;
+            }
+        } else if (EVENT_PROXIMITY.equals(type)) {
+            if (proximityRegistered) {
+                TiSensorHelper.unregisterListener(Sensor.TYPE_PROXIMITY,
+                        this);
+                proximityRegistered = false;
             }
         } else if (EVENT_MOTION.equals(type)) {
             if (motionRegistered) {
@@ -351,6 +379,10 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
             return EVENT_GYRO;
         case Sensor.TYPE_ORIENTATION:
             return EVENT_ORIENTATION;
+        case Sensor.TYPE_PRESSURE:
+            return EVENT_PRESSURE;
+        case Sensor.TYPE_PROXIMITY:
+            return EVENT_PROXIMITY;
         default:
             return null;
         }
@@ -388,20 +420,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                         gravs[2] *= -1;
                         mCurrentValues.put(event.sensor.getType(), gravs);
                     }
-                } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD
-                        && magnetometerRegistered) {
-                    sensordata = eventToDict(event.sensor.getType(),
-                            event.values);
-                } else if (event.sensor.getType() == Sensor.TYPE_ORIENTATION
-                        && orientationRegistered) {
-                    sensordata = eventToDict(event.sensor.getType(),
-                            event.values);
-                } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE
-                        && gyroscopeRegistered) {
-                    sensordata = eventToDict(event.sensor.getType(),
-                            event.values);
-                } else if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR
-                        || event.sensor.getType() == Sensor.TYPE_GAME_ROTATION_VECTOR) {
+                } else {
                     sensordata = eventToDict(event.sensor.getType(),
                             event.values);
                 }
