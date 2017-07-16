@@ -38,8 +38,6 @@
 @implementation AkylasGMSMBTilesLayer
 {
     NSString *_uniqueTilecacheKey;
-    CGFloat _minZoom;
-    CGFloat _maxZoom;
     dispatch_queue_t _dbQueue;
 }
 
@@ -58,8 +56,8 @@
 - (id)initWithTileSetURL:(NSURL *)tileSetURL
 {
     if (self = [super initWithConstructor:nil]) {
-        _minZoom = -1;
-        _maxZoom = -1;
+        self.minZoom = -1;
+        self.maxZoom = -1;
         queue = [[FMDatabaseQueue databaseQueueWithPath:[tileSetURL path]] retain];
         _dbQueue = dispatch_queue_create("AkylasGMSMBTilesLayer.dbQueue", DISPATCH_QUEUE_SERIAL);
     
@@ -74,16 +72,16 @@
             FMResultSet *results = [db executeQuery:@"select min(zoom_level) from tiles"];
             [results next];
             if (![self dbHadError:db])
-                _minZoom = [results doubleForColumnIndex:0];
+                self.minZoom = [results doubleForColumnIndex:0];
             [results close];
             results = [db executeQuery:@"select max(zoom_level) from tiles"];
             [results next];
             if (![self dbHadError:db])
-                _maxZoom = [results doubleForColumnIndex:0];
+                self.maxZoom = [results doubleForColumnIndex:0];
             
             [results close];
         }];
-        
+//        
             self.cacheable = NO;
     }
     return self;
@@ -115,12 +113,17 @@
                                      [NSNumber numberWithUnsignedLongLong:dbY]];
              
              if (![self dbHadError:db] && [results next]) {
-                 
-                 NSString *string = ([[results columnNameToIndexMap] count] ? [results stringForColumn:@"tile_data"] : nil);
-                 
-                 if (string) {
-                     NSData *data = [[NSData alloc]initWithBase64EncodedString:string options:NSDataBase64DecodingIgnoreUnknownCharacters];
-                     image = [UIImage imageWithData:data];
+                 if ([[results columnNameToIndexMap] count]) {
+                     NSData *data = nil;
+                     id obj = [results objectForColumnName:@"tile_data"];
+                     if (IS_OF_CLASS(obj, NSData)) {
+                         data = obj;
+                     } else if(IS_OF_CLASS(obj, NSString)) {
+                         data = [[NSData alloc]initWithBase64EncodedString:obj options:NSDataBase64DecodingIgnoreUnknownCharacters];
+                     }
+                     if (data) {
+                         image = [UIImage imageWithData:data];
+                     }
                  }
              }
              

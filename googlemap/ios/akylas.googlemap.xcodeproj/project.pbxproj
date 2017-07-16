@@ -40,27 +40,13 @@
 		D55C81871AD673C700339334 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D55C81861AD673C700339334 /* CoreLocation.framework */; };
 		D55C81FE1AD6B8B600339334 /* AkylasMapBaseView.h in Headers */ = {isa = PBXBuildFile; fileRef = D55C81FC1AD6B8B600339334 /* AkylasMapBaseView.h */; };
 		D55C81FF1AD6B8B600339334 /* AkylasMapBaseView.m in Sources */ = {isa = PBXBuildFile; fileRef = D55C81FD1AD6B8B600339334 /* AkylasMapBaseView.m */; };
-		D56F8F3F1B43D56B00570916 /* GCluster.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F341B43D52C00570916 /* GCluster.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F401B43D56B00570916 /* GClusterItem.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F351B43D52C00570916 /* GClusterItem.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F411B43D56B00570916 /* GClusterManager.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F361B43D52C00570916 /* GClusterManager.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F421B43D56B00570916 /* GClusterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F371B43D52C00570916 /* GClusterManager.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F431B43D57400570916 /* GClusterRenderer.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F391B43D52C00570916 /* GClusterRenderer.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F461B43D58800570916 /* GClusterAlgorithm.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F2D1B43D52C00570916 /* GClusterAlgorithm.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F471B43D58800570916 /* GQuadItem.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F2E1B43D52C00570916 /* GQuadItem.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F481B43D58800570916 /* GQuadItem.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F2F1B43D52C00570916 /* GQuadItem.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F491B43D58800570916 /* GStaticCluster.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F301B43D52C00570916 /* GStaticCluster.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F4A1B43D58800570916 /* GStaticCluster.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F311B43D52C00570916 /* GStaticCluster.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F4B1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F321B43D52C00570916 /* NonHierarchicalDistanceBasedAlgorithm.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F4C1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F331B43D52C00570916 /* NonHierarchicalDistanceBasedAlgorithm.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F4D1B43D58800570916 /* SphericalMercatorProjection.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F3D1B43D52C00570916 /* SphericalMercatorProjection.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F4E1B43D58800570916 /* SphericalMercatorProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F3E1B43D52C00570916 /* SphericalMercatorProjection.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F4F1B43D58800570916 /* GQTBounds.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F241B43D52100570916 /* GQTBounds.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F501B43D58800570916 /* GQTPoint.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F251B43D52100570916 /* GQTPoint.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F511B43D58800570916 /* GQTPointQuadTree.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F261B43D52100570916 /* GQTPointQuadTree.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F521B43D58800570916 /* GQTPointQuadTree.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F271B43D52100570916 /* GQTPointQuadTree.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F531B43D58800570916 /* GQTPointQuadTreeChild.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F281B43D52100570916 /* GQTPointQuadTreeChild.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F541B43D58800570916 /* GQTPointQuadTreeChild.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F291B43D52100570916 /* GQTPointQuadTreeChild.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		D56F8F551B43D58800570916 /* GQTPointQuadTreeItem.h in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F2A1B43D52100570916 /* GQTPointQuadTreeItem.h */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F581B43D8A900570916 /* AkylasGooglemapClusterRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = D56F8F561B43D8A900570916 /* AkylasGooglemapClusterRenderer.h */; };
 		D56F8F591B43D8A900570916 /* AkylasGooglemapClusterRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = D56F8F571B43D8A900570916 /* AkylasGooglemapClusterRenderer.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		D56F8F601B43DA3300570916 /* AkylasGooglemapClusterProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D56F8F5E1B43DA3300570916 /* AkylasGooglemapClusterProxy.h */; };
@@ -100,7 +86,9 @@
 		D595C9821BBC1F65007C552B /* CLUtilsDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = D595C97D1BBC1F65007C552B /* CLUtilsDefines.h */; };
 		D59988621AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = D59988601AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.h */; };
 		D59988631AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = D59988611AD571E800C13F9D /* AkylasGooglemapTileSourceProxy.m */; };
-		D599F23E1AC933A400EB7A9B /* GoogleMaps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */; };
+		D5B3FA921EFA609F00857287 /* GoogleMaps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */; };
+		D5B3FA931EFA61E300857287 /* GoogleMapsBase.framework in Headers */ = {isa = PBXBuildFile; fileRef = D550468C1D684A960047F408 /* GoogleMapsBase.framework */; settings = {ATTRIBUTES = (Public, ); }; };
+		D5B3FA941EFA61EB00857287 /* GoogleMapsCore.framework in Headers */ = {isa = PBXBuildFile; fileRef = D5BCE1AE1DD6085B00573FF0 /* GoogleMapsCore.framework */; settings = {ATTRIBUTES = (Public, ); }; };
 		D5B4A8F91ACAD0FA003B8608 /* GoogleMaps.framework in Headers */ = {isa = PBXBuildFile; fileRef = D599F23D1AC933A400EB7A9B /* GoogleMaps.framework */; settings = {ATTRIBUTES = (Public, ); }; };
 		D5B4A8FB1ACAD15D003B8608 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5B4A8FA1ACAD15D003B8608 /* GLKit.framework */; };
 		D5B4A9081ACAD913003B8608 /* GoogleMaps.bundle in Headers */ = {isa = PBXBuildFile; fileRef = D5B4A9031ACAD87E003B8608 /* GoogleMaps.bundle */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -235,11 +223,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5B3FA921EFA609F00857287 /* GoogleMaps.framework in Frameworks */,
 				D550468D1D684A960047F408 /* GoogleMapsBase.framework in Frameworks */,
 				D5BCE1AF1DD6085B00573FF0 /* GoogleMapsCore.framework in Frameworks */,
 				D55C81871AD673C700339334 /* CoreLocation.framework in Frameworks */,
 				D5B4A8FB1ACAD15D003B8608 /* GLKit.framework in Frameworks */,
-				D599F23E1AC933A400EB7A9B /* GoogleMaps.framework in Frameworks */,
 				AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -460,6 +448,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5B3FA941EFA61EB00857287 /* GoogleMapsCore.framework in Headers */,
+				D5B3FA931EFA61E300857287 /* GoogleMapsBase.framework in Headers */,
 				D5B4A8F91ACAD0FA003B8608 /* GoogleMaps.framework in Headers */,
 				D58FC1D71B63ED2A0080C88B /* GridBasedAlgorithm.h in Headers */,
 				D595C97E1BBC1F65007C552B /* CLLocation+measuring.h in Headers */,
@@ -524,7 +514,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0830;
 			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "akylas.googlemap" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -596,7 +586,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D56F8F431B43D57400570916 /* GClusterRenderer.h in Sources */,
 				D56F8F611B43DA3300570916 /* AkylasGooglemapClusterProxy.m in Sources */,
 				D50CEAE81B470B9F00A81023 /* AkylasMapBaseClusterProxy.m in Sources */,
 				D594D1A11AD5632700EA6005 /* AkylasGooglemapAnnotationProxy.m in Sources */,
@@ -622,29 +611,16 @@
 				D594D19D1AD560EB00EA6005 /* AkylasMapBaseModule.m in Sources */,
 				D594D17A1AD55FE300EA6005 /* AkylasGooglemapViewProxy.m in Sources */,
 				D594D18E1AD5600700EA6005 /* AkylasMapBaseTileSourceProxy.m in Sources */,
-				D56F8F3F1B43D56B00570916 /* GCluster.h in Sources */,
-				D56F8F401B43D56B00570916 /* GClusterItem.h in Sources */,
-				D56F8F411B43D56B00570916 /* GClusterManager.h in Sources */,
 				D56F8F421B43D56B00570916 /* GClusterManager.m in Sources */,
-				D56F8F461B43D58800570916 /* GClusterAlgorithm.h in Sources */,
-				D56F8F471B43D58800570916 /* GQuadItem.h in Sources */,
 				D56F8F481B43D58800570916 /* GQuadItem.m in Sources */,
 				D53E80851C6229E700D0B972 /* AkylasUTFGridTileLayer.m in Sources */,
-				D56F8F491B43D58800570916 /* GStaticCluster.h in Sources */,
 				D56F8F4A1B43D58800570916 /* GStaticCluster.m in Sources */,
 				D56F8F591B43D8A900570916 /* AkylasGooglemapClusterRenderer.m in Sources */,
-				D56F8F4B1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.h in Sources */,
 				D56F8F4C1B43D58800570916 /* NonHierarchicalDistanceBasedAlgorithm.m in Sources */,
-				D56F8F4D1B43D58800570916 /* SphericalMercatorProjection.h in Sources */,
 				D56F8F4E1B43D58800570916 /* SphericalMercatorProjection.m in Sources */,
 				D595C9811BBC1F65007C552B /* CLLocation+routeInfo.m in Sources */,
-				D56F8F4F1B43D58800570916 /* GQTBounds.h in Sources */,
-				D56F8F501B43D58800570916 /* GQTPoint.h in Sources */,
-				D56F8F511B43D58800570916 /* GQTPointQuadTree.h in Sources */,
 				D56F8F521B43D58800570916 /* GQTPointQuadTree.m in Sources */,
-				D56F8F531B43D58800570916 /* GQTPointQuadTreeChild.h in Sources */,
 				D56F8F541B43D58800570916 /* GQTPointQuadTreeChild.m in Sources */,
-				D56F8F551B43D58800570916 /* GQTPointQuadTreeItem.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -666,7 +642,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/platform",
+					"$(PROJECT_DIR)/platform/**",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(TITANIUM_BASE_SDK)/**",
@@ -690,7 +666,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/platform",
+					"$(PROJECT_DIR)/platform/**",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(TITANIUM_BASE_SDK)/**",
@@ -711,23 +687,39 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(BUILT_PRODUCTS_DIR)",
 					"$(PROJECT_DIR)/platform",
 				);
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${PROJECT_NAME}_Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
 				GCC_WARN_SHADOW = NO;
 				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
@@ -736,7 +728,7 @@
 					"$(TITANIUM_BASE_SDK)",
 					"$(TITANIUM_BASE_SDK2)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-DDEBUG",
@@ -757,20 +749,35 @@
 			baseConfigurationReference = 24DD6D1B1134B66800162E58 /* titanium.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DSTROOT = "/tmp/${PROJECT_NAME}.dst";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(BUILT_PRODUCTS_DIR)",
 					"$(PROJECT_DIR)/platform",
 				);
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${PROJECT_NAME}_Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = "TI_VERSION=$(TI_VERSION)";
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = NO;
 				GCC_WARN_MISSING_PARENTHESES = NO;
 				GCC_WARN_SHADOW = NO;
 				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VALUE = NO;
@@ -779,7 +786,7 @@
 					"$(TITANIUM_BASE_SDK)",
 					"$(TITANIUM_BASE_SDK2)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				OTHER_CFLAGS = "-DTI_POST_1_2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "${PROJECT_NAME}";

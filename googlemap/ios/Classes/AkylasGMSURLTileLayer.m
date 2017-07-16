@@ -240,7 +240,7 @@ uint64_t TileKey(NSUInteger theX, NSUInteger theY, NSUInteger theZ)
         [receiver receiveTileWithX:x y:y zoom:zoom image:nil];
         return;
     }
-    if (_minZoom >= 0 && zoom < _minZoom) {
+    if (_minZoom >= 0 && (CGFloat)zoom  < _minZoom) {
         [receiver receiveTileWithX:x y:y zoom:zoom image:self.errorImage];
         return;
     }

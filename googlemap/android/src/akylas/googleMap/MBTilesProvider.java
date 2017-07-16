@@ -81,6 +81,11 @@ public class MBTilesProvider extends WebTileProvider {
     }
     
     @Override
+    protected Tile getTileForNoImage () {
+        return NO_TILE;
+    }
+    
+    @Override
     public Bitmap getTileImage(int x, int y, int z) {
         String cacheKey = (mId != null) ? (mId+x+y+z) : null;
         Cache cache = TiApplication.getImageMemoryCache();

@@ -13,8 +13,6 @@ import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.squareup.picasso.Picasso.LoadedFrom;
 
 import akylas.map.common.BaseGroundOverlayProxy;
@@ -123,6 +121,7 @@ public class GroundOverlayProxy extends BaseGroundOverlayProxy<LatLng, LatLngBou
     
     public void setGroundOverlay(GroundOverlay r) {
         overlay = r;
+        overlay.setTag(this);
     }
 
     public GroundOverlay getGroundOverlay() {
@@ -132,6 +131,7 @@ public class GroundOverlayProxy extends BaseGroundOverlayProxy<LatLng, LatLngBou
     public void removeFromMap() {
         if (overlay != null) {
             overlay.remove();
+            overlay.setTag(null);
             overlay = null;
         }
     }

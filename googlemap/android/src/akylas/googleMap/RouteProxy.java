@@ -3,14 +3,12 @@ package akylas.googlemap;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.AsyncResult;
-import org.appcelerator.kroll.common.TiMessenger;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -181,6 +179,7 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
 
     public void setPolyline(Polyline r) {
         polyline = r;
+        polyline.setTag(this);
     }
 
     public Polyline getPolyline() {
@@ -191,6 +190,7 @@ public class RouteProxy extends BaseRouteProxy<LatLng, LatLngBounds> {
     public void removeFromMap() {
         if (polyline != null) {
             polyline.remove();
+            polyline.setTag(null);
             polyline = null;
         }
     }

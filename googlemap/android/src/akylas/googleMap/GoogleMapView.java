@@ -24,7 +24,6 @@ import akylas.map.common.ReusableView;
 import android.graphics.RectF;
 
 import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollExceptionHandler;
 import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger;
@@ -34,7 +33,6 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.TiExceptionHandler;
 import org.appcelerator.titanium.TiLifecycle.OnLifecycleEvent;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.proxy.TiViewProxy;
@@ -52,6 +50,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -122,7 +121,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
     protected boolean preLayout = true;
     protected LatLngBounds preLayoutUpdateBounds;
     // protected ArrayList<AkylasMarker> timarkers;
-    protected WeakHashMap<Polyline, RouteProxy> handledPolylines;
+//    protected WeakHashMap<Polyline, RouteProxy> handledPolylines;
 //    protected WeakHashMap<Marker, AnnotationProxy> handledMarkers;
     private Fragment fragment;
 
@@ -208,7 +207,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 if (shouldNot) {
                     return false;
                 }
-                boolean result = true;
+                boolean result = false;
                 if (GoogleMapView.this.isTouchEnabled == true) {
                     result = interceptTouchEvent(ev)
                             || super.dispatchTouchEvent(ev);
@@ -241,6 +240,11 @@ public class GoogleMapView extends AkylasMapBaseView implements
                                     AkylasGooglemapModule.PROPERTY_ZORDER_ON_TOP),
                             false);
                     gOptions.zOrderOnTop(zOrderOnTop);
+                    boolean liteMode = TiConvert.toBoolean(
+                            proxy.getProperty(
+                                    AkylasGooglemapModule.PROPERTY_LITE_MODE),
+                            false);
+                    gOptions.liteMode(liteMode);
                 }
 
                 mapView = new MapView(activity, gOptions);
@@ -252,7 +256,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
             }
         } else {
             KrollDict data = new KrollDict();
-            data.putCodeAndMessage(-213, "Google Play Services not available");
+            data.putCodeAndMessage(-213, TiApplication.getGooglePlayServicesErrorString());
             fireEvent(TiC.EVENT_ERROR, data, false,
                     false);
             
@@ -359,8 +363,12 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
         super.release();
         if (infoWindowContainer != null) {
-            infoWindowContainer.getViewTreeObserver()
-                    .removeOnGlobalLayoutListener(infoWindowLayoutListener);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                infoWindowContainer.getViewTreeObserver()
+                .removeGlobalOnLayoutListener(infoWindowLayoutListener);
+            } else {
+                infoWindowContainer.getViewTreeObserver().removeOnGlobalLayoutListener(infoWindowLayoutListener);
+            }
         }
         if (positionUpdaterRunnable != null) {
             handler.removeCallbacks(positionUpdaterRunnable);
@@ -385,9 +393,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
 //        if (handledMarkers != null) {
 //            handledMarkers.clear();
 //        }
-        if (handledPolylines != null) {
-            handledPolylines.clear();
-        }
+//        if (handledPolylines != null) {
+//            handledPolylines.clear();
+//        }
     }
 
     protected Fragment createFragment() {
@@ -773,6 +781,15 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     @Override
     public void changeZoomLevel(final float level, final boolean animated) {
+        if (!TiApplication.isUIThread()) {
+            proxy.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    changeZoomLevel(level, animated);
+                }
+            });
+            return;
+        }
         targetZoom = level;
         CameraUpdate camUpdate = CameraUpdateFactory.zoomBy(level);
         moveCamera(camUpdate, animated);
@@ -1124,6 +1141,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
 
     @Override
     public boolean getUserLocationEnabled() {
+        if (map == null) {
+            return false;
+        }
         if (TiApplication.isUIThread()) {
             return map.isMyLocationEnabled();
         } else {
@@ -1486,10 +1506,10 @@ public class GoogleMapView extends AkylasMapBaseView implements
                 proxy.setMapView(GoogleMapView.this);
                 proxy.setActivity(activity);
                 proxy.setParentForBubbling(GoogleMapView.this.proxy);
-                if (handledPolylines == null) {
-                    handledPolylines = new WeakHashMap<Polyline, RouteProxy>();
-                }
-                handledPolylines.put(proxy.getPolyline(), proxy);
+//                if (handledPolylines == null) {
+//                    handledPolylines = new WeakHashMap<Polyline, RouteProxy>();
+//                }
+//                handledPolylines.put(proxy.getPolyline(), proxy);
             }
         }
     }
@@ -1507,9 +1527,9 @@ public class GoogleMapView extends AkylasMapBaseView implements
         }
 
         for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
-            if (handledPolylines != null) {
-                handledPolylines.remove(proxy.getPolyline());
-            }
+//            if (handledPolylines != null) {
+//                handledPolylines.remove(proxy.getPolyline());
+//            }
             deselectAnnotation(proxy);
             proxy.wasRemoved();
         }
@@ -1874,12 +1894,13 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     public void onPolylineClick(Polyline polyline) {
         if (_canSelectRoute) {
-            if (handledPolylines != null) {
-                BaseRouteProxy route = handledPolylines.get(polyline);
-                if (route != null) {
-                    handleMarkerClick(route);
+//            if (handledPolylines != null) {
+//            BaseRouteProxy route = handledPolylines.get(polyline);
+                Object route = polyline.getTag();
+                if (route instanceof BaseRouteProxy) {
+                    handleMarkerClick((BaseAnnotationProxy) route);
                 }
-            }
+//            }
         } else if (lastDownEvent != null) {
             Point p = new Point((int) lastDownEvent.getX(),
                     (int) lastDownEvent.getY());

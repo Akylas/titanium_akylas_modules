@@ -37,7 +37,10 @@ public class ClusterRenderer extends DefaultClusterRenderer<AnnotationProxy> {
         if (algorithm instanceof AkylasClusterAlgorithm) {
             ClusterProxy proxy = ((AkylasClusterAlgorithm)algorithm).proxy;
             if (proxy != null) {
-                return ((GoogleMapView) proxy.getMapView()).addAnnotationToMap(item);
+                GoogleMapView mapView = (GoogleMapView) proxy.getMapView();
+                if (mapView != null) {
+                    return mapView.addAnnotationToMap(item);                    
+                }
             }
         }
         return null;

@@ -83,8 +83,14 @@ public class MBTilesFileArchive {
 
                 if (cur.getCount() != 0) {
                     cur.moveToFirst();
-                    byte[] data = Base64.decode(cur.getBlob(0), Base64.DEFAULT);
-                    ret = BitmapFactory.decodeByteArray(data, 0, data.length);
+                    int type = cur.getType(0);
+                    if (type == Cursor.FIELD_TYPE_STRING) {
+                        byte[] data = Base64.decode(cur.getBlob(0), Base64.DEFAULT);
+                        ret = BitmapFactory.decodeByteArray(data, 0, data.length);
+                    } else if (type == Cursor.FIELD_TYPE_BLOB) {
+                        byte[] data = cur.getBlob(0);
+                        ret = BitmapFactory.decodeByteArray(data, 0, data.length);
+                    }
                     // ret = new
                     // ByteArrayInputStream(Base64.decode(cur.getBlob(0),
                     // Base64.DEFAULT));

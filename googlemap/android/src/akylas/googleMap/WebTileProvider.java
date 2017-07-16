@@ -280,6 +280,10 @@ public class WebTileProvider implements TileProvider {
             return new Tile(mTileSizePixels, mTileSizePixels,
                     stream.toByteArray());
         }
+        return getTileForNoImage();
+    }
+    
+    protected Tile getTileForNoImage () {
         return null;
     }
 

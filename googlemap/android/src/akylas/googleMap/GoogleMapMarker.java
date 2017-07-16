@@ -182,6 +182,7 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
     public void removeFromMap() {
         if (marker != null) {
             marker.remove();
+            marker.setTag(null);
             marker = null;
         }
     }
@@ -256,6 +257,9 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
         final long duration = proxy.animationDuration();
         runInUiThread(new CommandNoReturn() {
             public void execute() {
+                if (proxy == null) {
+                    return;
+                }
                 GoogleMapView mapView = (GoogleMapView) proxy.getMapView();
                 if (mapView != null) {
                     mapView.updateMarkerPosition(marker, point, duration);
@@ -290,6 +294,9 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
         }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
+                if (proxy == null) {
+                    return;
+                }
                 GoogleMapView mapView = (GoogleMapView) proxy.getMapView();
                 if (mapView != null) {
                     mapView.updateMarkerHeading(marker, heading);

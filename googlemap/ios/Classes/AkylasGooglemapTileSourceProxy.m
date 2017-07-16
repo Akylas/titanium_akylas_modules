@@ -195,8 +195,12 @@
         theLayer.userAgent = [TiUtils stringValue:[self valueForKey:@"userAgent"]];
         theLayer.autoHd = [TiUtils boolValue:[self valueForKey:@"autoHd"] def:NO];
         theLayer.cacheable = [TiUtils boolValue:[self valueForKey:@"cacheable"] def:YES];
-        theLayer.minZoom = [TiUtils floatValue:[self valueForKey:@"minZoom"] def:-1];
-        theLayer.maxZoom = [TiUtils floatValue:[self valueForKey:@"maxZoom"] def:-1];
+        if (theLayer.minZoom == -1) {
+            theLayer.minZoom = [TiUtils floatValue:[self valueForKey:@"minZoom"] def:-1];
+        }
+        if (theLayer.maxZoom == -1) {
+            theLayer.maxZoom = [TiUtils floatValue:[self valueForKey:@"maxZoom"] def:-1];
+        }
     }
 }
 -(GMSTileLayer*)tileLayer
