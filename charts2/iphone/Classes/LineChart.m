@@ -15,7 +15,8 @@
 
 -(ChartViewBase*)newChartView {
     
-    return [[LineChartView alloc] initWithFrame:CGRectZero];
+    BarLineChartViewBase* view = [[LineChartView alloc] initWithFrame:CGRectZero];
+    return view;
 }
 
 

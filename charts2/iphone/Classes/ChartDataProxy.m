@@ -20,6 +20,7 @@
 {
     RELEASE_TO_NIL(_data)
     RELEASE_TO_NIL(_sets)
+    RELEASE_TO_NIL(_parentChartViewProxy)
     [super dealloc];
 }
 

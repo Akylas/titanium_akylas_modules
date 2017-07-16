@@ -15,6 +15,7 @@
 -(void)dealloc
 {
     RELEASE_TO_NIL(_legend)
+    RELEASE_TO_NIL(_parentChartViewProxy)
     [super dealloc];
 }
 

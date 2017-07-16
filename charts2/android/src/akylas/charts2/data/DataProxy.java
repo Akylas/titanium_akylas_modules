@@ -67,7 +67,7 @@ public abstract class DataProxy extends ReusableProxy {
         }
     }
 
-    private boolean highlight = false;
+    private boolean highlight = true;
     private boolean drawValues = false;
     private FontDesc fontDesc = null;
     private float fontSize = 0.0f;

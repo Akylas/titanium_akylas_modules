@@ -38,11 +38,11 @@
     return result;
 }
 
-//-(ChartDataEntry*)dictToChartDataEntry:(NSDictionary *)dict {
-//    ChartDataEntry* result = [super dictToChartDataEntry:dict];
-//    if (IS_OF_CLASS(result, BubbleChartDataEntry)) {
-//        [(BubbleChartDataEntry*)result setSize:[TiUtils doubleValue:@"size" properties:dict]];
-//    }
-//    return result;
-//}
+-(ChartDataEntry*)dictToChartDataEntry:(NSDictionary *)dict {
+    ChartDataEntry* result = [super dictToChartDataEntry:dict];
+    if (IS_OF_CLASS(result, BubbleChartDataEntry)) {
+        [(BubbleChartDataEntry*)result setSize:[TiUtils doubleValue:@"size" properties:dict]];
+    }
+    return result;
+}
 @end

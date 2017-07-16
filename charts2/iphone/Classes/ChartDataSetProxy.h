@@ -25,6 +25,7 @@
 -(ChartDataSet* _Nonnull)set;
 -(NSMutableDictionary* _Nullable)chartDataEntryDict:(ChartDataEntry * _Nullable)entry;
 -(ChartDataEntry* _Nullable)dictToChartDataEntry:(NSDictionary* _Nullable)dict;
+-(ChartDataEntry*)objectToChartDatEntry:(id)obj index:(NSUInteger)idx;
 -(void)unarchivedWithRootProxy:(TiProxy* _Nullable)rootProxy;
 -(void)cleanupBeforeRelease;
 @end

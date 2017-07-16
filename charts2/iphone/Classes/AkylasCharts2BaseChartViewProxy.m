@@ -113,18 +113,40 @@
 
 -(void)highlightValue:(id)args {
     ENSURE_SINGLE_ARG(args, NSDictionary)
-    [[self chartView] highlightValueWithX:[TiUtils intValue:@"x" properties:args] dataSetIndex:[TiUtils intValue:@"dataSetIndex" properties:args] callDelegate:YES];
+    [[self chartView] highlightValueWithX:[TiUtils intValue:@"x" properties:args] dataSetIndex:[TiUtils intValue:@"datasetIndex" properties:args] callDelegate:[TiUtils intValue:@"callEvent" properties:args def:YES]];
 }
+
 
 -(void) notifyDataSetChanged:(id)ununsed
 {
-    [[self chartView] notifyDataSetChanged];
+    TiThreadPerformOnMainThread(^{
+        [[self chartView] notifyDataSetChanged];
+    }, NO);
 }
 
 -(void) redraw:(id)ununsed
 {
-    [[self chartView] setNeedsDisplay];
+    TiThreadPerformOnMainThread(^{
+        [[self chartView] setNeedsDisplay];
+    }, NO);
+}
 
+
+-(id)getHighlightByTouchPoint:(id)args
+{
+    ENSURE_SINGLE_ARG(args, NSObject)
+    CGPoint point = [TiUtils pointValue:args];
+    ChartHighlight* highlight = [[self chartView] getHighlightByTouchPoint:point];
+    if (highlight) {
+        return @{
+                 @"dataIndex":@(highlight.dataIndex),
+                 @"dataSetIndex":@(highlight.dataSetIndex),
+                 @"x":@(highlight.x),
+                 @"y":@(highlight.y),
+                 @"isStacked":@(highlight.isStacked),
+                 @"stackIndex":@(highlight.stackIndex),
+                 };
+    }
 }
 
 -(void)willFirePropertyChanges {
@@ -165,7 +187,7 @@
 
 -(ChartXAxisProxy*)getOrCreateXAxis:(id)value {
     if (!_xAxisProxy) {
-        _xAxisProxy =[[ChartXAxisProxy alloc] _initWithPageContext:[self getContext] args:@[value] axis:[self chartXAxis]];
+        _xAxisProxy =[[ChartXAxisProxy alloc] _initWithPageContext:[self getContext] args:value?@[value]:nil axis:[self chartXAxis]];
         if (_xAxisProxy) {
             [_xAxisProxy unarchivedWithRootProxy:_rootProxy];
         }
@@ -189,7 +211,7 @@
 
 -(ChartLegendProxy*)getOrCreateLegend:(id)value {
     if (!_legendProxy) {
-        _legendProxy =[[ChartLegendProxy  alloc] _initWithPageContext:[self getContext] args:@[value] legend:[self chartLegend]];
+        _legendProxy =[[ChartLegendProxy  alloc] _initWithPageContext:[self getContext] args:value?@[value]:nil legend:[self chartLegend]];
         if (_rootProxy) {
             [_legendProxy unarchivedWithRootProxy:_rootProxy];
         }
@@ -209,7 +231,7 @@
 
 -(ChartDataProxy*)getOrCreateData:(id)value {
     if (!_dataProxy) {
-        _dataProxy =[[[self dataClass] alloc] _initWithPageContext:[self getContext] args:@[value]];
+        _dataProxy =[[[self dataClass] alloc] _initWithPageContext:[self getContext] args:value?@[value]:nil];
         if (_rootProxy) {
             [_dataProxy unarchivedWithRootProxy:_rootProxy];
         }

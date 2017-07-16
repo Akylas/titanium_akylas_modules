@@ -35,8 +35,8 @@ public abstract class BarLineChartViewBaseProxy extends ChartBaseViewProxy {
     }
     
     @Override
-    public void handleCreationDict(HashMap dict) {
-        super.handleCreationDict(dict);
+    public void handleCreationDict(HashMap dict, KrollProxy rootProxy) {
+        super.handleCreationDict(dict, rootProxy);
         if (dict.containsKey("leftAxis")) {
             setLeftAxis(TiConvert.toHashMap(dict .get("leftAxis")));
         }

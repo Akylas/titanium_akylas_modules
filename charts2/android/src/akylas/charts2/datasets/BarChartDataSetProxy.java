@@ -1,5 +1,7 @@
 package akylas.charts2.datasets;
 
+import java.util.HashMap;
+
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.util.TiConvert;
@@ -42,13 +44,13 @@ public class BarChartDataSetProxy
     }
     
     @Override
-    public BarEntry dictToChartDataEntry(Object value) {
+    public BarEntry dictToChartDataEntry(HashMap value) {
         BarEntry entry = (BarEntry) super.dictToChartDataEntry(value);
        if (entry != null) {
 //            HashMap dict = (HashMap) value;
-//            entry.setHigh(TiConvert.toFloat(dict, "high", 0));
-//            entry.setLow(TiConvert.toFloat(dict, "low", 0));
-//            entry.setClose(TiConvert.toFloat(dict, "close", 0));
+//            entry.setHigh(TiConvert.toFloat(value, "high", 0));
+//            entry.setLow(TiConvert.toFloat(value, "low", 0));
+//            entry.setClose(TiConvert.toFloat(value, "close", 0));
         }
         return entry;
     }

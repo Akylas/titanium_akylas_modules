@@ -66,7 +66,7 @@
 
 -(ChartYAxisProxy*)getOrCreateLeftAxis:(id)value {
     if (!_leftAxisProxy) {
-        _leftAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[self getContext] args:@[value] axis:[self chartLeftAxis]];
+        _leftAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[self getContext] args:value?@[value]:nil axis:[self chartLeftAxis]];
         if (_leftAxisProxy) {
             [_leftAxisProxy unarchivedWithRootProxy:_rootProxy];
         }
@@ -78,7 +78,7 @@
 }
 -(ChartYAxisProxy*)getOrCreateRightAxis:(id)value {
     if (!_rightAxisProxy) {
-        _rightAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[self getContext] args:@[value] axis:[self chartRightAxis]];
+        _rightAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[self getContext] args:value?@[value]:nil axis:[self chartRightAxis]];
         if (_rightAxisProxy) {
             [_rightAxisProxy unarchivedWithRootProxy:_rootProxy];
         }

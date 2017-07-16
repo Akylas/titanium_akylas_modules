@@ -17,7 +17,7 @@
 
 -(id)initWithCallback:(KrollCallback*)callback
 {
-    if ([super init]) {
+    if (self = [super init]) {
         _callback = [callback retain];
     }
     return self;
@@ -117,8 +117,9 @@
             formatter.negativeSuffix = [TiUtils stringValue:@"negativeSuffix" properties:value
                                                         def:[TiUtils stringValue:@"suffix" properties:value def:formatter.negativeSuffix]];
         }
+        return [[[ChartDefaultValueFormatter alloc] initWithFormatter:[formatter autorelease]] autorelease];
     }
-    return [[[ChartDefaultValueFormatter alloc] initWithFormatter:[formatter autorelease]] autorelease];
+    return nil;
 }
 
 +(ChartDefaultAxisValueFormatter*)axisNumberFormatterValue:(id)value {
@@ -142,8 +143,9 @@
             formatter.negativeSuffix = [TiUtils stringValue:@"negativeSuffix" properties:value
                                                         def:[TiUtils stringValue:@"suffix" properties:value def:formatter.negativeSuffix]];
         }
+        return [[[ChartDefaultAxisValueFormatter alloc] initWithFormatter:[formatter autorelease]] autorelease];
     }
-    return [[[ChartDefaultAxisValueFormatter alloc] initWithFormatter:[formatter autorelease]] autorelease];
+    return nil;
 }
 
 +(ChartDataSetRounding)entryRoundValue:(id)value
@@ -389,8 +391,8 @@
             
             return template;
         }
-    } else {
-        ENSURE_SINGLE_ARG(value, NSArray)
+    } else if (IS_OF_CLASS(value, NSArray)) {
+//        ENSURE_SINGLE_ARG(value, NSArray)
         NSMutableArray* result= [NSMutableArray array];
         [value enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             UIColor* color = [[TiUtils colorValue:obj] _color];

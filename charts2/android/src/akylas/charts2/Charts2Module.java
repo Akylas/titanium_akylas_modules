@@ -95,6 +95,7 @@ public class Charts2Module extends ProtectedModule {
         map.put("Akylas.Charts2.LimitLine",
                 akylas.charts2.proxy.LimitLineProxy.class.getName());
         APIMap.addMapping(map);
+        Utils.init(app);
     }
 
     @Kroll.onVerifyModule

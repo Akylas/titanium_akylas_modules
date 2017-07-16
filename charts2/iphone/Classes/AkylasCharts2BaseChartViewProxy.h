@@ -28,4 +28,5 @@
 -(void)setXAxis:(id)value;
 -(void)setData:(id)value;
 -(void)setLegend:(id)value;
+-(ChartDataProxy*)data;
 @end

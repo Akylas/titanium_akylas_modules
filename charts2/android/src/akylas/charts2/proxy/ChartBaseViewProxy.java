@@ -5,12 +5,9 @@ import java.util.HashMap;
 import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.titanium.proxy.ActivityProxy;
 import org.appcelerator.titanium.proxy.TiViewProxy;
-import org.appcelerator.titanium.proxy.TiWindowProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUrl;
 import org.appcelerator.titanium.view.TiUIView;
@@ -54,8 +51,8 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
     }
     
     @Override
-    public void handleCreationDict(HashMap dict) {
-        super.handleCreationDict(dict);
+    public void handleCreationDict(HashMap dict, KrollProxy rootProxy) {
+        super.handleCreationDict(dict, rootProxy);
         if (dict.containsKey(TiC.PROPERTY_DATA)) {
             setData(TiConvert.toHashMap(dict .get(TiC.PROPERTY_DATA)));
         }
@@ -63,7 +60,7 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             setXAxis(TiConvert.toHashMap(dict .get("xAxis")));
         }
         if (dict.containsKey("legend")) {
-            setXAxis(TiConvert.toHashMap(dict .get("legend")));
+            setLegend(TiConvert.toHashMap(dict .get("legend")));
         }
     }
 
@@ -153,7 +150,7 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             if (_legendProxy != null) {
                 _legendProxy.unarchivedWithRootProxy(_rootProxy);
             }
-        } else {
+        } else if(value != null) {
             _legendProxy.applyProperties(value);
         }
         return _legendProxy;
@@ -189,7 +186,7 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             if (_xAxisProxy != null) {
                 _xAxisProxy.unarchivedWithRootProxy(_rootProxy);
             }
-        } else {
+        } else if (value != null){
             _xAxisProxy.applyProperties(value);
         }
         return _xAxisProxy;
@@ -233,7 +230,7 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             if (peekView() != null) {
                 getOrCreateChartView().setData(_dataProxy.getData());
             }
-        } else {
+        } else if(value != null) {
             _dataProxy.applyProperties(value);
         }
         return _dataProxy;
@@ -246,11 +243,20 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
     }
 
     @Kroll.method
-    public void highlightValue(HashMap args) {
+    public void highlightValue(final HashMap args) {
+        if (!TiApplication.isUIThread()) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    highlightValue(args);
+                }
+            });
+            return;
+        }
         if (view != null) {
             getOrCreateChartView().getChart().highlightValue(
-                    TiConvert.toInt(args, "x"),
-                    TiConvert.toInt(args, "dataSetIndex"), true);
+                    TiConvert.toInt(args, "x", -1),
+                    TiConvert.toInt(args, "datasetIndex", -1), true);
         }
     }
 

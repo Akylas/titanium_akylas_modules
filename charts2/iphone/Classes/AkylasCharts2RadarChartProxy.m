@@ -70,7 +70,7 @@
 
 -(ChartYAxisProxy*)getOrCreateYAxis:(id)value {
     if (!_yAxisProxy) {
-        _yAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[self getContext] args:@[value] axis:[self chartYAxis]];
+        _yAxisProxy =[[ChartYAxisProxy alloc] _initWithPageContext:[self getContext] args:value?@[value]:nil axis:[self chartYAxis]];
         if (_yAxisProxy) {
             [_yAxisProxy unarchivedWithRootProxy:_rootProxy];
         }

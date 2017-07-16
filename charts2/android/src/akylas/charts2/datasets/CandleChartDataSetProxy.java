@@ -49,7 +49,7 @@ public class CandleChartDataSetProxy
     }
     
     @Override
-    public CandleEntry dictToChartDataEntry(Object value) {
+    public CandleEntry dictToChartDataEntry(HashMap value) {
         CandleEntry entry = (CandleEntry) super.dictToChartDataEntry(value);
        if (entry != null) {
             HashMap dict = (HashMap) value;

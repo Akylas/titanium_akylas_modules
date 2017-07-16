@@ -19,7 +19,7 @@
 
 -(id)initWithCallback:(KrollCallback*)callback
 {
-    if ([super init]) {
+    if (self = [super init]) {
         _callback = [callback retain];
     }
     return self;
@@ -45,6 +45,7 @@
 -(void)dealloc
 {
     RELEASE_TO_NIL(_set)
+    RELEASE_TO_NIL(_parentDataProxy)
     [super dealloc];
 }
 
@@ -172,13 +173,10 @@
 -(void)setValues:(id)value
 {
     NSMutableArray* result = [NSMutableArray array];
-    Class dataEntryClass = [self dataEntryClass];
+//    Class dataEntryClass = [self dataEntryClass];
     [value enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (IS_OF_CLASS(obj, NSNumber)) {
-            [result addObject:[self dataEntryFromNumber:obj index:idx]];
-        } else if (IS_OF_CLASS(obj, NSDictionary)) {
-            ChartDataEntry* entry = [self dictToChartDataEntry:obj];
-            entry.x = idx;
+            ChartDataEntry* entry = [self objectToChartDatEntry:obj index:idx];
+        if (entry) {
             [result addObject:entry];
         }
     }];
@@ -239,14 +237,23 @@
     return nil;
 }
 
+-(ChartDataEntry*)objectToChartDatEntry:(id)obj index:(NSUInteger)idx {
+    if (IS_OF_CLASS(obj, NSNumber)) {
+        return [self dataEntryFromNumber:obj index:idx];
+    } else if (IS_OF_CLASS(obj, NSDictionary)) {
+        ChartDataEntry* entry = [self dictToChartDataEntry:obj];
+        entry.x = idx;
+        return entry;
+    }
+}
+
 -(ChartDataEntry*)dictToChartDataEntry:(NSDictionary *)dict {
     if (dict) {
-        ChartDataEntry* result = [[[[self dataEntryClass] class] alloc] init];
-        [result setValuesForKeysWithDictionary:dict];
-//        [result setValue:[TiUtils doubleValue:@"value" properties:dict]];
-//        [result setXIndex:[TiUtils intValue:@"xIndex" properties:dict]];
-//        [result setData:[dict objectForKey:@"data"]];
-        return [result autorelease];
+        ChartDataEntry* entry = [[[[self dataEntryClass] class] alloc] init];
+        [entry setX:[TiUtils doubleValue:@"x" properties:dict]];
+        [entry setY:[TiUtils doubleValue:@"y" properties:dict]];
+        [entry setData:[dict objectForKey:@"data"]];
+        return [entry autorelease];
     }
     return nil;
 }
@@ -257,8 +264,8 @@
 }
 - (id)entryForX:(id)args {
     ENSURE_SINGLE_ARG(args, NSDictionary)
-    ChartDataEntry * entry = [[self set] entryIndexWithX:[TiUtils intValue:@"x" properties:args] rounding:[AkylasCharts2Module entryRoundValue:[args objectForKey:@"round"]]];
-    return [self chartDataEntryDict:[entry autorelease]];
+    ChartDataEntry * entry = [[self set] entryForXValue:[TiUtils doubleValue:@"x" properties:args] closestToY:[TiUtils doubleValue:@"y" properties:args] rounding:[AkylasCharts2Module entryRoundValue:[args objectForKey:@"round"]]];
+    return [self chartDataEntryDict:entry];
 }
 - (id)entriesForX:(id)x {
     NSArray<ChartDataEntry *> * entries = [[self set] entriesForXValue:[TiUtils intValue:x]];
@@ -270,7 +277,7 @@
 }
 - (id)entryIndexWithX:(id)args {
     ENSURE_SINGLE_ARG(args, NSDictionary)
-    NSInteger result = [[self set] entryIndexWithX:[TiUtils intValue:@"x" properties:args] rounding:[AkylasCharts2Module entryRoundValue:[args objectForKey:@"round"]]];
+    NSInteger result = [[self set] entryIndexWithX:[TiUtils doubleValue:@"x" properties:args] closestToY:[TiUtils doubleValue:@"y" properties:args] rounding:[AkylasCharts2Module entryRoundValue:[args objectForKey:@"round"]]];
     return @(result);
 }
 

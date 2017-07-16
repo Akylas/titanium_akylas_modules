@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 import org.appcelerator.titanium.util.TiUIHelper.FontDesc;
 import org.appcelerator.titanium.view.TiCompositeLayout;
+import org.appcelerator.titanium.view.TiUINonViewGroupView;
 import org.appcelerator.titanium.view.TiUIView;
 
 import com.github.mikephil.charting.charts.Chart;
@@ -35,7 +38,7 @@ import akylas.charts2.data.DataProxy;
 import akylas.charts2.datasets.DataSetProxy;
 import akylas.charts2.proxy.ChartBaseViewProxy;
 
-public class BaseChart extends TiUIView implements OnChartGestureListener, OnChartValueSelectedListener {
+public class BaseChart extends TiUINonViewGroupView implements OnChartGestureListener, OnChartValueSelectedListener {
     public BaseChart(TiViewProxy proxy) {
         super(proxy, new TiCompositeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setNativeView(newChartView(proxy.getActivity()));
@@ -47,6 +50,41 @@ public class BaseChart extends TiUIView implements OnChartGestureListener, OnCha
     protected View newChartView(Activity activity) {
         return null;
     }
+    
+    @Override
+    protected KrollDict dictFromMotionEvent(MotionEvent e) {
+        KrollDict data = super.dictFromMotionEvent(e);
+        final float touchX = e.getX();
+        final float touchY = e.getY();
+        Highlight highlight = getChart().getHighlightByTouchPoint(touchX, touchY);
+        if (highlight != null) {
+            KrollDict dataK = new KrollDict();
+            dataK.put("x", highlight.getX());
+            dataK.put("xPx", new TiDimension(highlight.getXPx(), TiDimension.TYPE_LEFT).getAsDefault());
+            dataK.put("y", highlight.getY());
+            dataK.put("yPx", new TiDimension(highlight.getYPx(), TiDimension.TYPE_TOP).getAsDefault());
+            dataK.put("dataIndex", highlight.getDataIndex());
+            dataK.put("dataSetIndex", highlight.getDataSetIndex());
+            data.put("data", dataK);
+        }
+//        if (nativeView.containsPoint(touchX, touchY)) {
+//            Log.d(TAG, "Touched at " + touchX + ", " + touchY);
+//            XYGraphWidget widget = xyPlotView.getGraphWidget();
+//            long targetValX = Math
+//                    .round(widget.getXVal(touchX));
+//            for (final XYSeries series : xyPlotView.getSeriesSet()) {
+//                if (series instanceof AkXYSeries
+//                        && ((AkXYSeries) series).proxy != null) {
+//                    XYSerieProxy serieProxy = ((AkXYSeries) series).proxy
+//                            .get();
+//                    serieProxy.addTouchEventData(targetValX, xyPlotView, data);
+//                }
+//            }
+//        }
+
+        return data;
+    }
+
     public Chart getChart() {
         return (Chart)nativeView;
     }
@@ -76,7 +114,7 @@ public class BaseChart extends TiUIView implements OnChartGestureListener, OnCha
     }
     
     public void notifyDataSetChanged() {
-        getChart().postInvalidate();
+        getChart().notifyDataSetChanged();
     }
     
     public void redraw() {

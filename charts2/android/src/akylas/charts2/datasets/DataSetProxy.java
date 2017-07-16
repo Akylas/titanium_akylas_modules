@@ -81,7 +81,7 @@ public abstract class DataSetProxy extends ReusableProxy {
         return null;
     }
     
-    public Entry dictToChartDataEntry(Object value) {
+    public Entry dictToChartDataEntry(HashMap value) {
         if (value instanceof HashMap) {
             HashMap dict = (HashMap) value;
             Entry entry = null;;
@@ -165,7 +165,7 @@ public abstract class DataSetProxy extends ReusableProxy {
                     if (current instanceof Number) {
                         entry = dataEntryFromNumber((Number) current, i);
                     } else if (current instanceof HashMap) {
-                        entry = dictToChartDataEntry(current);
+                        entry = dictToChartDataEntry((HashMap) current);
                     }
                     if (entry != null) {
                         entry.setX(i);

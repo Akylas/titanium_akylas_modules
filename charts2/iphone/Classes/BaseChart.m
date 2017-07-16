@@ -6,6 +6,7 @@
  */
 
 #import "BaseChart.h"
+#import "BalloonMarker.h"
 #import "ChartXAxisProxy.h"
 #import "ChartLegendProxy.h"
 #import "ChartDataProxy.h"
@@ -31,6 +32,19 @@
     [super setTouchEnabled_:arg];
     _chartView.userInteractionEnabled = self.userInteractionEnabled;
 }
+
+-(BOOL)touchedContentViewWithEvent:(UIEvent *)event
+{
+    // The view hierarchy of the movie player controller's view is subject to change,
+    // and traversing it is dangerous. If we received a touch which isn't on a TiUIView,
+    // assume it falls into the movie player view hiearchy; this matches previous
+    // behavior as well.
+    
+    UITouch* touch = [[event allTouches] anyObject];
+    UIView* view = [touch view];
+    return (view = self || view  == _chartView);
+}
+
 
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
@@ -59,6 +73,9 @@
     if (!_chartView) {
         _chartView = [self newChartView];
         _chartView.delegate = self;
+        [_chartView.gestureRecognizers enumerateObjectsUsingBlock:^(__kindof UIGestureRecognizer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            obj.cancelsTouchesInView = NO;
+        }];
         [self addSubview:_chartView];
     }
     return _chartView;
@@ -188,24 +205,70 @@
 }
 
 
--(void)setMarker:(id)value
+-(void)setMarker_ :(id)value
 {
     ENSURE_DICT(value)
-    NSString* type = [TiUtils stringValue:@"type" properties:value def:@"balloon"];
-    //ChartMarker* marker = BalloonMarker
-    UIEdgeInsets inset = [TiUtils insetValue:value];
-    [[self getOrCreateChartView] setExtraOffsetsWithLeft:inset.left top:inset.top right:inset.right bottom:inset.bottom];
+//    NSString* type = [TiUtils stringValue:@"type" properties:value def:@"balloon"];
+    BalloonMarker *marker = [[BalloonMarker alloc]
+                             initWithColor: [UIColor colorWithWhite:180/255. alpha:1.0]
+                             font: [UIFont systemFontOfSize:12.0]
+                             textColor: UIColor.whiteColor
+                             insets: UIEdgeInsetsMake(8.0, 8.0, 20.0, 8.0)];
+    [[self getOrCreateChartView] setMarker:[marker autorelease]];
 }
 
-- (void)chartValueSelected:(ChartViewBase * _Nonnull)chartView entry:(ChartDataEntry * _Nonnull)entry dataSetIndex:(NSInteger)dataSetIndex highlight:(ChartHighlight * _Nonnull)highlight {
+//-(void)highlightValues:(id)args
+//{
+//    
+//}
+
+//-(void)highlightValue:(id)args
+//{
+//    ENSURE_ARG_COUNT(args, 2);
+//    NSUInteger dataSetIndex = [TiUtils intValue:[args objectAtIndex:0]];
+//    NSUInteger itemIndex = [TiUtils intValue:[args objectAtIndex:1]];
+//}
+
+-(NSDictionary*)dictionaryFromTouch:(UITouch*)touch
+{
+    NSMutableDictionary* event = [super dictionaryFromTouch:touch];
+    CGPoint pointOfTouch = [touch locationInView:self];
+   ChartHighlight* highlight = [[self chartView] getHighlightByTouchPoint:pointOfTouch];
+    if (highlight) {
+//        ChartDataSetProxy* dataSetProxy = [[self dataProxy] dataSetAtIndex:highlight.dataSetIndex];
+        [event setObject:@{
+                          @"dataIndex":@(highlight.dataIndex),
+                          @"dataSetIndex":@(highlight.dataSetIndex),
+                          @"x":@(highlight.x),
+                          @"xPx":@(highlight.xPx),
+                          @"y":@(highlight.y),
+                          @"yPx":@(highlight.yPx),
+                          @"isStacked":@(highlight.isStacked),
+                          @"stackIndex":@(highlight.stackIndex),
+                          } forKey:@"data"] ;
+    }
+    return event;
+}
+
+- (void)chartValueSelected:(ChartViewBase * _Nonnull)chartView entry:(ChartDataEntry * _Nonnull)entry highlight:(ChartHighlight * _Nonnull)highlight {
     BOOL hasHighlight = [proxy _hasListeners:@"highlight"];
     BOOL hasClick = [proxy _hasListeners:@"click"];
+//    BOOL hasClick = NO;
+    NSLog(@"highlight %@", [highlight description])
     if (hasHighlight || hasClick)
     {
-        ChartDataSetProxy* dataSetProxy = [[self dataProxy] dataSetAtIndex:dataSetIndex];
+        ChartDataSetProxy* dataSetProxy = [[self dataProxy] dataSetAtIndex:highlight.dataSetIndex];
         NSDictionary* event = @{
-                                @"data":[dataSetProxy chartDataEntryDict:entry],
-                               @"dataSetIndex":@(dataSetIndex)
+                                @"data":@{
+                                        @"dataIndex":@(highlight.dataIndex),
+                                        @"dataSetIndex":@(highlight.dataSetIndex),
+                                        @"x":@(highlight.x),
+                                        @"xPx":@(highlight.xPx),
+                                        @"y":@(highlight.y),
+                                        @"yPx":@(highlight.yPx),
+                                        @"isStacked":@(highlight.isStacked),
+                                        @"stackIndex":@(highlight.stackIndex),
+                                        }
                                };
         if (hasHighlight) {
             [[self viewProxy] fireEvent:@"highlight" withObject:event propagate:NO checkForListener:NO];

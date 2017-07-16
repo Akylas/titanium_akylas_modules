@@ -4,6 +4,7 @@ import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.XAxis;
 
 import android.app.Activity;
 import android.view.View;
@@ -21,6 +22,12 @@ public class PieChartView extends PieRadarChartViewBase {
     protected View newChartView(Activity activity) {
         return new PieChart(activity);
     }
+    
+    @Override
+   public XAxis getXAxis() {
+        return null;
+    }    
+    
     
     @Override
     public void propertySet(String key, Object newValue, Object oldValue,

@@ -19,7 +19,7 @@
 
 -(id)initWithNumberFormatter:(NSNumberFormatter*)formatter
 {
-    if ([super init]) {
+    if (self = [super init]) {
         _formatter = [formatter retain];
     }
     return self;
@@ -62,6 +62,7 @@
 {
     _axis = nil;
     RELEASE_TO_NIL(_limitLines)
+    RELEASE_TO_NIL(_parentChartViewProxy)
     [super dealloc];
 }
 
@@ -229,11 +230,11 @@
 
 -(void)addLimitLine:(id)args
 {
-    AkylasCharts2LimitLineProxy* proxy;
+    AkylasCharts2LimitLineProxy* proxy = nil;
     if (IS_OF_CLASS(args, AkylasCharts2LimitLineProxy)) {
         proxy = args;
     } else if(IS_OF_CLASS(args, NSDictionary)) {
-        proxy = [[AkylasCharts2LimitLineProxy alloc] _initWithPageContext:[self getContext] args:@[args]];
+        proxy = [[[AkylasCharts2LimitLineProxy alloc] _initWithPageContext:[self getContext] args:@[args]] autorelease];
     }
     
     if (proxy) {

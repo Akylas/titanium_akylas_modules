@@ -27,10 +27,10 @@
 }
 
 
--(void) notifyDataSetChanged
-{
-    [_chartView notifyDataSetChanged];
-}
+//-(void) notifyDataSetChanged
+//{
+//    [_chartView notifyDataSetChanged];
+//}
 
 
 -(void)setLeftAxis_:(id)value

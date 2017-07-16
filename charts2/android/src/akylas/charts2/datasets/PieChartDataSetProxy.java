@@ -48,10 +48,10 @@ public class PieChartDataSetProxy extends DataSetProxy {
     }
     
     @Override
-    public PieEntry dictToChartDataEntry(Object value) {
+    public PieEntry dictToChartDataEntry(HashMap value) {
         PieEntry entry = (PieEntry) super.dictToChartDataEntry(value);
        if (entry != null) {
-            HashMap dict = (HashMap) value;
+//            HashMap dict = (HashMap) value;
 //            entry.setHigh(TiConvert.toFloat(dict, "high", 0));
 //            entry.setLow(TiConvert.toFloat(dict, "low", 0));
 //            entry.setClose(TiConvert.toFloat(dict, "close", 0));

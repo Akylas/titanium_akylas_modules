@@ -1,5 +1,7 @@
 package akylas.charts2.datasets;
 
+import java.util.HashMap;
+
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.util.TiConvert;
@@ -44,7 +46,7 @@ public class RadarChartDataSetProxy extends LineRadarChartDataSetProxy {
     }
     
     @Override
-    public RadarEntry dictToChartDataEntry(Object value) {
+    public RadarEntry dictToChartDataEntry(HashMap value) {
         RadarEntry entry = (RadarEntry) super.dictToChartDataEntry(value);
        if (entry != null) {
 //            HashMap dict = (HashMap) value;

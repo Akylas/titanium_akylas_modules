@@ -9,7 +9,7 @@ import akylas.charts2.view.BarChartView;
 import android.app.Activity;
 
 @Kroll.proxy(creatableInModule = Charts2Module.class, name = "BarChart")
-public class BarChartProxy extends ChartBaseViewProxy {
+public class BarChartProxy extends BarLineChartViewBaseProxy {
 
     @Override
     protected Class dataClass() {

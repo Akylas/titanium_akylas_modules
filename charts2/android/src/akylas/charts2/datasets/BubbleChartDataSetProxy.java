@@ -48,7 +48,7 @@ public class BubbleChartDataSetProxy
     }
     
     @Override
-    public BubbleEntry dictToChartDataEntry(Object value) {
+    public BubbleEntry dictToChartDataEntry(HashMap value) {
        BubbleEntry entry = (BubbleEntry) super.dictToChartDataEntry(value);
        if (entry != null) {
             HashMap dict = (HashMap) value;

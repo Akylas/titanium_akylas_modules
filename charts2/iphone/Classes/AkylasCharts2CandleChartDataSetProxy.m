@@ -43,15 +43,15 @@
     return result;
 }
 
-//-(ChartDataEntry*)dictToChartDataEntry:(NSDictionary *)dict {
-//    ChartDataEntry* result = [super dictToChartDataEntry:dict];
-//    if (IS_OF_CLASS(result, CandleChartDataEntry)) {
-//        [(CandleChartDataEntry*)result setHigh:[TiUtils doubleValue:@"high" properties:dict]];
-//        [(CandleChartDataEntry*)result setLow:[TiUtils doubleValue:@"low" properties:dict]];
-//        [(CandleChartDataEntry*)result setClose:[TiUtils doubleValue:@"close" properties:dict]];
-//    }
-//    return result;
-//}
+-(ChartDataEntry*)dictToChartDataEntry:(NSDictionary *)dict {
+    ChartDataEntry* result = [super dictToChartDataEntry:dict];
+    if (IS_OF_CLASS(result, CandleChartDataEntry)) {
+        [(CandleChartDataEntry*)result setHigh:[TiUtils doubleValue:@"high" properties:dict]];
+        [(CandleChartDataEntry*)result setLow:[TiUtils doubleValue:@"low" properties:dict]];
+        [(CandleChartDataEntry*)result setClose:[TiUtils doubleValue:@"close" properties:dict]];
+    }
+    return result;
+}
 
 
 -(void)setBarSpace:(id)value

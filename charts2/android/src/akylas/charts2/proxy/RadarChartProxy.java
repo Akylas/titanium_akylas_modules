@@ -31,8 +31,8 @@ public class RadarChartProxy extends PieRadarChartViewBaseProxy {
     }
     
     @Override
-    public void handleCreationDict(HashMap dict) {
-        super.handleCreationDict(dict);
+    public void handleCreationDict(HashMap dict, KrollProxy rootProxy) {
+        super.handleCreationDict(dict, rootProxy);
         if (dict.containsKey("yAxis")) {
             setYAxis(TiConvert.toHashMap(dict .get("yAxis")));
         }
