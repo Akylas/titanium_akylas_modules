@@ -1,0 +1,17 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 3
+description: connectiq
+author: Your Name
+license: Specify your license
+copyright: Copyright (c) 2017 by Your Company
+
+# these should not be edited
+name: akylas-connectiq
+moduleid: akylas.connectiq
+guid: 8a4f40e5-085b-460b-9a1c-30ef47d5672a
+platform: iphone
+minsdk: 6.1.0.AKYLAS
