@@ -1035,8 +1035,8 @@ public class LineChartProxy extends ChartProxy {
 
     // Handle creation options
     @Override
-    public void handleCreationDict(HashMap options) {
-        super.handleCreationDict(options);
+    public void handleCreationDict(HashMap options, KrollProxy rootProxy) {
+        super.handleCreationDict(options, rootProxy);
 
         userInteractionEnabled = TiConvert.toBoolean(options, "userInteraction",
                 userInteractionEnabled);

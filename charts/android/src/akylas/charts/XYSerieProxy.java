@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
+import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiDimension;
@@ -75,7 +76,7 @@ public class XYSerieProxy extends ReusableProxy {
 
 	// Handle creation options
 	@Override
-	public void handleCreationDict(HashMap options) {
+	public void handleCreationDict(HashMap options, KrollProxy rootProxy) {
 		mTitle = TiConvert.toString(options, "name", "");
         series = new AkXYSeries(mTitle);
         series.proxy = new WeakReference<XYSerieProxy>(this);
@@ -83,7 +84,7 @@ public class XYSerieProxy extends ReusableProxy {
         if (options.containsKey("implicitXVals")) {
             series.useImplicitXVals();
         }
-		super.handleCreationDict(options);
+		super.handleCreationDict(options, rootProxy);
 	}
 	
 	@Kroll.method

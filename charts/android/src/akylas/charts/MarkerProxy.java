@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
@@ -58,13 +59,13 @@ public class MarkerProxy extends AnimatableReusableProxy {
     }
 
     @Override
-    public void handleCreationDict(HashMap properties) {
+    public void handleCreationDict(HashMap properties, KrollProxy rootProxy) {
         int type = TiConvert.toInt(properties, TiC.PROPERTY_TYPE, 0);
         mMarker = (type == 1) ? new XValueMarker(0, TiConvert.toString(properties,
                 TiC.PROPERTY_TITLE, null)) : new YValueMarker(0,
                         TiConvert.toString(properties, TiC.PROPERTY_TITLE, null));
         mPaint = mMarker.getLinePaint();
-        super.handleCreationDict(properties);
+        super.handleCreationDict(properties, rootProxy);
     }
 
     @Override

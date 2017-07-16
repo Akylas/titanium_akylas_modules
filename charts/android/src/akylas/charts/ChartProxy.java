@@ -3,6 +3,7 @@ package akylas.charts;
 import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiC;
@@ -254,8 +255,8 @@ public class ChartProxy extends TiViewProxy {
 
 	// Handle creation options
 	@Override
-	public void handleCreationDict(HashMap options) {
-		super.handleCreationDict(options);
+	public void handleCreationDict(HashMap options, KrollProxy rootProxy) {
+		super.handleCreationDict(options, rootProxy);
 
 		if (options.containsKey(TiC.PROPERTY_TITLE)) {
 			HashMap titleOptions = TiConvert.toHashMap(options.get(TiC.PROPERTY_TITLE));
