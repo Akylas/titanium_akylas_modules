@@ -36,6 +36,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanRecord;
+import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -66,6 +70,7 @@ public class AkylasBluetoothModule extends ProtectedModule {
     public static final int ERROR_BT_NOT_SUPPORTED = -2;
     @Kroll.constant
     public static final int ERROR_BT_NOT_ENABLED = -3;
+    public static final int ERROR_BT_SCAN_FALIED = -4;
 
     // Intent request codes
 //    private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
@@ -85,6 +90,7 @@ public class AkylasBluetoothModule extends ProtectedModule {
     KrollFunction fDiscoveryCallback = null;
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback = null;
+    private ScanCallback mScanCallback = null;
     
     private static final boolean CAN_LTE = TiC.JELLY_BEAN_MR2_OR_GREATER;
 
@@ -98,6 +104,34 @@ public class AkylasBluetoothModule extends ProtectedModule {
     public static AkylasBluetoothModule getInstance() {
         return sInstance;
     }
+    
+    public void handleScanresult(final BluetoothDevice device,
+            final int rssi, byte[] scanRecord) {
+
+        final String address = device.getAddress();
+        if (!mNewDevicesArrayAdapter.containsKey(address)) {
+            BluetoothLeDevice leDevice = new BluetoothLeDevice(device, rssi, scanRecord, System.currentTimeMillis());
+            KrollDict dict = dictFromDevice(device);
+            mNewDevicesArrayAdapter.put(address, dict);
+            if (hasListeners("found", false)) {
+                KrollDict adv = new KrollDict();
+                for (Map.Entry<String, byte[]> entry : leDevice.getAdRecordStore().humanReadableHashMap().entrySet()) {
+                    
+                    adv.put(entry.getKey(), TiBlob.blobFromObject(entry.getValue()));
+                }
+                KrollDict data = new KrollDict();
+                data.put("device", dict);
+                data.put("id", dict.get("id"));
+                data.put("discovering", true);
+                data.put("advertisement", adv);
+                data.put("rssi", rssi);
+                fireEvent("found", data, false, false);
+            }
+        } else {
+            KrollDict dict = mNewDevicesArrayAdapter.get(address);
+            dict.put("rssi", rssi);
+        }
+    }
 
     public AkylasBluetoothModule() {
         super();
@@ -106,36 +140,49 @@ public class AkylasBluetoothModule extends ProtectedModule {
         mNewDevicesArrayAdapter = new HashMap<String, KrollDict>();
 
         if (CAN_LTE) {
-            mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
-                @Override
-                public void onLeScan(final BluetoothDevice device,
-                        final int rssi, byte[] scanRecord) {
-                    
-                    final String address = device.getAddress();
-                    if (!mNewDevicesArrayAdapter.containsKey(address)) {
-                        BluetoothLeDevice leDevice = new BluetoothLeDevice(device, rssi, scanRecord, System.currentTimeMillis());
-                        KrollDict dict = dictFromDevice(device);
-                        mNewDevicesArrayAdapter.put(address, dict);
-                        if (hasListeners("found", false)) {
-                            KrollDict adv = new KrollDict();
-                            for (Map.Entry<String, byte[]> entry : leDevice.getAdRecordStore().humanReadableHashMap().entrySet()) {
-                                
-                                adv.put(entry.getKey(), TiBlob.blobFromObject(entry.getValue()));
-                            }
-                            KrollDict data = new KrollDict();
-                            data.put("device", dict);
-                            data.put("id", dict.get("id"));
-                            data.put("discovering", true);
-                            data.put("advertisement", adv);
-                            data.put("rssi", rssi);
-                            fireEvent("found", data, false, false);
+            if (TiC.LOLLIPOP_OR_GREATER) {
+                mScanCallback = new ScanCallback() {
+                    @Override
+                    public void onScanResult(int callbackType, ScanResult result) {
+                        super.onScanResult(callbackType, result);
+                        final BluetoothDevice device = result.getDevice();
+                        final byte[] scanRecord = result.getScanRecord().getBytes();
+                        final int rssi = result.getRssi();
+                        handleScanresult(device, rssi, scanRecord);
+                    }
+
+                    @Override
+                    public void onBatchScanResults(List<ScanResult> results) {
+                        super.onBatchScanResults(results);
+                        for (ScanResult result : results) {
+                            final BluetoothDevice device = result.getDevice();
+                            final byte[] scanRecord = result.getScanRecord().getBytes();
+                            final int rssi = result.getRssi();
+                            handleScanresult(device, rssi, scanRecord);
                         }
-                    } else {
-                        KrollDict dict = mNewDevicesArrayAdapter.get(address);
-                        dict.put("rssi", rssi);
-                    }                    
-                }
-            };
+                    }
+
+                    @Override
+                    public void onScanFailed(int errorCode) {
+                        super.onScanFailed(errorCode);
+                        if (hasListeners(TiC.EVENT_ERROR, false)) {
+                            KrollDict data = new KrollDict();
+                            data.putCodeAndMessage(errorCode, "scan failed");
+                            fireEvent(TiC.EVENT_ERROR, data, false,
+                                    false);
+                        }
+                    }
+                };
+            } else {
+                mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+                    @Override
+                    public void onLeScan(final BluetoothDevice device,
+                            final int rssi, byte[] scanRecord) {
+                        handleScanresult(device, rssi, scanRecord);
+                    }
+                };
+            }
+            
         }
     }
 
@@ -416,9 +463,11 @@ public class AkylasBluetoothModule extends ProtectedModule {
     
     
     private Timer stopTimer = null;
+    private boolean requestingPermission = false;
     @Kroll.method
     public void discoverBLE(final KrollFunction onDone, @Kroll.argument(optional = true) final Object timeoutObj) {
-        if (!hasBluetoothPermissions()) {
+        if (!hasBluetoothPermissions() && ! requestingPermission) {
+            requestingPermission = true;
             TiBaseActivity.addPermissionListener(TiC.PERMISSION_CODE_LOCATION, new PermissionCallback() {
                 
                 @Override
@@ -444,7 +493,8 @@ public class AkylasBluetoothModule extends ProtectedModule {
                             onDone.callAsync(getKrollObject(), new Object[] {});
                         }
                     }
-                }
+                    requestingPermission = false;
+               }
             });
             requestBluetoothPermissions(null, null);
             return;
@@ -470,31 +520,48 @@ public class AkylasBluetoothModule extends ProtectedModule {
             stopTimer.purge();
             stopTimer = null;
         }
-        if (timeoutObj != null) {
-            stopTimer = new Timer();
-            stopTimer.schedule(  
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        stopTimer.cancel();
-                        stopTimer.purge();
-                        stopTimer = null;
-                        adapter.stopLeScan(mLeScanCallback);
-                        handleFinishedScan();
-                    }
-                },
-                ((Number)timeoutObj).intValue()
-            );
-//            getMainHandler().postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    adapter.stopLeScan(mLeScanCallback);
-//                    handleFinishedScan();
-//                }
-//            }, ((Number)timeoutObj).intValue());
-        }
         
-        adapter.startLeScan(mLeScanCallback);
+        if (TiC.LOLLIPOP_OR_GREATER) {
+            final BluetoothLeScanner bluetoothLeScanner = adapter.getBluetoothLeScanner();
+
+            if (timeoutObj != null) {
+                stopTimer = new Timer();
+                stopTimer.schedule(  
+                    new TimerTask() {
+                        @Override
+                        public void run() {
+                            stopTimer.cancel();
+                            stopTimer.purge();
+                            stopTimer = null;
+                            bluetoothLeScanner.stopScan(mScanCallback);
+                            handleFinishedScan();
+                        }
+                    },
+                    ((Number)timeoutObj).intValue()
+                );
+            }
+            
+            bluetoothLeScanner.startScan(mScanCallback);
+        } else {
+            if (timeoutObj != null) {
+                stopTimer = new Timer();
+                stopTimer.schedule(  
+                    new TimerTask() {
+                        @Override
+                        public void run() {
+                            stopTimer.cancel();
+                            stopTimer.purge();
+                            stopTimer = null;
+                            adapter.stopLeScan(mLeScanCallback);
+                            handleFinishedScan();
+                        }
+                    },
+                    ((Number)timeoutObj).intValue()
+                );
+            }
+            
+            adapter.startLeScan(mLeScanCallback);
+        }
     }
     
     @Kroll.method
@@ -509,7 +576,13 @@ public class AkylasBluetoothModule extends ProtectedModule {
             return;
         }
         if (discovering) {
-            adapter.stopLeScan(mLeScanCallback);
+            if (TiC.LOLLIPOP_OR_GREATER) {
+                final BluetoothLeScanner bluetoothLeScanner = adapter.getBluetoothLeScanner();
+                bluetoothLeScanner.stopScan(mScanCallback);
+            } else {
+                adapter.stopLeScan(mLeScanCallback);
+
+            }
             handleFinishedScan();
         }
     }

@@ -15,6 +15,7 @@ import java.util.Queue;
 import java.util.UUID;
 
 import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
@@ -99,10 +100,10 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     }
 
     @Override
-    public void handleCreationDict(HashMap dict)
+    public void handleCreationDict(HashMap dict, KrollProxy rootProxy)
     {
         setParentForBubbling(AkylasBluetoothModule.getInstance());
-        super.handleCreationDict(dict);
+        super.handleCreationDict(dict, rootProxy);
         mMacAdress = TiConvert.toString(dict, "id", null);
         uartMode = TiConvert.toBoolean(dict, "uartMode", uartMode);
     }
@@ -308,20 +309,20 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 
     @Override
     public void onReadRemoteRssi(int rssi) {
-        if (hasListeners(TiC.EVENT_CHANGE, false)) {
+        if (hasListeners("rssi", false)) {
             KrollDict data = new KrollDict();
             data.put("rssi", rssi);
-            fireEvent(TiC.EVENT_CHANGE, data, false, false);
+            fireEvent("rssi", data, false, false);
         }
     }
 
     @Override
     public void onMtuChanged(int mtu) {
         this.setPropertyAndFire("mtu", mtu);
-        if (hasListeners(TiC.EVENT_CHANGE, false)) {
+        if (hasListeners("mtu", false)) {
             KrollDict data = new KrollDict();
             data.put("mtu", mtu);
-            fireEvent(TiC.EVENT_CHANGE, data, false, false);
+            fireEvent("mtu", data, false, false);
         }
     }
 

@@ -512,9 +512,9 @@
 
 
 - (void)peripheralDidUpdateName:(CBPeripheral *)peripheral{
-    if ([self _hasListeners:@"change"]) {
+    if ([self _hasListeners:@"name"]) {
         [self replaceValue:peripheral.name forKey:@"name" notification:NO];
-        [self fireEvent:@"change" withObject:@{
+        [self fireEvent:@"name" withObject:@{
                                              @"name":peripheral.name}];
     }
 }

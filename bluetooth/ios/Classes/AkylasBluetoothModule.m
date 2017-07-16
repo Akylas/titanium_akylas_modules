@@ -544,13 +544,15 @@ static AkylasBluetoothModule *_sharedInstance = nil;
     if (_discovering && peripheral.name) {
 //        if (_discovering && peripheral.name && [_discoveredBLEDevices objectForKey:peripheral.identifier] == nil) {
         [self addDiscoveredBLEDevice:peripheral];
+        NSLog(@"discovered %@", peripheral.name)
         if ([self _hasListeners:@"found"]) {
-            [self fireEvent:@"found" withObject:@{
-              @"discovering":@(_discovering),
-              @"id":[[peripheral identifier] UUIDString],
-              @"advertisement":[self summarizeAdvertisement:advertisementData],
-              @"device":[self dictFromPeripheral:peripheral],
-              @"rssi":RSSI} propagate:NO checkForListener:NO];
+            NSDictionary* toSend =@{
+                                    @"discovering":@(_discovering),
+                                    @"id":[[peripheral identifier] UUIDString],
+                                    @"advertisement":[self summarizeAdvertisement:advertisementData],
+                                    @"device":[self dictFromPeripheral:peripheral],
+                                    @"rssi":RSSI};
+            [self fireEvent:@"found" withObject:toSend propagate:NO checkForListener:NO];
         }
     }
 }
