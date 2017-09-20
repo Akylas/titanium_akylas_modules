@@ -17,13 +17,30 @@ import com.github.mikephil.charting.utils.Utils;
 import akylas.charts2.Charts2Module;
 import android.content.Context;
 
-@Kroll.proxy(parentModule = Charts2Module.class)
+@Kroll.proxy(propertyAccessors={
+        TiC.PROPERTY_ENABLED,
+        TiC.PROPERTY_COLOR,
+        TiC.PROPERTY_FONT,
+        "direction",
+         "position",
+         "form",
+         "formSize",
+         "formLineWidth",
+         "stackSpace",
+         "formToTextSpace",
+         "xEntrySpace",
+         "yEntrySpace",
+         "xOffset",
+         "yOffset",
+         "maxSizePercent",
+         "wordWrap"
+        }, parentModule = Charts2Module.class)
 public class LegendProxy extends ReusableProxy {
     Legend _chartLegend;
     WeakReference<ChartBaseViewProxy> _viewProxy;
     
     public void setParentChartProxy(ChartBaseViewProxy viewProxy) {
-        if (_viewProxy != null) {
+        if (viewProxy != null) {
             _viewProxy = new WeakReference<ChartBaseViewProxy>(viewProxy);
         } else {
             _viewProxy = null;
@@ -72,10 +89,10 @@ public class LegendProxy extends ReusableProxy {
         case TiC.PROPERTY_ENABLED:
             getLegend().setEnabled(TiConvert.toBoolean(newValue));
             break;
-        case "color":
+        case TiC.PROPERTY_COLOR:
             getLegend().setTextColor(TiConvert.toColor(newValue));
             break;
-        case "font":
+        case TiC.PROPERTY_FONT:
             final Context context = getActivity();
             FontDesc desc = TiUIHelper.getFontStyle(context, TiConvert.toHashMap(newValue));
             float fontSize = TiUIHelper.getRawSize(desc.sizeUnit, desc.size, context);
@@ -131,6 +148,7 @@ public class LegendProxy extends ReusableProxy {
     protected void didProcessProperties() {
         super.didProcessProperties();
         if (_viewProxy != null) {
+            _viewProxy.get().notifyDataSetChanged();
             _viewProxy.get().redraw();
         }
     }

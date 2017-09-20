@@ -81,6 +81,8 @@ public class RadarChartProxy extends PieRadarChartViewBaseProxy {
             if (_yAxisProxy != null) {
                 _yAxisProxy.unarchivedWithRootProxy(_rootProxy);
             }
+        } else if (value != null) {
+            _yAxisProxy.applyPropertiesInternal(value, false, false);
         }
         return _yAxisProxy;
     }

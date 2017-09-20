@@ -47,8 +47,6 @@ import android.graphics.Paint.Join;
 import org.appcelerator.kroll.common.APIMap;
 import org.appcelerator.titanium.ProtectedModule;
 
-
-
 @Kroll.module(name = "AkylasCharts2", id = "akylas.charts2")
 public class Charts2Module extends ProtectedModule {
     // private static final String TAG = "AkylasCharts2Module";
@@ -56,13 +54,14 @@ public class Charts2Module extends ProtectedModule {
     public Charts2Module() {
         super();
     }
-    
+
     public abstract static class ValueFormatter implements IValueFormatter {
         public abstract String getFormattedValue(float value, Entry entry,
                 int dataSetIndex, ViewPortHandler viewPortHandler);
     }
-    
-    public abstract static class AxisValueFormatter implements IAxisValueFormatter {
+
+    public abstract static class AxisValueFormatter
+            implements IAxisValueFormatter {
         public abstract String getFormattedValue(int index, float value,
                 AxisBase axis);
 
@@ -133,11 +132,12 @@ public class Charts2Module extends ProtectedModule {
 
     public static Cap toCap(Object value) {
         if (value instanceof String) {
-            if (value == "square") {
+            switch ((String) value) {
+            case "square":
                 return Cap.SQUARE;
-            } else if (value == "round") {
+            case "round":
                 return Cap.ROUND;
-            } else {
+            default:
                 return Cap.BUTT;
             }
         } else {
@@ -147,11 +147,12 @@ public class Charts2Module extends ProtectedModule {
 
     public static Join toJoin(Object value) {
         if (value instanceof String) {
-            if (value == "miter") {
+            switch ((String) value) {
+            case "miter":
                 return Join.MITER;
-            } else if (value == "round") {
+            case "round":
                 return Join.ROUND;
-            } else {
+            default:
                 return Join.BEVEL;
             }
         } else {
@@ -161,14 +162,14 @@ public class Charts2Module extends ProtectedModule {
 
     public static LimitLabelPosition toLabelPosition(Object value) {
         if (value instanceof String) {
-            if (value == "left.bottom") {
+            switch ((String) value) {
+            case "left.bottom":
                 return LimitLabelPosition.LEFT_BOTTOM;
-            } else if (value == "left.top") {
+            case "left.top":
                 return LimitLabelPosition.LEFT_TOP;
-            }
-            if (value == "right.bottom") {
-                return LimitLabelPosition.RIGHT_BOTTOM;
-            } else {
+            case "right.bottom":
+                return LimitLabelPosition.RIGHT_TOP;
+            default:
                 return LimitLabelPosition.RIGHT_TOP;
             }
         } else {
@@ -178,15 +179,16 @@ public class Charts2Module extends ProtectedModule {
 
     public static XAxisPosition toXAxisLabelPosition(Object value) {
         if (value instanceof String) {
-            if (value == "bottom") {
+            switch ((String) value) {
+            case "bottom":
                 return XAxisPosition.BOTTOM;
-            } else if (value == "bottom.inside") {
+            case "bottom.inside":
                 return XAxisPosition.BOTTOM_INSIDE;
-            } else if (value == "top.inside") {
+            case "top.inside":
                 return XAxisPosition.TOP_INSIDE;
-            } else if (value == "both.sided") {
+            case "both.sided":
                 return XAxisPosition.BOTH_SIDED;
-            } else {
+            default:
                 return XAxisPosition.TOP;
             }
         } else {
@@ -196,9 +198,10 @@ public class Charts2Module extends ProtectedModule {
 
     public static YAxisLabelPosition toYAxisLabelPosition(Object value) {
         if (value instanceof String) {
-            if (value == "inside") {
+            switch ((String) value) {
+            case "inside":
                 return YAxisLabelPosition.INSIDE_CHART;
-            } else {
+            default:
                 return YAxisLabelPosition.OUTSIDE_CHART;
             }
         } else {
@@ -304,7 +307,7 @@ public class Charts2Module extends ProtectedModule {
                             int dataSetIndex, ViewPortHandler viewPortHandler) {
                         Object result = labelFormatCallback.call(
                                 theProxy.getKrollObject(),
-                                new Object[] { (Number) value,  dataSetIndex});
+                                new Object[] { (Number) value, dataSetIndex });
                         return TiConvert.toString(result);
                     }
                 };
@@ -363,11 +366,13 @@ public class Charts2Module extends ProtectedModule {
 
     public static Align toTextAlign(Object value) {
         if (value instanceof String) {
-            if (value == "right") {
+            switch ((String) value) {
+            case "right":
                 return Align.RIGHT;
-            } else if (value == "middle" || value == "center") {
+            case "middle":
+            case "center":
                 return Align.CENTER;
-            } else {
+            default:
                 return Align.LEFT;
             }
         } else {
@@ -377,9 +382,10 @@ public class Charts2Module extends ProtectedModule {
 
     public static YAxis.AxisDependency toAxisDependency(Object value) {
         if (value instanceof String) {
-            if (value == "right") {
+            switch ((String) value) {
+            case "right":
                 return YAxis.AxisDependency.RIGHT;
-            } else {
+            default:
                 return YAxis.AxisDependency.LEFT;
             }
         } else {
@@ -389,9 +395,10 @@ public class Charts2Module extends ProtectedModule {
 
     public static ValuePosition toValuePosition(Object value) {
         if (value instanceof String) {
-            if (value == "outside") {
+            switch ((String) value) {
+            case "outside":
                 return ValuePosition.OUTSIDE_SLICE;
-            } else {
+            default:
                 return ValuePosition.INSIDE_SLICE;
             }
         } else {
@@ -401,21 +408,23 @@ public class Charts2Module extends ProtectedModule {
 
     public static ScatterChart.ScatterShape toScatterShape(Object value) {
         if (value instanceof String) {
-            if (value == "chevron.down") {
+            switch ((String) value) {
+            case "chevron.down":
                 return ScatterChart.ScatterShape.CHEVRON_DOWN;
-            } else if (value == "chevron.up") {
+            case "chevron.up":
                 return ScatterChart.ScatterShape.CHEVRON_UP;
-            } else if (value == "circle") {
+            case "circle":
                 return ScatterChart.ScatterShape.CIRCLE;
-            } else if (value == "cross") {
+            case "cross":
                 return ScatterChart.ScatterShape.CROSS;
-            } else if (value == "triangle") {
+            case "triangle":
                 return ScatterChart.ScatterShape.TRIANGLE;
-            } else if (value == "x") {
+            case "x":
                 return ScatterChart.ScatterShape.X;
-            } else {
+            default:
                 return ScatterChart.ScatterShape.SQUARE;
             }
+            
         } else {
             return ScatterChart.ScatterShape.values()[TiConvert.toInt(value)];
         }
@@ -423,11 +432,12 @@ public class Charts2Module extends ProtectedModule {
 
     public static Rounding toRounding(Object value) {
         if (value instanceof String) {
-            if (value == "up") {
+            switch ((String) value) {
+            case "up":
                 return Rounding.UP;
-            } else if (value == "down") {
+            case "down":
                 return Rounding.DOWN;
-            } else {
+            default:
                 return Rounding.CLOSEST;
             }
         } else {
@@ -437,13 +447,14 @@ public class Charts2Module extends ProtectedModule {
 
     public static Mode toMode(Object value) {
         if (value instanceof String) {
-            if (value == "cubic") {
+            switch ((String) value) {
+            case "cubic":
                 return Mode.CUBIC_BEZIER;
-            } else if (value == "stepped") {
+            case "stepped":
                 return Mode.STEPPED;
-            } else if (value == "horizontal") {
+            case "horizontal":
                 return Mode.HORIZONTAL_BEZIER;
-            } else {
+            default:
                 return Mode.LINEAR;
             }
         } else {
@@ -480,9 +491,10 @@ public class Charts2Module extends ProtectedModule {
 
     public static LegendDirection toLegendDirection(Object value) {
         if (value instanceof String) {
-            if (value == "left.to.right") {
+            switch ((String) value) {
+            case "left.to.right":
                 return LegendDirection.RIGHT_TO_LEFT;
-            } else {
+            default:
                 return LegendDirection.LEFT_TO_RIGHT;
             }
         } else {
@@ -527,7 +539,7 @@ public class Charts2Module extends ProtectedModule {
             return LegendPosition.values()[TiConvert.toInt(value)];
         }
     }
-    
+
     public static LegendForm toLegendForm(Object value) {
         if (value instanceof String) {
             switch ((String) value) {
@@ -543,7 +555,7 @@ public class Charts2Module extends ProtectedModule {
             return LegendForm.values()[TiConvert.toInt(value)];
         }
     }
-    
+
     public static float getInDp(Object value) {
         return Utils.convertPixelsToDp(TiUIHelper.getInPixels(value));
     }

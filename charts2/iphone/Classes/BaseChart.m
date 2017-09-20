@@ -229,23 +229,36 @@
 //    NSUInteger itemIndex = [TiUtils intValue:[args objectAtIndex:1]];
 //}
 
+-(NSMutableDictionary*)dictForHighlight:(ChartHighlight*)h entry:(ChartDataEntry*)e
+{
+    ChartDataSetProxy* dataSetProxy = [[self dataProxy] dataSetAtIndex:h.dataSetIndex];
+    if (!e) {
+        NSLog(@"test %@, %i, %i", h, h.dataSetIndex, h.dataIndex)
+        e = [[dataSetProxy set] entryForIndex:h.dataIndex];
+    }
+    NSMutableDictionary* data  = [dataSetProxy chartDataEntryDict:e];
+    if (data) {
+        [data setObject:@(h.dataIndex) forKey:@"dataIndex"];
+        [data setObject:@(h.dataSetIndex) forKey:@"dataSetIndex"];
+        [data setObject:@(h.xPx) forKey:@"xPx"];
+        [data setObject:@(h.yPx) forKey:@"yPx"];
+        [data setObject:@(h.isStacked) forKey:@"isStacked"];
+        [data setObject:@(h.stackIndex) forKey:@"stackIndex"];
+    }
+    
+    return data;
+}
+
 -(NSDictionary*)dictionaryFromTouch:(UITouch*)touch
 {
     NSMutableDictionary* event = [super dictionaryFromTouch:touch];
     CGPoint pointOfTouch = [touch locationInView:self];
-   ChartHighlight* highlight = [[self chartView] getHighlightByTouchPoint:pointOfTouch];
+    ChartHighlight* highlight = [[self chartView] getHighlightByTouchPoint:pointOfTouch];
     if (highlight) {
-//        ChartDataSetProxy* dataSetProxy = [[self dataProxy] dataSetAtIndex:highlight.dataSetIndex];
-        [event setObject:@{
-                          @"dataIndex":@(highlight.dataIndex),
-                          @"dataSetIndex":@(highlight.dataSetIndex),
-                          @"x":@(highlight.x),
-                          @"xPx":@(highlight.xPx),
-                          @"y":@(highlight.y),
-                          @"yPx":@(highlight.yPx),
-                          @"isStacked":@(highlight.isStacked),
-                          @"stackIndex":@(highlight.stackIndex),
-                          } forKey:@"data"] ;
+        NSMutableDictionary* data  = [self dictForHighlight:highlight entry:nil];
+        if (data) {
+            [event setObject:data forKey:@"data"] ;
+        }
     }
     return event;
 }
@@ -254,21 +267,10 @@
     BOOL hasHighlight = [proxy _hasListeners:@"highlight"];
     BOOL hasClick = [proxy _hasListeners:@"click"];
 //    BOOL hasClick = NO;
-    NSLog(@"highlight %@", [highlight description])
     if (hasHighlight || hasClick)
     {
-        ChartDataSetProxy* dataSetProxy = [[self dataProxy] dataSetAtIndex:highlight.dataSetIndex];
         NSDictionary* event = @{
-                                @"data":@{
-                                        @"dataIndex":@(highlight.dataIndex),
-                                        @"dataSetIndex":@(highlight.dataSetIndex),
-                                        @"x":@(highlight.x),
-                                        @"xPx":@(highlight.xPx),
-                                        @"y":@(highlight.y),
-                                        @"yPx":@(highlight.yPx),
-                                        @"isStacked":@(highlight.isStacked),
-                                        @"stackIndex":@(highlight.stackIndex),
-                                        }
+                                @"data":[self dictForHighlight:highlight entry:entry]
                                };
         if (hasHighlight) {
             [[self viewProxy] fireEvent:@"highlight" withObject:event propagate:NO checkForListener:NO];

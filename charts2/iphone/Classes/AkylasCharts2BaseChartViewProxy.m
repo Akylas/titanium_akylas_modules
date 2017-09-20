@@ -121,7 +121,7 @@
 {
     TiThreadPerformOnMainThread(^{
         [[self chartView] notifyDataSetChanged];
-    }, NO);
+    }, YES);
 }
 
 -(void) redraw:(id)ununsed

@@ -2,13 +2,20 @@ package akylas.charts2.view;
 
 import java.util.HashMap;
 
+import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 
 import com.github.mikephil.charting.charts.BarLineChartBase;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.components.YAxis.AxisDependency;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.utils.MPPointF;
 
 import akylas.charts2.Charts2Module;
+import akylas.charts2.datasets.DataSetProxy;
 import akylas.charts2.proxy.BarLineChartViewBaseProxy;
 
 public class BarLineChartViewBase extends BaseChart {
@@ -38,6 +45,17 @@ public class BarLineChartViewBase extends BaseChart {
     public void notifyDataSetChanged() {
         getChart().notifyDataSetChanged();
         getChart().postInvalidate();
+    }
+    
+    @Override
+    public KrollDict getRealDictForHighlight(DataSetProxy dataSetProxy, Highlight h, Entry e) {
+        KrollDict result = super.getRealDictForHighlight(dataSetProxy, h, e);
+        if (result != null) {
+            MPPointF point = getChart().getPosition(e, AxisDependency.LEFT);
+            result.put("xPx", new TiDimension(point.x, TiDimension.TYPE_LEFT).getAsDefault());
+            result.put("yPx", new TiDimension(point.y, TiDimension.TYPE_TOP).getAsDefault());
+        }
+        return result;
     }
     
     @Override

@@ -56,13 +56,13 @@ public class PieChartView extends PieRadarChartViewBase {
             getChart().setCenterText(TiConvert.toString(newValue));
             break;        
         case "holeRadiusPercent":
-            getChart().setHoleRadius(TiConvert.toFloat(newValue));
+            getChart().setHoleRadius(TiConvert.toFloat(newValue)*100);
             break;        
         case "transparentCircleRadiusPercent":
-            getChart().setTransparentCircleRadius(TiConvert.toFloat(newValue));
+            getChart().setTransparentCircleRadius(TiConvert.toFloat(newValue)*100);
             break;        
         case "centerTextRadiusPercent":
-            getChart().setCenterTextRadiusPercent(TiConvert.toFloat(newValue));
+            getChart().setCenterTextRadiusPercent(TiConvert.toFloat(newValue)*100);
             break;        
         case "usePercentValues":
             getChart().setUsePercentValues(TiConvert.toBoolean(newValue));

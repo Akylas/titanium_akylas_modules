@@ -1,7 +1,9 @@
 package akylas.charts2.proxy;
 
 import java.util.HashMap;
+import java.util.List;
 
+import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
@@ -15,9 +17,12 @@ import org.appcelerator.titanium.view.TiUIView;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.ChartData;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.highlight.Highlight;
 
 import akylas.charts2.Charts2Module;
 import akylas.charts2.data.DataProxy;
+import akylas.charts2.datasets.DataSetProxy;
 import akylas.charts2.view.BaseChart;
 import android.app.Activity;
 
@@ -49,18 +54,18 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             _dataProxy = null;
         }
     }
-    
+
     @Override
     public void handleCreationDict(HashMap dict, KrollProxy rootProxy) {
         super.handleCreationDict(dict, rootProxy);
         if (dict.containsKey(TiC.PROPERTY_DATA)) {
-            setData(TiConvert.toHashMap(dict .get(TiC.PROPERTY_DATA)));
+            setData(TiConvert.toHashMap(dict.get(TiC.PROPERTY_DATA)));
         }
         if (dict.containsKey("xAxis")) {
-            setXAxis(TiConvert.toHashMap(dict .get("xAxis")));
+            setXAxis(TiConvert.toHashMap(dict.get("xAxis")));
         }
         if (dict.containsKey("legend")) {
-            setLegend(TiConvert.toHashMap(dict .get("legend")));
+            setLegend(TiConvert.toHashMap(dict.get("legend")));
         }
     }
 
@@ -150,8 +155,8 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             if (_legendProxy != null) {
                 _legendProxy.unarchivedWithRootProxy(_rootProxy);
             }
-        } else if(value != null) {
-            _legendProxy.applyProperties(value);
+        } else if (value != null) {
+            _legendProxy.applyPropertiesInternal(value, false, false);
         }
         return _legendProxy;
     }
@@ -186,8 +191,8 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             if (_xAxisProxy != null) {
                 _xAxisProxy.unarchivedWithRootProxy(_rootProxy);
             }
-        } else if (value != null){
-            _xAxisProxy.applyProperties(value);
+        } else if (value != null) {
+            _xAxisProxy.applyPropertiesInternal(value, false, false);
         }
         return _xAxisProxy;
     }
@@ -230,8 +235,8 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             if (peekView() != null) {
                 getOrCreateChartView().setData(_dataProxy.getData());
             }
-        } else if(value != null) {
-            _dataProxy.applyProperties(value);
+        } else if (value != null) {
+            _dataProxy.applyPropertiesInternal(value, false, false);
         }
         return _dataProxy;
     }
@@ -264,13 +269,28 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
     public void notifyDataSetChanged() {
         if (view != null) {
             getOrCreateChartView().notifyDataSetChanged();
+            getOrCreateChartView().redraw();
         }
     }
-
+    
     @Kroll.method
     public void redraw() {
         if (view != null) {
             getOrCreateChartView().redraw();
         }
+    }
+
+    @Kroll.method
+    public KrollDict getDataForIndex(int dataSetIndex, int dataIndex) {
+        DataSetProxy dataSetProxy = getData().getDataSet(dataSetIndex);
+        if (dataSetProxy != null) {
+            Entry e = dataSetProxy.getSet().getEntryForIndex(dataIndex);
+            if (e != null) {
+                Highlight h = new Highlight(e.getX(), e.getY(), dataSetIndex);
+                h.setDataIndex(dataIndex);
+                return getOrCreateChartView().getRealDictForHighlight(dataSetProxy, h, e);
+            }
+        }
+        return null;
     }
 }

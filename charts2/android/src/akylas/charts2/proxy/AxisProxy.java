@@ -45,7 +45,7 @@ public class AxisProxy extends ReusableProxy {
     }
     
     public void setParentChartProxy(ChartBaseViewProxy viewProxy) {
-        if (_viewProxy != null) {
+        if (viewProxy != null) {
             _viewProxy = new WeakReference<ChartBaseViewProxy>(viewProxy);
         } else {
             _viewProxy = null;

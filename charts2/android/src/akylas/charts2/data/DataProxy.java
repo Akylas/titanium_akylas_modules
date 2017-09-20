@@ -52,7 +52,7 @@ public abstract class DataProxy extends ReusableProxy {
     }
 
     public DataSetProxy getDataSet(int index) {
-        if (index > 0 && index < _dataSets.size()) {
+        if (index >= 0 && index < _dataSets.size()) {
             return _dataSets.get(index);
         }
         return null;

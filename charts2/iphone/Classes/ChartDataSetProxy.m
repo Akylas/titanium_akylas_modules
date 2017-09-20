@@ -232,6 +232,10 @@
         {
             [result setObject:entry.data forKey:@"data"];
         }
+//        if (entry.icon)
+//        {
+//            [result setObject:entry.data forKey:@"data"];
+//        }
         return result;
     }
     return nil;

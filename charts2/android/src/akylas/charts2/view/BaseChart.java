@@ -20,6 +20,7 @@ import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.ChartData;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.DataSet.Rounding;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.ChartTouchListener.ChartGesture;
 import com.github.mikephil.charting.utils.Utils;
@@ -57,15 +58,12 @@ public class BaseChart extends TiUINonViewGroupView implements OnChartGestureLis
         final float touchX = e.getX();
         final float touchY = e.getY();
         Highlight highlight = getChart().getHighlightByTouchPoint(touchX, touchY);
+        
         if (highlight != null) {
-            KrollDict dataK = new KrollDict();
-            dataK.put("x", highlight.getX());
-            dataK.put("xPx", new TiDimension(highlight.getXPx(), TiDimension.TYPE_LEFT).getAsDefault());
-            dataK.put("y", highlight.getY());
-            dataK.put("yPx", new TiDimension(highlight.getYPx(), TiDimension.TYPE_TOP).getAsDefault());
-            dataK.put("dataIndex", highlight.getDataIndex());
-            dataK.put("dataSetIndex", highlight.getDataSetIndex());
-            data.put("data", dataK);
+            KrollDict dataK = getDictForHighlight(highlight, null);
+            if (dataK != null) {
+                data.put("data", dataK);
+            }
         }
 //        if (nativeView.containsPoint(touchX, touchY)) {
 //            Log.d(TAG, "Touched at " + touchX + ", " + touchY);
@@ -235,6 +233,26 @@ public class BaseChart extends TiUINonViewGroupView implements OnChartGestureLis
     private DataProxy getDataProxy() {
         return ((ChartBaseViewProxy) proxy).getData();
     }
+    
+    public KrollDict getRealDictForHighlight(DataSetProxy dataSetProxy, Highlight h, Entry e) {
+        KrollDict dataK = dataSetProxy.chartDataEntryDict(e);
+        dataK.put("xPx", new TiDimension(h.getXPx(), TiDimension.TYPE_LEFT).getAsDefault());
+        dataK.put("yPx", new TiDimension(h.getYPx(), TiDimension.TYPE_TOP).getAsDefault());
+        dataK.put("dataIndex", h.getDataIndex());
+        dataK.put("dataSetIndex", h.getDataSetIndex());
+        return dataK;
+    }
+    
+    public KrollDict getDictForHighlight(Highlight h, Entry e) {
+        DataSetProxy dataSetProxy = getDataProxy().getDataSet(h.getDataSetIndex());
+        if (e == null) {
+            e = dataSetProxy.getSet().getEntryForIndex(h.getDataIndex());
+        }
+        if (e != null) {
+            return getRealDictForHighlight(dataSetProxy, h, e);
+        }
+        return null;
+    }
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
@@ -242,13 +260,11 @@ public class BaseChart extends TiUINonViewGroupView implements OnChartGestureLis
         boolean hasClick = proxy.hasListeners("click");
         if (hasHighlight || hasClick)
         {
-            final int dataSetIndex = h.getDataSetIndex();
             KrollDict result = new KrollDict();
-            DataSetProxy dataSetProxy = getDataProxy().getDataSet(dataSetIndex);
-            if (dataSetProxy != null) {
-                result.put("data", dataSetProxy.chartDataEntryDict(e));
+            KrollDict dataK = getDictForHighlight(h, e);
+            if (dataK != null) {
+                result.put("data", dataK);
             }
-            result.put("dataSetIndex", dataSetIndex);
             if (hasHighlight) {
                 proxy.fireEvent("highlight", result, false, false);
             }
