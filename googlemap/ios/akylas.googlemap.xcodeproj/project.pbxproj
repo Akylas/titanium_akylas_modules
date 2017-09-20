@@ -649,6 +649,11 @@
 					"$(TITANIUM_BASE_SDK2)",
 					"$(BUILT_PRODUCTS_DIR)/include/MapBox",
 				);
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"$(TITANIUM_BASE_SDK)/**",
+					"$(TITANIUM_BASE_SDK2)",
+					"$(BUILT_PRODUCTS_DIR)/include/MapBox",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Classes/SMCalloutView",

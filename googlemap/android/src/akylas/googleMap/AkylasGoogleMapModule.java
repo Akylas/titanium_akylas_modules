@@ -18,8 +18,8 @@ import android.app.Activity;
 import android.location.Location;
 
 @Kroll.module(name = "AkylasGooglemap", id = "akylas.googlemap", parentModule = AkylasMapBaseModule.class)
-public class AkylasGooglemapModule extends
-        AkylasMapBaseModule<LatLng, LatLngBounds> {
+public class AkylasGooglemapModule
+        extends AkylasMapBaseModule<LatLng, LatLngBounds> {
 
     private static final String TAG = "AkylasGooglemapModule";
     @Kroll.constant
@@ -54,9 +54,11 @@ public class AkylasGooglemapModule extends
     @Kroll.constant
     public static final float ANNOTATION_YELLOW = BitmapDescriptorFactory.HUE_YELLOW;
 
-    public static LatLngBounds WORLD_BOUNDING_BOX = (LatLngBounds) getFactory().createRegion(90, 180, -90, -180);
-    public static LatLngBounds MIN_BOUNDING_BOX = (LatLngBounds) getFactory().createRegion(-90, -180, -90, -180);
-    
+    public static LatLngBounds WORLD_BOUNDING_BOX = (LatLngBounds) getFactory()
+            .createRegion(90, 180, -90, -180);
+    public static LatLngBounds MIN_BOUNDING_BOX = (LatLngBounds) getFactory()
+            .createRegion(-90, -180, -90, -180);
+
     public static Factory getFactory() {
         if (mFactory == null) {
             mFactory = new Factory<LatLng, LatLngBounds>() {
@@ -68,7 +70,8 @@ public class AkylasGooglemapModule extends
 
                 @Override
                 public LatLngBounds createRegion(final double north,
-                        final double east, final double south, final double west) {
+                        final double east, final double south,
+                        final double west) {
                     return new LatLngBounds(new LatLng(south, west),
                             new LatLng(north, east));
                 }
@@ -77,11 +80,11 @@ public class AkylasGooglemapModule extends
                 public LatLngBounds createRegion(final LatLng center,
                         final double latitudeDelta_2,
                         final double longitudeDelta_2) {
-                    return new LatLngBounds(new LatLng(center.latitude
-                            - latitudeDelta_2, center.longitude
-                            - longitudeDelta_2), new LatLng(center.latitude
-                            + latitudeDelta_2, center.longitude
-                            + longitudeDelta_2));
+                    return new LatLngBounds(
+                            new LatLng(center.latitude - latitudeDelta_2,
+                                    center.longitude - longitudeDelta_2),
+                            new LatLng(center.latitude + latitudeDelta_2,
+                                    center.longitude + longitudeDelta_2));
                 }
 
                 @Override
@@ -110,14 +113,15 @@ public class AkylasGooglemapModule extends
                         return region1;
                     }
 
-                    return createRegion(Math.max(region1.northeast.latitude,
-                            region2.northeast.latitude), Math.max(
-                            region1.northeast.longitude,
-                            region2.northeast.longitude), Math.min(
-                            region1.southwest.latitude,
-                            region2.southwest.latitude), Math.min(
-                            region1.southwest.longitude,
-                            region2.southwest.longitude));
+                    return createRegion(
+                            Math.max(region1.northeast.latitude,
+                                    region2.northeast.latitude),
+                            Math.max(region1.northeast.longitude,
+                                    region2.northeast.longitude),
+                            Math.min(region1.southwest.latitude,
+                                    region2.southwest.latitude),
+                            Math.min(region1.southwest.longitude,
+                                    region2.southwest.longitude));
                 }
 
                 @Override
@@ -155,13 +159,14 @@ public class AkylasGooglemapModule extends
                 public LatLngBounds unionRegion(LatLngBounds region1,
                         LatLng point) {
                     if (region1 != null && point != null) {
-                        return createRegion(Math.max(
-                                region1.northeast.latitude, point.latitude),
+                        return createRegion(
+                                Math.max(region1.northeast.latitude,
+                                        point.latitude),
                                 Math.max(region1.northeast.longitude,
-                                        point.longitude), Math.min(
-                                        region1.southwest.latitude,
-                                        point.latitude), Math.min(
-                                        region1.southwest.longitude,
+                                        point.longitude),
+                                Math.min(region1.southwest.latitude,
+                                        point.latitude),
+                                Math.min(region1.southwest.longitude,
                                         point.longitude));
                     }
                     return region1;
@@ -181,8 +186,7 @@ public class AkylasGooglemapModule extends
                 public double getDistance(LatLng p1, LatLng p2) {
                     float[] results = new float[1];
                     Location.distanceBetween(p1.latitude, p1.longitude,
-                            p2.latitude, p2.longitude,
-                                             results);
+                            p2.latitude, p2.longitude, results);
                     return results[0];
                 }
 
@@ -195,7 +199,6 @@ public class AkylasGooglemapModule extends
         return mFactory;
     }
 
-    
     public AkylasGooglemapModule() {
         super();
     }
@@ -210,30 +213,34 @@ public class AkylasGooglemapModule extends
         map.put("Akylas.Googlemap.Cluster", ClusterProxy.class.getName());
         APIMap.addMapping(map);
     }
-    
+
     @Kroll.onVerifyModule
-    public static void onVerifyModule(TiApplication app)
-    {
-        verifyPassword(app, "akylas.modules.key", AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
+    public static void onVerifyModule(TiApplication app) {
+        verifyPassword(app, "akylas.modules.key",
+                AeSimpleSHA1.hexToString("7265745b496b2466553b486f736b7b4f"));
     }
+
     @Override
     protected void initActivity(Activity activity) {
         super.initActivity(activity);
         if (!TiApplication.isGooglePlayServicesAvailable()) {
             if (hasListeners(TiC.EVENT_ERROR)) {
                 KrollDict data = new KrollDict();
-                data.putCodeAndMessage(TiApplication.getGooglePlayServicesState(), TiApplication.getGooglePlayServicesErrorString());
+                data.putCodeAndMessage(
+                        TiApplication.getGooglePlayServicesState(),
+                        TiApplication.getGooglePlayServicesErrorString());
                 fireEvent(TiC.EVENT_ERROR, data);
             }
         }
     }
-    
+
     public static String getGooglePlayServicesErrorString(int code) {
         try {
-            Class<?> c = Class.forName("com.google.android.gms.common.GooglePlayServicesUtil");
-            Method  method = c.getDeclaredMethod ("getErrorString", int.class);
-            return (String) method.invoke(null, new Object[] {code});
-            
+            Class<?> c = Class.forName(
+                    "com.google.android.gms.common.GooglePlayServicesUtil");
+            Method method = c.getDeclaredMethod("getErrorString", int.class);
+            return (String) method.invoke(null, new Object[] { code });
+
         } catch (Exception e) {
             e.printStackTrace();
             return "";

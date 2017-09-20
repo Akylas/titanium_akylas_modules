@@ -96,8 +96,8 @@ public class MBTilesFileArchive {
                     // Base64.DEFAULT));
                     // ret = new ByteArrayInputStream(cur.getBlob(0));
                 }
-                Log.d(TAG, "getBitmap " + x + "," + y + "," + zoom + ","
-                        + (ret != null));
+//                Log.d(TAG, "getBitmap " + x + "," + y + "," + zoom + ","
+//                        + (ret != null));
                 cur.close();
                 return ret;
             } catch (final Throwable e) {
