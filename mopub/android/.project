@@ -11,7 +11,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/com.android.ide.eclipse.adt.ResourceManagerBuilder.launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/org.eclipse.andmore.ResourceManagerBuilder.launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
@@ -21,7 +21,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/com.android.ide.eclipse.adt.PreCompilerBuilder.launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/org.eclipse.andmore.PreCompilerBuilder.launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
@@ -41,7 +41,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/com.android.ide.eclipse.adt.ApkBuilder.launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/org.eclipse.andmore.ApkBuilder.launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
@@ -57,7 +57,7 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+		<nature>org.eclipse.andmore.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
 </projectDescription>
