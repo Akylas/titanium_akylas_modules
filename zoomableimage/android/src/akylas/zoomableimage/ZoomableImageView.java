@@ -8,6 +8,7 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBlob;
 import org.appcelerator.titanium.TiC;
+import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.TiPoint;
 import org.appcelerator.titanium.bitmappool.TiBitmapPool;
 import org.appcelerator.titanium.proxy.TiViewProxy;
@@ -39,7 +40,6 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -233,7 +233,7 @@ public class ZoomableImageView extends TiUINonViewGroupView
          * @param proxy
          *            the associated proxy.
          */
-        public TiZoomableImageView(@NonNull Context context, TiUIView tiView) {
+        public TiZoomableImageView(Context context, TiUIView tiView) {
             this(context);
         }
 
@@ -828,6 +828,20 @@ public class ZoomableImageView extends TiUINonViewGroupView
             return view.getScale();
         }
         return 1.0f;
+
+    }
+    
+
+    public Object getCenter() {
+        SubsamplingScaleImageView view = getScaleImageView();
+        if (view != null) {
+            PointF currentCenter = view.getCenter();
+            KrollDict d = new KrollDict();
+            d.put(TiC.PROPERTY_X, new TiDimension(currentCenter.x, TiDimension.TYPE_WIDTH).getAsDefault());
+            d.put(TiC.PROPERTY_Y, new TiDimension(currentCenter.y, TiDimension.TYPE_HEIGHT).getAsDefault());
+            return d;
+        }
+        return null;
 
     }
 

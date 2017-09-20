@@ -13,4 +13,6 @@
 -(id)convertToUIImage:(id)arg;
 -(void)setReusing:(BOOL)value;
 -(void)imageLoadSuccess:(ImageLoaderRequest*)request image:(id)image;
+-(id)convertToUIImage:(id)arg;
+-(id)prepareImage:(id)image;
 @end

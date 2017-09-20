@@ -8,6 +8,9 @@
 #import "AkylasZoomableimageViewProxy.h"
 #import "AkylasZoomableimageView.h"
 #import "ImageLoader.h"
+#import "UIImage+UserInfo.h"
+#import "NSDictionary+Merge.h"
+#import "TiImageHelper.h"
 
 #import "TiUtils.h"
 
@@ -16,6 +19,9 @@
 
 }
 @synthesize imageURL;
+#ifdef TI_USE_KROLL_THREAD
+@synthesize loadEventState;
+#endif
 
 -(NSArray *)keySequence
 {
@@ -40,6 +46,50 @@
     return @"Akylas.ZoomableImageView";
 }
 
+-(void)propagateLoadEvent:(NSString *)stateString
+{
+    if ([self _hasListeners:@"load" checkParent:NO]) {
+        AkylasZoomableimageView *iv = (AkylasZoomableimageView*)[self view];
+        UIImage* image = [iv getImage];
+        TiBlob* blob = [[TiBlob alloc] initWithImage:image];
+        
+        NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:stateString,@"state", [blob autorelease], @"image", nil];
+        if (image.info) {
+            event = [event dictionaryByMergingWith:image.info];
+        }
+        [self fireEvent:@"load" withObject:event propagate:NO checkForListener:NO];
+    }
+#ifdef TI_USE_KROLL_THREAD
+    else {
+        // Why do we do this?
+        // When running on kroll thread this is being called before the events are added.
+        // So we try to propagate this after the load event is added.
+        // TIMOB-20204
+        //RELEASE_TO_NIL(self.loadEventState);
+        //[self setLoadEventState:stateString];
+        //[self setModelDelegate:self];
+    }
+#endif
+}
+
+-(void)listenerAdded:(NSString*)type count:(int)count {
+    if ([self _hasListeners:@"load"]) {
+        [self setModelDelegate:nil];
+        [self fireEvent:@"load" withObject:@{@"state": [self loadEventState]}];
+    }
+}
+
+- (void) dealloc
+{
+    RELEASE_TO_NIL(urlRequest);
+    //    [self replaceValue:nil forKey:@"image" notification:NO];
+    
+    RELEASE_TO_NIL(imageURL);
+#ifdef TI_USE_KROLL_THREAD
+    //    RELEASE_TO_NIL(loadEventState);
+#endif
+    [super dealloc];
+}
 
 -(id)toBlob:(id)args
 {
@@ -72,7 +122,7 @@
             UIImage *imageToUse = [imageView prepareImage:[imageView convertToUIImage:theimage]];
         }
         
-        return [[[TiBlob alloc] initWithImage:imageToUse] autorelease];
+        return [[[TiBlob alloc] _initWithPageContext:[self pageContext] andImage:imageToUse] autorelease];
     }
     return nil;
 }
@@ -152,6 +202,8 @@
         RELEASE_TO_NIL(urlRequest);
     }
 }
-
+-(void)imageLoadCancelled:(ImageLoaderRequest *)request
+{
+}
 
 @end

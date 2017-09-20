@@ -13,8 +13,11 @@
     NSURL* imageURL;
 }
 @property (nonatomic,retain) NSURL* imageURL;
-
+#ifdef TI_USE_KROLL_THREAD
+@property (nonatomic, assign) NSString* loadEventState;
+#endif
 -(void)cancelPendingImageLoads;
 -(void)startImageLoad:(NSURL *)url;
+-(void)propagateLoadEvent:(NSString *)stateString;
 
 @end

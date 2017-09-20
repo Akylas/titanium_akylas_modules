@@ -18,11 +18,15 @@
 #import "ImageLoader.h"
 #import "TiTransition.h"
 #import "TiImageHelper.h"
+#import "TiSVGImage.h"
+
+@interface CustomImageView: UIImageView
+@end
 
 @interface AkylasZoomableimageView()
 {
     TDUIScrollView *mainScrollView;
-    UIImageView *mainImageView;
+    UIImageView *imageView;
     
     UIImage* _currentImage;
     id _currentImageSource;
@@ -32,6 +36,7 @@
     BOOL onlyTransitionIfRemote;
     BOOL _reusing;
     NSDictionary* _filterOptions;
+    TiSVGImage* _svg;
     NSURL *_defaultImageUrl;
     BOOL _preventDefaultImage;
     BOOL _needsSetImage;
@@ -40,11 +45,28 @@
 @property(nonatomic,retain) NSDictionary *transition;
 @end
 
+@implementation CustomImageView
+- (void)setFrame:(CGRect)newSize {
+    [super setFrame:newSize];
+}
+- (void)setBounds:(CGRect)newSize {
+    [super setBounds:newSize];
+}
+@end
 @implementation AkylasZoomableimageView
 
 #pragma mark Internal
 
 DEFINE_EXCEPTIONS
+
+#ifdef TI_USE_AUTOLAYOUT
+-(void)initializeTiLayoutView
+{
+    [super initializeTiLayoutView];
+    [self setDefaultHeight:TiDimensionAutoSize];
+    [self setDefaultWidth:TiDimensionAutoSize];
+}
+#endif
 
 -(id)init
 {
@@ -58,27 +80,30 @@ DEFINE_EXCEPTIONS
         _filterOptions = nil;
         onlyTransitionIfRemote = NO;
         _minScaleDefined = NO;
+        _filterOptions = nil;
     }
     return self;
 }
 
 -(void)dealloc
 {
-    RELEASE_TO_NIL(mainImageView);
+    RELEASE_TO_NIL(imageView);
     RELEASE_TO_NIL(mainScrollView);
+    RELEASE_TO_NIL(_filterOptions);
+    RELEASE_TO_NIL(_svg);
     [super dealloc];
 }
 
-
 -(UIImageView *)imageView
 {
-    if (mainImageView==nil)
+    if (imageView==nil)
     {
-        mainImageView = [[UIImageView alloc] initWithFrame:[self bounds]];
-        mainImageView.contentMode = UIViewContentModeScaleAspectFill;
-        mainImageView.backgroundColor = [UIColor clearColor];
+        imageView = [[CustomImageView alloc] initWithFrame:[self bounds]];
+        imageView.contentMode = UIViewContentModeScaleAspectFill;
+        imageView.autoresizingMask = UIViewAutoresizingNone;
+        imageView.backgroundColor = [UIColor clearColor];
     }
-    return mainImageView;
+    return imageView;
 }
 
 -(TDUIScrollView *)scrollView
@@ -96,16 +121,20 @@ DEFINE_EXCEPTIONS
         [mainScrollView setDelegate:self];
         [mainScrollView setTouchDelegate:self];
         [self addSubview:mainScrollView];
+        
+        CGFloat zoomScale = mainScrollView.zoomScale;
+        CGFloat minimumZoomScale = mainScrollView.minimumZoomScale;
 
         [self doubleTapRecognizer];
     }
     return mainScrollView;
 }
 
+
 -(void)updateImageSize
 {
-    CGSize size = mainImageView.image.size;
-    mainImageView.frame = CGRectMake(0, 0, size.width, size.height);
+    CGSize size = imageView.image.size;
+    imageView.frame = CGRectMake(0, 0, size.width, size.height);
     CGFloat scale = mainScrollView.zoomScale;
     size.width *= scale;
     size.height *= scale;
@@ -125,6 +154,10 @@ DEFINE_EXCEPTIONS
     // Set up the minimum & maximum zoom scales
     CGFloat currentScale = mainScrollView.zoomScale;
     CGRect scrollViewFrame = mainScrollView.frame;
+    if (scrollViewFrame.size.width == 0 ||
+        scrollViewFrame.size.height == 0) {
+        return;
+    }
     CGFloat scaleWidth = scrollViewFrame.size.width / mainScrollView.contentSize.width * currentScale;
     CGFloat scaleHeight = scrollViewFrame.size.height / mainScrollView.contentSize.height * currentScale;
     CGFloat minScale = MIN(scaleWidth, scaleHeight);
@@ -142,7 +175,7 @@ DEFINE_EXCEPTIONS
 - (void)centerScrollViewContents {
     // This method centers the scroll view contents also used on did zoom
     CGSize boundsSize = mainScrollView.bounds.size;
-    CGRect contentsFrame = mainImageView.frame;
+    CGRect contentsFrame = imageView.frame;
     if (contentsFrame.size.width < boundsSize.width) {
         contentsFrame.origin.x = (boundsSize.width - contentsFrame.size.width) / 2.0f;
     } else {
@@ -153,19 +186,22 @@ DEFINE_EXCEPTIONS
     } else {
         contentsFrame.origin.y = 0.0f;
     }
-    mainImageView.frame = contentsFrame;
+    imageView.frame = contentsFrame;
 }
 
 
 -(UIView*)viewForHitTest
 {
-    return mainImageView;
+    return imageView;
 }
 
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
     BOOL wasOnMin = mainScrollView.minimumZoomScale == mainScrollView.zoomScale;
-//    [TiUtils setView:mainScrollView positionRect:bounds];
+    [TiUtils setView:mainScrollView positionRect:bounds];
+    if (_svg != nil) {
+        [self imageView].image = [_svg imageForSize:bounds.size];
+    }
     [super frameSizeChanged:frame bounds:bounds];
     [self setupScales];
     if (wasOnMin) {
@@ -216,8 +252,8 @@ DEFINE_EXCEPTIONS
 
 - (void)zoomToPoint:(CGPoint)touchPoint withScale: (CGFloat)scale animated: (BOOL)animated
 {
-    touchPoint.x -= mainImageView.frame.origin.x;
-    touchPoint.y -= mainImageView.frame.origin.y;
+    touchPoint.x -= imageView.frame.origin.x;
+    touchPoint.y -= imageView.frame.origin.y;
     [super zoomToPoint:touchPoint withScale:scale animated:animated];
 }
 #pragma mark scrollView delegate stuff
@@ -235,6 +271,13 @@ DEFINE_EXCEPTIONS
 
 -(id)zoomScale_ {
     return @(mainScrollView.zoomScale);
+}
+
+
+-(id)center_ {
+    CGPoint offset = mainScrollView.contentOffset;
+    CGSize size = self.frame.size;
+    return [TiUtils sizeToDictionary:CGSizeMake(offset.x + size.width, offset.y + size.height)];
 }
 
 -(id)minZoomScale_ {
@@ -283,7 +326,7 @@ DEFINE_EXCEPTIONS
 -(void)recognizedDoubleTap:(UITapGestureRecognizer*)recognizer
 {
     // Get the location within the image view where we tapped
-    CGPoint pointInView = [recognizer locationInView:mainImageView];
+    CGPoint pointInView = [recognizer locationInView:imageView];
     // Get a zoom scale that's zoomed in slightly, capped at the maximum zoom scale specified by the scroll view
     CGFloat newZoomScale = mainScrollView.zoomScale * 1.5f;
     newZoomScale = MIN(newZoomScale, mainScrollView.maximumZoomScale);
@@ -328,18 +371,9 @@ DEFINE_EXCEPTIONS
 
 -(void)fireLoadEventWithState:(NSString *)stateString
 {
-    if ([[self viewProxy] _hasListeners:@"load" checkParent:NO]) {
-        UIImage* image = [self getImage];
-        TiBlob* blob = [[TiBlob alloc] initWithImage:image];
-        
-        NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:stateString,@"state", [blob autorelease], @"image", nil];
-        if (image.info) {
-            event = [event dictionaryByMergingWith:image.info];
-        }
-        [[self viewProxy] fireEvent:@"load" withObject:event propagate:NO checkForListener:NO];
-    }
+    AkylasZoomableimageViewProxy* ourProxy = (AkylasZoomableimageViewProxy*)self.proxy;
+    [ourProxy propagateLoadEvent:stateString];
 }
-
 
 - (id) cloneView:(id)source {
     NSData *archivedViewData = [NSKeyedArchiver archivedDataWithRootObject: source];
@@ -357,18 +391,16 @@ DEFINE_EXCEPTIONS
         return;
     }
     image = [self prepareImage:image];
-
-    
     TiTransition* transition = [TiTransitionHelper transitionFromArg:self.transition containerView:self];
     [(TiViewProxy*)[self proxy] contentsWillChange];
     if (shouldTransition && transition != nil) {
         UIImageView *oldView = [[self imageView] retain];
-        RELEASE_TO_NIL(mainImageView);
-        mainImageView = [[self cloneView:oldView] retain];
-        mainImageView.image = image;
+        RELEASE_TO_NIL(imageView);
+        imageView = [[self cloneView:oldView] retain];
+        imageView.image = image;
         [self updateImageSize];
         [self fireLoadEventWithState:@"image"];
-        [TiTransitionHelper transitionFromView:oldView toView:mainImageView insideView:mainScrollView withTransition:transition prepareBlock:^{
+        [TiTransitionHelper transitionFromView:oldView toView:imageView insideView:mainScrollView withTransition:transition prepareBlock:^{
         } completionBlock:^{
             [oldView release];
         }];
@@ -463,23 +495,7 @@ DEFINE_EXCEPTIONS
 
 -(id)convertToUIImage:(id)arg
 {
-    id image = nil;
-    UIImage* imageToUse = nil;
-    
-    if ([arg isKindOfClass:[TiBlob class]]) {
-        TiBlob *blob = (TiBlob*)arg;
-        image = [blob image];
-    }
-    else if ([arg isKindOfClass:[TiFile class]]) {
-        TiFile *file = (TiFile*)arg;
-        NSURL * fileUrl = [NSURL fileURLWithPath:[file path]];
-        image = [[ImageLoader sharedLoader] loadImmediateImage:fileUrl];
-    }
-    else if ([arg isKindOfClass:[UIImage class]]) {
-        // called within this class
-        image = (UIImage*)arg;
-    }
-    return image;
+    return [TiImageHelper convertToUIImage:arg withProxy:self.proxy];
 }
 
 -(void)setScaleType_:(id)arg
@@ -541,7 +557,8 @@ DEFINE_EXCEPTIONS
     
     id image = nil;
     NSURL* imageURL = nil;
-    
+    RELEASE_TO_NIL(_svg);
+
     if (localLoadSync || ![arg isKindOfClass:[NSString class]]) {
         image = [self convertToUIImage:arg];
     }
@@ -570,6 +587,15 @@ DEFINE_EXCEPTIONS
         _currentImage = [image retain];
         [self transitionToImage:image];
     }
+}
+
+-(void)setTintColor_:(id)value
+{
+    ENSURE_TYPE_OR_NIL(value, NSString);
+    UIImageRenderingMode renderingMode = value ? UIImageRenderingModeAlwaysTemplate : UIImageRenderingModeAlwaysOriginal;
+    
+    [imageView setImage:[[imageView image] imageWithRenderingMode:renderingMode]];
+    [imageView setTintColor:value ? [[TiUtils colorValue:value] _color]: nil];
 }
 
 -(void)setImageMask_:(id)arg
