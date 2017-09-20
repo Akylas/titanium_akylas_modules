@@ -1,0 +1,15 @@
+
+#ifdef __cplusplus
+#import <opencv2/core.hpp>
+#import <opencv2/stitching.hpp>
+#import <opencv2/imgproc.hpp>
+#import <opencv2/features2d.hpp>
+#import <opencv2/highgui.hpp>
+#import <opencv2/videoio/cap_ios.h>
+#import <opencv2/imgcodecs/ios.h>
+#endif
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+    #import <UIKit/UIKit.h>
+#endif

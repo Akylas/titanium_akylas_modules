@@ -1,0 +1,17 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 4
+description: akylas.imagemagick
+author: Your Name
+license: Specify your license
+copyright: Copyright (c) 2017 by Your Company
+
+# these should not be edited
+name: akylas.imagemagick
+moduleid: akylas.imagemagick
+guid: dacc5179-0cdd-4a66-9cf1-bab009bceb95
+platform: mobileweb
+minsdk: 6.2.0.AKYLAS
