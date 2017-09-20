@@ -7,8 +7,8 @@
 -(NSString *)lastHitName;
 @end
 
-@interface AkylasMapboxView : AkylasMapBaseView<RMMapViewDelegate, RMTileCacheBackgroundDelegate>
+@interface AkylasMapboxView : AkylasMapBaseView<MGLMapViewDelegate, MGLOfflineStorageDelegate>
 {
 }
--(RMMapView*)map;
+-(MGLMapView*)map;
 @end

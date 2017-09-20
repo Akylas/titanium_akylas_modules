@@ -17,9 +17,9 @@
 
 @implementation AkylasMapboxView
 {
-    RMMapView *map;
+    MGLMapView *map;
     //    NSMutableArray *_tileSources;
-    RMStackTileSource* _tileSourceContainer;
+//    MGLT* _tileSourceContainer;
     BOOL _userStackTileSource;
     BOOL _needsRegionUpdate;
     AkRegion region;
@@ -45,7 +45,7 @@
 	[super dealloc];
 }
 
--(RMMapView*)map
+-(MGLMapView*)map
 {
     if (map==nil)
     {

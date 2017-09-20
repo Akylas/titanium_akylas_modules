@@ -18,23 +18,23 @@
 
 #define MODULE_ID @"akylas.mapbox"
 
-@implementation NSBundle (GoogleMapsFix)
-
-+ (void) swizzle
-{
-    [NSBundle jr_swizzleMethod:@selector(pathForResource:ofType:) withMethod:@selector(correctedPathForResource:ofType:) error:nil];
-}
-
-
-- (NSString *)correctedPathForResource:(NSString *)name ofType:(NSString *)ext;
-{
-    if ([name isEqualToString:@"Mapbox"] && [ext isEqualToString:@"bundle"]) {
-        return [self pathForResource:name ofType:ext inDirectory:@"modules/" MODULE_ID];
-    }
-    return [self correctedPathForResource:name ofType:ext];
-}
-
-@end
+//@implementation NSBundle (GoogleMapsFix)
+//
+//+ (void) swizzle
+//{
+//    [NSBundle jr_swizzleMethod:@selector(pathForResource:ofType:) withMethod:@selector(correctedPathForResource:ofType:) error:nil];
+//}
+//
+//
+//- (NSString *)correctedPathForResource:(NSString *)name ofType:(NSString *)ext;
+//{
+//    if ([name isEqualToString:@"Mapbox"] && [ext isEqualToString:@"bundle"]) {
+//        return [self pathForResource:name ofType:ext inDirectory:@"modules/" MODULE_ID];
+//    }
+//    return [self correctedPathForResource:name ofType:ext];
+//}
+//
+//@end
 
 @implementation AkylasMapboxModule
 
@@ -56,7 +56,8 @@
 
 -(void)startup
 {
-    [NSBundle swizzle];
+//    [NSBundle swizzle];
+    
 	// this method is called when the module is first loaded
 	// you *must* call the superclass
     CFDictionarySetValue([TiProxy classNameLookup], @"Akylas.Mapbox.View", [AkylasMapboxViewProxy class]);
@@ -73,7 +74,7 @@
 
 -(void)setMapboxAccessToken:(id)value
 {
-    [[RMConfiguration configuration] setAccessToken:[TiUtils stringValue:value]];
+    [MGLAccountManager setAccessToken:[TiUtils stringValue:value]];
     [self replaceValue:value forKey:@"mapboxAccessToken" notification:NO];
 }
 
