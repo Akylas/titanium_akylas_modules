@@ -28,7 +28,7 @@ class WindowManager implements AK.IWindowManager {
     shouldDelayOpening = false
     androidNav = false
     title = 'WINDOW_MANAGER'
-    _onWindowOpenedDelayed: Function
+    _onWindowOpenedDelayed: (...args : any[]) => any
     constructor(_args) {
 
         this._onWindowOpenedDelayed = debounce(this._onWindowOpened, 400);
@@ -56,9 +56,9 @@ class WindowManager implements AK.IWindowManager {
         // e.source.removeEventListener('open', this._onWindowOpened);
     }
 
-    _onWindowClosed = (e) => {
+    _onWindowClosed = (e:TiEvent) => {
 
-        var win = e.source;
+        var win = e.source as BaseWindow;
 
         if (win.onClose) {
             win.onClose();
@@ -84,7 +84,7 @@ class WindowManager implements AK.IWindowManager {
         // win.removeEventListener('close', this._onWindowClosed);
     }
 
-    _openWindow = (_win, _args) => {
+    _openWindow = (_win:TiWindow, _args?:TiDict) => {
         var winManager = _win.winManager || this;
 
         if (_win.akmanaged !== true) {
@@ -113,25 +113,25 @@ class WindowManager implements AK.IWindowManager {
         }
         var realArgs = Object.assign(_win.winOpeningArgs ? _win.winOpeningArgs : ((_win.handleOpen === true) ? {
             animated: false
-        } : {}), _args);
+        } : {}), _args) as titanium.openWindowParams;
 
         console.debug('_openWindow', _win.title, _win.akmanaged);
         _win.akmanaged = true;
         // console.debug('_openWindow', realArgs);
         if (_win.winManager) {
-            _win.winManager.openWindow(_win, realArgs);
+            _win.winManager.openWindow(_win, realArgs as TiDict);
         } else {
             // console.debug(this.TAG, '_openWindow', realArgs);
-            _win.open(realArgs);
+            _win.open(realArgs as titanium.openWindowParams);
         }
         if (_win.toDoAfterOpening) {
             _win.toDoAfterOpening();
         }
     };
 
-    createAndOpenWindow = (_constructor: string, _args, _openingArgs, _dontCheckOpening: Boolean) => {
+    createAndOpenWindow = (_constructor: string, _args?: TiDict, _openingArgs?: TiDict, _dontCheckOpening?: boolean) => {
         _args = _args || {};
-        var winManager = _args.winManager || this;
+        var winManager:AK.IWindowManager = _args.winManager as AK.IWindowManager || this;
         _dontCheckOpening = _dontCheckOpening || this.shouldDelayOpening === false;
         if (_dontCheckOpening !== true) {
             if (winManager.handlingOpening === true) {
@@ -151,17 +151,17 @@ class WindowManager implements AK.IWindowManager {
         }
     }
 
-    openWindow = (_win, _args?, _dontCheckOpening?: Boolean) => {
+    openWindow = (_win:TiWindow, _args?:TiDict, _dontCheckOpening?: boolean) => {
         _args = _args || {};
         _dontCheckOpening = _dontCheckOpening || this.shouldDelayOpening === false;
         if (_args.hasOwnProperty('winManager')) {
-            _win.winManager = _args.winManager;
+            _win.winManager = _args.winManager as AK.IWindowManager;
             delete _args.winManager;
         }
 
         var winManager = _win.winManager || this;
         console.debug('openWindow', _win.title, 'winManager:', this.title);
-        var callback = _args.callback;
+        var callback = _args.callback as Function;
         delete _args.callback;
         // if (_.first(winManager.openedWindows) === _win) {
         //     if (callback) {
@@ -190,7 +190,7 @@ class WindowManager implements AK.IWindowManager {
         this._openWindow(_win, _args);
     }
 
-    closeWindow = (_win, _args?, _callGC?: Boolean) => {
+    closeWindow = (_win:BaseWindow, _args?:TiDict, _callGC?: boolean) => {
         if (!_win)
             return;
         console.debug(_win.title, 'closeWindow1', _args, _win.hideMe, _win._closing);

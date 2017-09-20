@@ -6,8 +6,8 @@ declare global {
         locale:string
         model:string
         SDKVersion:number
-        isAndroid: boolean,
-        isApple: boolean,
+        isAndroid: boolean
+        isApple: boolean
         densityFactor: number
         density: string
         pixelWidth: number
@@ -25,9 +25,9 @@ declare global {
         ydpi: number
     }
     type TiAppInfo = TiDict & {
-        deployType: string,
-        version: string,
-        versionName: string,
+        deployType: string
+        version: string
+        versionName: string
         buildDate: number
         description: string
         copyright: string
@@ -41,6 +41,9 @@ declare global {
         tiVersion: string
         production: boolean
         adhoc: boolean
+    }
+    type TiLocalInfo = TiDict & {
+        currentCountry: string
     }
 }
 export class AKClass {
@@ -198,7 +201,7 @@ export class AKClass {
     }
 
     getLocaleInfo() {
-        return Ti.Locale.fullInfo;
+        return Ti.Locale.fullInfo as TiLocalInfo;
     }
 
     prepareAppObject(_app: Object) {

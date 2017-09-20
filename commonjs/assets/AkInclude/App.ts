@@ -64,8 +64,6 @@ export class AKApp extends TiEventEmitter {
             }
             delete _args.iconicfonts;
         }
-        // var _this = this;
-        // (function() {
         var i, template;
 
         //we add _ functions
@@ -159,7 +157,7 @@ export class AKApp extends TiEventEmitter {
             }
         } else if (__APPLE__) {
             Object.defaults(this.values.winOpeningArgs, {
-                transition: Ti.UI.iPhone.MODAL_TRANSITION_STYLE_CROSS_DISSOLVE,
+                transition: Ti.UI.iOS.MODAL_TRANSITION_STYLE_CROSS_DISSOLVE,
                 duration: 400
             });
             if (_args.ifApple) {
@@ -167,7 +165,6 @@ export class AKApp extends TiEventEmitter {
                 delete _args.ifApple;
             }
         }
-        // }).bind(context)();
     }
     loadVariables() {
         ak.ti.loadRjss('$variables'); //load variables
@@ -181,128 +178,126 @@ export class AKApp extends TiEventEmitter {
             delete _args.utilities;
         }
 
-        (function () {
-            var map: string[] = [
-                // 'NavigationBar',
-                'AnimatedWindow',
-                'AppTabController',
-                'AppTabView',
-                'BaseWindow'
-            ].map(function (name: string) {
-                return akPath(name, 'ui/');
+        var map: string[] = [
+            // 'NavigationBar',
+            'AnimatedWindow',
+            'AppTabController',
+            'AppTabView',
+            'BaseWindow'
+        ].map(function (name: string) {
+            return akPath(name, 'ui/');
+        });
+        // !loading creators
+        ak.ti.loadCreators(map, false);
+
+        ak.ti.loadCreatorsFromDir('ui');
+
+        if (_args.defaultLanguage) {
+            ak.locale.defaultLanguage = _args.defaultLanguage;
+            console.debug('App', 'defaultLanguage', ak.locale.defaultLanguage);
+            delete _args.defaultLanguage;
+        }
+        console.debug('App', 'loading language', _args);
+        if (_args.forceLanguage) {
+            ak.locale.loadLanguage(_app.context, _args.forceLanguage);
+            delete _args.forceLanguage;
+        } else {
+            ak.locale.loadLanguage(_app.context);
+        }
+        console.debug('App', 'currentLanguage', ak.locale.currentLanguage);
+
+        _app.loadVariables();
+        akInclude('TemplateModule');
+
+
+        var template, module;
+        if (_args.templatesPreRjss) {
+            for (let i = 0; i < _args.templatesPreRjss.length; i++) {
+                template = _args.templatesPreRjss[i];
+                module = require('/templates/' + template);
+                if (module) {
+                    _app.templates[template] = module;
+                    if (module.load) {
+                        _app.templates[template] = module.load(_app.context);
+                    }
+                }
+
+            }
+            delete _args.templatesPreRjss;
+        }
+
+        //first look for rjss
+        var dir_files: any = Ti.Filesystem.getFile(Ti.Filesystem.resourcesDirectory).getDirectoryListing();
+        if (dir_files) {
+            var vRegex = /\.v([0-9]+)/;
+            var SDKVersion = _app.deviceinfo.SDKVersion;
+            var deviceModel = _app.deviceinfo.model;
+            var mRegex = /~(\w+)/i;
+            // console.debug(SDKVersion, deviceModel, dir_files);
+            let groups = {
+                others: [],
+                overloads: [],
+                rjss: []
+            };
+            dir_files = dir_files.filter(function (item, pos, self) {
+                return self.indexOf(item) == pos;
+            }).map(function (n: string) {
+                let name = 'others';
+                if (/^rjss/.test(n)) {
+                    name = 'rjss';
+                }
+                if (/^overloads/.test(n)) {
+                    name = 'overloads';
+                }
+                groups[name].push(n);
             });
-            // !loading creators
-            ak.ti.loadCreators(map, false);
 
-            ak.ti.loadCreatorsFromDir('ui');
-
-            if (_args.defaultLanguage) {
-                ak.locale.defaultLanguage = _args.defaultLanguage;
-                console.debug('App', 'defaultLanguage', ak.locale.defaultLanguage);
-                delete _args.defaultLanguage;
-            }
-            console.debug('App', 'loading language', _args);
-            if (_args.forceLanguage) {
-                ak.locale.loadLanguage(_app.context, _args.forceLanguage);
-                delete _args.forceLanguage;
-            } else {
-                ak.locale.loadLanguage(_app.context);
-            }
-            console.debug('App', 'currentLanguage', ak.locale.currentLanguage);
-
-            _app.loadVariables();
-            akInclude('TemplateModule');
-
-
-            var template, module;
-            if (_args.templatesPreRjss) {
-                for (let i = 0; i < _args.templatesPreRjss.length; i++) {
-                    template = _args.templatesPreRjss[i];
-                    module = require('/templates/' + template);
-                    if (module) {
-                        _app.templates[template] = module;
-                        if (module.load) {
-                            _app.templates[template] = module.load(_app.context);
-                        }
-                    }
-
-                }
-                delete _args.templatesPreRjss;
-            }
-
-            //first look for rjss
-            var dir_files: any = Ti.Filesystem.getFile(Ti.Filesystem.resourcesDirectory).getDirectoryListing();
-            if (dir_files) {
-                var vRegex = /\.v([0-9]+)/;
-                var SDKVersion = _app.deviceinfo.SDKVersion;
-                var deviceModel = _app.deviceinfo.model;
-                var mRegex = /~(\w+)/i;
-                // console.debug(SDKVersion, deviceModel, dir_files);
-                let groups = {
-                    others: [],
-                    overloads: [],
-                    rjss: []
-                };
-                dir_files = dir_files.filter(function (item, pos, self) {
-                    return self.indexOf(item) == pos;
-                }).map(function (n: string) {
-                    let name = 'others';
-                    if (/^rjss/.test(n)) {
-                        name = 'rjss';
-                    }
-                    if (/^overloads/.test(n)) {
-                        name = 'overloads';
-                    }
-                    groups[name].push(n);
-                });
-
-                function loadRjssFromDirPlatDep(paths, callback) {
-                    var i = paths.length
-                    let version, model, n
-                    while (i--) {
-                        n = paths[i]
-                        version = n.match(vRegex);
-                        model = n.match(mRegex);
-                        if ((version && SDKVersion < version[1]) ||
-                            (model && !(new RegExp(model[1], 'i')).test(deviceModel))) {
-                            paths.slice(i, 1);
-                        }
-                    }
-                    // console.debug('loadRjssFromDirPlatDep', paths);
-                    paths.forEach(callback);
-                }
-                if (groups.overloads) {
-                    loadRjssFromDirPlatDep(groups.overloads, ak.ti.loadOverloadRjssFromDir);
-                }
-                if (groups.rjss) {
-                    loadRjssFromDirPlatDep(groups.rjss, ak.ti.loadRjssFromDir);
-                }
-            }
-
-            if (_args.templates) {
-                for (let i = 0; i < _args.templates.length; i++) {
-                    template = _args.templates[i];
-                    _app.templates[template] = require('/templates/' + template);
-                    if (_app.templates[template].load) {
-                        _app.templates[template] = _app.templates[template].load(_app.context);
+            function loadRjssFromDirPlatDep(paths, callback) {
+                var i = paths.length
+                let version, model, n
+                while (i--) {
+                    n = paths[i]
+                    version = n.match(vRegex);
+                    model = n.match(mRegex);
+                    if ((version && SDKVersion < version[1]) ||
+                        (model && !(new RegExp(model[1], 'i')).test(deviceModel))) {
+                        paths.slice(i, 1);
                     }
                 }
-                delete _args.templates;
+                // console.debug('loadRjssFromDirPlatDep', paths);
+                paths.forEach(callback);
             }
-            // !WINDOW MANAGER
-            if (_args.windowManager) {
-                this['NavigationWindow'] && this['NavigationWindow'].setDefault({
-                    openedWindows: [],
-                    handlingOpening: false
-                });
+            if (groups.overloads) {
+                loadRjssFromDirPlatDep(groups.overloads, ak.ti.loadOverloadRjssFromDir);
+            }
+            if (groups.rjss) {
+                loadRjssFromDirPlatDep(groups.rjss, ak.ti.loadRjssFromDir);
+            }
+        }
 
-                var WindowManager = akRequire('WindowManager');
-                _app.ui = new WindowManager(Object.assign({
-                    shouldDelayOpening: false
-                }, _args.windowManager));
-                delete _args.windowManager;
+        if (_args.templates) {
+            for (let i = 0; i < _args.templates.length; i++) {
+                template = _args.templates[i];
+                _app.templates[template] = require('/templates/' + template);
+                if (_app.templates[template].load) {
+                    _app.templates[template] = _app.templates[template].load(_app.context);
+                }
             }
-        }).bind(_app.context)();
+            delete _args.templates;
+        }
+        // !WINDOW MANAGER
+        if (_args.windowManager) {
+            this['NavigationWindow'] && this['NavigationWindow'].setDefault({
+                openedWindows: [],
+                handlingOpening: false
+            });
+
+            var WindowManager = akRequire('WindowManager');
+            _app.ui = new WindowManager(Object.assign({
+                shouldDelayOpening: false
+            }, _args.windowManager));
+            delete _args.windowManager;
+        }
         for (var key in _args) {
             this[key] = _args[key];
         }
@@ -356,7 +351,7 @@ export class AKApp extends TiEventEmitter {
         const alert = ak.ti.create(_args.constructorName as string || 'AlertDialog', _args, {
             cancel: 0,
             buttonNames: [trc('cancel'), trc('ok')],
-            message: trc('are_you_sure'),
+            message: trc('are_you_sure') + '?',
             title: trc('confirmation')
         }).on('click', function (e) {
             console.log('click', e.cancel);
@@ -398,7 +393,7 @@ export class AKApp extends TiEventEmitter {
                         timeout: 10000,
                         onload: function () {
                             var filenameBase = 'sharedImage',
-                                tmpFile = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory, filenameBase + '.png');
+                                tmpFile = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory, filenameBase + '.jpeg');
                             tmpFile.write(this.responseData);
                             resolve(tmpFile.nativePath);
                         },
@@ -412,7 +407,7 @@ export class AKApp extends TiEventEmitter {
                 }
             } else {
                 var filenameBase = 'sharedImage',
-                    tmpFile = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory, filenameBase + '.png');
+                    tmpFile = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory, filenameBase + '.jpeg');
                 tmpFile.write(image);
                 resolve(tmpFile.nativePath);
             }
@@ -490,7 +485,7 @@ export class AKApp extends TiEventEmitter {
         } else if (__ANDROID__) {
             if (hasImage && !(typeof image === 'string')) {
                 var filenameBase = 'sharedImage',
-                    tmpFile = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory, filenameBase + '.png');
+                    tmpFile = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory, filenameBase + '.jpeg');
                 tmpFile.write(image);
                 image = tmpFile.nativePath;
             }
@@ -510,8 +505,10 @@ export class AKApp extends TiEventEmitter {
                 var orderedKeys = ['subject', 'html', 'text', 'image'];
                 var params: any = Object.assign({
                     action: Ti.Android.ACTION_SEND,
+                    // type: hasImage && /messaging/.test(pkg.packageName) ? 'text/x-vcard': type
                     type: type
                 }, pkg);
+                console.debug(pkg.packageName, keys, params);
                 if (hasSubjectForActivity) {
                     params.subject = _args.subjectForActivityType(pkg.packageName) || _args.subject;
                 } else {
@@ -520,7 +517,6 @@ export class AKApp extends TiEventEmitter {
                 if (hasDataForActivity) {
                     var keys = _args.dataForActivityType(pkg.packageName) || orderedKeys;
                     if (!keys) return;
-                    // console.debug(pkg.packageName, keys);
                     if (keys.hasOwnProperty) {
                         Object.assign(params, keys);
                         // if (keys['html']) {
@@ -553,11 +549,11 @@ export class AKApp extends TiEventEmitter {
                     }
                     params.stream = image;
                 }
-                // console.log('test', params);
+                console.log('test', params);
                 labelIntents.push(params);
             });
             if (labelIntents.length > 0) {
-                // console.debug(labelIntents);
+                console.debug(labelIntents);
                 var intent = labelIntents.shift();
                 Ti.Android.currentActivity.startActivity(
                     Ti.Android.createIntentChooser(intent,

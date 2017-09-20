@@ -53,7 +53,7 @@ export class AKLang {
         }
         // }
         console.debug('locale', this, _config);
-        var loadModuleLang = (function (moduleName, path, callback, ...langs) {
+        var loadModuleLang =  (moduleName, path, callback, ...langs) => {
             langs.forEach(function (value: string) {
                 var lang = null;
                 try {
@@ -69,7 +69,7 @@ export class AKLang {
                     console.debug('could not load moment lang:', value);
                 }
             });
-        }).bind(_context);
+        };
 
         if (_context.moment) {
             const moment = _context.moment;
@@ -94,12 +94,15 @@ export class AKLang {
         var canLoadDefault = _lang === undefined;
         var id = _lang || Titanium.Locale.currentLanguage,
             langFile, file;
-        if (this.availableLanguages.indexOf(id) !== -1) {
-            langFile = id;
+        console.log('Titanium.Locale.currentLanguage', Titanium.Locale.currentLanguage);
+        let index = this.availableLanguages.findIndex(s => s == id || s.startsWith(id + '-'));
+        if (index !== -1) {
+            langFile = this.availableLanguages[index];
         } else {
             id = id.split('-')[0];
-            if (this.availableLanguages.indexOf(id) !== -1) {
-                langFile = id;
+            index = this.availableLanguages.findIndex(s => s == id || s.startsWith(id + '-'));
+            if (index !== -1) {
+                langFile = this.availableLanguages[index];
             }
         }
         console.debug('loadLanguage', _lang, langFile, this.availableLanguages);

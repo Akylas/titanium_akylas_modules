@@ -20,6 +20,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
     let createTab = _.remove(_args, 'createTab');
     let nativeControls = _.remove(_args, 'nativeControls', false);
     let tabsControllerClass = _args.tabsControllerClass;
+    let tabControllerParams = _args.tabControllerParams;
     let pagerClass = _args.pagerClass || 'AppTabViewScrollableView';
     let loadedTabs = [];
     delete _args.tabs;
@@ -61,13 +62,15 @@ ak.ti.constructors.createAppTabView = function (_args) {
 
             },
             change: function (e) {
-                // console.debug('change', e);
+                if (!e.hasOwnProperty('currentPage')) {
+                    return;
+                }
+                self.emit('change', e);
                 self.currentView = e.view;
                 if (loadedTabs.indexOf(e.currentPage) === -1) {
                     loadedTabs.push(e.currentPage);
                     self.currentView.emit('first_load');
                 }
-                self.emit('change', e);
             }
         }
     });
@@ -93,11 +96,11 @@ ak.ti.constructors.createAppTabView = function (_args) {
             }
 
         } else {
-            tabController = new AppTabController({
+            tabController = new AppTabController(Object.assign({
                 rclass: tabsControllerClass,
                 createTab: createTab,
                 labels: titles
-            });
+            }, tabControllerParams));
             tabController.addEventListener('request_tab', function (_event) {
                 self.setTab(_event.index);
             });
@@ -111,7 +114,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
 
     var self: AppTabView = Object.assign(new View(_args), {
         setTab: function (_index) {
-            console.log('setTab', _index, currentPage);
+            // console.log('setTab', _index, currentPage);
             if (currentPage != _index) {
                 self.pager.scrollToView(_index);
             } else {
@@ -131,6 +134,7 @@ ak.ti.constructors.createAppTabView = function (_args) {
         getTabs: function () {
             return tabs;
         },
+        
         moveNext: function () {
             self.pager.moveNext();
         }

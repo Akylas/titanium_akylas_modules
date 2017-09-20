@@ -1,31 +1,32 @@
 declare class BaseWindow extends TiWindow {
     // navWindow: Boolean
-    isOpened: Boolean
+    isOpened: boolean
     navWindow?: boolean
     exitOnBack?: boolean
-    manager?: NavWindow
+
     underContainer?: View
+    winOpeningArgs?: titanium.openWindowParams
+    winClosingArgs?: titanium.openWindowParams
     openMe(args?)
     closeMe(args?)
+    hideMe?(args?)
     onOpen?(args?)
     onClose?(args?)
-    toDoAfterOpening()
     shouldShowBackButton(backTitle: string)
     showLoading(args?)
     hideLoading(args?)
-    GC()
     addPropertiesToGC(key: string)
 }
 
 declare class NavWindow extends AppWindow {
     window: AppWindow
-    navOpenWindow(_win, _args?)
-    createManagedWindow(constructor, args?)
-    createAndOpenWindow(_constructor, _args?, _winArgs?)
+    navOpenWindow(_win: AppWindow, _args?: TiDict)
+    createManagedWindow(constructor?: string, args?: TiDict)
+    createAndOpenWindow(_constructor: string, _args?: TiDict, _winArgs?: TiDict)
     openWindow(_win: TiWindow, _args?, _dontCheckOpening?: Boolean)
     closeToRootWindow()
     canGCWindow(_win: TiWindow)
-    isOpened: Boolean
+    isOpened: boolean
     closeAllWindows(_args?: TiDict)
     closeCurrentWindow(_args?: TiDict)
     closeWindow(_win: TiWindow, _args?: TiDict)
@@ -159,29 +160,30 @@ ak.ti.constructors.createBaseWindow = function (_args) {
         // // }
 
         // self.container.add(container);
-        selfNav.navOpenWindow = function (_win, _args?) {
+        selfNav.navOpenWindow = function (_win: AppWindow | TiDict, _args?: TiDict) {
             if (_.isPlainObject(_win)) {
-                _win = new AppWindow(_win);
+                _win = new AppWindow(_win as TiDict);
             }
+            let theWin = _win as AppWindow;
             _args = _args || {};
-            var manager = _args.manager || self;
-            console.debug('navOpenWindow', app.ui.androidNav, _win.showLeftMenuButton, _win.androidDontUseNavWindow,
+            var manager: NavWindow = (_args.manager || self) as NavWindow;
+            console.debug('navOpenWindow', app.ui.androidNav, theWin.showLeftMenuButton, theWin.androidDontUseNavWindow,
                 _args);
 
-            if (!!_win.modal || !!_win.customModal || (!!app.ui.androidNav && _win.showLeftMenuButton !== true) ||
-                (__ANDROID__ && (!!_win.androidDontUseNavWindow || !!_args.androidDontUseNavWindow))) {
+            if (!!theWin.modal || !!theWin.customModal || (!!app.ui.androidNav && theWin.showLeftMenuButton !== true) ||
+                (__ANDROID__ && (!!theWin.androidDontUseNavWindow || !!_args.androidDontUseNavWindow))) {
                 if (manager) {
                     var currentWindow = Ti.UI.topWindow;
                     // if (!currentWindow && manager.navBar) {
                     //     currentWindow = manager.navBar.getTopWindow();
                     // }
 
-                    if (_win.shouldShowBackButton && !(_win.modal && !!_win.navWindow)) {
-                        _win.shouldShowBackButton(currentWindow ? (currentWindow.backButtonTitle ||
+                    if (theWin.shouldShowBackButton && !(theWin.modal && !!theWin.navWindow)) {
+                        theWin.shouldShowBackButton(currentWindow ? (currentWindow.backButtonTitle ||
                             currentWindow.title) : undefined);
                     }
                     delete _args.winManager;
-                    delete _win.winManager;
+                    delete theWin.winManager;
                     // _win.modal = currentWindow?currentWindow.modal:manager.modal;
 
                     // if (manager.navBar && !_win.navBar && _win.createNavBar) {
@@ -196,7 +198,7 @@ ak.ti.constructors.createBaseWindow = function (_args) {
                 _args.winManager = self;
                 // _args.winManager = self.navWindow;
             }
-            _win.manager = manager;
+            theWin.manager = manager;
             app.ui.openWindow(_win, _args);
             // currentTopWindow = _win;
         };
@@ -208,12 +210,12 @@ ak.ti.constructors.createBaseWindow = function (_args) {
         // }
         // console.debug('onCloseAndroidNavWindow', _win.title, currentTopWindow.title);
         // };
-        selfNav.createManagedWindow = function (_constructor, _args2) {
+        selfNav.createManagedWindow = function (_constructor: string, _args2?: TiDict) {
             _args2 = _args2 || {};
             _args2.manager = self;
             return ak.ti.createFromConstructor(_constructor, _args2);
         };
-        selfNav.createAndOpenWindow = function (_constructor, _args, _winArgs) {
+        selfNav.createAndOpenWindow = function (_constructor: string, _args?: TiDict, _winArgs?: TiDict) {
             var win = selfNav.createManagedWindow(_constructor, _args);
             selfNav.navOpenWindow(win, _winArgs);
             return win;
@@ -256,11 +258,11 @@ ak.ti.constructors.createBaseWindow = function (_args) {
             }]
         });
         self.showLoading = function () {
-            self.add(indicator);
+            self && self.add(indicator);
         };
 
         self.hideLoading = function () {
-            self.remove(indicator);
+            self && self.remove(indicator);
         };
     }
 
@@ -301,15 +303,13 @@ ak.ti.constructors.createBaseWindow = function (_args) {
         app.ui.openWindow(self, _args);
     };
     if (__ANDROID__) {
-        if (self.exitOnBack === true) {
-            self.onBack = function () {
+        self.onBack = function () {
+            if (self.exitOnBack === true) {
                 app.closeApp();
-            };
-        } else {
-            self.onBack = function () {
+            } else {
                 self.closeMe();
-            };
-        }
+            }
+        };
     }
 
     self.isOpened = false;

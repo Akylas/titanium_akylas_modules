@@ -14,16 +14,24 @@ function findDeep(obj, key) {
     return res;
 }
 
+declare interface Template {
+    [k:string]:any
+    bindId?:string
+    properties?:TiDict
+    events?:{[k:string]:Function}
+    childTemplates?:Template[]
+}
+
 class TemplateModule {
-    [key: string]: dict | Function | void
-    prepareTemplate(_template: dict, _type?: string, _defaults?: dict): dict | void { }
+    [key: string]: Template | Function | void
+    prepareTemplate(_template: Template, _type?: string, _defaults?: TiDict): TiDict | void { }
     constructor(options?) {
         this.prepareTemplate = ak.ti.style;
         if (options) {
             Object.assign(this, options);
         }
     }
-    internalAddEvents = (_template: dict, _properties?: dict) => {
+    internalAddEvents = (_template: Template, _properties?: TiDict) => {
         if (!_template || !_properties) return;
         var props;
         if (_properties.hasOwnProperty('events')) {
@@ -43,7 +51,7 @@ class TemplateModule {
             return !this.internalAddEvents(ele, _properties);
         }, this);
     }
-    internalAddProperties = (_template: dict, _properties?: dict) => {
+    internalAddProperties = (_template: TiDict, _properties?: TiDict) => {
 
         if (!_template || !_properties) return;
         // var props;
@@ -98,7 +106,7 @@ class TemplateModule {
 
 
     cloneTemplateAndFill = (_template, _properties?, _events?) => {
-        var template = (Object.isObject(_template)) ? _template : this.getTemplate(_template);
+        var template:Template = (Object.isObject(_template)) ? _template : this.getTemplate(_template);
         // console.debug('cloneTemplateAndFill', _template, _properties);
         if (template) {
             template = _.cloneDeep(template);
@@ -112,8 +120,8 @@ class TemplateModule {
         }
         return null;
     }
-    getTemplate = (_key: string): any => {
-        return this[_key];
+    getTemplate = (_key: string) => {
+        return this[_key] as Template;
     }
     addTemplate = (_template, _key: string) => {
         this[_key] = this.prepareTemplate(_template);
