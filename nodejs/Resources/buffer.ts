@@ -1,3 +1,6 @@
+function decode_base64(s: string) {
+    return Ti.Utils.base64decode(s).byteArray;
+}
 export class Buffer extends Array {
     _isBuffer = true
     constructor(data?: number | string | number[], encoding?: string) {
@@ -10,6 +13,8 @@ export class Buffer extends Array {
                 for (var i = 0; i < data.length; i += 2) {
                     this.push(parseInt(data.substring(i, i + 1)));
                 }
+            } else if (encoding == 'base64') {
+                Array.prototype.push.apply(this, decode_base64(data))
             } else {
                 for (var i = 0; i < data.length; ++i) {
                     this.push(data.charCodeAt(i));
@@ -17,7 +22,7 @@ export class Buffer extends Array {
             }
         }
     }
-    toString = (encoding?: string) => {
+    toString(encoding?: string) {
         if (encoding === 'hex') {
             return this.map(function (ch) {
                 return ch.toString(16);
