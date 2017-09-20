@@ -35,6 +35,7 @@
     NSString* _quality;
     AVCaptureWhiteBalanceMode _whitebalance;
     AVCaptureExposureMode _exposure;
+    AVCaptureFocusMode _focusMode;
 
 }
 
@@ -52,6 +53,7 @@
         _quality = AVCaptureSessionPresetPhoto;
         _whitebalance = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
         _exposure = AVCaptureExposureModeContinuousAutoExposure;
+        _focusMode = AVCaptureFocusModeContinuousAutoFocus;
         [self addSubview:preview];
     }
     return self;
@@ -173,6 +175,21 @@
     
 }
 
+
+- (void) setFocusMode_:(id)value
+{
+    NSInteger mode = [TiUtils intValue:value def:_focusMode];
+    if (mode == _focusMode) {
+        return;
+    }
+    _focusMode = mode;
+    if ([self isConfigurationSet]) {
+        [self updateFocusMode];
+    }
+    
+}
+
+
 -(void)setWhichCamera_:(id)value
 {
     NSInteger cameraPosition = [TiUtils intValue:value def:_cameraPosition];
@@ -243,6 +260,9 @@
     }
     if ( [inputDevice isWhiteBalanceModeSupported:_whitebalance] ) {
         [inputDevice setWhiteBalanceMode:_whitebalance];
+    }
+    if ( [inputDevice isFocusModeSupported:_focusMode] ) {
+        [inputDevice setFocusMode:_focusMode];
     }
     [inputDevice unlockForConfiguration];
     
@@ -699,6 +719,34 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 #endif
 }
 
+- (void)updateFocusMode {
+    if (! captureSession) {
+        return;
+    }
+#if HAS_AVFF
+    NSArray * inputs = captureSession.inputs;
+    for ( AVCaptureDeviceInput * INPUT in inputs ) {
+        AVCaptureDevice * device = INPUT.device ;
+        [device lockForConfiguration:nil];
+        
+        if ( [device isFocusModeSupported:_focusMode] ) {
+            BOOL didchange = false;
+            if ( _focusMode && [device focusMode] ) {
+                [device setFocusMode:_focusMode];
+                didchange = true;
+            }
+            //            if (didchange)
+            //            {
+            //                if ([[self viewProxy] _hasListeners:@"exposure" checkParent:NO]) {
+            //                    [[self viewProxy] fireEvent:@"exposure" withObject:@{
+            //                                                                             @"value":@(_exposure)} propagate:NO checkForListener:NO];
+            //                }
+            //            }
+        }
+        [device unlockForConfiguration];
+    }
+#endif
+}
 
 - (void)updateTorch {
     if (! captureSession) {
