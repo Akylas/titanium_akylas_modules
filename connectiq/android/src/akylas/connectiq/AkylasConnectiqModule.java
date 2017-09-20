@@ -51,7 +51,7 @@ public class AkylasConnectiqModule extends KrollModule
 
     public static ConnectIQ getConnectIQ() {
         if (mConnectIQ == null) {
-            mConnectIQ = ConnectIQ.getInstance(TiApplication.getAppContext(),
+            mConnectIQ = ConnectIQ.getInstance(TiApplication.getAppRootOrCurrentActivity(),
                     ConnectIQ.IQConnectType.WIRELESS);
         }
         return mConnectIQ;
