@@ -28,8 +28,6 @@ import com.garmin.android.connectiq.exception.ServiceUnavailableException;
 
 import com.garmin.android.connectiq.IQDevice;
 
-import org.appcelerator.kroll.common.Log;
-
 @Kroll.module(name = "AkylasConnectiq", id = "akylas.connectiq")
 public class AkylasConnectiqModule extends KrollModule
         implements ConnectIQListener { 
