@@ -23,6 +23,7 @@
     BOOL gyroscopeRegistered;
     BOOL rotationRegistered;
     BOOL magnetometerRegistered;
+    BOOL barometerRegistered;
     BOOL orientationRegistered;
     BOOL motionRegistered;
     BOOL computeRotationMatrix;
@@ -164,12 +165,24 @@
 	if (count == 1)
 	{
 		BOOL needsStart = FALSE;
-        if ([type isEqualToString:@"altitude"] && [CMAltimeter isRelativeAltitudeAvailable])
+        if (!altitudeRegistered && [type isEqualToString:@"altitude"] && [CMAltimeter isRelativeAltitudeAvailable])
         {
             altitudeRegistered = TRUE;
-            TiThreadPerformBlockOnMainThread(^{
-                [[self altitudeManager] startRelativeAltitudeUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:altitudeHandler];
-            }, NO);
+            if (!barometerRegistered) {
+                TiThreadPerformBlockOnMainThread(^{
+                    [[self altitudeManager] startRelativeAltitudeUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:altitudeHandler];
+                }, NO);
+            }
+            
+        } else if (!barometerRegistered && [type isEqualToString:@"pressure"] && [CMAltimeter isRelativeAltitudeAvailable])
+        {
+            barometerRegistered = TRUE;
+            if (!altitudeRegistered) {
+                TiThreadPerformBlockOnMainThread(^{
+                    [[self altitudeManager] startRelativeAltitudeUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:altitudeHandler];
+                }, NO);
+            }
+            
         } else if ([type isEqualToString:@"motion"])
 		{
 			needsStart = TRUE;
@@ -224,10 +237,19 @@
 {
 	if (count == 0)
 	{
-        if ([type isEqualToString:@"altitude"])
+        if (altitudeRegistered && [type isEqualToString:@"altitude"])
         {
             altitudeRegistered = FALSE;
-            [self shutdownAltitudeManager];
+            if (barometerRegistered) {
+                [self shutdownAltitudeManager];
+            }
+        }
+        else if (barometerRegistered && [type isEqualToString:@"pressure"])
+        {
+            barometerRegistered = FALSE;
+            if (altitudeRegistered) {
+                [self shutdownAltitudeManager];
+            }
         }
         else if ([type isEqualToString:@"motion"])
         {
@@ -273,10 +295,18 @@
 
 -(void) processAltitudeData: (CMAltitudeData *) data withError:(NSError *) error
 {
-    [self fireEvent:@"altitude" withObject:@{
-                                             @"relativeAltitude":data.relativeAltitude,
-                                             @"pressure":data.pressure
-                                             }];
+    if ([self _hasListeners:@"altitude"]) {
+        [self fireEvent:@"altitude" withObject:@{
+                                                 @"relativeAltitude":data.relativeAltitude,
+                                                 @"pressure":data.pressure
+                                                 }];
+    }
+    if ([self _hasListeners:@"pressure"]) {
+        [self fireEvent:@"pressure" withObject:@{
+                                                 @"relativeAltitude":data.relativeAltitude,
+                                                 @"pressure":data.pressure
+                                                 }];
+    }
 }
 
 -(void) processMotionData: (CMDeviceMotion *) motion withError:(NSError *) error
@@ -483,7 +513,7 @@ MAKE_SYSTEM_PROP(STANDARD_GRAVITY,9.80665);
 }
 
 
--(NSNumber*)hasAltimeter
+-(NSNumber*)hasBarometer
 {
     return NUMBOOL([CMAltimeter isRelativeAltitudeAvailable]);
 }

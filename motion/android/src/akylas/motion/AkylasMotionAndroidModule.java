@@ -69,6 +69,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
     public static final float STANDARD_GRAVITY = SensorManager.STANDARD_GRAVITY;
 
     private int currentMagnetometerAccuracy = ACCURACY_UNCALIBRATED;
+    private float currentPressureAltitude = -1;
 
     private float[] gravity = new float[3];
 
@@ -269,12 +270,13 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
 
     private KrollDict eventToDict(int type, float[] values) {
         KrollDict sensordata = new KrollDict();
-        float x = values[0];
-        float y = values[1];
-        float z = values[2];
+        
 
         switch (type) {
         case Sensor.TYPE_ACCELEROMETER: {
+            float x = values[0];
+            float y = values[1];
+            float z = values[2];
             // float[] gravs = mCurrentValues.get(Sensor.TYPE_GRAVITY);
             final float alpha = (float) 0.8;
             x /= -STANDARD_GRAVITY;
@@ -298,9 +300,12 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
             gacc.put(TiC.PROPERTY_Z, gravity[2]);
             sensordata.put(PROPERTY_USER, useracc);
             sensordata.put(PROPERTY_GRAVITY, gacc);
-        }
             break;
+        }
         case Sensor.TYPE_LINEAR_ACCELERATION: {
+            float x = values[0];
+            float y = values[1];
+            float z = values[2];
             // float[] gravs = mCurrentValues.get(Sensor.TYPE_GRAVITY);
             // final float alpha = (float) 0.8;
             x /= STANDARD_GRAVITY;
@@ -325,27 +330,48 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
             gacc.put(TiC.PROPERTY_Z, gz);
             sensordata.put(PROPERTY_USER, useracc);
             sensordata.put(PROPERTY_GRAVITY, gacc);
-        }
             break;
+        }
         case Sensor.TYPE_MAGNETIC_FIELD: {
+            float x = values[0];
+            float y = values[1];
+            float z = values[2];
             sensordata.put(TiC.PROPERTY_X, x);
             sensordata.put(TiC.PROPERTY_Y, y);
             sensordata.put(TiC.PROPERTY_Z, z);
             sensordata.put(TiC.PROPERTY_ACCURACY, currentMagnetometerAccuracy);
-        }
             break;
+        }
         case Sensor.TYPE_ORIENTATION: {
+            float x = values[0];
+            float y = values[1];
+            float z = values[2];
             sensordata.put(PROPERTY_YAW, x);
             sensordata.put(PROPERTY_PITCH, y);
             sensordata.put(PROPERTY_ROLL, z);
-        }
             break;
+        }
         case Sensor.TYPE_GYROSCOPE: {
+            float x = values[0];
+            float y = values[1];
+            float z = values[2];
             sensordata.put(TiC.PROPERTY_X, x);
             sensordata.put(TiC.PROPERTY_Y, y);
             sensordata.put(TiC.PROPERTY_Z, z);
-        }
             break;
+        }
+        case Sensor.TYPE_PRESSURE: {
+            float currentPressure = values[0];
+            float altitudeDifference = 0;
+            float newAltitude = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, currentPressure);
+            if (currentPressureAltitude != 1) {
+                altitudeDifference = newAltitude - currentPressureAltitude;
+            }
+            currentPressureAltitude = newAltitude;
+            sensordata.put("pressure", values[0]);
+            sensordata.put("relativeAltitude", altitudeDifference);
+            break;
+        }
         case Sensor.TYPE_ROTATION_VECTOR:
         case Sensor.TYPE_GAME_ROTATION_VECTOR: {
             sensordata.put("quaternion", values);
@@ -623,7 +649,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
      *         <code>false</code> if not
      */
     @Kroll.method
-    @Kroll.getProperty
+    @Kroll.getProperty(enumerable=false)
     public boolean getHasOrientation() {
         return hasSensor(Sensor.TYPE_ORIENTATION);
     }
@@ -635,7 +661,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
      *         <code>false</code> if not
      */
     @Kroll.method
-    @Kroll.getProperty
+    @Kroll.getProperty(enumerable=false)
     public boolean getHasGyroscope() {
         return hasSensor(Sensor.TYPE_GYROSCOPE);
     }
@@ -647,7 +673,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
      *         <code>false</code> if not
      */
     @Kroll.method
-    @Kroll.getProperty
+    @Kroll.getProperty(enumerable=false)
     public boolean getHasAccelerometer() {
         return hasSensor(Sensor.TYPE_ACCELEROMETER);
     }
@@ -659,9 +685,20 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
      *         <code>false</code> if not
      */
     @Kroll.method
-    @Kroll.getProperty
+    @Kroll.getProperty(enumerable=false)
     public boolean getHasMagnetometer() {
         return hasSensor(Sensor.TYPE_MAGNETIC_FIELD);
+    }
+    /**
+     * Checks if the device has a barometer sensor
+     * 
+     * @return <code>true</code> if the device has a magnetometer,
+     *         <code>false</code> if not
+     */
+    @Kroll.method
+    @Kroll.getProperty(enumerable=false)
+    public boolean getHasBarometer() {
+        return hasSensor(Sensor.TYPE_PRESSURE);
     }
     
     @Override
