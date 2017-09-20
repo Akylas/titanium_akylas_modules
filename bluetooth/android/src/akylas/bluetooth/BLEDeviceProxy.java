@@ -133,8 +133,8 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     }
 
     private void stop() {
-        stopService();
         setState(AkylasBluetoothModule.STATE_DISCONNECTED);
+        stopService();
     }
 
 //    @Override
@@ -343,7 +343,8 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 
     @Override
     public void notifyDisconnectedGATT() {
-        setState(AkylasBluetoothModule.STATE_DISCONNECTED);
+//        setState(AkylasBluetoothModule.STATE_DISCONNECTED);
+        stop();
     }
 
     @Override

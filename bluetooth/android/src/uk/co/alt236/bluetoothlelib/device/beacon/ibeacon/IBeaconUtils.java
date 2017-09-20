@@ -64,7 +64,7 @@ final class IBeaconUtils {
     public static IBeaconDistanceDescriptor getDistanceDescriptor(final double accuracy) {
         if (accuracy < DISTANCE_THRESHOLD_WTF) {
             return IBeaconDistanceDescriptor.UNKNOWN;
-        }
+        } 
 
         if (accuracy < DISTANCE_THRESHOLD_IMMEDIATE) {
             return IBeaconDistanceDescriptor.IMMEDIATE;
