@@ -560,7 +560,7 @@ public class Converters {
     public static Mat vector_vector_Point3f_to_Mat(List<MatOfPoint3f> pts, List<Mat> mats) {
         Mat res;
         int lCount = (pts != null) ? pts.size() : 0;
-        if (lCount > 0) {
+        if (pts != null) {
             for (MatOfPoint3f vpt : pts)
                 mats.add(vpt);
             res = vector_Mat_to_Mat(mats);
