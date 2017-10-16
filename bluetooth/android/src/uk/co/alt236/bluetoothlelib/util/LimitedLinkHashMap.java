@@ -10,7 +10,7 @@ public class LimitedLinkHashMap<K, V> extends LinkedHashMap<K, V> {
 
     public LimitedLinkHashMap(final int maxSize) {
         super(maxSize + 1, 1, false);
-        mMaxSize = maxSize;
+        mMaxSize = maxSize; 
     }
 
     @Override

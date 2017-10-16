@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.util.Pair;
 
 
 public class BLEService extends TiEnhancedService {
@@ -333,6 +334,8 @@ public class BLEService extends TiEnhancedService {
      * @param characteristic
      *            The characteristic to read from.
      */
+    Queue<BluetoothGattCharacteristic> readCharQueue = new LinkedList<BluetoothGattCharacteristic>();
+    boolean readingChar = false;
     public void readCharacteristic(final BluetoothGattCharacteristic characteristic) {
         if (mBluetoothGatt == null || characteristic == null) {
             return;
@@ -346,7 +349,17 @@ public class BLEService extends TiEnhancedService {
             });
             return;
         }
+        
+        if (readingChar) {
+            readCharQueue.add(characteristic);
+            return;
+        }
         mBluetoothGatt.readCharacteristic(characteristic);
+        readingChar = false;
+        if (readCharQueue.size() > 0) {
+            BluetoothGattCharacteristic value = readCharQueue.poll();
+            readCharacteristic(value);
+        }
     }
     
     public BluetoothGattCharacteristic getCharacteristic(final UUID serviceUUID, final UUID characteristicUUID) {

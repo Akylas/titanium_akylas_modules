@@ -18,7 +18,7 @@ public enum BluetoothService {
 
     private final int mAndroidConstant;
 
-    BluetoothService(final int androidCode){
+    BluetoothService(final int androidCode){ 
         mAndroidConstant = androidCode;
     }
 

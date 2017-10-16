@@ -22,7 +22,7 @@ public class BluetoothClassResolver {
                 return "A/V, Microphone";
             case BluetoothClass.Device.AUDIO_VIDEO_PORTABLE_AUDIO:
                 return "A/V, Portable Audio";
-            case BluetoothClass.Device.AUDIO_VIDEO_SET_TOP_BOX:
+            case BluetoothClass.Device.AUDIO_VIDEO_SET_TOP_BOX: 
                 return "A/V, Set Top Box";
             case BluetoothClass.Device.AUDIO_VIDEO_UNCATEGORIZED:
                 return "A/V, Uncategorized";

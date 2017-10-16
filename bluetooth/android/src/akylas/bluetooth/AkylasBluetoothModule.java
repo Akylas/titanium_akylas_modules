@@ -38,7 +38,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -264,9 +263,17 @@ public class AkylasBluetoothModule extends ProtectedModule {
             adapter.cancelDiscovery();
         }
     }
+    
+    @Override
+    public void onAppTerminate(TiApplication app)
+    {
+        fDiscoveryCallback = null;
+//        activity.unregisterReceiver(mReceiver);
+    }
 
     @Override
     public void onDestroy(Activity activity) {
+        fDiscoveryCallback = null;
         activity.unregisterReceiver(mReceiver);
         super.onDestroy(activity);
     }
@@ -304,7 +311,7 @@ public class AkylasBluetoothModule extends ProtectedModule {
         return data;
     }
 
-    private Activity getCurrentOrRootActivity() {
+    static public Activity getCurrentOrRootActivity() {
         Activity activity = TiApplication.getAppCurrentActivity();
         if (activity == null) {
             return TiApplication.getAppRootOrCurrentActivity();
@@ -393,7 +400,7 @@ public class AkylasBluetoothModule extends ProtectedModule {
 
     @Kroll.method
     public void showBluetoothSettings() {
-        Activity activity = TiApplication.getAppCurrentActivity();
+        Activity activity = getCurrentOrRootActivity();
         if (activity != null) {
             TiActivitySupport activitySupport = (TiActivitySupport) activity;
             final int code = activitySupport.getUniqueResultCode();
@@ -426,7 +433,7 @@ public class AkylasBluetoothModule extends ProtectedModule {
         if (Build.VERSION.SDK_INT < 23) {
             return true;
         }
-        Activity currentActivity  = TiApplication.getInstance().getCurrentActivity();
+        Activity currentActivity  = getCurrentOrRootActivity();
         if (currentActivity != null && (currentActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 currentActivity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED )) {
             return true;
@@ -455,7 +462,7 @@ public class AkylasBluetoothModule extends ProtectedModule {
             TiBaseActivity.addPermissionListener(TiC.PERMISSION_CODE_LOCATION, getKrollObject(), callback);
             
         }
-        Activity currentActivity  = TiApplication.getInstance().getCurrentActivity();
+        Activity currentActivity  = getCurrentOrRootActivity();
         if (currentActivity != null) {
             currentActivity.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, TiC.PERMISSION_CODE_LOCATION);       
         }

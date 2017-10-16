@@ -1,0 +1,4 @@
+"/Volumes/data/dev/titanium/modules/akylas_modules/zoomableimage/android/src/akylas/zoomableimage/AkylasZoomableimageModule.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/zoomableimage/android/src/akylas/zoomableimage/ViewProxy.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/zoomableimage/android/src/akylas/zoomableimage/ZoomableImageView.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/zoomableimage/android/build/generated/java/akylas/zoomableimage/AkylasZoomableimageBootstrap.java"

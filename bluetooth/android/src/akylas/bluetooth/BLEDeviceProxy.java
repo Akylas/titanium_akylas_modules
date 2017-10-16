@@ -9,9 +9,7 @@ package akylas.bluetooth;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.UUID;
 
 import org.appcelerator.kroll.KrollDict;
@@ -31,7 +29,6 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.support.v4.util.Pair;
 
 @Kroll.proxy(creatableInModule = AkylasBluetoothModule.class, propertyAccessors = { TiC.PROPERTY_ADDRESS })
 public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
@@ -58,8 +55,8 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     private BluetoothDevice mDevice = null;
     private String mMacAdress = null;
 
-    Queue<Pair<String, String>> readCharQueue = new LinkedList<Pair<String, String>>();
-    boolean readingChar = false;
+//    Queue<Pair<String, String>> readCharQueue = new LinkedList<Pair<String, String>>();
+//    boolean readingChar = false;
 
     public BluetoothDevice getDevice() {
         if (mDevice == null) {
@@ -271,16 +268,16 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     @Kroll.method
     public void readCharacteristicValue(final String serviceUUID,
             final String charUUID) {
-        if (readingChar) {
-            readCharQueue.add(new Pair<String, String>(serviceUUID, charUUID));
-            return;
-        }
+//        if (readingChar) {
+//            readCharQueue.add(new Pair<String, String>(serviceUUID, charUUID));
+//            return;
+//        }
         if (this.tiService != null) {
             BluetoothGattCharacteristic charac = this.tiService
                     .getCharacteristic(getUUIDFromString(serviceUUID),
                             getUUIDFromString(charUUID));
             if (charac != null) {
-                readingChar = true;
+//                readingChar = true;
                 this.tiService.readCharacteristic(charac);
             }
         }
@@ -417,11 +414,11 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
             data.put(TiC.PROPERTY_DATA, TiBlob.blobFromObject(bytes));
             fireEvent(eventType, data, false, false);
         }
-        readingChar = false;
-        if (readCharQueue.size() > 0) {
-            Pair<String, String> value = readCharQueue.poll();
-            readCharacteristicValue(value.first, value.second);
-        }
+//        readingChar = false;
+//        if (readCharQueue.size() > 0) {
+//            Pair<String, String> value = readCharQueue.poll();
+//            readCharacteristicValue(value.first, value.second);
+//        }
     }
 
     @Override
@@ -440,11 +437,11 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
             data.put(TiC.PROPERTY_DATA, TiBlob.blobFromObject(bytes));
             fireEvent(eventType, data, false, false);
         }
-        readingChar = false;
-        if (readCharQueue.size() > 0) {
-            Pair<String, String> value = readCharQueue.poll();
-            readCharacteristicValue(value.first, value.second);
-        }
+//        readingChar = false;
+//        if (readCharQueue.size() > 0) {
+//            Pair<String, String> value = readCharQueue.poll();
+//            readCharacteristicValue(value.first, value.second);
+//        }
     }   
 
     @Override

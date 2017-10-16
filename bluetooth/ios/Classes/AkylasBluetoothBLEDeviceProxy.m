@@ -168,9 +168,14 @@
 
 -(void)discoverCharacteristics:(id)args
 {
-    ENSURE_ARG_COUNT(args,2);
+    ENSURE_ARG_COUNT(args,1);
     CBService* service = [self serviceFromUUID:[args objectAtIndex:0]];
-     [[self peripheral] discoverCharacteristics:@[[AkylasBluetoothBLEDeviceProxy uuidFromString:[TiUtils stringValue:[args objectAtIndex:1]]]] forService:service];
+    if (args && [args count] > 1) {
+        [[self peripheral] discoverCharacteristics:@[[AkylasBluetoothBLEDeviceProxy uuidFromString:[TiUtils stringValue:[args objectAtIndex:1]]]] forService:service];
+    } else {
+        [[self peripheral] discoverCharacteristics:nil forService:service];
+    }
+    
 }
 
 
@@ -333,7 +338,7 @@
 //    if ([uuidString length] == 4) {
 //        return [CBUUID UUIDWithString:[NSString stringWithFormat:@"0000%@-0000-1000-8000-00805f9b34fb", uuidString]];
 //    }
-    return [CBUUID UUIDWithString:uuidString];
+    return uuidString?[CBUUID UUIDWithString:uuidString]:nil;
 }
 
 

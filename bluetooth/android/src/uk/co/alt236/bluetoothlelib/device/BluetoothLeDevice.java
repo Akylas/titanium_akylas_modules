@@ -37,7 +37,7 @@ public class BluetoothLeDevice implements Parcelable {
         }
 
         public BluetoothLeDevice[] newArray(final int size) {
-            return new BluetoothLeDevice[size];
+            return new BluetoothLeDevice[size]; 
         }
     };
     protected static final int MAX_RSSI_LOG_SIZE = 10;

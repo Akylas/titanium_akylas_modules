@@ -1,0 +1,17 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 4
+description: messenger
+author: Your Name
+license: Specify your license
+copyright: Copyright (c) 2017 by Your Company
+
+# these should not be edited
+name: akylas-messenger
+moduleid: akylas.messenger
+guid: ff88ff09-4998-490d-91b1-c251c7329c21
+platform: android
+minsdk: 6.3.0.AKYLAS

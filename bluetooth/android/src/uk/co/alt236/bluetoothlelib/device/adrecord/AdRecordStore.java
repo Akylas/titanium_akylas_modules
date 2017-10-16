@@ -32,7 +32,7 @@ public class AdRecordStore implements Parcelable {
     public AdRecordStore(final Parcel in) {
         final Bundle b = in.readBundle(getClass().getClassLoader());
         mAdRecords = b.getSparseParcelableArray("records_array");
-        mLocalNameComplete = b.getString("local_name_complete");
+        mLocalNameComplete = b.getString("local_name_complete"); 
         mLocalNameShort = b.getString("local_name_short");
     }
 

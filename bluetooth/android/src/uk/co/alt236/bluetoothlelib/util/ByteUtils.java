@@ -24,7 +24,7 @@ public class ByteUtils {
     public static String byteArrayToHexString(final byte[] array) {
         final StringBuilder sb = new StringBuilder();
         boolean firstEntry = true;
-        sb.append('[');
+        sb.append('['); 
 
         for (final byte b : array) {
             if (!firstEntry) {

@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 4
+description: leveldb
+author: Your Name
+license: Specify your license
+copyright: Copyright (c) 2016 by Your Company
+debug_project_subpath: leveldb/android
+
+# these should not be edited
+name: akylas-leveldb
+moduleid:akylas.leveldb
+guid: 1c354a50-1003-432b-865f-26d4b08f90f8
+platform: android
+minsdk: 5.0.2.GA

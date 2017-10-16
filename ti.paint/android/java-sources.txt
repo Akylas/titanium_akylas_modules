@@ -1,0 +1,4 @@
+"/Volumes/data/dev/titanium/modules/akylas_modules/ti.paint/android/src/ti/modules/titanium/paint/PaintModule.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/ti.paint/android/src/ti/modules/titanium/paint/PaintViewProxy.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/ti.paint/android/src/ti/modules/titanium/paint/UIPaintView.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/ti.paint/android/build/generated/java/ti/paint/PaintBootstrap.java"

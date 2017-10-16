@@ -1,0 +1,8 @@
+"/Volumes/data/dev/titanium/modules/akylas_modules/camera/android/src/akylas/camera/AkylasCameraModule.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/camera/android/src/akylas/camera/CameraView.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/camera/android/src/akylas/camera/ViewProxy.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/camera/android/src/akylas/camera/cameramanager/AutoFocusCallback.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/camera/android/src/akylas/camera/cameramanager/AutoFocusManager.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/camera/android/src/akylas/camera/cameramanager/CameraConfigurationManager.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/camera/android/src/akylas/camera/cameramanager/CameraManager.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/camera/android/build/generated/java/akylas/camera/AkylasCameraBootstrap.java"

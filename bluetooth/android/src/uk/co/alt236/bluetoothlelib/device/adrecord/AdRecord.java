@@ -20,7 +20,7 @@ public final class AdRecord implements Parcelable {
     //	   bit 1 (ON) LE General Discoverable Mode
     //	   bit 2 (OFF) BR/EDR Not Supported
     //	   bit 3 (ON) Simultaneous LE and BR/EDR to Same Device Capable (controller)
-    //	   bit 4 (ON) Simultaneous LE and BR/EDR to Same Device Capable (Host)
+    //	   bit 4 (ON) Simultaneous LE and BR/EDR to Same Device Capable (Host) 
     //	1A # Number of bytes that follow in second (and last) AD structure
     //	FF # Manufacturer specific data AD type
     //	4C 00 # Company identifier code (0x004C == Apple)
