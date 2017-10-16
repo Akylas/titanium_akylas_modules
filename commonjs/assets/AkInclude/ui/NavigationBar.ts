@@ -10,7 +10,7 @@ declare class NavigationBar extends View {
     onBackButton?(event)
 }
 
-ak.ti.constructors.createNavigationBar = function(_args) {
+export function create (_args) {
     function debounce(e, t, n) {
         var r;
         return function() {

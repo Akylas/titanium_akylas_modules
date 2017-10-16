@@ -54,10 +54,10 @@ export class AKClass {
         let module: AK.AK = this;
         this.osname = Ti.Platform.osname;
         (function () {
-            akInclude('MicroEvent');
-            __APPLE__ = module.osname === 'ipad' || module.osname === 'iphone';
-            __ANDROID__ = module.osname === 'android';
-            __PRODUCTION__ = Ti.App.deployType === 'production';
+            // akInclude('MicroEvent');
+            this['__APPLE__'] = module.osname === 'ipad' || module.osname === 'iphone';
+            this['__ANDROID__'] = module.osname === 'android';
+            this['__PRODUCTION__'] = Ti.App.deployType === 'production';
             this.stringify = this.stringify || function (value: any, space: string | number) {
                 var cache = [];
                 var result = JSON.stringify(value, function (key, value) {

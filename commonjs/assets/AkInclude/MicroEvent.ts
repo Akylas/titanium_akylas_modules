@@ -1,5 +1,5 @@
 /// <reference path="../akylas.commonjs.d.ts" />
-class EventEmitter implements AK.Emitter {
+export class EventEmitter implements AK.Emitter {
     private _events: any
     constructor(options?) {
         for (var key in options) {
@@ -58,7 +58,7 @@ class EventEmitter implements AK.Emitter {
     }
 };
 
-class TiEventEmitter extends EventEmitter implements AK.TiEmitter {
+export class TiEventEmitter extends EventEmitter implements AK.TiEmitter {
     addEventListener(name: string, callback: (...args: any[]) => any): this { return this; }
     addListener(name: string, callback: (...args: any[]) => any): this { return this; }
     removeEventListener(name: string, callback: (...args: any[]) => any): this { return this; }

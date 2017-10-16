@@ -1,9 +1,13 @@
+/// <reference path="./akylas.commonjs.d.ts" />
 function findDeep(obj, key) {
 
-    // or efficient:
     var res = [];
-    if (_.has(obj, key)) // or just (key in obj)
+    if (!obj) {
+        return res;
+    }
+    if (obj.hasOwnProperty(key)) {
         res.push(obj);
+    }
     _.forEach(obj, function (v) {
         if (typeof v == "object" && (v = findDeep(v, key)).length) {
             res.push.apply(res, v);
@@ -14,15 +18,16 @@ function findDeep(obj, key) {
     return res;
 }
 
-declare interface Template {
+export interface Template {
     [k:string]:any
     bindId?:string
     properties?:TiDict
     events?:{[k:string]:Function}
-    childTemplates?:Template[]
+    childTemplates?:Template[] 
 }
 
-class TemplateModule {
+
+export default class _TemplateModule {
     [key: string]: Template | Function | void
     prepareTemplate(_template: Template, _type?: string, _defaults?: TiDict): TiDict | void { }
     constructor(options?) {
@@ -92,7 +97,7 @@ class TemplateModule {
     cloneTemplate = (_template: string, _events?) => {
         var template = this.getTemplate(_template);
         if (template) {
-            template = _.cloneDeep(template);
+            template = JSON.parse(JSON.stringify(template));
             if (_events) {
                 _events.forEach(function (value, key, list) {
                     this.internalAddEvents(template, key, value);
@@ -109,7 +114,7 @@ class TemplateModule {
         var template:Template = (Object.isObject(_template)) ? _template : this.getTemplate(_template);
         // console.debug('cloneTemplateAndFill', _template, _properties);
         if (template) {
-            template = _.cloneDeep(template);
+            template = JSON.parse(JSON.stringify(template));
             if (_properties) {
                 this.internalAddProperties(template, _properties);
             }
@@ -125,5 +130,12 @@ class TemplateModule {
     }
     addTemplate = (_template, _key: string) => {
         this[_key] = this.prepareTemplate(_template);
+    }
+}
+
+declare global {
+    type TemplateModule =_TemplateModule
+    module AK {
+        class TemplateModule extends _TemplateModule { }
     }
 }

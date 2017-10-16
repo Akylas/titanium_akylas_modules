@@ -57,11 +57,12 @@ export class AKTi {
         }
     }
     setRequireCallConstructor(path: string, id: string): void {
+        // console.log('setRequireCallConstructor', path, id);
         this.callconstructors[id] = (...args) => {
             if (!this.constructors[id]) {
-
                 this.constructors[id] = require(path).create;
             }
+            // console.log('setRequireCallConstructor2', id, this.constructors[id]);
             return this.constructors[id].apply(this.context, args);
         }
     }
@@ -90,10 +91,11 @@ export class AKTi {
             //     shouldUseClass = _forceUseClass;
             // }
             // if (shouldUseClass) {
-            //     this.setRequireClassCallConstructor(path, creatorName);
+                // this.setRequireCallConstructor(path, creatorName);
             // } else {
             id = 'create' + creatorName;
-            this.setCallConstructor(path, id);
+            this.setRequireCallConstructor(path, id);
+            // this.setCallConstructor(path, id);
             // }
             this.redux.fn.addNaturalConstructor(this.context, this.callconstructors, creatorName,
                 creatorName);

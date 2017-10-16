@@ -13,7 +13,7 @@ declare class AppTabView extends View {
 var constructors = ['Ti.UI.createScrollableView'];
 
 type Tabs = Array<TiDictT<View> | View>;
-ak.ti.constructors.createAppTabView = function (_args) {
+export function create (_args) {
     let tabs: Tabs = _args.tabs;
     let currentPage = _args.currentPage || 0;
     let showControls = _.remove(_args, 'showControls', true);

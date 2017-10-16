@@ -1,3 +1,5 @@
+
+import {TiEventEmitter} from './MicroEvent'
 function setPropertyByPlatform(_object, _property) {
     var objToHandle = _object[_property];
     if (__APPLE__) {
@@ -27,12 +29,12 @@ export type AppArgs = {
     templates?: string[]
 } & TiProperties
 
-export class AKApp extends TiEventEmitter {
+export default class AKApp extends TiEventEmitter {
     iconicfonts: { [key: string]: IconicFont }
     modules: { [key: string]: string | any }
     values: { [key: string]: TiDict }
     utilities: any
-    templates: { [key: string]: TemplateModule | { load: Function } }
+    templates: { [key: string]: TemplateModule }
     deviceinfo: TiPlatformInfo
     info: TiAppInfo
     ui: AK.IWindowManager
@@ -207,7 +209,7 @@ export class AKApp extends TiEventEmitter {
         console.debug('App', 'currentLanguage', ak.locale.currentLanguage);
 
         _app.loadVariables();
-        akInclude('TemplateModule');
+        // akInclude('TemplateModule');
 
 
         var template, module;
@@ -292,7 +294,7 @@ export class AKApp extends TiEventEmitter {
                 handlingOpening: false
             });
 
-            var WindowManager = akRequire('WindowManager');
+            var WindowManager:typeof AK.WindowManager = akRequire('WindowManager').AKWindowManager;
             _app.ui = new WindowManager(Object.assign({
                 shouldDelayOpening: false
             }, _args.windowManager));
@@ -438,7 +440,7 @@ export class AKApp extends TiEventEmitter {
             orderedKeys = ['html', 'text', 'image'];
         if (__APPLE__) {
             var items = [];
-            if (!hasDataForActivity) {
+            // if (!hasDataForActivity) {
                 orderedKeys.forEach(function (value) {
                     if (value === 'image') {
                         items.push(image);
@@ -446,7 +448,7 @@ export class AKApp extends TiEventEmitter {
                         items.push(_args[value]);
                     }
                 })
-            }
+            // }
             Ti.UI.iOS.createActivityView({
                 subject: _args.subject,
                 thumbnail: image,
@@ -457,18 +459,18 @@ export class AKApp extends TiEventEmitter {
                 }) : undefined,
                 itemForActivityType: hasDataForActivity ? (function (_type, _items) {
                     var keys: any = _args.dataForActivityType(_type) || orderedKeys;
-                    if (keys.hasOwnProperty) {
-                        var result = [];
-                        if (keys['html']) {
-                            result.push(keys['html']);
-                        } else if (keys['text']) {
-                            result.push(keys['text']);
-                        }
-                        if (hasImage) {
-                            result.push(image);
-                        }
-                        return result;
-                    }
+                    // if (keys.hasOwnProperty) {
+                    //     var result = [];
+                    //     if (keys['html']) {
+                    //         result.push(keys['html']);
+                    //     } else if (keys['text']) {
+                    //         result.push(keys['text']);
+                    //     }
+                    //     if (hasImage) {
+                    //         result.push(image);
+                    //     }
+                    //     return result;
+                    // }
                     var result = [];
                     orderedKeys.forEach(function (value, key) {
                         if (keys.indexOf(value) !== -1) {
@@ -479,6 +481,7 @@ export class AKApp extends TiEventEmitter {
                             }
                         }
                     })
+                    // console.log('itemForActivityType', orderedKeys, result);
                     return result;
                 }) : undefined
             }).show();

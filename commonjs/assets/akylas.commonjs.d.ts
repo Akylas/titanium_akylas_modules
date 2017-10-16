@@ -1,5 +1,5 @@
-/// <reference path="/Volumes/data/mguillon/Library/Application Support/Titanium/mobilesdk/osx/6.2.0.AKYLAS/titanium.d.ts" />
-
+/// <reference path="/Volumes/data/mguillon/Library/Application Support/Titanium/mobilesdk/osx/7.0.0.AKYLAS/titanium.d.ts" />
+    
 declare function akPath(name: string, dir: string): string;
 declare function akRequire(moduleId: string): any;
 declare function akInclude(moduleId: string);
@@ -134,8 +134,13 @@ declare module AK {
 
 }
 declare module 'akylas.commonjs/AkInclude/App' {
-    export class AkApp extends AK.App { }
+    export default class AkApp extends AK.App { }
 }
+
+declare module 'akylas.commonjs/TemplateModule' {
+    export default class TemplateModule extends AK.TemplateModule { }
+}
+
 
 declare interface ListEvent<T> {
     item: T,
@@ -171,4 +176,3 @@ declare interface AKCustomAlertViewParams extends TiPropertiesT<titanium.UIView>
     title?:string
     customView?:titanium.UIView | TiPropertiesT<titanium.UIView>
 }
-

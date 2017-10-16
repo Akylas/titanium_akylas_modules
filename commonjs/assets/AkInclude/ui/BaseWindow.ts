@@ -1,39 +1,40 @@
-declare class BaseWindow extends TiWindow {
-    // navWindow: Boolean
-    isOpened: boolean
-    navWindow?: boolean
-    exitOnBack?: boolean
+declare global {
+    class BaseWindow extends TiWindow {
+        // navWindow: Boolean
+        isOpened: boolean
+        navWindow?: boolean
+        exitOnBack?: boolean
 
-    underContainer?: View
-    winOpeningArgs?: titanium.openWindowParams
-    winClosingArgs?: titanium.openWindowParams
-    openMe(args?)
-    closeMe(args?)
-    hideMe?(args?)
-    onOpen?(args?)
-    onClose?(args?)
-    shouldShowBackButton(backTitle: string)
-    showLoading(args?)
-    hideLoading(args?)
-    addPropertiesToGC(key: string)
-}
-
-declare class NavWindow extends AppWindow {
-    window: AppWindow
-    navOpenWindow(_win: AppWindow, _args?: TiDict)
-    createManagedWindow(constructor?: string, args?: TiDict)
-    createAndOpenWindow(_constructor: string, _args?: TiDict, _winArgs?: TiDict)
-    openWindow(_win: TiWindow, _args?, _dontCheckOpening?: Boolean)
-    closeToRootWindow()
-    canGCWindow(_win: TiWindow)
-    isOpened: boolean
-    closeAllWindows(_args?: TiDict)
-    closeCurrentWindow(_args?: TiDict)
-    closeWindow(_win: TiWindow, _args?: TiDict)
+        underContainer?: View
+        winOpeningArgs?: titanium.openWindowParams
+        winClosingArgs?: titanium.openWindowParams
+        openMe(args?)
+        closeMe(args?)
+        hideMe?(args?)
+        onOpen?(args?)
+        onClose?(args?)
+        shouldShowBackButton(backTitle: string)
+        showLoading(args?)
+        hideLoading(args?)
+        addPropertiesToGC(key: string)
+    }
+    class NavWindow extends AppWindow {
+        window: AppWindow
+        navOpenWindow(_win: AppWindow, _args?: TiDict)
+        createManagedWindow(constructor?: string, args?: TiDict)
+        createAndOpenWindow(_constructor: string, _args?: TiDict, _winArgs?: TiDict)
+        openWindow(_win: TiWindow, _args?, _dontCheckOpening?: Boolean)
+        closeToRootWindow()
+        canGCWindow(_win: TiWindow)
+        isOpened: boolean
+        closeAllWindows(_args?: TiDict)
+        closeCurrentWindow(_args?: TiDict)
+        closeWindow(_win: TiWindow, _args?: TiDict)
+    }
 }
 
 var constructors = ['Ti.UI.createNavigationWindow', 'Ti.UI.createWindow'];
-ak.ti.constructors.createBaseWindow = function (_args) {
+export function create(_args) {
     _args = _args || {};
 
     function defaults(obj, args) {

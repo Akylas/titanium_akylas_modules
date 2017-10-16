@@ -7,7 +7,9 @@ akPath = function (name: string, _dir?: string) {
 }
 declare var akRequire;
 akRequire = function (name: string) {
-    return require(akPath(name));
+    const path = akPath(name);
+    console.log('akRequire', path);
+    return require(path);
 }
 
 declare var akInclude;
@@ -84,7 +86,7 @@ Object.isObject = function (obj) {
     return !!obj && (typeof obj === 'object' && obj.toString() == '[object Object]');
 }
 
-akRequire('babelHelpers');
+// akRequire('babelHelpers');
 if (Ti.App.deployType !== 'production') {
     akRequire('sourceMap/SourceMap').install();
 }
@@ -105,11 +107,16 @@ export function load(_context, _config: TiDict) {
             return;
         }
     }
-
+    Ti.API.debug('load commonjs ' + Function.prototype.bind + " " + !!Promise);
     if (this.config['userCoreJS'] !== false) {
-        delete Function.prototype.bind; // so that we use corejs one and get the sourcemap
+        // if (!Promise) {
+            console.log('deleting function prototype');
+            //make sure we are not restarting (android) and thus core would be already required
+            delete Function.prototype.bind; // so that we use corejs one and get the sourcemap
+        // }
         akRequire('core');
         Promise = akRequire('yaku.core');
+        Ti.API.debug('load commonjs2 '  +  Function.prototype.bind + " " + !!Promise);
         // Promise.enableLongStackTrace();
         // Promise.onUnhandledRejection = function(reason) {
         //     console.error(reason);

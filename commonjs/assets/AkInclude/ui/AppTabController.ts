@@ -6,7 +6,7 @@ declare class AppTabController extends View {
     setIndex(index: number)
 }
 
-ak.ti.constructors.createAppTabController = function (_args) {
+export function create (_args) {
     var createTab = _.remove(_args, 'createTab');
     var self: AppTabController = new View(_args) as AppTabController;
     var tabRClass = _args.rclassTab || 'AppTab';

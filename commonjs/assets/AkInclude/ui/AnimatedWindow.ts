@@ -1,4 +1,4 @@
-ak.ti.constructors.createAnimatedWindow = function(_args) {
+export function create (_args) {
 	_args = _args || {};
 	var self = new Window(_args);
 	self.openArgs = self.openArgs || {
