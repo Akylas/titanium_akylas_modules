@@ -129,8 +129,7 @@ public class SocketProxy extends KrollProxy {
 
     private InetAddress getBroadcastAddress() {
         try {
-            Activity activity = TiApplication.getInstance()
-                    .getCurrentActivity();
+            Activity activity = AkylasUdpModule.getCurrentOrRootActivity();
             WifiManager wifi = (WifiManager) activity
                     .getSystemService(Context.WIFI_SERVICE);
             DhcpInfo dhcp = wifi.getDhcpInfo();
