@@ -552,7 +552,6 @@ export default class AKApp extends TiEventEmitter {
                     }
                     params.stream = image;
                 }
-                console.log('test', params);
                 labelIntents.push(params);
             });
             if (labelIntents.length > 0) {
