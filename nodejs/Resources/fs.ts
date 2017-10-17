@@ -396,7 +396,7 @@ namespace fs {
     };
 
     fs.readdirSync = function readdirSync(path) {
-        return $F.getFile(path).getDirectoryListing();
+        return $F.getFile(path).getDirectoryListing() || [];
     };
 
     fs.fstat = function fstat(fd, callback) {
