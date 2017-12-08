@@ -26,7 +26,7 @@ import android.os.Message;
         AkylasMapBaseModule.PROPERTY_INDOOR_ENABLED,
         AkylasMapBaseModule.PROPERTY_INDOOR_CONTROLS_ENABLED,
         AkylasMapBaseModule.PROPERTY_MAPSTYLE,
-        TiC.PROPERTY_PADDING,
+        
 })
 public class ViewProxy extends MapDefaultViewProxy {
     private static final String TAG = "GoogleMapViewProxy";

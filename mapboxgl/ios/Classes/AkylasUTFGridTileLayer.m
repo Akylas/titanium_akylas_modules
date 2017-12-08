@@ -9,8 +9,8 @@
 #import "AkylasUTFGridTileLayer.h"
 #import "CLLocation+measuring.h"
 #import "TiUtils.h"
-#import "AkylasGooglemapModule.h"
-#import "AkylasGooglemapView.h"
+#import "AkylasCartoModule.h"
+#import "AkylasCartoView.h"
 
 int utfDecode(int c) {
     if (c >= 93) {
@@ -81,7 +81,7 @@ int utfDecode(int c) {
     
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:theUrl cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:self.requestTimeoutSeconds];
-    if (cacheOnly || [AkylasGooglemapModule sharedInstance].offlineMode || !((AkylasGMSMapView*)self.map).networkConnected)  {
+    if (cacheOnly || [AkylasCartoModule sharedInstance].offlineMode || !((AkylasGMSMapView*)self.map).networkConnected)  {
         NSString* result = nil;
         NSCachedURLResponse* response = [cache cachedResponseForRequest:request];
         if (response) {

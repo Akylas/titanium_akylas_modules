@@ -86,10 +86,43 @@ Object.isObject = function (obj) {
     return !!obj && (typeof obj === 'object' && obj.toString() == '[object Object]');
 }
 
-// akRequire('babelHelpers');
-if (Ti.App.deployType !== 'production') {
-    akRequire('sourceMap/SourceMap').install();
+// if (!('toJSON' in Error.prototype)) {
+Object.defineProperty(Error.prototype, 'toJSON', {
+    value: function () {
+        const alt = {};
+        // console.log('error to json', this, JSON.stringify(this), Object.keys(this));
+
+        Object.getOwnPropertyNames(this).forEach(function (key) {
+            alt[key] = this[key];
+        }, this);
+        // this.callstack && alt.callstack = this.callstack;
+        return alt;
+    },
+    configurable: true,
+    writable: true
+});
+// }
+
+Object.bindAssign = function (source: Object, ...targets): Object {
+    let target, srcValue, dstValue;
+    for (let index = 0; index < targets.length; index++) {
+        target = targets[index];
+        for (let key in target) {
+            dstValue = target[key];
+            if (typeof dstValue === 'function') {
+                source[key] = dstValue.bind(source)
+            } else {
+                source[key] = dstValue
+            }
+        }
+    }
+    return source;
 }
+
+// akRequire('babelHelpers');
+// if (Ti.App.deployType !== 'production') {
+//     akRequire('sourceMap/SourceMap').install();
+// }
 
 export function load(_context, _config: TiDict) {
     _context['exports'] = {};
@@ -101,22 +134,21 @@ export function load(_context, _config: TiDict) {
     var underscoreFile = this.config.underscore;
     if (underscoreFile) {
         try {
-            _context._ = require(modulesDir + underscoreFile);
+            _context._ = require((modulesDir || '') + underscoreFile);
         } catch (e) {
-            Ti.API.error('Could not load ' + modulesDir + underscoreFile);
+            Ti.API.error('Could not load ' + (modulesDir || '') + underscoreFile);
             return;
         }
     }
-    Ti.API.debug('load commonjs ' + Function.prototype.bind + " " + !!Promise);
     if (this.config['userCoreJS'] !== false) {
         // if (!Promise) {
-            console.log('deleting function prototype');
-            //make sure we are not restarting (android) and thus core would be already required
-            delete Function.prototype.bind; // so that we use corejs one and get the sourcemap
+        console.log('deleting function prototype');
+        //make sure we are not restarting (android) and thus core would be already required
+        delete Function.prototype.bind; // so that we use corejs one and get the sourcemap
         // }
         akRequire('core');
         Promise = akRequire('yaku.core');
-        Ti.API.debug('load commonjs2 '  +  Function.prototype.bind + " " + !!Promise);
+        Ti.API.debug('load commonjs ' + Function.prototype.bind + " " + !!Promise);
         // Promise.enableLongStackTrace();
         // Promise.onUnhandledRejection = function(reason) {
         //     console.error(reason);
@@ -143,7 +175,7 @@ export function loadExtraWidgets(_context) {
     }
 };
 
-export function createApp(_context, _args: {commonjsOptions?:any}): AK.App {
+export function createApp(_context, _args: { commonjsOptions?: any }): AK.App {
     _args = _args || {};
     // _args.modules = _args.modules || {};
     // _args.modules.commonjs = this;

@@ -375,11 +375,12 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             }
         });
     }
-
+    public float anchorX = 0.5f;
+    public float anchorY = 1.0f;
     @Override
     public void setAnchor(PointF anchor) {
-        final float anchorX = (anchor != null) ? anchor.x : 0.5f;
-        final float anchorY = (anchor != null) ? anchor.y : 1.0f;
+        anchorX = (anchor != null) ? anchor.x : 0.5f;
+        anchorY = (anchor != null) ? anchor.y : 1.0f;
         if (markerOptions != null) {
             markerOptions.anchor(anchorX, anchorY);
         }
@@ -392,20 +393,22 @@ public class GoogleMapMarker extends AkylasMarker<LatLng> {
             }
         });
     }
-
+    
+    public float winAnchorX = 0.5f;
+    public float winAnchorY = 0.0f;
     @Override
     public void setWindowAnchor(PointF anchor) {
-        final float anchorX = (anchor != null) ? anchor.x : 0.5f;
-        final float anchorY = (anchor != null) ? anchor.y : 0.0f;
+        winAnchorX = (anchor != null) ? anchor.x : 0.5f;
+        winAnchorY = (anchor != null) ? anchor.y : 0.0f;
         if (markerOptions != null) {
-            markerOptions.infoWindowAnchor(anchorX, anchorY);
+            markerOptions.infoWindowAnchor(winAnchorX, winAnchorY);
         }
         if (marker == null) {
             return;
         }
         runInUiThread(new CommandNoReturn() {
             public void execute() {
-                marker.setInfoWindowAnchor(anchorX, anchorY);
+                marker.setInfoWindowAnchor(winAnchorX, winAnchorY);
             }
         });
     }

@@ -49,3 +49,4 @@
 "/Volumes/data/dev/titanium/modules/akylas_modules/charts2/android/src/akylas/charts2/view/PieRadarChartViewBase.java"
 "/Volumes/data/dev/titanium/modules/akylas_modules/charts2/android/src/akylas/charts2/view/RadarChartView.java"
 "/Volumes/data/dev/titanium/modules/akylas_modules/charts2/android/src/akylas/charts2/view/ScatterChartView.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/charts2/android/build/generated/java/akylas/charts2/AkylasCharts2Bootstrap.java"

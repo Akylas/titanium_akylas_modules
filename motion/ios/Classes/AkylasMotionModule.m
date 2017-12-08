@@ -426,8 +426,22 @@
         if (rotationRegistered)
         {
             CMQuaternion quat = currentAttitude.quaternion;
+            CMRotationMatrix rotation = currentAttitude.rotationMatrix;
+            CMAttitude* currentAttitude = motion.attitude;
+
             [self fireEvent:@"rotation" withObject:@{@"quaternion":@[@(quat.x), @(quat.y), @(quat.z), @(quat.w) ],
-                                                     @"timestamp": @(realTimestamp)} propagate:NO checkForListener:NO];
+                                                     @"timestamp": @(realTimestamp)
+                                                     @"rotationMatrix":@[@(rotation.m11),@(rotation.m12),@(rotation.m13),
+                                                                         @(rotation.m21),
+                                                                         @(rotation.m22),
+                                                                         @(rotation.m23),
+                                                                         @(rotation.m31),
+                                                                         @(rotation.m32),
+                                                                         @(rotation.m33)],
+                                                     @"rotation":@[@(currentAttitude.yaw),
+                                                                   @(currentAttitude.pitch)),
+                                                                   @(currentAttitude.roll)]
+                                                     } propagate:NO checkForListener:NO];
         }
     }
 }
@@ -509,7 +523,12 @@ MAKE_SYSTEM_PROP(STANDARD_GRAVITY,9.80665);
 
 -(NSNumber*)hasOrientation
 {
-	return NUMBOOL([self motionManager].deviceMotionAvailable);
+    return NUMBOOL([self motionManager].deviceMotionAvailable);
+}
+
+-(NSNumber*)hasRotation
+{
+    return NUMBOOL([self motionManager].deviceMotionAvailable);
 }
 
 

@@ -1,24 +1,12 @@
-
-declare class NavigationBar extends View {
-    actualNavbar: View
-    titleHolder: View
-    leftButtonViewHolder: View
-    rightButtonViewHolder: View
-    setRootWindow(_window)
-    setMyVisibility(_visible, _animated, _duration?)
-    onstackchange?(event)
-    onBackButton?(event)
-}
-
-export function create (_args) {
+export function create(_args) {
     function debounce(e, t, n) {
         var r;
-        return function() {
+        return function () {
             var i = this,
                 s = arguments;
             clearTimeout(r);
             if (n && !r) e.apply(i, s);
-            r = setTimeout(function() {
+            r = setTimeout(function () {
                 r = null;
                 if (!n) e.apply(i, s)
             }, t)
@@ -73,7 +61,7 @@ export function create (_args) {
         }
     }];
     if (_args.customChildren) {
-        if (_.isArray(_args.customChildren)) {
+        if (Array.isArray(_args.customChildren)) {
             if (customChildrenOnTop === true) {
                 childTemplates = childTemplates.concat(_args.customChildren);
             } else {
@@ -88,7 +76,7 @@ export function create (_args) {
         }
     }
 
-    var self:NavigationBar = new View({
+    var self: NavigationBar = new View({
         type: 'Ti.UI.View',
         properties: {
             top: 0
@@ -227,17 +215,17 @@ export function create (_args) {
         }
     };
     Object.assign(self, {
-        getTopWindow: function() {
+        getTopWindow: function () {
             if (navWindow !== null) {
                 return navWindow.currentWindow;
             } else {
                 return rootWindow;
             }
         },
-        setFakeCurrentWindowTitle: function(_title) {
+        setFakeCurrentWindowTitle: function (_title) {
             return navWindow.currentWindow.title;
         },
-        setRootWindow: function(_window) {
+        setRootWindow: function (_window) {
             rootWindow = _window;
             self.setMyVisibility(_window.cNavBarHidden !== true, false);
             // sinfo('setRootWindow', _window.title);
@@ -279,7 +267,7 @@ export function create (_args) {
                 self.rightButtonViewHolder.add(currentRightButton);
             }
         },
-        setNavWindow: function(_navWindow) {
+        setNavWindow: function (_navWindow) {
             if (navWindow !== null) {
                 navWindow.removeEventListener('openWindow', onOpenWindow);
                 navWindow.removeEventListener('closeWindow', onCloseWindow);
@@ -301,7 +289,7 @@ export function create (_args) {
         // onstackchange: function(_event) {
         //     self.setMyVisibility(_event.window.cNavBarHidden !== true, true);
         // },
-        setMyVisibility: function(_visible, _animated, _duration) {
+        setMyVisibility: function (_visible, _animated, _duration) {
             if (_visible === visible) return;
             visible = _visible;
             if (_animated === true) {
@@ -313,7 +301,7 @@ export function create (_args) {
                 self.height = _visible ? self.actualNavbar.height : 0;
             }
         },
-        onRealBackButton: function(e) {
+        onRealBackButton: function (e) {
             var win = null;
             if (navWindow !== null) {
                 win = navWindow.currentWindow;
@@ -332,7 +320,7 @@ export function create (_args) {
     });
 
     //END OF CLASS. NOW GC 
-    self.GC = app.composeFunc(self.GC, function() {
+    self.GC = app.composeFunc(self.GC, function () {
         windowsParams = null;
         navWindow = null;
         self = null;

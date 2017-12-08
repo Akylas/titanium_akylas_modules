@@ -32,4 +32,3 @@
 "/Volumes/data/dev/titanium/modules/akylas_modules/googlemap/android/src/akylas/map/common/SoftCache.java"
 "/Volumes/data/dev/titanium/modules/akylas_modules/googlemap/android/src/akylas/map/common/TiReusableProxy.java"
 "/Volumes/data/dev/titanium/modules/akylas_modules/googlemap/android/src/akylas/map/common/TiViewTemplate.java"
-"/Volumes/data/dev/titanium/modules/akylas_modules/googlemap/android/build/generated/java/akylas/googlemap/AkylasGooglemapBootstrap.java"

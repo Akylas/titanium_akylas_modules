@@ -8,20 +8,19 @@
 package akylas.carto;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import akylas.carto.AnnotationProxy.AkMarker;
-import akylas.carto.RouteProxy.AkLine;
+import akylas.map.common.AkylasMapBaseModule;
 import akylas.map.common.AkylasMapBaseView;
 import akylas.map.common.AkylasMapInfoView;
 import akylas.map.common.AkylasMarker;
 import akylas.map.common.BaseAnnotationProxy;
-import akylas.map.common.BaseRouteProxy;
+import akylas.map.common.BaseTileSourceProxy;
 import akylas.map.common.ReusableView;
 import android.graphics.RectF;
 
@@ -44,10 +43,13 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.graphics.Point;
+import android.graphics.PointF;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -55,43 +57,53 @@ import android.view.View.MeasureSpec;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.PathInterpolator;
-import android.widget.AbsoluteLayout;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout.LayoutParams;
 
+import com.carto.core.BinaryData;
 import com.carto.core.MapBounds;
 import com.carto.core.MapPos;
 import com.carto.core.MapRange;
 import com.carto.core.ScreenBounds;
 import com.carto.core.ScreenPos;
+import com.carto.datasources.CartoOnlineTileDataSource;
 import com.carto.datasources.LocalVectorDataSource;
+import com.carto.datasources.PackageManagerTileDataSource;
+import com.carto.datasources.PersistentCacheTileDataSource;
+import com.carto.datasources.TileDataSource;
 import com.carto.layers.CartoBaseMapStyle;
-import com.carto.layers.CartoOnlineVectorTileLayer;
+import com.carto.layers.Layer;
+import com.carto.layers.TileLayer;
 import com.carto.layers.VectorElementEventListener;
 import com.carto.layers.VectorLayer;
+import com.carto.layers.VectorTileLayer;
+import com.carto.packagemanager.CartoPackageManager;
 import com.carto.projections.Projection;
+import com.carto.styles.CompiledStyleSet;
 import com.carto.ui.MapView;
 import com.carto.ui.VectorElementClickInfo;
+import com.carto.utils.AssetUtils;
+import com.carto.utils.ZippedAssetPackage;
+import com.carto.vectorelements.Line;
 import com.carto.vectorelements.Marker;
 import com.carto.vectorelements.VectorElement;
+import com.carto.vectortiles.MBVectorTileDecoder;
+import com.carto.vectortiles.VectorTileDecoder;
 import com.carto.ui.MapClickInfo;
 import com.carto.ui.MapEventListener;
-import com.carto.ui.ClickType;
-import com.carto.projections.EPSG3857;
 
 public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     private final MapEventListener mapEventListener = new MapEventListener() {
 
-        @Override
-        public void onMapMoved() {
-            // currentCameraPosition = map.getCameraPosition();
+        private void handleMapMoved(boolean idle) {
             MapPos pos = getCenterPos();
             float zoom = mapView.getZoom();
             mpp = 156543.03392 * Math.cos(pos.getX() * Math.PI / 180)
                     / Math.pow(2, zoom);
             if (userAction) {
-                // setShouldFollowUserLocation(false);
-                userAction = false;
+                setShouldFollowUserLocation(false);
+                // userAction = false;
             }
             // if (preLayout) {
             //
@@ -103,13 +115,9 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
             // handleCameraUpdate();
             // } else
             if (mapView != null) {
-
-                if (proxy != null && proxy
+                if (proxy != null && proxy.viewInitialised() && proxy
                         .hasListeners(TiC.EVENT_REGION_CHANGED, false)) {
-                    final MapPos topLeft = mapView.screenToMap(new ScreenPos(0, 0));
-                    final MapPos bottomRight = mapView.screenToMap(new ScreenPos(
-                                    mapView.getWidth(), mapView.getHeight()));
-                    MapBounds bounds = new MapBounds(topLeft, bottomRight);
+                    MapBounds bounds = getScreenRegion();
                     KrollDict result = new KrollDict();
                     result.put(TiC.PROPERTY_REGION, AkylasCartoModule
                             .getFactory().regionToDict(bounds));
@@ -120,7 +128,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                     result.put("tilt", mapView.getTilt());
                     result.put(AkylasCartoModule.PROPERTY_USER_ACTION,
                             userAction);
-                    result.put("idle", !pointerDown);
+                    result.put("idle", idle);
                     proxy.fireEvent(TiC.EVENT_REGION_CHANGED, result, false,
                             false);
                 }
@@ -128,7 +136,17 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         }
 
         @Override
+        public void onMapMoved() {
+            super.onMapMoved();
+            if (positionUpdaterRunnable != null) {
+                handler.post(positionUpdaterRunnable);
+            }
+            handleMapMoved(false);
+        }
+
+        @Override
         public void onMapIdle() {
+            super.onMapIdle();
             // map fully loaded
             if (proxy.hasListeners(TiC.EVENT_COMPLETE, false)) {
                 proxy.fireEvent(TiC.EVENT_COMPLETE, null, false, false);
@@ -137,34 +155,63 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
         @Override
         public void onMapStable() {
+            super.onMapStable();
             targetZoom = -1;
-            // map finished animation
+            handleMapMoved(true);
         }
 
         @Override
         public void onMapClicked(MapClickInfo mapClickInfo) {
-
-            MapPos point = mapClickInfo.getClickPos();
+            super.onMapClicked(mapClickInfo);
             switch (mapClickInfo.getClickType()) {
-            case CLICK_TYPE_LONG:
+            case CLICK_TYPE_LONG: {
                 if (!hasListeners(TiC.EVENT_LONGPRESS, false))
                     return;
+                MapPos point = getConvertedMapPos(mapClickInfo.getClickPos());
                 fireEvent(TiC.EVENT_LONGPRESS, dictFromPoint(point), false,
                         false);
                 break;
-            case CLICK_TYPE_DOUBLE: {
-                mapView.zoom(1, point,
-                        animate ? cameraAnimationDuration / 1000 : 0);
+            }
+            // // case CLICK_TYPE_DOUBLE: {
+            // // mapView.zoom(1, point,
+            // // animate ? cameraAnimationDuration / 1000 : 0);
+            // // }
+            case CLICK_TYPE_SINGLE: {
+                MapPos point = getConvertedMapPos(mapClickInfo.getClickPos());
+                onMapClick(point);
+                break;
             }
             default:
-                onMapClick(point);
+                break;
             }
         }
     };
 
     private MapPos getCenterPos() {
-        MapPos pos = mapView.getFocusPos();
-        return baseProjection.toLatLong(pos.getX(), pos.getY());
+        return getConvertedMapPos(mapView.getFocusPos());
+        // return baseProjection.toLatLong(pos.getX(), pos.getY());
+    }
+
+    private MapBounds getScreenRegion() {
+        final MapPos ne = getScreenPos(mapView.getWidth(), 0);
+        final MapPos sw = getScreenPos(0, mapView.getHeight());
+        return new MapBounds(sw, ne);
+    }
+
+    // @Override
+    protected KrollDict dictFromMotionEvent(String type, MotionEvent e) {
+        if (type.equals(TiC.EVENT_CLICK) || type.equals(TiC.EVENT_SINGLE_TAP)) {
+            if (_selectOnTap) {
+                setSelectedAnnotation(null);
+            }
+        }
+        KrollDict res = dictFromMotionEvent(e);
+        MapPos point = getScreenPos((int) e.getX(), (int) e.getY());
+        if (point != null) {
+            setDictData(res, point);
+
+        }
+        return res;
     }
 
     private void onMapClick(MapPos point) {
@@ -184,31 +231,34 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         }
     }
 
+    private MapPos getConvertedMapPos(MapPos pos) {
+        return baseProjection.toWgs84(pos);
+    }
+
+    private MapPos getScreenPos(int x, int y) {
+        return getConvertedMapPos(mapView.screenToMap(new ScreenPos(x, y)));
+    }
+
     private final VectorElementEventListener vectorEventListener = new VectorElementEventListener() {
         @Override
         public boolean onVectorElementClicked(VectorElementClickInfo info) {
             VectorElement element = info.getVectorElement();
-            if (element instanceof com.carto.vectorelements.Point) {
-                AnnotationProxy annoProxy = getProxyByMarker(
-                        info.getVectorElement());
-                if (annoProxy == null || !annoProxy.touchable) {
-                    return false;
-                }
-                handleMarkerClick(annoProxy);
-                return true;
-            } else if (element instanceof AkLine) {
+            // Object annoProxy = getObjectForElement(element);
+            if (element instanceof Marker) {
+                // if (annoProxy == null
+                // || !((AnnotationProxy) annoProxy).touchable) {
+                // return false;
+                // }
+                handleMarkerClick(element);
+                return !handleMarkerClick(element);
+            } else if (element instanceof Line) {
                 if (_canSelectRoute) {
                     // if (handledPolylines != null) {
                     // BaseRouteProxy route = handledPolylines.get(polyline);
-                    Object route = ((AkMarker) element).getProxy();
-                    if (route instanceof BaseRouteProxy) {
-                        handleMarkerClick((BaseAnnotationProxy) route);
-                    }
+                    return !handleMarkerClick(element);
                     // }
                 } else if (lastDownEvent != null) {
-                    ScreenPos p = new ScreenPos((int) lastDownEvent.getX(),
-                            (int) lastDownEvent.getY());
-                    onMapClick(mapView.screenToMap(p));
+                    onMapClick(getConvertedMapPos(info.getClickPos()));
                 }
             }
             return true;
@@ -220,10 +270,12 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     // private MapView map;
     protected boolean animate = true;
     protected boolean preLayout = true;
-    protected MapBounds preLayoutUpdateBounds;
+    protected HashMap preLayoutUpdateCamera;
+    AkylasMapInfoView infoWindow = null;
     // protected ArrayList<AkylasMarker> timarkers;
     // protected WeakHashMap<Polyline, RouteProxy> handledPolylines;
-    protected WeakHashMap<Marker, AnnotationProxy> handledMarkers;
+    protected HashMap<VectorElement, BaseAnnotationProxy> handledMarkers;
+    protected HashMap<Layer, Object> handledLayers;
     // private Fragment fragment;
 
     // private float mRequiredZoomLevel = 10;
@@ -243,21 +295,22 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     private MapView mapView;
     protected Projection baseProjection;
 
-    final AbsoluteLayout container;
+    final FrameLayout container;
     protected static final int TIFLAG_NEEDS_CAMERA = 0x00000001;
     protected static final int TIFLAG_NEEDS_MAP_INVALIDATE = 0x00000002;
 
     // INFOWINDOW
-    private AbsoluteLayout.LayoutParams overlayLayoutParams;
+    private FrameLayout.LayoutParams overlayLayoutParams;
     private int popupXOffset;
     private int popupYOffset;
-    private static final int POPUP_POSITION_REFRESH_INTERVAL = 16;
+    // private static final int POPUP_POSITION_REFRESH_INTERVAL = 10;
     private ViewTreeObserver.OnGlobalLayoutListener infoWindowLayoutListener;
     private LinearLayout infoWindowContainer;
     private MapPos trackedPosition;
     private Runnable positionUpdaterRunnable;
 
     LocalVectorDataSource annotsSource;
+    VectorLayer annotsLayer;
     private String calloutBgdImage = "bubble_shadow.9.png";
 
     private class InfoWindowLayoutListener
@@ -269,41 +322,41 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         }
     }
 
-    // private class PositionUpdaterRunnable implements Runnable {
-    // private int lastXPosition = Integer.MIN_VALUE;
-    // private int lastYPosition = Integer.MIN_VALUE;
-    // final private int markerWidth;
-    // final private int markerHeight;
-    //
-    // public PositionUpdaterRunnable(int markerWidth, int markerHeight) {
-    // super();
-    // this.markerWidth = markerWidth;
-    // this.markerHeight = markerHeight;
-    // }
-    //
-    // @Override
-    // public void run() {
-    // handler.postDelayed(this, POPUP_POSITION_REFRESH_INTERVAL);
-    // if (trackedPosition != null
-    // && infoWindowContainer.getVisibility() == View.VISIBLE) {
-    // ScreenPos targetPosition = mapView.mapToScreen(trackedPosition);
-    // if (lastXPosition != targetPosition.getX()
-    // || lastYPosition != targetPosition.getY()) {
-    // overlayLayoutParams.x = (int) (targetPosition.getX()
-    // - popupXOffset + markerWidth);
-    // overlayLayoutParams.y = (int) (targetPosition.getY()
-    // - popupYOffset + markerHeight);
-    // lastXPosition = (int) targetPosition.getX();
-    // lastYPosition = (int) targetPosition.getY();
-    // infoWindowContainer.setLayoutParams(overlayLayoutParams);
-    // }
-    // }
-    // }
-    // }
+    private class PositionUpdaterRunnable implements Runnable {
+        private int lastXPosition = Integer.MIN_VALUE;
+        private int lastYPosition = Integer.MIN_VALUE;
+        final private int markerWidth;
+        final private int markerHeight;
+
+        public PositionUpdaterRunnable(int markerWidth, int markerHeight) {
+            super();
+            this.markerWidth = markerWidth;
+            this.markerHeight = markerHeight;
+        }
+
+        @Override
+        public void run() {
+            // handler.postDelayed(this, POPUP_POSITION_REFRESH_INTERVAL);
+            if (trackedPosition != null
+                    && infoWindowContainer.getVisibility() == View.VISIBLE) {
+                ScreenPos targetPosition = mapView.mapToScreen(trackedPosition);
+                if (lastXPosition != targetPosition.getX()
+                        || lastYPosition != targetPosition.getY()) {
+                    overlayLayoutParams.leftMargin = (int) (targetPosition
+                            .getX() - popupXOffset + markerWidth);
+                    overlayLayoutParams.topMargin = (int) (targetPosition.getY()
+                            - popupYOffset + markerHeight);
+                    lastXPosition = (int) targetPosition.getX();
+                    lastYPosition = (int) targetPosition.getY();
+                    infoWindowContainer.setLayoutParams(overlayLayoutParams);
+                }
+            }
+        }
+    }
 
     public CartoView(final TiViewProxy proxy, final Activity activity) {
         super(proxy);
-        container = new AbsoluteLayout(activity) {
+        container = new FrameLayout(activity) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent ev) {
                 boolean shouldNot = CartoView.this.touchPassThrough == true;
@@ -326,6 +379,16 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                     }
                 }
                 return result;
+            }
+
+            @Override
+            protected void onLayout(boolean changed, int left, int top,
+                    int right, int bottom) {
+                super.onLayout(changed, left, top, right, bottom);
+                if (preLayout) {
+                    preLayout = false;
+                    handleCameraUpdate();
+                }
             }
         };
         setNativeView(container);
@@ -352,8 +415,11 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
         mapView = new MapView(activity);
         mapView.setMapEventListener(mapEventListener);
-        baseProjection = new EPSG3857();
-        mapView.getOptions().setBaseProjection(baseProjection);
+        // baseProjection = new EPSG3857();
+        mapView.getOptions().setZoomGestures(true);
+        baseProjection = mapView.getOptions().getBaseProjection();
+        // mapView.getOptions().setBaseProjection(baseProjection);
+        // baseProjection = mapView.getOptions().getBaseProjection();
         annotsSource = new LocalVectorDataSource(baseProjection);
         // mapView.onCreate(new Bundle());
         mapView.onResume();
@@ -361,12 +427,13 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         container.addView(mapView);
 
         // Initialize a vector layer with the previous data source
-        VectorLayer vectorLayer = new VectorLayer(annotsSource);
+        annotsLayer = new VectorLayer(annotsSource);
         // Set visible zoom range for the vector layer
-        vectorLayer.setVisibleZoomRange(new MapRange(0, 24));
-        vectorLayer.setVectorElementEventListener(vectorEventListener);
+        annotsLayer.setVectorElementEventListener(vectorEventListener);
         // Add the previous vector layer to the map
-        mapView.getLayers().add(vectorLayer);
+        mapView.getLayers().add(annotsLayer);
+        annotsLayer.setVisibleZoomRange(new MapRange(0, 24));
+
         // } catch (Exception e) {
         // }
         // } else {
@@ -384,6 +451,10 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
     public Projection getProjection() {
         return baseProjection;
+    }
+
+    public VectorTileDecoder getTileDecoder() {
+        return baseStyleDecoder;
     }
 
     public void setMapType(int type) {
@@ -404,24 +475,133 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         default:
             break;
         }
-        setBaseLayer(cartoType);
+        (new AsyncTask<Object, Void, Void>() {
+            @Override
+            protected Void doInBackground(Object... params) {
+                setBaseLayer((CartoBaseMapStyle) params[0]);
+                return null;
+            }
+        }).execute(cartoType);
     }
 
-    CartoOnlineVectorTileLayer baseLayer = null;
+    VectorTileLayer baseLayer = null;
+    TileDataSource source = null;
+    MBVectorTileDecoder baseStyleDecoder;
+    String langCode = null;
+    boolean mBuildingsEnabled = false;
+    ZippedAssetPackage styleAsset;
+
+    public ZippedAssetPackage getStyleZippedAsset() {
+        if (styleAsset == null) {
+            BinaryData data = AssetUtils.loadAsset("carto.zip");
+            styleAsset = new ZippedAssetPackage(data);
+        }
+        return styleAsset;
+    }
+
+    public CartoPackageManager getOfflineManager() {
+
+        return AkylasCartoModule.getOfflineManager();
+    }
+
+    VectorTileListener currentListener;
 
     protected void setBaseLayer(CartoBaseMapStyle style) {
         if (baseLayer != null) {
             mapView.getLayers().remove(baseLayer);
             baseLayer = null;
         }
-
-        if (style != null) {
-            baseLayer = new CartoOnlineVectorTileLayer(style);
-            mapView.getLayers().insert(0, baseLayer);
+        if (style == null) {
+            return;
         }
+        String type = "voyager";
+        if (style == CartoBaseMapStyle.CARTO_BASEMAP_STYLE_DARKMATTER) {
+            type = "darkmatter";
+        } else if (style == CartoBaseMapStyle.CARTO_BASEMAP_STYLE_POSITRON) {
+            type = "positron";
+        }
+        baseStyleDecoder = new MBVectorTileDecoder(
+                new CompiledStyleSet(getStyleZippedAsset(), type));
+
+        if (langCode != null) {
+            baseStyleDecoder.setStyleParameter("lang", langCode);
+        }
+        if (mBuildingsEnabled) {
+            baseStyleDecoder.setStyleParameter("buildings", "2");
+        }
+        if (source == null) {
+            // source = new OrderedDataSource(
+            // new PackageManagerTileDataSource(getOfflineManager()),
+            // new PersistentCacheTileDataSource(
+            // new CartoOnlineTileDataSource("carto.streets"),
+            // AkylasCartoModule.getMapCacheFolder()
+            // + "/carto.db"));
+            source = new PersistentCacheTileDataSource(
+                    new CartoOnlineTileDataSource("carto.streets"),
+                    AkylasCartoModule.getMapCacheFolder() + "/carto.db");
+        }
+        // create layer
+        baseLayer = new VectorTileLayer(source, baseStyleDecoder);
+        // baseLayer.setVectorTileEventListener(getVectorTileListener());
+
+        // add it to the map
+        mapView.getLayers().insert(0, baseLayer);
+
+        // currentListener = getVectorTileListener();
+        // if (style != null) {
+        // baseLayer = new CartoOnlineVectorTileLayer(style);
+        // if (langCode != null) {
+        // MBVectorTileDecoder decoder = (MBVectorTileDecoder) baseLayer
+        // .getTileDecoder();
+        // decoder.setStyleParameter("lang", langCode);
+        // }
+        // mapView.getLayers().insert(0, baseLayer);
+        // }
 
     }
 
+    VectorLayer debugLayer;
+
+    private VectorTileListener initializeVectorTileListener() {
+
+        Projection projection = mapView.getOptions().getBaseProjection();
+        LocalVectorDataSource source = new LocalVectorDataSource(projection);
+
+        debugLayer = new VectorLayer(source);
+        mapView.getLayers().add(debugLayer);
+
+        // Layer layer = mapView.getLayers().get(0);
+
+        VectorTileListener listener = new VectorTileListener(debugLayer);
+
+        // if (layer instanceof VectorTileLayer) {
+        // ((VectorTileLayer)layer).setVectorTileEventListener(listener);
+        // }
+
+        return listener;
+    }
+
+    public VectorTileListener getVectorTileListener() {
+        if (currentListener == null) {
+            currentListener = initializeVectorTileListener();
+        }
+        return currentListener;
+    }
+
+    protected void updateLandCode(String code) {
+        if (code != langCode) {
+            langCode = code;
+            baseStyleDecoder.setStyleParameter("lang", langCode);
+        }
+    }
+
+    protected void updateBuildings(boolean value) {
+        if (value != mBuildingsEnabled) {
+            mBuildingsEnabled = value;
+            baseStyleDecoder.setStyleParameter("buildings",
+                    mBuildingsEnabled ? "2" : "1");
+        }
+    }
     // @Override
     // public void onMapReady(GoogleMap map) {
     // setMap(map);
@@ -511,6 +691,13 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     // }
     // }
 
+    private void clearPositionUpdater() {
+        if (positionUpdaterRunnable != null) {
+            // handler.removeCallbacks(positionUpdaterRunnable);
+            positionUpdaterRunnable = null;
+        }
+    }
+
     @Override
     public void release() {
         if (proxy != null && proxy.getActivity() != null) {
@@ -519,18 +706,16 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         }
         super.release();
         if (infoWindowContainer != null) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                infoWindowContainer.getViewTreeObserver()
-                        .removeGlobalOnLayoutListener(infoWindowLayoutListener);
-            } else {
+            if (TiC.JELLY_BEAN_OR_GREATER) {
                 infoWindowContainer.getViewTreeObserver()
                         .removeOnGlobalLayoutListener(infoWindowLayoutListener);
+
+            } else {
+                infoWindowContainer.getViewTreeObserver()
+                        .removeGlobalOnLayoutListener(infoWindowLayoutListener);
             }
         }
-        if (positionUpdaterRunnable != null) {
-            handler.removeCallbacks(positionUpdaterRunnable);
-            positionUpdaterRunnable = null;
-        }
+        clearPositionUpdater();
         // if (_clusterManager != null) {
         // _clusterManager.setRenderer(null);
         // _clusterManager.setOnClusterClickListener(null);
@@ -547,9 +732,12 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         }
         // releaseFragment();
 
-        // if (handledMarkers != null) {
-        // handledMarkers.clear();
-        // }
+        if (handledMarkers != null) {
+            handledMarkers.clear();
+        }
+        if (handledLayers != null) {
+            handledLayers.clear();
+        }
         // if (handledPolylines != null) {
         // handledPolylines.clear();
         // }
@@ -593,6 +781,16 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         super.aboutToProcessProperties(d);
     }
 
+    HashMap cameraBuilderMap = null;
+
+    private void addCameraUpdate(String key, Object value) {
+        if (cameraBuilderMap == null) {
+            cameraBuilderMap = new HashMap();
+            mProcessUpdateFlags |= TIFLAG_NEEDS_CAMERA;
+        }
+        cameraBuilderMap.put(key, value);
+    }
+
     @Override
     public void propertySet(String key, Object newValue, Object oldValue,
             boolean changedProperty) {
@@ -630,65 +828,51 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         // map.getUiSettings().setScrollGesturesEnabled(
         // TiConvert.toBoolean(newValue, true));
         // break;
-        // case TiC.PROPERTY_ZOOM_ENABLED:
-        // map.getUiSettings().setZoomGesturesEnabled(
-        // TiConvert.toBoolean(newValue, true));
-        // break;
-        // case AkylasCartoModule.PROPERTY_ROTATE_ENABLED:
-        // map.getUiSettings().setRotateGesturesEnabled(
-        // TiConvert.toBoolean(newValue, true));
-        // break;
+        case TiC.PROPERTY_ZOOM_ENABLED:
+            mapView.getOptions()
+                    .setZoomGestures(TiConvert.toBoolean(newValue, true));
+            break;
+        case AkylasCartoModule.PROPERTY_ROTATE_ENABLED:
+            mapView.getOptions()
+                    .setRotatable(TiConvert.toBoolean(newValue, true));
+            break;
         // case AkylasCartoModule.PROPERTY_TILT_ENABLED:
         // map.getUiSettings().setTiltGesturesEnabled(
         // TiConvert.toBoolean(newValue, true));
         // break;
-        // case AkylasCartoModule.PROPERTY_BUILDINGS_ENABLED:
-        // map.setBuildingsEnabled(TiConvert.toBoolean(newValue, true));
-        // break;
+        case AkylasCartoModule.PROPERTY_BUILDINGS_ENABLED:
+            updateBuildings(TiConvert.toBoolean(newValue, true));
+            // map.setBuildingsEnabled(TiConvert.toBoolean(newValue, true));
+            break;
         // case AkylasCartoModule.PROPERTY_INDOOR_ENABLED:
         // map.setIndoorEnabled(TiConvert.toBoolean(newValue, true));
         // break;
         // case AkylasCartoModule.PROPERTY_TRAFFIC:
         // map.setTrafficEnabled(TiConvert.toBoolean(newValue, false));
         // break;
+
         case TiC.PROPERTY_BEARING:
-            // getCameraBuilder().bearing(TiConvert.toFloat(newValue, 0));
-            mapView.setRotation(TiConvert.toFloat(newValue, 0));
-            break;
         case AkylasCartoModule.PROPERTY_TILT:
-            mapView.setTilt(TiConvert.toFloat(newValue, 0), animate ? 1 : 0);
-            break;
         case AkylasCartoModule.PROPERTY_ZOOM:
-            targetZoom = TiConvert.toFloat(newValue, 0);
-            mapView.setZoom(targetZoom, animate ? 1 : 0);
-            // getCameraBuilder().zoom(targetZoom);
+        case TiC.PROPERTY_REGION:
+        case AkylasCartoModule.PROPERTY_CENTER_COORDINATE:
+            addCameraUpdate(key, newValue);
+
             break;
-        case "animationDuration":
+        case AkylasCartoModule.PROPERTY_ANIMATION_DURATION:
             cameraAnimationDuration = TiConvert.toInt(newValue,
                     CAMERA_UPDATE_DURATION);
             break;
-        case TiC.PROPERTY_REGION:
-            MapBounds bounds = AkylasCartoModule.regionFromObject(newValue);
-            if (bounds != null) {
-                mapView.moveToFitBounds(
-                        new MapBounds(bounds.getMin(),bounds.getMax()),
-                        new ScreenBounds(new ScreenPos(0, 0),
-                                new ScreenPos(mapView.getWidth(),
-                                        mapView.getHeight())),
-                        false, animate ? cameraAnimationDuration / 1000 : 0.0f);
-            }
-            break;
-        case AkylasCartoModule.PROPERTY_CENTER_COORDINATE:
-            MapPos pos = (MapPos) AkylasCartoModule.latlongFromObject(newValue);
-            if (pos != null) {
-                mapView.setFocusPos(pos, animate ? 1 : 0);
-            }
-            break;
+
         case TiC.PROPERTY_MAP_TYPE:
             int type = TiConvert.toInt(newValue,
                     AkylasCartoModule.MAP_TYPE_VOYAGER);
             setMapType(type);
-
+            break;
+        case AkylasCartoModule.PROPERTY_FOCUS_OFFSET:
+            PointF offset = TiConvert.toPointF(newValue);
+            mapView.getOptions()
+                    .setFocusPointOffset(new ScreenPos(offset.x, offset.y));
             break;
         case TiC.PROPERTY_PADDING:
             padding = TiConvert.toPaddingRect(newValue, padding);
@@ -739,62 +923,61 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     // return mCameraBuilder;
     // }
 
-    // private void handleCameraUpdate() {
-    // if (preLayout || mCameraBuilder == null)
-    // return;
-    // if (!TiApplication.isUIThread()) {
-    // proxy.getActivity().runOnUiThread(new Runnable() {
-    // @Override
-    // public void run() {
-    // handleCameraUpdate();
-    // }
-    // });
-    // return;
-    // }
-    // boolean animate = mCameraAnimate && shouldAnimate();
-    // if (mCameraRegionUpdate) {
-    // CameraUpdate update;
-    // if (regionFit) {
-    // update = CameraUpdateFactory.newLatLngBounds(mCameraRegion,
-    // nativeView.getMeasuredWidth(),
-    // nativeView.getMeasuredHeight(), 0);
-    // } else {
-    // update = CameraUpdateFactory.newLatLngBounds(mCameraRegion, 0);
-    // }
-    // moveCamera(update, animate);
-    // } else {
-    // try {
-    // CameraPosition position = mCameraBuilder.build();
-    // CameraUpdate camUpdate = CameraUpdateFactory
-    // .newCameraPosition(position);
-    // moveCamera(camUpdate, animate);
-    // } catch (Exception e) {
-    // }
-    // }
-    // mCameraBuilder = null;
-    // mCameraRegionUpdate = false;
-    // mCameraAnimate = false;
-    // mCameraRegion = null;
-    // mCameraCenter = null;
-    // }
+    private void handleCameraUpdate() {
+        if (preLayout || cameraBuilderMap == null)
+            return;
 
-    // @Override
-    // protected void didProcessProperties() {
-    // Log.d(TAG, "didProcessProperties " + mProcessUpdateFlags);
-    // if ((mProcessUpdateFlags & TIFLAG_NEEDS_CAMERA) != 0) {
-    // handleCameraUpdate();
-    // mProcessUpdateFlags &= ~TIFLAG_NEEDS_CAMERA;
-    // mProcessUpdateFlags &= ~TIFLAG_NEEDS_MAP_INVALIDATE;
-    // }
-    // if ((mProcessUpdateFlags & TIFLAG_NEEDS_MAP_INVALIDATE) != 0) {
-    // if (currentCameraPosition != null) {
-    // map.moveCamera(CameraUpdateFactory
-    // .newCameraPosition(currentCameraPosition));
-    // }
-    // mProcessUpdateFlags &= ~TIFLAG_NEEDS_MAP_INVALIDATE;
-    // }
-    // super.didProcessProperties();
-    // }
+        boolean animate = mCameraAnimate && shouldAnimate();
+        float animationDuration = animate ? (cameraAnimationDuration / 1000.0f)
+                : 0;
+
+        if (cameraBuilderMap.containsKey(TiC.PROPERTY_REGION)) {
+            updateRegion(cameraBuilderMap.get(TiC.PROPERTY_REGION), animate);
+        }
+
+        if (cameraBuilderMap
+                .containsKey(AkylasCartoModule.PROPERTY_CENTER_COORDINATE)
+                && cameraBuilderMap.get(
+                        AkylasCartoModule.PROPERTY_CENTER_COORDINATE) != null) {
+            updateCenter(
+                    cameraBuilderMap
+                            .get(AkylasCartoModule.PROPERTY_CENTER_COORDINATE),
+                    animate);
+        }
+
+        if (cameraBuilderMap.containsKey(AkylasCartoModule.PROPERTY_ZOOM)
+                && cameraBuilderMap
+                        .get(AkylasCartoModule.PROPERTY_ZOOM) != null) {
+            targetZoom = TiConvert.toFloat(cameraBuilderMap,
+                    AkylasCartoModule.PROPERTY_ZOOM, 0);
+            mapView.setZoom(targetZoom, animationDuration);
+        }
+
+        if (cameraBuilderMap.containsKey(AkylasCartoModule.PROPERTY_TILT)) {
+            mapView.setTilt(
+                    TiConvert.toFloat(cameraBuilderMap,
+                            AkylasCartoModule.PROPERTY_TILT, 0),
+                    animationDuration);
+        }
+
+        if (cameraBuilderMap.containsKey(TiC.PROPERTY_BEARING)) {
+            mapView.setMapRotation(-TiConvert.toFloat(cameraBuilderMap,
+                    TiC.PROPERTY_BEARING, 0), animationDuration);
+        }
+
+        mCameraAnimate = false;
+        cameraBuilderMap = null;
+    }
+
+    @Override
+    protected void didProcessProperties() {
+        if ((mProcessUpdateFlags & TIFLAG_NEEDS_CAMERA) != 0) {
+            handleCameraUpdate();
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_CAMERA;
+            mProcessUpdateFlags &= ~TIFLAG_NEEDS_MAP_INVALIDATE;
+        }
+        super.didProcessProperties();
+    }
 
     // protected void moveCamera(CameraUpdate camUpdate, boolean anim) {
     // Log.d(TAG, "moveCamera " + anim);
@@ -915,16 +1098,27 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         return mapView.getZoom();
     }
 
-    // public AnnotationProxy getProxyByMarker(Marker m) {
-    // Object tag = m.getTag();
-    // if (tag instanceof AnnotationProxy) {
-    // return (AnnotationProxy) tag;
-    // }
-    // // if (m != null && handledMarkers != null) {
-    // // return handledMarkers.get(m);
-    // // }
-    // return null;
-    // }
+    public BaseAnnotationProxy getProxyByMarker(VectorElement m) {
+        // Object tag = m.getTag();
+        // if (tag instanceof AnnotationProxy) {
+        // return (AnnotationProxy) tag;
+        // }
+        if (m != null && handledMarkers != null) {
+            return handledMarkers.get(m);
+        }
+        return null;
+    }
+
+    public Object getProxyByLayer(Layer l) {
+        // Object tag = m.getTag();
+        // if (tag instanceof AnnotationProxy) {
+        // return (AnnotationProxy) tag;
+        // }
+        if (l != null && handledLayers != null) {
+            return handledLayers.get(l);
+        }
+        return null;
+    }
 
     @Override
     public void changeZoomLevel(final float level, final boolean animated) {
@@ -943,47 +1137,62 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         mapView.setZoom(level, animated ? cameraAnimationDuration / 1000 : 0);
     }
 
-    protected KrollDict dictFromPoint(MapPos point) {
+    protected KrollDict dictFromPoint(MapPos pos) {
         KrollDict d = TiViewHelper.dictFromMotionEvent(getTouchView(),
                 lastDownEvent);
-        d.put(TiC.PROPERTY_LATITUDE, point.getX());
-        d.put(TiC.PROPERTY_LONGITUDE, point.getY());
-        d.put(TiC.PROPERTY_ALTITUDE, point.getZ());
-        d.put(TiC.PROPERTY_REGION, getRegionDict());
-        d.put(AkylasCartoModule.PROPERTY_ZOOM, getZoomLevel());
-        d.put(AkylasCartoModule.PROPERTY_MAP, proxy);
+        setDictData(d, pos);
         return d;
     }
 
-    public void fireClickEvent(BaseAnnotationProxy proxy, final String source) {
-        fireEventOnAnnotProxy(TiC.EVENT_CLICK, proxy, source);
+    protected void setDictData(KrollDict d, MapPos pos) {
+        d.put(TiC.PROPERTY_LATITUDE, pos.getY());
+        d.put(TiC.PROPERTY_LONGITUDE, pos.getX());
+        // d.put(TiC.PROPERTY_ALTITUDE, point.getZ());
+        d.put(TiC.PROPERTY_REGION, getRegionDict());
+        d.put(AkylasCartoModule.PROPERTY_ZOOM, getZoomLevel());
+        d.put(AkylasCartoModule.PROPERTY_MAP, proxy);
     }
 
-    public boolean handleMarkerClick(BaseAnnotationProxy annoProxy) {
-        if (annoProxy == null) {
+    // public void fireClickEvent(BaseAnnotationProxy proxy, final String
+    // source) {
+    // fireEventOnAnnotProxy(TiC.EVENT_CLICK, element, proxy, source);
+    // }
+
+    public boolean handleMarkerClick(VectorElement element) {
+        if (element == null) {
             return false;
         }
-        if (!annoProxy.touchable) {
+        Object theObj = getObjectForElement(element);
+        if (theObj == null || (theObj instanceof BaseAnnotationProxy
+                && !((BaseAnnotationProxy) theObj).touchable)) {
             // trick for untouchable as googlemap does not support it
             // onMapClick((MapPos) annoProxy.getPosition());
             return true;
         }
 
+        if (theObj instanceof BaseAnnotationProxy) {
+            fireEventOnAnnotProxy(TiC.EVENT_CLICK, (BaseAnnotationProxy) theObj,
+                    element, AkylasCartoModule.PROPERTY_PIN);
+        } else {
+            fireEventOnAnnotData(TiC.EVENT_CLICK, (HashMap) theObj, element,
+                    AkylasCartoModule.PROPERTY_PIN);
+        }
+
         // make sure we fire the click first
-        fireClickEvent(annoProxy, AkylasCartoModule.PROPERTY_PIN);
-        setSelectedAnnotation(annoProxy);
+        // fireClickEvent(annoProxy, AkylasCartoModule.PROPERTY_PIN);
+        setSelectedAnnotation(element);
 
         // Returning false here will enable native behavior, which shows the
         // info window.
-        return !annoProxy.canShowInfoWindow();
+        return !canShowInfoWindow(theObj);
     }
 
-    private AnnotationProxy getProxyByMarker(VectorElement m) {
-        if (m instanceof AkMarker) {
-            return ((AkMarker) m).getProxy();
-        }
-        return null;
-    }
+    // private AnnotationProxy getProxyByMarker(VectorElement m) {
+    // if (m instanceof AkMarker) {
+    // return ((AkMarker) m).getProxy();
+    // }
+    // return null;
+    // }
     // @Override
     // public void onMapLongClick(MapPos point) {
     // if (!hasListeners(TiC.EVENT_LONGPRESS, false))
@@ -1023,19 +1232,19 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     // }
     // }
 
-    private void handleInfoWindowClick(BaseAnnotationProxy annoProxy) {
-        if (annoProxy != null) {
-            String clicksource = annoProxy.getMapInfoWindow().getClicksource();
-            // The clicksource is null means the click event is not inside
-            // "leftPane", "title", "subtible"
-            // or "rightPane". In this case, use "infoWindow" as the
-            // clicksource.
-            if (clicksource == null) {
-                clicksource = AkylasCartoModule.PROPERTY_INFO_WINDOW;
-            }
-            fireClickEvent(annoProxy, clicksource);
-        }
-    }
+    // private void handleInfoWindowClick(BaseAnnotationProxy annoProxy) {
+    // if (annoProxy != null) {
+    // String clicksource = annoProxy.getMapInfoWindow().getClicksource();
+    // // The clicksource is null means the click event is not inside
+    // // "leftPane", "title", "subtible"
+    // // or "rightPane". In this case, use "infoWindow" as the
+    // // clicksource.
+    // if (clicksource == null) {
+    // clicksource = AkylasCartoModule.PROPERTY_INFO_WINDOW;
+    // }
+    // fireClickEvent(annoProxy, clicksource);
+    // }
+    // }
 
     // @Override
     // public void onInfoWindowClick(Point marker) {
@@ -1043,7 +1252,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     // handleInfoWindowClick(annoProxy);
     // }
 
-    private AnnotationProxy showingInfoMarker;
+    // private BaseAnnotationProxy showingInfoProxy;
 
     // @Override
     // public View getInfoContents(Point marker) {
@@ -1051,7 +1260,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     // }
 
     public void infoWindowDidClose(AkylasMapInfoView infoView) {
-        showingInfoMarker = null;
+        // showingInfoProxy = null;
         container.removeView(infoView);
 
         if (infoView == null)
@@ -1190,26 +1399,26 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
             setPointerDown(false);
             break;
         }
-        if (selectedAnnotation instanceof AnnotationProxy) {
-            AnnotationProxy annot = (AnnotationProxy) selectedAnnotation;
-            AkylasMapInfoView infoWindow = annot.getMapInfoWindow();
-            Marker marker = getAnnotMarker(annot);
-            if (infoWindow != null && marker != null
+        if (selectedElement instanceof Marker) {
+            // AnnotationProxy annot = (AnnotationProxy) selectedAnnotation;
+            // AkylasMapInfoView infoWindow = annot.getMapInfoWindow();
+            // Marker marker = getAnnotMarker(annot);
+            if (infoWindow != null
             // && marker.isInfoWindowShown()
             ) {
                 // Get a marker position on the screen
-                MapPos pos = annot.getPosition();
-                ScreenPos markerPoint = mapView.mapToScreen(pos);
-                CartoMarker gMarker = getCartoMarker(annot);
-                if (infoWindow.dispatchMapTouchEvent(event,
-                        new Point((int) markerPoint.getX(),
-                                (int) markerPoint.getY()),
-                        gMarker.getIconSize())) {
-                    return true;
-                }
+                // MapPos pos = ((Marker)selectedElement).get();
+                // ScreenPos markerPoint = mapView.mapToScreen(pos);
+                // CartoMarker gMarker = getCartoMarker(annot);
+                // if (infoWindow.dispatchMapTouchEvent(event,
+                // new Point((int) markerPoint.getX(),
+                // (int) markerPoint.getY()),
+                // selectedElement.set())) {
+                // return true;
+                // }
             }
         }
-        handleTouchEvent(event);
+        // onTouch(mapView, event);
         return false;
     }
 
@@ -1217,9 +1426,9 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         return mapView;
     }
 
-    private CartoMarker getCartoMarker(AnnotationProxy proxy) {
-        return (CartoMarker) proxy.getMarker();
-    }
+    // private CartoMarker getCartoMarker(AnnotationProxy proxy) {
+    // return (CartoMarker) proxy.getMarker();
+    // }
 
     private Marker getAnnotMarker(BaseAnnotationProxy proxy) {
         CartoMarker timarker = (CartoMarker) proxy.getMarker();
@@ -1298,10 +1507,27 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
     @Override
     public void updateCenter(Object dict, boolean animated) {
+        MapPos pos = (MapPos) AkylasCartoModule.latlongFromObject(dict);
+        if (pos != null) {
+            mapView.setFocusPos(baseProjection.fromWgs84(pos),
+                    animated ? (cameraAnimationDuration / 1000.0f) : 0.0f);
+        }
     }
 
     @Override
     public void updateRegion(Object dict, boolean animated) {
+        MapBounds bounds = AkylasCartoModule.regionFromObject(dict);
+        if (bounds != null) {
+            mapView.moveToFitBounds(
+                    new MapBounds(baseProjection.fromWgs84(bounds.getMin()),
+                            baseProjection.fromWgs84(bounds.getMax())),
+                    new ScreenBounds(new ScreenPos(0, 0),
+                            new ScreenPos(nativeView.getMeasuredWidth(),
+                                    nativeView.getMeasuredHeight())),
+                    false,
+                    animated ? (cameraAnimationDuration / 1000.0f) : 0.0f);
+
+        }
     }
 
     @Override
@@ -1368,39 +1594,41 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
     @Override
     public KrollDict getRegionDict() {
-        // LatLngBounds region =
-        // getProjection().getVisibleRegion().latLngBounds;
-        // return AkylasCartoModule.getFactory().regionToDict(region);
-        //
-        final MapPos topLeft = mapView.screenToMap(new ScreenPos(0, 0));
-        final MapPos bottomRight = mapView.screenToMap(
-                new ScreenPos(mapView.getWidth(), mapView.getHeight()));
-        MapBounds bounds = new MapBounds(topLeft, bottomRight);
+        MapBounds bounds = getScreenRegion();
         return AkylasCartoModule.getFactory().regionToDict(bounds);
-
     }
 
     AnimatorSet currentInfoWindowAnim = null;
+    AkylasMapInfoView currentInfoInfoView = null;
 
     @Override
-    public void handleDeselectAnnotation(final BaseAnnotationProxy proxy) {
+    public void handleDeselectElement(final Object element) {
+        selectedElement = null;
         if (!TiApplication.isUIThread()) {
             proxy.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    handleDeselectAnnotation(proxy);
+                    handleDeselectElement(element);
                 }
             });
             return;
         }
-        if (!proxy.canShowInfoWindow()) {
-            return;
+        // if (!proxy.canShowInfoWindow()) {
+        // return;
+        // }
+        clearPositionUpdater();
+
+        Object obj = getObjectForElement(element);
+        if (obj instanceof BaseAnnotationProxy) {
+            ((BaseAnnotationProxy) obj).onDeselect();
+            // showingInfoProxy = null;
+        } else {
+            if (element instanceof Marker) {
+                ((Marker) element).setStyle(AnnotationProxy.getMarkerStyle(this,
+                        baseProjection, (HashMap) obj, false));
+            }
         }
-        if (positionUpdaterRunnable != null) {
-            handler.removeCallbacks(positionUpdaterRunnable);
-            positionUpdaterRunnable = null;
-        }
-        if (showingInfoMarker != null && infoWindowContainer != null) {
+        if (infoWindowContainer != null) {
             if (currentInfoWindowAnim != null) {
                 currentInfoWindowAnim.cancel();
                 currentInfoWindowAnim = null;
@@ -1423,9 +1651,13 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                 public void onAnimationEnd(Animator animation) {
                     infoWindowContainer.setVisibility(View.GONE);
                     currentInfoWindowAnim = null;
-                    if (showingInfoMarker != null) {
-                        showingInfoMarker.infoWindowDidClose();
+                    if (currentInfoInfoView != null) {
+                        infoWindowDidClose(currentInfoInfoView);
+                        currentInfoInfoView = null;
                     }
+                    // if (obj instanceof BaseAnnotationProxy) {
+                    // ((BaseAnnotationProxy<MapPos>) obj).infoWindowDidClose();
+                    // }
                 }
 
                 @Override
@@ -1448,47 +1680,85 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         }
     }
 
+    private boolean canShowInfoWindow(Object data) {
+        if (data instanceof BaseAnnotationProxy) {
+            return ((BaseAnnotationProxy) data).canShowInfoWindow();
+        } else if (data instanceof HashMap) {
+            return TiConvert.toBoolean((HashMap) data,
+                    AkylasMapBaseModule.PROPERTY_SHOW_INFO_WINDOW);
+        }
+        return false;
+    }
+
     @Override
-    public void handleSelectAnnotation(final BaseAnnotationProxy proxy) {
+    public void handleSelectElement(final Object element) {
         if (!TiApplication.isUIThread()) {
             proxy.runInUiThread(new CommandNoReturn() {
                 @Override
                 public void execute() {
-                    handleSelectAnnotation(selectedAnnotation);
+                    handleSelectElement(element);
                 }
             }, false);
             return;
         }
-        if (proxy.getMarker() == null) {
-            return;
+        Object obj = getObjectForElement(element);
+        if (element instanceof AnnotationProxy) {
+            obj = element;
+            selectedElement = getAnnotMarker((AnnotationProxy) obj);
+        } else {
+            selectedElement = element;
+
         }
-        if (proxy instanceof AnnotationProxy) {
-            // this is to make sure the marker is on top
-            // Marker marker = getAnnotMarker((AnnotationProxy) proxy);
-            // if (marker != null) {
-            // marker.showInfoWindow();
+        // if (proxy.getMarker() == null) {
+        // return;
+        // }
+        // if (proxy instanceof AnnotationProxy) {
+        // this is to make sure the marker is on top
+        // Marker marker = getAnnotMarker((AnnotationProxy) proxy);
+        // if (marker != null) {
+        // marker.showInfoWindow();
+        // }
+        // }
+
+        if (obj instanceof BaseAnnotationProxy) {
+            // if (proxy != showingInfoMarker) {
+            ((BaseAnnotationProxy) obj).onSelect();
             // }
+        } else {
+            if (selectedElement instanceof Marker) {
+                ((Marker) selectedElement)
+                        .setStyle(AnnotationProxy.getMarkerStyle(this,
+                                baseProjection, (HashMap) obj, true));
+            }
         }
-        if (!_canShowInfoWindow || !proxy.canShowInfoWindow()) {
+
+        if (!_canShowInfoWindow || !canShowInfoWindow(obj)) {
             return;
         }
-        if (positionUpdaterRunnable != null) {
-            handler.removeCallbacks(positionUpdaterRunnable);
-            positionUpdaterRunnable = null;
-        }
-        AkylasMapInfoView infoView = null;
+        clearPositionUpdater();
+
+        // AkylasMapInfoView infoView = null;
         if (currentInfoWindowAnim != null) {
             // needs to be done before the prepareInfoView
             currentInfoWindowAnim.cancel();
         }
-        if (proxy != null) {
+        currentInfoInfoView = (AkylasMapInfoView) mInfoWindowCache
+                .get("infoView");
+        if (obj instanceof BaseAnnotationProxy) {
             // if (proxy != showingInfoMarker) {
-            showingInfoMarker = (AnnotationProxy) proxy;
-            infoView = (AkylasMapInfoView) mInfoWindowCache.get("infoView");
-            proxy.prepareInfoView(infoView);
+            ((BaseAnnotationProxy) obj).onSelect();
+            ((BaseAnnotationProxy) obj).prepareInfoView(currentInfoInfoView);
             // }
+        } else {
+            if (selectedElement instanceof Marker) {
+                ((Marker) selectedElement)
+                        .setStyle(AnnotationProxy.getMarkerStyle(this,
+                                baseProjection, (HashMap) obj, true));
+            }
+            BaseAnnotationProxy.prepareInfoViewForData(this,
+                    currentInfoInfoView, (HashMap) obj);
         }
-        if (infoView == null) {
+        if (currentInfoInfoView == null) {
             return;
         }
 
@@ -1500,12 +1770,11 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                     getContext(), calloutBgdImage, false, proxy));
             infoWindowContainer.getViewTreeObserver()
                     .addOnGlobalLayoutListener(infoWindowLayoutListener);
-            infoWindowContainer.setLayoutParams(
-                    new AbsoluteLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-                            LayoutParams.WRAP_CONTENT, 0, 0));
-            overlayLayoutParams = (AbsoluteLayout.LayoutParams) infoWindowContainer
+            infoWindowContainer.setLayoutParams(new FrameLayout.LayoutParams(
+                    LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+            overlayLayoutParams = (FrameLayout.LayoutParams) infoWindowContainer
                     .getLayoutParams();
-            // infoWindowContainer.setGravity(Gravity.LEFT | Gravity.TOP);
+            infoWindowContainer.setGravity(Gravity.LEFT | Gravity.TOP);
             container.addView(infoWindowContainer);
         } else {
 
@@ -1514,26 +1783,36 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(infoView.getPaddingLeft(), infoView.getPaddingTop(),
-                infoView.getPaddingRight(), infoView.getPaddingBottom()); // arrow
-                                                                          // padding
-        infoWindowContainer.addView(infoView, params);
+        params.setMargins(currentInfoInfoView.getPaddingLeft(),
+                currentInfoInfoView.getPaddingTop(),
+                currentInfoInfoView.getPaddingRight(),
+                currentInfoInfoView.getPaddingBottom()); // arrow
+        // padding
+        infoWindowContainer.addView(currentInfoInfoView, params);
         infoWindowContainer.measure(
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         infoWindowContainer.layout(0, 0, infoWindowContainer.getMeasuredWidth(),
                 infoWindowContainer.getMeasuredHeight());
 
-        // trackedPosition = (MaPos) proxy.getPosition();
-        // final float iconWidth = ((VectorElementMarker) proxy.getMarker())
-        // .getIconImageWidth();
-        // final float iconHeight = ((VectorElementMarker) proxy.getMarker())
-        // .getIconImageHeight();
-        // float deltaX = iconWidth * (proxy.calloutAnchor.x - proxy.anchor.x);
-        // float deltaY = iconHeight * (proxy.calloutAnchor.y - proxy.anchor.y);
-        // positionUpdaterRunnable = new PositionUpdaterRunnable((int) deltaX,
-        // (int) deltaY);
-        handler.post(positionUpdaterRunnable);
+        if (obj instanceof BaseAnnotationProxy) {
+            BaseAnnotationProxy proxy = (BaseAnnotationProxy) obj;
+            trackedPosition = ((VectorElement) selectedElement).getGeometry()
+                    .getCenterPos();
+            final float size = ((CartoMarker) proxy.getMarker()).getIconSize();
+            // Geometry gem =((VectorElement) element).getGeometry()
+            // final float iconWidth = ((VectorElement) element).getGeometry()
+            // .getIconImageWidth();
+            // final float iconHeight = ((VectorElementMarker)
+            // proxy.getMarker())
+            // .getIconImageHeight();
+            float deltaX = size * (proxy.calloutAnchor.x - proxy.anchor.x);
+            float deltaY = size * (proxy.calloutAnchor.y - proxy.anchor.y);
+            positionUpdaterRunnable = new PositionUpdaterRunnable((int) deltaX,
+                    (int) deltaY);
+            positionUpdaterRunnable.run();
+            // handler.post(positionUpdaterRunnable);
+        }
 
         TiViewHelper.setPivotFloatX(infoWindowContainer, 0.5f);
         TiViewHelper.setPivotFloatY(infoWindowContainer, 1.0f);
@@ -1582,45 +1861,48 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         if (mapView == null) {
             return;
         }
-        // if (!TiApplication.isUIThread()) {
-        // proxy.runInUiThread(new CommandNoReturn() {
-        // @Override
-        // public void execute() {
-        // handleAddAnnotation(value);
-        // }
-        // }, false);
-        // return;
-        // }
 
         final Activity activity = proxy.getActivity();
-        for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
-            proxy.setActivity(activity);
-            addAnnotationToMap(proxy);
+        for (Object data : (ArrayList<Object>) value) {
+            if (data instanceof AnnotationProxy) {
+                AnnotationProxy annotProxy = (AnnotationProxy) data;
+                annotProxy.setActivity(activity);
+                addAnnotationToMap(annotProxy);
+            } else if (data instanceof HashMap) {
+                addAnnotationHashMapToMap((HashMap) data);
+            }
         }
     }
 
     @Override
     public void handleRemoveAnnotation(final ArrayList value) {
-        if (!TiApplication.isUIThread()) {
-            proxy.runInUiThread(new CommandNoReturn() {
-                @Override
-                public void execute() {
-                    handleRemoveAnnotation(value);
-                }
-            }, false);
-            return;
-        }
+        // if (!TiApplication.isUIThread()) {
+        // proxy.runInUiThread(new CommandNoReturn() {
+        // @Override
+        // public void execute() {
+        // handleRemoveAnnotation(value);
+        // }
+        // }, false);
+        // return;
+        // }
 
-        for (AnnotationProxy proxy : (ArrayList<AnnotationProxy>) value) {
-            handleRemoveSingleAnnotation(proxy);
+        for (Object data : (ArrayList<Object>) value) {
+            if (data instanceof AnnotationProxy) {
+                AnnotationProxy annotProxy = (AnnotationProxy) data;
+                handleRemoveSingleAnnotation(annotProxy, annotsSource);
+            }
         }
     }
 
-    public void handleRemoveSingleAnnotation(AnnotationProxy proxy) {
-        // GoogleMapMarker marker = (GoogleMapMarker) proxy.getMarker();
-        // if (handledMarkers != null) {
-        // handledMarkers.remove(marker.getMarker());
-        // }
+    public void handleRemoveSingleAnnotation(BaseAnnotationProxy proxy,
+            LocalVectorDataSource source) {
+        Marker marker = ((CartoMarker) proxy.getMarker()).getMarker();
+        if (handledMarkers != null) {
+            handledMarkers.remove(marker);
+        }
+        if (source != null && marker != null) {
+            source.remove(marker);
+        }
         deselectAnnotation(proxy);
         proxy.wasRemoved();
     }
@@ -1630,47 +1912,61 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         if (mapView == null) {
             return;
         }
-        if (!TiApplication.isUIThread()) {
-            proxy.runInUiThread(new CommandNoReturn() {
-                @Override
-                public void execute() {
-                    handleAddRoute(value);
-                }
-            }, false);
-            return;
-        }
+        // if (!TiApplication.isUIThread()) {
+        // proxy.runInUiThread(new CommandNoReturn() {
+        // @Override
+        // public void execute() {
+        // handleAddRoute(value);
+        // }
+        // }, false);
+        // return;
+        // }
         final Activity activity = proxy.getActivity();
-        // for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
-        // if (proxy.getPolyline() == null) {
-        // proxy.setPolyline(map.addPolyline(
-        // proxy.getAndSetOptions(currentCameraPosition)));
-        // proxy.setMapView(CartoView.this);
-        // proxy.setActivity(activity);
-        // proxy.setParentForBubbling(CartoView.this.proxy);
-        // // if (handledPolylines == null) {
-        // // handledPolylines = new WeakHashMap<Polyline, RouteProxy>();
-        // // }
-        // // handledPolylines.put(proxy.getPolyline(), proxy);
-        // }
-        // }
+        for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
+
+            proxy.setMapView(CartoView.this);
+            proxy.setActivity(activity);
+            proxy.setParentForBubbling(CartoView.this.proxy);
+
+            Line line = proxy.getOrCreateLine(baseProjection);
+            if (line != null) {
+                if (handledMarkers == null) {
+                    handledMarkers = new HashMap<VectorElement, BaseAnnotationProxy>();
+                }
+                handledMarkers.put(line, proxy);
+                annotsSource.add(line);
+            }
+
+            // if (handledPolylines == null) {
+            // handledPolylines = new WeakHashMap<Polyline, RouteProxy>();
+            // }
+            // handledPolylines.put(proxy.getPolyline(), proxy);
+        }
     }
 
     @Override
     public void handleRemoveRoute(final ArrayList value) {
-        if (!TiApplication.isUIThread()) {
-            proxy.runInUiThread(new CommandNoReturn() {
-                @Override
-                public void execute() {
-                    handleRemoveRoute(value);
-                }
-            }, false);
-            return;
-        }
+        // if (!TiApplication.isUIThread()) {
+        // proxy.runInUiThread(new CommandNoReturn() {
+        // @Override
+        // public void execute() {
+        // handleRemoveRoute(value);
+        // }
+        // }, false);
+        // return;
+        // }
 
         for (RouteProxy proxy : (ArrayList<RouteProxy>) value) {
-            // if (handledPolylines != null) {
-            // handledPolylines.remove(proxy.getPolyline());
-            // }
+            Line line = proxy.getLine();
+
+            if (line != null) {
+                if (handledMarkers == null) {
+                    handledMarkers.remove(line);
+                }
+                if (annotsSource != null) {
+                    annotsSource.remove(line);
+                }
+            }
             deselectAnnotation(proxy);
             proxy.wasRemoved();
         }
@@ -1682,15 +1978,15 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         if (mapView == null) {
             return;
         }
-        if (!TiApplication.isUIThread()) {
-            proxy.runInUiThread(new CommandNoReturn() {
-                @Override
-                public void execute() {
-                    handleAddGroundOverlay(value);
-                }
-            }, false);
-            return;
-        }
+        // if (!TiApplication.isUIThread()) {
+        // proxy.runInUiThread(new CommandNoReturn() {
+        // @Override
+        // public void execute() {
+        // handleAddGroundOverlay(value);
+        // }
+        // }, false);
+        // return;
+        // }
 
         // final Activity activity = proxy.getActivity();
         // for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>)
@@ -1706,15 +2002,15 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
     @Override
     public void handleRemoveGroundOverlay(final ArrayList value) {
-        if (!TiApplication.isUIThread()) {
-            proxy.runInUiThread(new CommandNoReturn() {
-                @Override
-                public void execute() {
-                    handleRemoveGroundOverlay(value);
-                }
-            }, false);
-            return;
-        }
+        // if (!TiApplication.isUIThread()) {
+        // proxy.runInUiThread(new CommandNoReturn() {
+        // @Override
+        // public void execute() {
+        // handleRemoveGroundOverlay(value);
+        // }
+        // }, false);
+        // return;
+        // }
 
         for (GroundOverlayProxy proxy : (ArrayList<GroundOverlayProxy>) value) {
             proxy.wasRemoved();
@@ -1726,42 +2022,143 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         if (mapView == null) {
             return;
         }
-        if (!TiApplication.isUIThread()) {
-            proxy.runInUiThread(new CommandNoReturn() {
-                @Override
-                public void execute() {
-                    handleAddCluster(value);
-                }
-            }, false);
-            return;
-        }
+        // if (!TiApplication.isUIThread()) {
+        // proxy.runInUiThread(new CommandNoReturn() {
+        // @Override
+        // public void execute() {
+        // handleAddCluster(value);
+        // }
+        // }, false);
+        // return;
+        // }
 
         final Activity activity = proxy.getActivity();
+        processingTileLayers = true;
         for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
             proxy.setMapView(CartoView.this);
             proxy.setParentForBubbling(CartoView.this.proxy);
             proxy.setActivity(activity);
-            mapView.getLayers().add(proxy.getLayer());
-            
-        }
 
+            VectorLayer layer = proxy.getLayer();
+            layer.setVectorElementEventListener(vectorEventListener);
+            if (handledLayers == null) {
+                handledLayers = new HashMap<Layer, Object>();
+            }
+            handledLayers.put(layer, proxy);
+            addClusterLayer(layer);
+        }
+        processingTileLayers = false;
+        resortLayers();
+    }
+
+    List<Layer> tileLayers = new ArrayList();
+    List<Layer> clusterLayers = new ArrayList();
+    private final Comparator tileLayerComparator = new Comparator<Layer>() {
+        @Override
+        public int compare(Layer lhs, Layer rhs) {
+            final float zIndexL = ((BaseTileSourceProxy) getProxyByLayer(lhs))
+                    .getZIndex();
+            final float zIndexR = ((BaseTileSourceProxy) getProxyByLayer(rhs))
+                    .getZIndex();
+            // -1 - less than, 1 - greater than, 0 - equal, all inversed for
+            // descending
+            return zIndexL > zIndexR ? 1 : (zIndexL < zIndexR) ? -1 : 0;
+        }
+    };
+    private final Comparator clusterLayerComparator = new Comparator<Layer>() {
+        @Override
+        public int compare(Layer lhs, Layer rhs) {
+            final float zIndexL = ((BaseAnnotationProxy) getProxyByLayer(lhs))
+                    .getZIndex();
+            final float zIndexR = ((BaseAnnotationProxy) getProxyByLayer(rhs))
+                    .getZIndex();
+            // -1 - less than, 1 - greater than, 0 - equal, all inversed for
+            // descending
+            return zIndexL > zIndexR ? 1 : (zIndexL < zIndexR) ? -1 : 0;
+        }
+    };
+
+    private void addTileLayer(Layer layer) {
+        tileLayers.add(layer);
+        tileLayers.sort(tileLayerComparator);
+        resortLayers();
+    }
+
+    private void addClusterLayer(Layer layer) {
+
+        clusterLayers.add(layer);
+        clusterLayers.sort(clusterLayerComparator);
+        resortLayers();
+    }
+
+    private void removeTileLayer(Layer layer) {
+        if (handledLayers != null) {
+            handledLayers.remove(layer);
+        }
+        tileLayers.remove(layer);
+        resortLayers();
+    }
+
+    private void removeClusterLayer(Layer layer) {
+        if (handledLayers != null) {
+            handledLayers.remove(layer);
+        }
+        clusterLayers.remove(layer);
+        resortLayers();
+    }
+
+    private boolean processingTileLayers = false;
+
+    public void resortLayers() {
+        if (processingTileLayers) {
+            return;
+        }
+        if (!TiApplication.isUIThread()) {
+            proxy.runInUiThread(new CommandNoReturn() {
+                @Override
+                public void execute() {
+                    resortLayers();
+                }
+            }, false);
+            return;
+        }
+        mapView.getLayers().clear();
+        if (baseLayer != null) {
+            mapView.getLayers().add(baseLayer);
+        }
+        for (Layer layer : tileLayers) {
+            mapView.getLayers().add(layer);
+        }
+        for (Layer layer : clusterLayers) {
+            mapView.getLayers().add(layer);
+        }
+        mapView.getLayers().add(annotsLayer);
+        if (debugLayer != null) {
+            mapView.getLayers().add(debugLayer);
+        }
     }
 
     @Override
     public void handleRemoveCluster(final ArrayList value) {
-//        if (!TiApplication.isUIThread()) {
-//            proxy.runInUiThread(new CommandNoReturn() {
-//                @Override
-//                public void execute() {
-//                    handleRemoveCluster(value);
-//                }
-//            }, false);
-//            return;
-//        }
+        // if (!TiApplication.isUIThread()) {
+        // proxy.runInUiThread(new CommandNoReturn() {
+        // @Override
+        // public void execute() {
+        // handleRemoveCluster(value);
+        // }
+        // }, false);
+        // return;
+        // }
 
+        processingTileLayers = true;
         for (ClusterProxy proxy : (ArrayList<ClusterProxy>) value) {
+            VectorLayer layer = proxy.getLayer();
+            layer.setVectorElementEventListener(null);
+            removeClusterLayer(layer);
             proxy.wasRemoved();
         }
+        processingTileLayers = false;
+        resortLayers();
     }
 
     @Override
@@ -1769,33 +2166,47 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         if (mapView == null) {
             return;
         }
-        if (!TiApplication.isUIThread()) {
-            proxy.runInUiThread(new CommandNoReturn() {
-                @Override
-                public void execute() {
-                    handleAddTileSource(value, index);
-                }
-            }, false);
-            return;
-        }
-        int realIndex = index;
+        // if (!TiApplication.isUIThread()) {
+        // proxy.runInUiThread(new CommandNoReturn() {
+        // @Override
+        // public void execute() {
+        // handleAddTileSource(value, index);
+        // }
+        // }, false);
+        // return;
+        // }
+        // int realIndex = index;
         final Activity activity = proxy.getActivity();
-        // for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
-        // TileOverlayOptions options = ((TileSourceProxy) proxy)
-        // .getTileOverlayOptions();
-        // if (options != null) {
-        // if (realIndex != -1) {
-        // options.zIndex(realIndex);
-        // }
-        // proxy.setActivity(activity);
-        // proxy.setTileOverlay(map.addTileOverlay(options));
-        // proxy.setParentForBubbling(CartoView.this.proxy);
-        // // addedTileSources.add(proxy);
-        // }
-        // if (realIndex != -1) {
-        // realIndex++;
-        // }
-        // }
+        processingTileLayers = true;
+        for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
+            proxy.setMapView(CartoView.this);
+            proxy.setParentForBubbling(CartoView.this.proxy);
+            proxy.setActivity(activity);
+            if (proxy.getZIndex() == -1) {
+                proxy.setZIndex(index);
+            }
+            Layer layer = proxy.getOrCreateLayer();
+            if (handledLayers == null) {
+                handledLayers = new HashMap<Layer, Object>();
+            }
+            handledLayers.put(layer, proxy);
+            // TileOverlayOptions options = ((TileSourceProxy) proxy)
+            // .getTileOverlayOptions();
+            if (layer != null) {
+                // if (realIndex != -1) {
+                // options.zIndex(realIndex);
+                // }
+                addTileLayer(layer);
+
+                // proxy.setTileOverlay(map.addTileOverlay(options));
+                // addedTileSources.add(proxy);
+            }
+            // if (realIndex != -1) {
+            // realIndex++;
+            // }
+        }
+        processingTileLayers = false;
+        resortLayers();
     }
 
     @Override
@@ -1813,9 +2224,17 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
             return;
         }
 
+        processingTileLayers = true;
         for (TileSourceProxy proxy : (ArrayList<TileSourceProxy>) value) {
+            TileLayer layer = proxy.getLayer();
+            if (layer != null) {
+                removeTileLayer(layer);
+            }
+            // layer.setVectorElementEventListener(null);
             proxy.wasRemoved();
         }
+        processingTileLayers = false;
+        resortLayers();
     }
 
     public void prepareAnnotation(AnnotationProxy proxy) {
@@ -1831,30 +2250,43 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         CartoMarker gMarker = new CartoMarker((AnnotationProxy) proxy);
         proxy.setMarker(gMarker);
     }
-    
-    public AkMarker addAnnotationToLayer(AnnotationProxy proxy, LocalVectorDataSource source) {
-//      proxy.setActivity(activity);
-      prepareAnnotation(proxy);
-      AkMarker marker = proxy.createMarker();
-      source.add(marker);
-      // we need to set the position again because addMarker can be long and
-      // position might already have changed
-      // marker.setPosition((LatLng) proxy.getPosition());
-      ((CartoMarker) proxy.getMarker()).setMarker(marker);
-      // googlemarker.setTag(proxy);
-      // if (handledMarkers == null) {
-      // handledMarkers = new WeakHashMap<Marker, AnnotationProxy>();
-      // }
-      // handledMarkers.put(googlemarker, proxy);
-      // timarkers.add(proxy.getMarker());
-      return marker;
-  }
 
-    
+    public Marker addAnnotationToSource(AnnotationProxy proxy,
+            LocalVectorDataSource source) {
+        // proxy.setActivity(activity);
+        prepareAnnotation(proxy);
+        Marker marker = proxy.createMarker(baseProjection);
+        if (marker != null) {
+            source.add(marker);
+            // we need to set the position again because addMarker can be long
+            // and
+            // position might already have changed
+            // marker.setPosition((LatLng) proxy.getPosition());
+            ((CartoMarker) proxy.getMarker()).setMarker(marker);
+            // googlemarker.setTag(proxy);
+            if (handledMarkers == null) {
+                handledMarkers = new HashMap<VectorElement, BaseAnnotationProxy>();
+            }
+            handledMarkers.put(marker, proxy);
+        }
+
+        // timarkers.add(proxy.getMarker());
+        return marker;
+    }
+
     public Marker addAnnotationToMap(AnnotationProxy proxy) {
-        AkMarker marker = addAnnotationToLayer(proxy, annotsSource);
-        if (proxy.selected && proxy == selectedAnnotation) {
-            handleSelectAnnotation(selectedAnnotation);
+        Marker marker = addAnnotationToSource(proxy, annotsSource);
+        if (marker == selectedElement) {
+            handleSelectElement(marker);
+        }
+        return marker;
+    }
+
+    public Marker addAnnotationHashMapToMap(HashMap data) {
+        Marker marker = AnnotationProxy.createMarker(this, baseProjection, data,
+                false);
+        if (marker != null) {
+            annotsSource.add(marker);
         }
         return marker;
     }
@@ -1927,7 +2359,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     void updateCamera(final HashMap props) {
         if (props == null)
             return;
-        if (preLayout || mapView == null) {
+        if (mapView == null) {
             props.remove(TiC.PROPERTY_ANIMATE);
             if (!props.containsKey(TiC.PROPERTY_REGION) && props.containsKey(
                     AkylasCartoModule.PROPERTY_CENTER_COORDINATE)) {
@@ -1951,16 +2383,16 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         processApplyProperties(props);
     }
 
-    public void updateMarkerPosition(final AkMarker marker,
-            final MapPos toPosition, final long animationDuration) {
+    public void updateMarkerPosition(final BaseAnnotationProxy annotProxy,
+            final Marker marker, final MapPos toPosition,
+            final long animationDuration) {
         boolean animated = animationDuration > 0;
-        if (!animated || !shouldAnimate()
-                || marker.getProxy().getPosition() == null
+        if (!animated || !shouldAnimate() || annotProxy.getPosition() == null
                 || toPosition == null) {
             marker.setPos(toPosition);
             return;
         }
-        final MapPos startLatLng = marker.getProxy().getPosition();
+        final MapPos startLatLng = (MapPos) annotProxy.getPosition();
         final Handler handler = new Handler();
         final long start = SystemClock.uptimeMillis();
         // final long duration = animationDuration;
@@ -1974,11 +2406,11 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                     long elapsed = SystemClock.uptimeMillis() - start;
                     float t = Math.min(interpolator.getInterpolation(
                             (float) elapsed / animationDuration), 1.0f);
+                    double lat = t * toPosition.getY()
+                            + (1 - t) * startLatLng.getY();
                     double lng = t * toPosition.getX()
-                            + (1 - t) * startLatLng.getY();
-                    double lat = t * toPosition.getX()
-                            + (1 - t) * startLatLng.getY();
-                    marker.setPos(new MapPos(lat, lng));
+                            + (1 - t) * startLatLng.getX();
+                    marker.setPos(baseProjection.fromLatLong(lat, lng));
 
                     if (t < 1.0) {
                         handler.postDelayed(this, 16);
@@ -1992,7 +2424,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     }
 
     public void updateMarkerHeading(final Marker marker, final float heading) {
-        marker.setRotation(heading);
+        marker.setRotation(-heading);
         return;
     }
 
@@ -2070,7 +2502,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     @Override
     public Object coordinateForPoints(Object arg) {
         if (arg instanceof Object[]) {
-            Projection proj = getProjection();
+            // Projection proj = getProjection();
             List<Object> result = new ArrayList<>();
             Object[] array = (Object[]) arg;
             TiPoint pt;
@@ -2080,8 +2512,8 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                 if (pt != null) {
                     Point point = pt.compute(nativeView.getWidth(),
                             nativeView.getHeight());
-                    res = mapView.screenToMap(new ScreenPos(point.x, point.y));
-                    result.add(new Object[] { res.getX(), res.getY() });
+                    res = getScreenPos(point.x, point.y);
+                    result.add(new Object[] { res.getY(), res.getX() });
                 }
 
             }
@@ -2100,22 +2532,16 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
     @Override
     public void onPause(Activity activity) {
-        if (positionUpdaterRunnable != null) {
-            handler.removeCallbacks(positionUpdaterRunnable);
-        }
-        if (mapView != null) {
-            mapView.onPause();
-        }
+        // if (mapView != null) {
+        // mapView.onPause();
+        // }
     }
 
     @Override
     public void onResume(Activity activity) {
-        if (mapView != null) {
-            mapView.onResume();
-        }
-        if (positionUpdaterRunnable != null) {
-            handler.post(positionUpdaterRunnable);
-        }
+        // if (mapView != null) {
+        // mapView.onResume();
+        // }
     }
 
     @Override
@@ -2136,25 +2562,74 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
     @Override
     protected KrollDict fromScreenLocation(Point p) {
-        return AkylasCartoModule
-                .latLongToDict(mapView.screenToMap(new ScreenPos(p.x, p.y)));
+        return AkylasCartoModule.latLongToDict(getScreenPos(p.x, p.y));
     }
 
-    public void removeMarker(Marker m) {
-        annotsSource.remove(m);
-        AnnotationProxy proxy = getProxyByMarker(m);
-        if (proxy != null) {
-            // GoogleMapMarker marker = (GoogleMapMarker) proxy.getMarker();
-            // marker.setTag(null);
-            // if (handledMarkers != null) {
-            // handledMarkers.remove(marker.getMarker());
-            // }
-            deselectAnnotation(proxy);
-            // proxy.removeFromMap(); // only remove from map
-        } else {
-            // m.remove();
+    @Override
+    public boolean isElementARoute(Object element) {
+        return element instanceof RouteProxy || element instanceof Line;
+    }
+
+    @Override
+    public Object getObjectForElement(Object element) {
+        BaseAnnotationProxy annotProxy = proxyForElement(element);
+        if (annotProxy != null) {
+            return annotProxy;
         }
-
+        return null;
     }
+
+    @Override
+    public Object getElementFromObject(Object element) {
+        if (element instanceof VectorElement) {
+            return element;
+        } else if (element instanceof AnnotationProxy) {
+            return ((AnnotationProxy) element).getVectorElement();
+        } else if (element instanceof RouteProxy) {
+            return ((RouteProxy) element).getVectorElement();
+        }
+        return null;
+    }
+
+    @Override
+    protected boolean isElementSelectable(Object element) {
+        if (element instanceof BaseAnnotationProxy) {
+            return ((BaseAnnotationProxy<MapPos>) element).getSelectable();
+        } else if (element instanceof HashMap) {
+            return TiConvert.toBoolean((HashMap) element,
+                    AkylasMapBaseModule.PROPERTY_SELECTABLE);
+        } else {
+            BaseAnnotationProxy annotProxy = proxyForElement(element);
+            if (annotProxy != null) {
+                return annotProxy.getSelectable();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    protected BaseAnnotationProxy proxyForElement(Object element) {
+        if (element instanceof BaseAnnotationProxy) {
+            return (BaseAnnotationProxy) element;
+        }
+        return getProxyByMarker((VectorElement) element);
+    }
+
+    // public void removeElement(VectorElement m) {
+    // annotsSource.remove(m);
+    // BaseAnnotationProxy proxy = getProxyByMarker(m);
+    // if (proxy != null) {
+    // // GoogleMapMarker marker = (GoogleMapMarker) proxy.getMarker();
+    // // marker.setTag(null);
+    // // if (handledMarkers != null) {
+    // handledMarkers.remove(m);
+    // // }
+    // deselectAnnotation(proxy);
+    // // proxy.removeFromMap(); // only remove from map
+    // } else {
+    // // m.remove();
+    // }
+    //
+    // }
 
 }

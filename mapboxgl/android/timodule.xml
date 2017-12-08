@@ -2,11 +2,9 @@
 <ti:module xmlns:ti="http://ti.appcelerator.org" xmlns:android="http://schemas.android.com/apk/res/android">
     <android xmlns:android="http://schemas.android.com/apk/res/android">
         <manifest>
-            <permission android:name="${tiapp.properties['id']}.permission.MAPS_RECEIVE" android:protectionLevel="signature" />
-            <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
-            <uses-permission android:name="${tiapp.properties['id']}.permission.MAPS_RECEIVE" />
-            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
             <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.INTERNET" />
         </manifest>
     </android>
 </ti:module>

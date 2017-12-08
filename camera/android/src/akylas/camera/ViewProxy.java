@@ -117,13 +117,22 @@ public class ViewProxy extends TiViewProxy
         if (view != null)
             ((CameraView) view).startPreview();
     }
-
+    
     @Kroll.method
     public Boolean isStarted() {
         if (view != null)
             return ((CameraView) view).isPreviewStarted();
         else
             return false;
+    }
+
+    @Kroll.method
+    @Kroll.getProperty
+    public float getFOV() {
+        if (view != null)
+            return ((CameraView) view).getFOV();
+        else
+            return 0;
     }
 
     @Kroll.method
@@ -143,7 +152,7 @@ public class ViewProxy extends TiViewProxy
             } else {
                 // Save the picture in the internal data directory so it is
                 // private to this application.
-                imageFile = TiFileHelper.getInstance().getTempFile(TiFileFactory.getDataDirectory(true), ".jpg", true);
+                imageFile = TiFileFactory.createTempFile("photo", ".jpg");
                 
 
             }

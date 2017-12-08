@@ -22,6 +22,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 
 @Kroll.proxy(creatableInModule = AkylasGooglemapModule.class, propertyAccessors = {
         "maxDistance",
@@ -195,6 +196,7 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
     public void onSelect() {
     }
 
+    private Rect r = new Rect();
     private Bitmap generateBitmap(Cluster<AnnotationProxy> cluster) {
         Bitmap result = null;
         if (selected) {
@@ -211,9 +213,11 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
         }
         Canvas canvas;
         Paint paint = new Paint();
+        paint.setFlags(Paint.ANTI_ALIAS_FLAG);
         int color = -1;
+        final int radius = 20;
         if (result == null) {
-            result = Bitmap.createBitmap(30, 30, Bitmap.Config.ARGB_8888);
+            result = Bitmap.createBitmap(radius*2, radius*2, Bitmap.Config.ARGB_8888);
             result.eraseColor(Color.TRANSPARENT);
             canvas = new Canvas(result);
 
@@ -226,7 +230,7 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
                 paint.setColor(color);
                 paint.setStyle(Paint.Style.FILL);
                 paint.setStrokeWidth(strokeWidth);
-                canvas.drawCircle(15, 15, 15, paint);
+                canvas.drawCircle(radius, radius, radius, paint);
             }
 
             if (strokeWidth > 0) {
@@ -238,7 +242,7 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
                     paint.setColor(color);
                     paint.setStyle(Paint.Style.STROKE);
                     paint.setStrokeWidth(strokeWidth);
-                    canvas.drawCircle(15, 15, 15, paint);
+                    canvas.drawCircle(radius, radius, radius, paint);
                 }
             }
         } else {
@@ -252,14 +256,19 @@ public class ClusterProxy extends BaseClusterProxy<LatLng, LatLngBounds> {
         if (selected && selectedColor != -1) {
             color = selectedColor;
         }
-        if (color != -1 && font != null) {
+        if (color != 0 && font != null) {
+            final String text = String.valueOf(cluster.getSize());
             paint.setColor(color);
             paint.setStyle(Paint.Style.FILL);
             paint.setStrokeWidth(strokeWidth);
-            paint.setTextSize(font.size);
-            paint.setTextAlign(Paint.Align.CENTER);
+            paint.setTextSize(font.size * 2); // why the *2?
             paint.setTypeface(font.typeface);
-            canvas.drawText(String.valueOf(cluster.getSize()), 0, 0, paint);
+            paint.setTextAlign(Paint.Align.LEFT);
+            paint.getTextBounds(text, 0, text.length(), r);
+            float x = radius - r.width() / 2f - r.left;
+            float y = radius + r.height() / 2f - r.bottom;
+            canvas.drawText(text, x, y, paint);
+//            canvas.drawText(String.valueOf(cluster.getSize()), 0, 0, paint);
         }
 
         return result;

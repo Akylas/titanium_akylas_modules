@@ -25,4 +25,4 @@
 //
 // IMPORTANT NOTE: always use $(inherited) in your overrides
 // 
-OTHER_LDFLAGS=$(inherited) -F$(SRCROOT)/platform -framework Mapbox -framework GLKit
+OTHER_LDFLAGS=$(inherited) -F$(SRCROOT)/platform -framework CartoMobileSDK -framework GLKit -framework CoreBluetooth

@@ -22,7 +22,6 @@ public class AkylasZoomableimageModule extends ProtectedModule {
 
     public AkylasZoomableimageModule() {
         super();
-        Log.d(TAG, "AkylasZoomableimageModule module instantiated");
     }
 
     @Kroll.onAppCreate

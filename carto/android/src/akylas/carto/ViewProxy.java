@@ -27,9 +27,11 @@ import android.os.Message;
         AkylasMapBaseModule.PROPERTY_INDOOR_CONTROLS_ENABLED,
         AkylasMapBaseModule.PROPERTY_MAPSTYLE,
         TiC.PROPERTY_PADDING,
+        AkylasCartoModule.PROPERTY_ANIMATION_DURATION,
+        AkylasCartoModule.PROPERTY_FOCUS_OFFSET
 })
 public class ViewProxy extends MapDefaultViewProxy {
-    private static final String TAG = "GoogleMapViewProxy";
+    private static final String TAG = "MapboxViewProxy";
     
     
     private static final int MSG_FIRST_ID = MapDefaultViewProxy.MSG_LAST_ID + 1;
@@ -78,14 +80,6 @@ public class ViewProxy extends MapDefaultViewProxy {
     @Override
     protected Class groundOverlayClass() {
         return GroundOverlayProxy.class;
-    }
-    
-    @Override
-    public void realizeViews(TiUIView view, boolean enableModelListener, boolean processProperties)
-    {
-        if (((CartoView)view).getMapView() != null) {
-            super.realizeViews(view, enableModelListener, processProperties);
-        }
     }
     
     public TiUIView createView(Activity activity) {

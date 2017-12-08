@@ -81,6 +81,8 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
     boolean isReady = false;
 
     float[] mRotationMatrix;
+    float[] temporaryQuaternion;
+    float[] mOrientation;
     float[] filteredAcc = new float[3];
     float[] filteredMag = new float[3];
 
@@ -176,8 +178,11 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                 }
                 if (!rotationRegistered && motionSensors.contains(EVENT_ROTATION)) {
                     TiSensorHelper
-                            .registerListener(Sensor.TYPE_GAME_ROTATION_VECTOR,
+                            .registerListener(Sensor.TYPE_ROTATION_VECTOR,
                                     this, sensorDelay);
+                    TiSensorHelper
+                    .registerListener(Sensor.TYPE_MAGNETIC_FIELD,
+                            this, sensorDelay);
 
                 }
                 motionRegistered = true;
@@ -255,7 +260,9 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                 }
                 if (!rotationRegistered) {
                     TiSensorHelper.unregisterListener(
-                            Sensor.TYPE_GAME_ROTATION_VECTOR, this);
+                            Sensor.TYPE_ROTATION_VECTOR, this);
+                    TiSensorHelper.unregisterListener(
+                            Sensor.TYPE_MAGNETIC_FIELD, this);
                 }
                 motionRegistered = false;
             }
@@ -268,9 +275,11 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
             currentMagnetometerAccuracy = accuracy;
     }
 
-    private KrollDict eventToDict(int type, float[] values) {
+    private KrollDict eventToDict(int type, float[] values, Integer eventAccuracy) {
         KrollDict sensordata = new KrollDict();
-        
+        if (eventAccuracy != null) {
+            sensordata.put(TiC.PROPERTY_ACCURACY, eventAccuracy);
+        }
 
         switch (type) {
         case Sensor.TYPE_ACCELEROMETER: {
@@ -374,7 +383,12 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
         }
         case Sensor.TYPE_ROTATION_VECTOR:
         case Sensor.TYPE_GAME_ROTATION_VECTOR: {
-            sensordata.put("quaternion", values);
+            if (temporaryQuaternion == null) {
+                temporaryQuaternion = new float[4];
+            }
+            SensorManager.getQuaternionFromVector(temporaryQuaternion,values);
+            sensordata.put("quaternion", temporaryQuaternion);
+            sensordata.put(TiC.PROPERTY_ACCURACY, currentMagnetometerAccuracy);
             if (computeRotationMatrix) {
                 if (mRotationMatrix == null) {
                     mRotationMatrix = new float[9];
@@ -382,6 +396,11 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                 SensorManager.getRotationMatrixFromVector(mRotationMatrix,
                         values);
                 sensordata.put("rotationMatrix", mRotationMatrix);
+                if (mOrientation == null) {
+                    mOrientation = new float[3];
+                }
+                SensorManager.getOrientation( mRotationMatrix, mOrientation );
+                sensordata.put("orientation", mOrientation);
             }
 
         }
@@ -432,7 +451,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                     if (!mCurrentValues.containsKey(Sensor.TYPE_GRAVITY))
                         return;
                     sensordata = eventToDict(event.sensor.getType(),
-                            event.values);
+                            event.values, event.accuracy);
                     mCurrentValues.remove(Sensor.TYPE_GRAVITY);
                 } else if (event.sensor.getType() == Sensor.TYPE_GRAVITY
                         && accelerometerRegistered) {
@@ -448,7 +467,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                     }
                 } else {
                     sensordata = eventToDict(event.sensor.getType(),
-                            event.values);
+                            event.values, event.accuracy);
                 }
 
                 if (sensordata != null) {
@@ -485,6 +504,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
 
             KrollDict data = new KrollDict();
             data.put(TiC.PROPERTY_TIMESTAMP, newSensorEventTimestamp);
+            data.put(TiC.PROPERTY_ACCURACY, event.accuracy);
             data.put(TiC.EVENT_PROPERTY_TYPE, EVENT_MOTION);
 
             KrollDict sensordata;
@@ -492,7 +512,7 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
             // ACCELEROMETER
             if (motionSensors.contains(EVENT_ACC)) {
                 sensordata = eventToDict(Sensor.TYPE_LINEAR_ACCELERATION,
-                        mCurrentValues.get(Sensor.TYPE_LINEAR_ACCELERATION));
+                        mCurrentValues.get(Sensor.TYPE_LINEAR_ACCELERATION), null);
                 data.put(EVENT_ACC, sensordata);
             }
 
@@ -506,14 +526,14 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
             // ORIENTATION
             if (motionSensors.contains(EVENT_ORIENTATION)) {
                 sensordata = eventToDict(Sensor.TYPE_ORIENTATION,
-                        mCurrentValues.get(Sensor.TYPE_ORIENTATION));
+                        mCurrentValues.get(Sensor.TYPE_ORIENTATION), null);
                 data.put(EVENT_ORIENTATION, sensordata);
             }
 
             // MAGNETIC_FIELD
             if (motionSensors.contains(EVENT_MAG)) {
                 sensordata = eventToDict(Sensor.TYPE_MAGNETIC_FIELD,
-                        mCurrentValues.get(Sensor.TYPE_MAGNETIC_FIELD));
+                        mCurrentValues.get(Sensor.TYPE_MAGNETIC_FIELD), null);
                 data.put(EVENT_MAG, sensordata);
             }
 
@@ -526,6 +546,11 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
                     }
                     SensorManager.getRotationMatrixFromVector(mRotationMatrix, quat);
                     data.put("rotationMatrix", mRotationMatrix);
+                    if (mOrientation == null) {
+                        mOrientation = new float[3];
+                    }
+                    SensorManager.getOrientation( mRotationMatrix, mOrientation );
+                    data.put("orientation", mOrientation);
                 }
                 
             }
@@ -652,6 +677,16 @@ public class AkylasMotionAndroidModule extends ProtectedModule implements
     @Kroll.getProperty(enumerable=false)
     public boolean getHasOrientation() {
         return hasSensor(Sensor.TYPE_ORIENTATION);
+    }    /**
+     * Checks if the device has an orientation sensor sensor
+     * 
+     * @return <code>true</code> if the device has an orientation sensor,
+     *         <code>false</code> if not
+     */
+    @Kroll.method
+    @Kroll.getProperty(enumerable=false)
+    public boolean getHasRotation() {
+        return hasSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     /**

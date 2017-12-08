@@ -22,7 +22,7 @@ export class AKLang {
             this.useI18next = true;
             var path = _config.modulesDir;
             console.debug('loading i18next', path);
-            this.i18n = require(path + 'i18next');
+            this.i18n = require(path ? (path + 'i18next') : 'i18next');
             if (this.i18n) {
                 console.debug('i18nnext loaded');
                 _context.t = function (_id, _params) {
@@ -53,7 +53,8 @@ export class AKLang {
         }
         // }
         console.debug('locale', this, _config);
-        var loadModuleLang =  (moduleName, path, callback, ...langs) => {
+        var loadModuleLang = (moduleName, path, callback, ...langs) => {
+            path = path || '';
             langs.forEach(function (value: string) {
                 var lang = null;
                 try {

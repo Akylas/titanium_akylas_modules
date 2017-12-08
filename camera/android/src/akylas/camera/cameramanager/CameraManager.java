@@ -594,4 +594,9 @@ public final class CameraManager {
     public Camera.Size getCameraResolution() {
         return configManager.getCameraResolution();
     }
+
+    public float getFOV() {
+        Camera.Parameters p = camera.getParameters();
+        return p.getHorizontalViewAngle();
+    }
 }

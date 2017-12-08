@@ -18,25 +18,25 @@ function findDeep(obj, key) {
     return res;
 }
 
-export interface Template {
+export interface _Template {
     [k:string]:any
     bindId?:string
     properties?:TiDict
     events?:{[k:string]:Function}
-    childTemplates?:Template[] 
+    childTemplates?:_Template[] 
 }
 
 
 export default class _TemplateModule {
-    [key: string]: Template | Function | void
-    prepareTemplate(_template: Template, _type?: string, _defaults?: TiDict): TiDict | void { }
+    [key: string]: _Template | Function | void
+    prepareTemplate(_template: _Template, _type?: string, _defaults?: TiDict): TiDict | void { }
     constructor(options?) {
         this.prepareTemplate = ak.ti.style;
         if (options) {
             Object.assign(this, options);
         }
     }
-    internalAddEvents = (_template: Template, _properties?: TiDict) => {
+    internalAddEvents = (_template: _Template, _properties?: TiDict) => {
         if (!_template || !_properties) return;
         var props;
         if (_properties.hasOwnProperty('events')) {
@@ -111,7 +111,7 @@ export default class _TemplateModule {
 
 
     cloneTemplateAndFill = (_template, _properties?, _events?) => {
-        var template:Template = (Object.isObject(_template)) ? _template : this.getTemplate(_template);
+        var template:_Template = (Object.isObject(_template)) ? _template : this.getTemplate(_template);
         // console.debug('cloneTemplateAndFill', _template, _properties);
         if (template) {
             template = JSON.parse(JSON.stringify(template));
@@ -126,7 +126,7 @@ export default class _TemplateModule {
         return null;
     }
     getTemplate = (_key: string) => {
-        return this[_key] as Template;
+        return this[_key] as _Template;
     }
     addTemplate = (_template, _key: string) => {
         this[_key] = this.prepareTemplate(_template);
@@ -137,5 +137,6 @@ declare global {
     type TemplateModule =_TemplateModule
     module AK {
         class TemplateModule extends _TemplateModule { }
+        interface Template extends _Template { }
     }
 }

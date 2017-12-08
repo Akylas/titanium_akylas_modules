@@ -95,14 +95,14 @@ public class CameraView extends TiUINonViewGroupView implements SurfaceHolder.Ca
 	            float viewRatio = (float)height / width;
 	            
 	            float newratio = viewRatio/camRatio;
-	            if (camRatio < viewRatio) {
-	                ignoreSurfaceChanged = true;
-	                setMeasuredDimension(width, (int) (width / camRatio));
-	            } else {
-	                ignoreSurfaceChanged =  true;
-	                setMeasuredDimension((int) (height * camRatio), height);
-
-	            }
+//	            if (camRatio < viewRatio) {
+//	                ignoreSurfaceChanged = true;
+//	                setMeasuredDimension(width, (int) (width / camRatio));
+//	            } else {
+//	                ignoreSurfaceChanged =  true;
+//	                setMeasuredDimension((int) (height * camRatio), height);
+//
+//	            }
 //	          if (camHeight < height) {
 ////	                newHeightRatio = (float) height / (float) mPreviewSize.height;
 ////	                newCamHeight = (newHeightRatio * camHeight);
@@ -334,5 +334,11 @@ public class CameraView extends TiUINonViewGroupView implements SurfaceHolder.Ca
 ////            TiViewHelper.setScale(previewLayout, ratio/viewRatio, 1.0f);
 //        }
 //        previewLayout.setAspectRatio((float)res.x / res.y);
+        proxy.fireEvent("previewstarted");
+    }
+
+    public float getFOV() {
+        return CameraManager.get().getFOV();
+        
     }
 }

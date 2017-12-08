@@ -1,51 +1,17 @@
-declare global {
-    class BaseWindow extends TiWindow {
-        // navWindow: Boolean
-        isOpened: boolean
-        navWindow?: boolean
-        exitOnBack?: boolean
 
-        underContainer?: View
-        winOpeningArgs?: titanium.openWindowParams
-        winClosingArgs?: titanium.openWindowParams
-        openMe(args?)
-        closeMe(args?)
-        hideMe?(args?)
-        onOpen?(args?)
-        onClose?(args?)
-        shouldShowBackButton(backTitle: string)
-        showLoading(args?)
-        hideLoading(args?)
-        addPropertiesToGC(key: string)
-    }
-    class NavWindow extends AppWindow {
-        window: AppWindow
-        navOpenWindow(_win: AppWindow, _args?: TiDict)
-        createManagedWindow(constructor?: string, args?: TiDict)
-        createAndOpenWindow(_constructor: string, _args?: TiDict, _winArgs?: TiDict)
-        openWindow(_win: TiWindow, _args?, _dontCheckOpening?: Boolean)
-        closeToRootWindow()
-        canGCWindow(_win: TiWindow)
-        isOpened: boolean
-        closeAllWindows(_args?: TiDict)
-        closeCurrentWindow(_args?: TiDict)
-        closeWindow(_win: TiWindow, _args?: TiDict)
-    }
-}
-
-var constructors = ['Ti.UI.createNavigationWindow', 'Ti.UI.createWindow'];
+const constructors = ['Ti.UI.createNavigationWindow', 'Ti.UI.createWindow'];
 export function create(_args) {
     _args = _args || {};
 
     function defaults(obj, args) {
-        if (_.isFunction(obj.hasOwnProperty) && !_.isFunction(obj.setPropertiesAndFire)) {
+        if (typeof obj.hasOwnProperty === 'function' && typeof obj.setPropertiesAndFire !== 'function') {
             _.defaults(obj, args);
         } else {
-            _.forEach(args, function (value, key) {
+            for (const key in args) {
                 if (obj[key] !== undefined) {
                     delete args[key];
                 }
-            });
+            }
             obj.applyProperties(args);
         }
     }
@@ -73,13 +39,13 @@ export function create(_args) {
             });
         }
     }
-
+    
     var self: BaseWindow = new this[(!!_args.animatedWindow && 'AnimatedWindow') ||
         (!!_args.navWindow && 'NavigationWindow') || 'Window'](_args);
     // var navWindow;
     var indicator;
     // currentTopWindow;
-
+    
     var children = [];
     if (_args.underContainerView) {
         children = children.concat(_args.underContainerView);
@@ -134,7 +100,7 @@ export function create(_args) {
     // if (_args.navBar === true) {
     //     self.createNavBar();
     // }
-
+    
     if (_args.navWindow === true) {
         let selfNav = self as NavWindow;
         // var window = _args.window;
@@ -266,7 +232,7 @@ export function create(_args) {
             self && self.remove(indicator);
         };
     }
-
+    
     self.shouldShowBackButton = function (_backTitle) {
         if (!self.leftNavButton) {
             if (__APPLE__) {
@@ -345,11 +311,11 @@ export function create(_args) {
     self.GC = app.composeFunc(self.GC, function () {
         if (self && self !== null) {
             console.debug('BaseWindow GC', self.title);
-            _.each(propertiesToGC, function (key, index, list) {
+            propertiesToGC.forEach(function (key, index, list) {
                 var value = self[key];
                 if (value && value !== null) {
                     var ignored = toIgnore.indexOf(key) !== -1;
-                    if (!ignored && _.isFunction(value.GC)) {
+                    if (!ignored && typeof value.GC === 'function') {
                         console.debug('BaseWindow GC', 'property GC:', key);
                         value.GC();
                         self[key] = null;

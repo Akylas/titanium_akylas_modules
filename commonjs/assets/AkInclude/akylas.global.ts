@@ -1,11 +1,11 @@
 declare global {
     type TiPlatformInfo = TiDict & {
-        ostype:string
-        name:string
-        id:string
-        locale:string
-        model:string
-        SDKVersion:number
+        ostype: string
+        name: string
+        id: string
+        locale: string
+        model: string
+        SDKVersion: number
         isAndroid: boolean
         isApple: boolean
         densityFactor: number
@@ -58,6 +58,8 @@ export class AKClass {
             this['__APPLE__'] = module.osname === 'ipad' || module.osname === 'iphone';
             this['__ANDROID__'] = module.osname === 'android';
             this['__PRODUCTION__'] = Ti.App.deployType === 'production';
+            this['__DEVELOPMENT__'] = Ti.App.deployType === 'development';
+            this['__SIMULATOR__'] = /simulator|sdk/i.test(Ti.Platform.model);
             this.stringify = this.stringify || function (value: any, space: string | number) {
                 var cache = [];
                 var result = JSON.stringify(value, function (key, value) {
@@ -122,14 +124,14 @@ export class AKClass {
                 } else if (moduleStr === 'moment') {
                     if (context.moment)
                         continue;
-                    var path = _config.modulesDir + 'moment/';
+                    var path = _config.modulesDir ? (_config.modulesDir + 'moment/') : '';
                     _config.momentPath = path;
                     context.moment = require(path + 'moment');
                     // module.moment = context.moment;
                 } else if (moduleStr === 'numeral') {
                     if (context.numeral)
                         continue;
-                    var path = _config.modulesDir + 'numeral/';
+                    var path = _config.modulesDir ? (_config.modulesDir + 'numeral/') : '';
                     _config.numeralPath = path;
                     context.numeral = require(path + 'numeral');
                     // module.numeral = context.numeral;

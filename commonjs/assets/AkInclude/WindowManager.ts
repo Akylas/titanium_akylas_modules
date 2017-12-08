@@ -16,13 +16,13 @@ function prepareModalClosingArgs(_args) {
     return _args;
 }
 
-var isAndroid = Ti.Platform.osname === 'android';
+const TAG = 'WindowManager';
+const isAndroid = Ti.Platform.osname === 'android';
 export class AKWindowManager implements AK.IWindowManager {
     rootWindow: TiWindow
     private _winId = 0
     private _managers = {}
     // openedWindows: [],
-    private TAG: 'WindowManager'
     handlingOpening = false
     defaultWinOpeningArgs = {}
     shouldDelayOpening = false
@@ -121,7 +121,7 @@ export class AKWindowManager implements AK.IWindowManager {
         if (_win.winManager) {
             _win.winManager.openWindow(_win, realArgs as TiDict);
         } else {
-            // console.debug(this.TAG, '_openWindow', realArgs);
+            console.debug(TAG, '_openWindow', realArgs);
             _win.open(realArgs as titanium.openWindowParams);
         }
         if (_win.toDoAfterOpening) {

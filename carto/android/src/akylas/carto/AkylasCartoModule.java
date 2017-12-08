@@ -1,16 +1,22 @@
 package akylas.carto;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.APIMap;
+import org.appcelerator.kroll.common.Log;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
 
 import com.carto.core.MapBounds;
 import com.carto.core.MapPos;
 import com.carto.layers.CartoBaseMapStyle;
+import com.carto.packagemanager.CartoPackageManager;
+import com.carto.packagemanager.PackageInfo;
+import com.carto.packagemanager.PackageInfoVector;
 import com.carto.ui.MapView;
 
 import akylas.map.common.AkylasMapBaseModule;
@@ -37,14 +43,14 @@ public class AkylasCartoModule extends
                 @Override
                 public MapPos createPoint(final double latitude,
                         final double longitude, final double altitude) {
-                    return new MapPos(latitude, longitude, altitude);
+                    return new MapPos(longitude, latitude, altitude);
                 }
 
                 @Override
                 public MapBounds createRegion(final double north,
                         final double east, final double south, final double west) {
-                    return new MapBounds(new MapPos(south, west),
-                            new MapPos(north, east));
+                    return new MapBounds(new MapPos(west, south),
+                            new MapPos(east, north));
                 }
 
                 @Override
@@ -84,14 +90,14 @@ public class AkylasCartoModule extends
                         return region1;
                     }
 
-                    return createRegion(Math.max(region1.getMax().getX(),
-                            region2.getMax().getX()), Math.max(
-                            region1.getMax().getY(),
-                            region2.getMax().getY()), Math.min(
-                            region1.getMin().getX(),
-                            region2.getMin().getX()), Math.min(
+                    return createRegion(Math.max(region1.getMax().getY(),
+                            region2.getMax().getY()), Math.max(
+                            region1.getMax().getX(),
+                            region2.getMax().getX()), Math.min(
                             region1.getMin().getY(),
-                            region2.getMin().getY()));
+                            region2.getMin().getY()), Math.min(
+                            region1.getMin().getX(),
+                            region2.getMin().getX()));
                 }
 
                 @Override
@@ -101,10 +107,10 @@ public class AkylasCartoModule extends
                     KrollDict result = new KrollDict();
                     KrollDict ne = new KrollDict();
                     KrollDict sw = new KrollDict();
-                    ne.put(TiC.PROPERTY_LATITUDE, region.getMax().getX());
-                    ne.put(TiC.PROPERTY_LONGITUDE, region.getMax().getY());
-                    sw.put(TiC.PROPERTY_LATITUDE, region.getMin().getX());
-                    sw.put(TiC.PROPERTY_LONGITUDE, region.getMin().getY());
+                    ne.put(TiC.PROPERTY_LATITUDE, region.getMax().getY());
+                    ne.put(TiC.PROPERTY_LONGITUDE, region.getMax().getX());
+                    sw.put(TiC.PROPERTY_LATITUDE, region.getMin().getY());
+                    sw.put(TiC.PROPERTY_LONGITUDE, region.getMin().getX());
                     result.put(PROPERTY_NE, ne);
                     result.put(PROPERTY_SW, sw);
                     return result;
@@ -112,12 +118,12 @@ public class AkylasCartoModule extends
 
                 @Override
                 public double getLatitude(MapPos point) {
-                    return point.getX();
+                    return point.getY();
                 }
 
                 @Override
                 public double getLongitude(MapPos point) {
-                    return point.getY();
+                    return point.getX();
                 }
 
                 @Override
@@ -130,13 +136,13 @@ public class AkylasCartoModule extends
                         MapPos point) {
                     if (region1 != null && point != null) {
                         return createRegion(Math.max(
-                                region1.getMax().getX(), point.getX()),
-                                Math.max(region1.getMax().getY(),
-                                        point.getY()), Math.min(
+                                region1.getMax().getY(), point.getY()),
+                                Math.max(region1.getMax().getX(),
+                                        point.getX()), Math.min(
                                         region1.getMin().getX(),
                                         point.getX()), Math.min(
-                                        region1.getMin().getY(),
-                                        point.getY()));
+                                        region1.getMin().getX(),
+                                        point.getX()));
                     }
                     return region1;
                 }
@@ -146,16 +152,16 @@ public class AkylasCartoModule extends
                     if (point == null)
                         return null;
                     KrollDict result = new KrollDict();
-                    result.put(TiC.PROPERTY_LATITUDE, point.getX());
-                    result.put(TiC.PROPERTY_LONGITUDE, point.getY());
+                    result.put(TiC.PROPERTY_LATITUDE, point.getY());
+                    result.put(TiC.PROPERTY_LONGITUDE, point.getX());
                     return result;
                 }
 
                 @Override
                 public double getDistance(MapPos p1, MapPos p2) {
                     float[] results = new float[1];
-                    Location.distanceBetween(p1.getX(), p1.getY(),
-                            p2.getX(), p2.getY(),
+                    Location.distanceBetween(p1.getY(), p1.getX(),
+                            p2.getY(), p2.getX(),
                                              results);
                     return results[0];
                 }
@@ -237,6 +243,93 @@ public class AkylasCartoModule extends
             mapTypes.put("darkmatter",MAP_TYPE_DARKMATTER);
         }
         return mapTypes;
+    }
+    
+    private static String  cacheFolder = null;
+    private static String  packagesFolder = null;
+    public static String getMapCacheFolder() {
+        if (cacheFolder == null)
+        {        
+            File baseDirectory = TiApplication.getAppContext() .getExternalFilesDir(null);
+            File folder = new File(baseDirectory, "cache");
+            if (!(folder.mkdirs() || folder.isDirectory())) {
+                Log.e(TAG, "Could not create cache folder!");
+            } else {
+                cacheFolder = folder.getAbsolutePath();
+            }
+        }
+        return cacheFolder;
+    }
+    
+    public static String getMapPackagesFolder() {
+        if (packagesFolder == null)
+        {        
+            File baseDirectory = TiApplication.getAppContext() .getExternalFilesDir(null);
+            File folder = new File(baseDirectory, "packages");
+            if (!(folder.mkdirs() || folder.isDirectory())) {
+                Log.e(TAG, "Could not create cache folder!");
+            } else {
+                packagesFolder = folder.getAbsolutePath();
+            }
+        }
+        return packagesFolder;
+    }
+    
+    private static CartoPackageManager offlineManager = null;
+    public static CartoPackageManager getOfflineManager() {
+        if (offlineManager == null) {
+         // Create package manager
+            try {
+                offlineManager = new CartoPackageManager("carto.streets", AkylasCartoModule.getMapPackagesFolder());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return offlineManager;
+    }
+    
+    @Kroll.method
+    public Object[] getOfflineServerPackages() {
+        final CartoPackageManager manager = getOfflineManager();
+        PackageInfoVector vector = manager.getServerPackages();
+        int count = (int)vector.size();
+        Object[] result = new Object[count];
+        PackageInfo info;
+        for(int i = 0; i < count; i++) {
+            info = vector.get(i);
+            HashMap data = new HashMap();
+            data.put("id",info.getPackageId());
+            data.put("type",info.getPackageType());
+            data.put("mask",info.getTileMask());
+            data.put("version",info.getVersion());
+            data.put("metainfo",info.getMetaInfo());
+            data.put("name",info.getName());
+            data.put("size",info.getSize());
+            result[i] = data;
+        }
+        return result;        
+    }
+    
+    @Kroll.method
+    public Object[] getOfflineLocalPackages() {
+        final CartoPackageManager manager = getOfflineManager();
+        PackageInfoVector vector = manager.getLocalPackages();
+        int count = (int)vector.size();
+        Object[] result = new Object[count];
+        PackageInfo info;
+        for(int i = 0; i < count; i++) {
+            info = vector.get(i);
+            HashMap data = new HashMap();
+            data.put("id",info.getPackageId());
+            data.put("type",info.getPackageType());
+            data.put("mask",info.getTileMask());
+            data.put("version",info.getVersion());
+            data.put("metainfo",info.getMetaInfo());
+            data.put("name",info.getName());
+            data.put("size",info.getSize());
+            result[i] = data;
+        }
+        return result;        
     }
 
 }

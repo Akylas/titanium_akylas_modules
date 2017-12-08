@@ -19,9 +19,12 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-function EventEmitter() {
+function EventEmitter(options) {
   this._events = this._events || {};
   this._maxListeners = this._maxListeners || undefined;
+  for (var key in options) {
+    this[key] = options[key];
+  }
 }
 module.exports = EventEmitter;
 
@@ -37,14 +40,14 @@ EventEmitter.defaultMaxListeners = 10;
 
 // Obviously not all Emitters should be limited to 10. This function allows
 // that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
+EventEmitter.prototype.setMaxListeners = function (n) {
   if (!isNumber(n) || n < 0 || isNaN(n))
     throw TypeError('n must be a positive number');
   this._maxListeners = n;
   return this;
 };
 
-EventEmitter.prototype.emit = function(type) {
+EventEmitter.prototype.emit = function (type) {
   var er, handler, len, args, i, listeners;
 
   if (!this._events)
@@ -83,7 +86,7 @@ EventEmitter.prototype.emit = function(type) {
       case 3:
         handler.call(this, arguments[1], arguments[2]);
         break;
-      // slower
+        // slower
       default:
         args = Array.prototype.slice.call(arguments, 1);
         handler.apply(this, args);
@@ -99,7 +102,7 @@ EventEmitter.prototype.emit = function(type) {
   return true;
 };
 
-EventEmitter.prototype.addListener = function(type, listener) {
+EventEmitter.prototype.addListener = function (type, listener) {
   var m;
 
   if (!isFunction(listener))
@@ -112,8 +115,8 @@ EventEmitter.prototype.addListener = function(type, listener) {
   // adding it to the listeners, first emit "newListener".
   if (this._events.newListener)
     this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
+      isFunction(listener.listener) ?
+      listener.listener : listener);
 
   if (!this._events[type])
     // Optimize the case of one listener. Don't need the extra array object.
@@ -136,9 +139,9 @@ EventEmitter.prototype.addListener = function(type, listener) {
     if (m && m > 0 && this._events[type].length > m) {
       this._events[type].warned = true;
       console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
+        'leak detected. %d listeners added. ' +
+        'Use emitter.setMaxListeners() to increase limit.',
+        this._events[type].length);
       if (typeof console.trace === 'function') {
         // not supported in IE 10
         console.trace();
@@ -149,9 +152,9 @@ EventEmitter.prototype.addListener = function(type, listener) {
   return this;
 };
 
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+EventEmitter.prototype.on = EventEmitter.prototype.addEventListener = EventEmitter.prototype.addListener;
 
-EventEmitter.prototype.once = function(type, listener) {
+EventEmitter.prototype.once = function (type, listener) {
   if (!isFunction(listener))
     throw TypeError('listener must be a function');
 
@@ -173,7 +176,7 @@ EventEmitter.prototype.once = function(type, listener) {
 };
 
 // emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
+EventEmitter.prototype.removeListener = function (type, listener) {
   var list, position, length, i;
 
   if (!isFunction(listener))
@@ -187,7 +190,7 @@ EventEmitter.prototype.removeListener = function(type, listener) {
   position = -1;
 
   if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
+    (isFunction(list.listener) && list.listener === listener)) {
     delete this._events[type];
     if (this._events.removeListener)
       this.emit('removeListener', type, listener);
@@ -195,7 +198,7 @@ EventEmitter.prototype.removeListener = function(type, listener) {
   } else if (isObject(list)) {
     for (i = length; i-- > 0;) {
       if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
+        (list[i].listener && list[i].listener === listener)) {
         position = i;
         break;
       }
@@ -217,8 +220,9 @@ EventEmitter.prototype.removeListener = function(type, listener) {
 
   return this;
 };
+EventEmitter.prototype.off = EventEmitter.prototype.removeEventListener = EventEmitter.prototype.removeListener;
 
-EventEmitter.prototype.removeAllListeners = function(type) {
+EventEmitter.prototype.removeAllListeners = function (type) {
   var key, listeners;
 
   if (!this._events)
@@ -258,7 +262,7 @@ EventEmitter.prototype.removeAllListeners = function(type) {
   return this;
 };
 
-EventEmitter.prototype.listeners = function(type) {
+EventEmitter.prototype.listeners = function (type) {
   var ret;
   if (!this._events || !this._events[type])
     ret = [];
@@ -269,7 +273,7 @@ EventEmitter.prototype.listeners = function(type) {
   return ret;
 };
 
-EventEmitter.prototype.listenerCount = function(type) {
+EventEmitter.prototype.listenerCount = function (type) {
   if (this._events) {
     var evlistener = this._events[type];
 
@@ -281,7 +285,7 @@ EventEmitter.prototype.listenerCount = function(type) {
   return 0;
 };
 
-EventEmitter.listenerCount = function(emitter, type) {
+EventEmitter.listenerCount = function (emitter, type) {
   return emitter.listenerCount(type);
 };
 

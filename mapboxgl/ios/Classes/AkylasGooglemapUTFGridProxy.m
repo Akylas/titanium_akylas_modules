@@ -6,11 +6,11 @@
 //
 //
 
-#import "AkylasGooglemapUTFGridProxy.h"
+#import "AkylasCartoUTFGridProxy.h"
 #import "AkylasUTFGridTileLayer.h"
 #import "AkylasMapBaseModule.h"
 #import "TiUtils.h"
-@interface AkylasGooglemapTileSourceProxy()
+@interface AkylasCartoTileSourceProxy()
 {
 @protected
     GMSTileLayer*  _gTileLayer;
@@ -19,7 +19,7 @@
 }
 @end
 
-@implementation AkylasGooglemapUTFGridProxy
+@implementation AkylasCartoUTFGridProxy
 -(void)_configure
 {
     [super _configure];

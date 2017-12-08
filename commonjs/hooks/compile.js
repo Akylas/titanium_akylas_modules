@@ -19,19 +19,15 @@ function mkDirsSync(thePath) {
 		return;
 	}
 	var newPath;
-	console.log('mkDirsSync', rootPath);
 	while (rootPath && (newPath = path.dirname(rootPath)) !== rootPath && !fs.existsSync(newPath)) {
 		rootPath = newPath;
 	}
-	console.log('mkDirsSync1', rootPath);
 	if (originPath !== rootPath) {
 		//we found the root to start from
 		var split = path.relative(rootPath, originPath).split('/');
-		console.log('mkDirsSync2', rootPath, split);
 		for (var i = 0; i < split.length; i++) {
 			fs.mkdirSync(rootPath);
 			rootPath = path.join(rootPath, split[i]);
-			console.log('mkdirSync', rootPath);
 		}
 	}
 
@@ -39,6 +35,7 @@ function mkDirsSync(thePath) {
 }
 
 function removefilesfromregex(regex, currentDirectory, logger) {
+	logger.debug('removefilesfromregex' + currentDirectory);
 	if (!isDir(currentDirectory)) {
 		return;
 	}
@@ -271,10 +268,15 @@ function compileRJSS(rootDir, destDir, filePath, logger) {
 		}
 	}
 
+
 	var newPath = path.join(destDir, path.relative(rootDir, filePath)) + '.compiled.js';
-	logger.debug('compileRJSS: %s to %s', filePath.cyan, newPath.cyan);
-	mkDirsSync(newPath);
-	fs.writeFileSync(newPath, result);
+	var dirName = path.dirname(newPath);
+	var joinedPath = path.join(dirName, 'joined.rjss.compiled.js');
+
+
+	logger.debug('compileRJSS: %s to %s', filePath.cyan, joinedPath.cyan);
+	mkDirsSync(joinedPath);
+	fs.appendFileSync(joinedPath, result);
 }
 
 function deployTypeFromTarget(_target) {
@@ -374,6 +376,7 @@ exports.init = function (logger, config, cli, appc) {
 		needsToRun = !shouldNotCompile;
 		if (needsToRun === true) {
 			var destDir = path.join(data.buildDir, 'rjss');
+			removefilesfromregex(/.rjss.compiled.js$/, destDir, logger);
 			var regex = data.config.cli.ignoreFiles;
 			logger.debug('compiling RJSS files ' + regex);
 			regex = regex.replace(')$', '|\.*\\.rjss)$');

@@ -1,5 +1,7 @@
 package akylas.carto;
 
+import java.util.List;
+
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
@@ -17,7 +19,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 @Kroll.proxy(creatableInModule = AkylasCartoModule.class)
-public class GroundOverlayProxy extends BaseGroundOverlayProxy<MapPos, MapBounds> implements TiDrawableTarget {
+public class GroundOverlayProxy extends BaseGroundOverlayProxy<MapPos, MapBounds , List<MapPos>> implements TiDrawableTarget {
     
 //    private GroundOverlayOptions options = null;
 //    private GroundOverlay overlay;
@@ -130,5 +132,35 @@ public class GroundOverlayProxy extends BaseGroundOverlayProxy<MapPos, MapBounds
 //            overlay.setTag(null);
 //            overlay = null;
 //        }
+    }
+
+    @Override
+    protected long getPointsSize() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    protected Object getPoint(int i) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected void addPos(Object point) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    protected void clearPoints() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    protected Object[] getPointsArray() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -1,5 +1,17 @@
 /// <reference path="/Volumes/data/mguillon/Library/Application Support/Titanium/mobilesdk/osx/7.0.0.AKYLAS/titanium.d.ts" />
-    
+/// <reference path="./TemplateModule.d.ts" />
+/// <reference path="./AKInclude/akylas.global.d.ts" />
+/// <reference path="./AKInclude/akylas.lang.d.ts" />
+/// <reference path="./AKInclude/akylas.ti.d.ts" />
+/// <reference path="./AKInclude/App.d.ts" />
+/// <reference path="./AKInclude/MicroEvent.d.ts" />
+/// <reference path="./AKInclude/WindowManager.d.ts" />
+/// <reference path="./AKInclude/UI/BaseWindow.d.ts" />
+/// <reference path="./AKInclude/UI/AnimatedWindow.d.ts" />
+/// <reference path="./AKInclude/UI/AppTabController.d.ts" />
+/// <reference path="./AKInclude/UI/AppTabView.d.ts" />
+/// <reference path="./AKInclude/UI/NavigationBar.d.ts" />
+
 declare function akPath(name: string, dir: string): string;
 declare function akRequire(moduleId: string): any;
 declare function akInclude(moduleId: string);
@@ -15,6 +27,8 @@ declare function trt(id: string, _default?: string): string;
 declare var __APPLE__: boolean;
 declare var __ANDROID__: boolean;
 declare var __PRODUCTION__: boolean;
+declare var __DEVELOPMENT__: boolean;
+declare var __SIMULATOR__: boolean;
 declare var __dirname: string;
 
 declare var ak: AK.AK;
@@ -24,6 +38,7 @@ interface String {
 }
 interface Object {
     assignDeep(target: Object, ...sources): Object;
+    bindAssign(target: Object, ...sources): Object;
     defaults(target: Object, ...sources): Object;
     deepCopy(source: Object): Object;
     isObject(source): Boolean;
@@ -31,14 +46,14 @@ interface Object {
 }
 
 declare class View extends Ti.UI.View { GC?() }
-declare class TiWindow extends Ti.UI.Window { 
-    winGCId?: string; GC?() 
+declare class TiWindow extends Ti.UI.Window {
+    winGCId?: string; GC?()
     akmanaged?: boolean
     handleOpen?: boolean
     handleClose?: boolean
     _closing?: boolean
     manager?: NavWindow
-    winManager?:AK.IWindowManager
+    winManager?: AK.IWindowManager
     winId?: number
     toDoAfterOpening?()
 }
@@ -66,12 +81,81 @@ declare class HTTPClient extends Ti.Network.HTTPClient { GC?() }
 declare class Window extends TiWindow { GC?() }
 declare class TCPSocket extends Ti.Network.Socket.TCP { GC?() }
 
+declare class BaseWindow extends TiWindow {
+    // navWindow: Boolean
+    isOpened: boolean
+    navWindow?: boolean
+    exitOnBack?: boolean
+
+    underContainer?: View
+    winOpeningArgs?: titanium.openWindowParams
+    winClosingArgs?: titanium.openWindowParams
+    openMe(args?)
+    closeMe(args?)
+    hideMe?(args?)
+    onOpen?(args?)
+    onClose?(args?)
+    shouldShowBackButton(backTitle: string)
+    showLoading(args?)
+    hideLoading(args?)
+    addPropertiesToGC(key: string)
+}
+
+declare class NavWindow extends AppWindow {
+    window: AppWindow
+    navOpenWindow(_win: AppWindow, _args?: TiDict)
+    createManagedWindow(constructor?: string, args?: TiDict)
+    createAndOpenWindow(_constructor: string, _args?: TiDict, _winArgs?: TiDict)
+    openWindow(_win: TiWindow, _args?, _dontCheckOpening?: Boolean)
+    closeToRootWindow()
+    canGCWindow(_win: TiWindow)
+    isOpened: boolean
+    closeAllWindows(_args?: TiDict)
+    closeCurrentWindow(_args?: TiDict)
+    closeWindow(_win: TiWindow, _args?: TiDict)
+}
+
+declare class NavigationBar extends View {
+    actualNavbar: View
+    titleHolder: View
+    leftButtonViewHolder: View
+    rightButtonViewHolder: View
+    setRootWindow(_window)
+    setMyVisibility(_visible, _animated, _duration?)
+    onstackchange?(event)
+    onBackButton?(event)
+}
+
+declare class AppTabController extends View {
+    container: View
+    setLabels(tabs: string[])
+    addTab(tab: string)
+    setIndex(index: number)
+}
+
+declare class AppTabView extends View {
+    pager: ScrollableView
+    container: View
+    currentView: View
+    setTab(index: number)
+    setTabs(_tabs)
+    getTab(_index)
+    getTabs()
+    moveNext()
+}
 
 declare interface TiEvent {
     [k: string]: any
     type?: string
     bindId?: string
     source?: titanium.Proxy
+}
+declare interface TiMediaEvent extends TiEvent {
+    media: titanium.Blob, width: number, height: number
+}
+
+declare interface TiImageEvent extends TiEvent {
+    image: titanium.Blob
 }
 declare type TiEventCallback = (e?: TiEvent) => any
 
@@ -141,6 +225,13 @@ declare module 'akylas.commonjs/TemplateModule' {
     export default class TemplateModule extends AK.TemplateModule { }
 }
 
+declare module 'akylas.commonjs/AkInclude/MicroEvent' {
+    export class TiEventEmitter extends AK.Emitter { }
+}
+
+declare interface Error {
+    toJSON(): Object
+}
 
 declare interface ListEvent<T> {
     item: T,
@@ -164,15 +255,15 @@ declare interface AKWindowParams extends TiPropertiesT<AppWindow> {
 declare interface AKAppListViewParams extends TiPropertiesT<titanium.UIListView> {
 }
 declare interface AKCustomAlertViewParams extends TiPropertiesT<titanium.UIView> {
-    cancel?:boolean
-    hideOnClick?:boolean
-    tapOutDismiss?:boolean
-    blurBackground?:boolean
-    buttonNames?:string[]
-    message?:string
-    error?:string
-    textAlign?:string | number
-    image?:string
-    title?:string
-    customView?:titanium.UIView | TiPropertiesT<titanium.UIView>
+    cancel?: boolean
+    hideOnClick?: boolean
+    tapOutDismiss?: boolean
+    blurBackground?: boolean
+    buttonNames?: string[]
+    message?: string
+    error?: string
+    textAlign?: string | number
+    image?: string
+    title?: string
+    customView?: titanium.UIView | TiPropertiesT<titanium.UIView>
 }

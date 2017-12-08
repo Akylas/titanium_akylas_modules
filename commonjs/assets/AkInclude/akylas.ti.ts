@@ -158,8 +158,9 @@ export class AKTi {
         if (!dir_files)
             return;
         dir_files.forEach(function (dirFile) {
-            dirFile = dirFile.replace('.rjss.compiled.js', '.rjss');
-            if (dirFile.match(/.rjss$/)) {
+            // dirFile = dirFile.replace('.rjss.compiled.js', '.rjss');
+            if (dirFile.endsWith('rjss') ||
+                dirFile.endsWith('rjss.compiled.js')) {
                 _callback(_dir + separator + dirFile);
             }
 

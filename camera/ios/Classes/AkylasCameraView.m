@@ -135,6 +135,11 @@
     [captureSession stopRunning];
 }
 
+-(id)FOV_ {
+    AVCaptureDevice* inputDevice = [ self cameraWithPosition : _cameraPosition ];
+    return @(inputDevice.activeFormat.videoFieldOfView);
+}
+
 - (void) setTorch_:(id)value
 {
     BOOL torch = [TiUtils boolValue:value def:_torch];

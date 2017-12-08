@@ -1,19 +1,7 @@
-
-
-declare class AppTabView extends View {
-    pager: ScrollableView
-    container: View
-    currentView: View
-    setTab(index: number)
-    setTabs(_tabs)
-    getTab(_index)
-    getTabs()
-    moveNext()
-}
 var constructors = ['Ti.UI.createScrollableView'];
 
 type Tabs = Array<TiDictT<View> | View>;
-export function create (_args) {
+export function create(_args) {
     let tabs: Tabs = _args.tabs;
     let currentPage = _args.currentPage || 0;
     let showControls = _.remove(_args, 'showControls', true);
@@ -75,7 +63,7 @@ export function create (_args) {
         }
     });
     if (showControls !== false) {
-        var titles = _.map(tabs, 'title');
+        var titles = tabs.map(t=>t.title);
         console.log('titles', titles);
         if (nativeControls === true) {
             if (__APPLE__) {
@@ -86,6 +74,7 @@ export function create (_args) {
                     labels: titles
                 });
                 tabController.on('click', function (_event) {
+                    console.log('tab1 click', _event.index);
                     self.setTab(_event.index);
                 });
             } else {
@@ -102,6 +91,7 @@ export function create (_args) {
                 labels: titles
             }, tabControllerParams));
             tabController.addEventListener('request_tab', function (_event) {
+                console.log('tab2click', _event.index);
                 self.setTab(_event.index);
             });
         }
@@ -114,7 +104,7 @@ export function create (_args) {
 
     var self: AppTabView = Object.assign(new View(_args), {
         setTab: function (_index) {
-            // console.log('setTab', _index, currentPage);
+            console.log('setTab', _index, currentPage);
             if (currentPage != _index) {
                 self.pager.scrollToView(_index);
             } else {
@@ -134,7 +124,7 @@ export function create (_args) {
         getTabs: function () {
             return tabs;
         },
-        
+
         moveNext: function () {
             self.pager.moveNext();
         }
@@ -150,7 +140,7 @@ export function create (_args) {
         self.currentView = null;
         tabController = null;
         if (tabs && tabs !== null) {
-            _.each(tabs, function (value, key, list) {
+            tabs.forEach(function (value, key, list) {
                 if (value.GC) {
                     value.GC();
                 }

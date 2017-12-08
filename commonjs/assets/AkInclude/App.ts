@@ -121,8 +121,9 @@ export default class AKApp extends TiEventEmitter {
         //load modules if not loaded yet
         for (var key in this.modules) {
             if (typeof this.modules[key] === 'string') {
-                console.log('loading module', key);
+                console.time('module ' + key );
                 this.modules[key] = require(this.modules[key] as string);
+                console.timeEnd('module ' + key );
                 // console.debug('loaded module', key);
             }
         }
@@ -189,11 +190,14 @@ export default class AKApp extends TiEventEmitter {
         ].map(function (name: string) {
             return akPath(name, 'ui/');
         });
+        console.time('creators');
         // !loading creators
         ak.ti.loadCreators(map, false);
 
         ak.ti.loadCreatorsFromDir('ui');
+        console.timeEnd('creators');
 
+        console.time('lang');
         if (_args.defaultLanguage) {
             ak.locale.defaultLanguage = _args.defaultLanguage;
             console.debug('App', 'defaultLanguage', ak.locale.defaultLanguage);
@@ -207,11 +211,13 @@ export default class AKApp extends TiEventEmitter {
             ak.locale.loadLanguage(_app.context);
         }
         console.debug('App', 'currentLanguage', ak.locale.currentLanguage);
+        console.timeEnd('lang');
 
         _app.loadVariables();
         // akInclude('TemplateModule');
 
 
+        console.time('templates');
         var template, module;
         if (_args.templatesPreRjss) {
             for (let i = 0; i < _args.templatesPreRjss.length; i++) {
@@ -227,8 +233,10 @@ export default class AKApp extends TiEventEmitter {
             }
             delete _args.templatesPreRjss;
         }
+        console.timeEnd('templates');
 
         //first look for rjss
+        console.time('rjss');
         var dir_files: any = Ti.Filesystem.getFile(Ti.Filesystem.resourcesDirectory).getDirectoryListing();
         if (dir_files) {
             var vRegex = /\.v([0-9]+)/;
@@ -276,6 +284,7 @@ export default class AKApp extends TiEventEmitter {
                 loadRjssFromDirPlatDep(groups.rjss, ak.ti.loadRjssFromDir);
             }
         }
+        console.timeEnd('rjss');
 
         if (_args.templates) {
             for (let i = 0; i < _args.templates.length; i++) {

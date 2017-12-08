@@ -27,8 +27,10 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.OnScaleChan
 import com.davemorrissey.labs.subscaleview.decoder.DecoderFactory;
 import com.davemorrissey.labs.subscaleview.decoder.ImageDecoder;
 import com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.picasso.OkHttpDownloader;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+
+import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -76,11 +78,11 @@ public class ZoomableImageView extends TiUINonViewGroupView
 
     public class TiImageDecoder implements ImageDecoder {
         private final TiDrawableReference ref;
-        private Picasso picasso;
+//        private Picasso picasso;
 
         public TiImageDecoder(TiDrawableReference ref) {
             this.ref = ref;
-            this.picasso = TiApplication.getPicassoInstance();
+//            this.picasso = TiApplication.getPicassoInstance();
         }
 
         @Override
@@ -110,9 +112,9 @@ public class ZoomableImageView extends TiUINonViewGroupView
         public Point init(Context context, Uri uri) throws Exception {
             InputStream inputStream = null;
             if (ref.isNetworkUrl()) {
-                OkHttpDownloader downloader = new OkHttpDownloader(client);
-                inputStream = downloader.load(Uri.parse(ref.getUrl()), 0)
-                        .getInputStream();
+                OkHttp3Downloader downloader = new OkHttp3Downloader(client);
+                inputStream = downloader.load(new Request.Builder().url(ref.getUrl()).build())
+                        .body().byteStream();
             } else {
                 inputStream = ref.getInputStream();
             }
@@ -171,7 +173,7 @@ public class ZoomableImageView extends TiUINonViewGroupView
 
     public class TiZoomableImageView extends MaskableView
             implements OnClickListener {
-        private static final String TAG = "TiImageView";
+        private static final String TAG = "TiZoomableImageView";
 
         private OnClickListener clickListener;
 
@@ -922,6 +924,12 @@ public class ZoomableImageView extends TiUINonViewGroupView
                 proxy.fireEvent("scale", data, false, false);
             }
         }
+    }
+
+    @Override
+    public void onPreviewReleased() {
+        // TODO Auto-generated method stub
+        
     }
 
 }

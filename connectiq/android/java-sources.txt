@@ -1,0 +1,4 @@
+"/Volumes/data/dev/titanium/modules/akylas_modules/connectiq/android/src/akylas/connectiq/AkylasConnectiqModule.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/connectiq/android/src/akylas/connectiq/AppProxy.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/connectiq/android/src/akylas/connectiq/DeviceProxy.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/connectiq/android/build/generated/java/akylas/connectiq/AkylasConnectiqBootstrap.java"

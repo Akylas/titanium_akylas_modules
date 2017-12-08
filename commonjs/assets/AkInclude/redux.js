@@ -167,16 +167,16 @@ function inject(context, _options) {
          * @returns {String} Executable JavaScript
          */
         parseRJSS: function(file, _overloads) {
-            var theFile = Ti.Filesystem.getFile(file + '.compiled.js');
+            // var theFile = Ti.Filesystem.getFile(file + '.compiled.js');
 
-            if (theFile.exists()) {
+            if (file.endsWith('.compiled.js')) {
                 return {
                     data: theFile.read().text,
                     path: theFile.nativePath
                 };
             }
             var rjss;
-            theFile = Ti.Filesystem.getFile(file);
+            const theFile = Ti.Filesystem.getFile(file);
             rjss = (theFile.read().text).replace(/[\r\t\n]/g, ' ');
             // });
             if (redux.debug) {
@@ -346,8 +346,12 @@ function inject(context, _options) {
             };
         },
 
-        internalIncludeRJSS: function(arg, overloads) {
-            var data = redux.fn.parseRJSS(arg, overloads);
+        internalIncludeRJSS: function(fileName, overloads) {
+            if (fileName.endsWith('.compiled.js')) {
+                Ti.include(fileName);
+                return;
+            }
+            var data = redux.fn.parseRJSS(fileName, overloads);
             var parsedRJSS = data.data;
             try {
                 (new Function(parsedRJSS)).call(context);

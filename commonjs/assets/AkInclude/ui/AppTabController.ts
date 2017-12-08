@@ -1,12 +1,6 @@
 
-declare class AppTabController extends View {
-    container: View
-    setLabels(tabs: string[])
-    addTab(tab: string)
-    setIndex(index: number)
-}
 
-export function create (_args) {
+export function create(_args) {
     var createTab = _.remove(_args, 'createTab');
     var self: AppTabController = new View(_args) as AppTabController;
     var tabRClass = _args.rclassTab || 'AppTab';
@@ -57,7 +51,9 @@ export function create (_args) {
     };
 
     self.on('click', function (_event) {
+        console.log('on tab view click');
         if (self.containsView(_event.source)) {
+            console.log('on tab2 view click');
             self.setIndex(_event.source.index);
             self.fireEvent('request_tab', {
                 index: _event.source.index

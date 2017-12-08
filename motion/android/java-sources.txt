@@ -1,0 +1,4 @@
+"/Volumes/data/dev/titanium/modules/akylas_modules/motion/android/src/akylas/motion/AkylasMotionAndroidModule.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/motion/android/src/akylas/motion/DigitalAverage.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/motion/android/src/akylas/motion/Filter.java"
+"/Volumes/data/dev/titanium/modules/akylas_modules/motion/android/build/generated/java/akylas/motion/AkylasMotionBootstrap.java"

@@ -419,6 +419,7 @@ public class WebTileProvider implements TileProvider {
         result[2] = - WMS_MAP_SIZE_2 + (x+1) * tileSize;
         result[3] = WMS_MAP_SIZE_2 - y * tileSize;
         if (SRS.indexOf("900913") == -1) {
+//            if (SRS != null) {
             return convertSRS(result, false);
         }
         return result;

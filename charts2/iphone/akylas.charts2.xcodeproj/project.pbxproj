@@ -140,26 +140,19 @@
 			remoteGlobalIDString = D2AAC07D0554694100DB518D;
 			remoteInfo = charts2;
 		};
-		D54305C11D91762E00CABE34 /* PBXContainerItemProxy */ = {
+		D5F701E61FC587F9001F490A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 06165F241D8110E600722320;
+			remoteGlobalIDString = 65AD9E95D9ED4DC0BD73A743;
 			remoteInfo = Charts;
 		};
-		D54305C31D91762E00CABE34 /* PBXContainerItemProxy */ = {
+		D5F701E81FC587F9001F490A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 06165F2E1D8110E600722320;
+			remoteGlobalIDString = 1CBBC58C6CE1EBEE9852CE41;
 			remoteInfo = ChartsTests;
-		};
-		D54305C91D91763200CABE34 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D54305BA1D91762E00CABE34 /* Charts.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 06165F231D8110E600722320;
-			remoteInfo = Charts;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -476,8 +469,8 @@
 		D54305BB1D91762E00CABE34 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D54305C21D91762E00CABE34 /* Charts.framework */,
-				D54305C41D91762E00CABE34 /* ChartsTests.xctest */,
+				D5F701E71FC587F9001F490A /* Charts.framework */,
+				D5F701E91FC587F9001F490A /* ChartsTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -561,7 +554,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				D54305CA1D91763200CABE34 /* PBXTargetDependency */,
 			);
 			name = akylas.charts2;
 			productName = akylas.charts2;
@@ -605,18 +597,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		D54305C21D91762E00CABE34 /* Charts.framework */ = {
+		D5F701E71FC587F9001F490A /* Charts.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = Charts.framework;
-			remoteRef = D54305C11D91762E00CABE34 /* PBXContainerItemProxy */;
+			remoteRef = D5F701E61FC587F9001F490A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		D54305C41D91762E00CABE34 /* ChartsTests.xctest */ = {
+		D5F701E91FC587F9001F490A /* ChartsTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = ChartsTests.xctest;
-			remoteRef = D54305C31D91762E00CABE34 /* PBXContainerItemProxy */;
+			remoteRef = D5F701E81FC587F9001F490A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -705,11 +697,6 @@
 			isa = PBXTargetDependency;
 			target = D2AAC07D0554694100DB518D /* akylas.charts2 */;
 			targetProxy = 24416B8411C4CA280047AFDD /* PBXContainerItemProxy */;
-		};
-		D54305CA1D91763200CABE34 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Charts;
-			targetProxy = D54305C91D91763200CABE34 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

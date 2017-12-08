@@ -6,9 +6,9 @@
 //
 //
 
-#import "AkylasGooglemapTileSourceProxy.h"
+#import "AkylasCartoTileSourceProxy.h"
 
 
-@interface AkylasGooglemapUTFGridProxy : AkylasGooglemapTileSourceProxy
+@interface AkylasCartoUTFGridProxy : AkylasCartoTileSourceProxy
 
 @end
