@@ -85,7 +85,7 @@ public class GroundOverlayProxy extends BaseGroundOverlayProxy<MapPos, MapBounds
     }
 
     @Override
-    public void onBitmapFailed(Drawable errorDrawable) {
+    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
         handleSetImage(null);
     }
 

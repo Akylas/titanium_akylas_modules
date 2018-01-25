@@ -164,14 +164,14 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         public void onMapClicked(MapClickInfo mapClickInfo) {
             super.onMapClicked(mapClickInfo);
             switch (mapClickInfo.getClickType()) {
-            case CLICK_TYPE_LONG: {
-                if (!hasListeners(TiC.EVENT_LONGPRESS, false))
-                    return;
-                MapPos point = getConvertedMapPos(mapClickInfo.getClickPos());
-                fireEvent(TiC.EVENT_LONGPRESS, dictFromPoint(point), false,
-                        false);
-                break;
-            }
+//            case CLICK_TYPE_LONG: {
+//                if (!hasListeners(TiC.EVENT_LONGPRESS, false))
+//                    return;
+//                MapPos point = getConvertedMapPos(mapClickInfo.getClickPos());
+//                fireEvent(TiC.EVENT_LONGPRESS, dictFromPoint(point), false,
+//                        false);
+//                break;
+//            }
             // // case CLICK_TYPE_DOUBLE: {
             // // mapView.zoom(1, point,
             // // animate ? cameraAnimationDuration / 1000 : 0);

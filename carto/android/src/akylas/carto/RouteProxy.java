@@ -389,7 +389,7 @@ public class RouteProxy extends BaseRouteProxy<MapPos, MapBounds, List<MapPos>>
     }
 
     @Override
-    public void onBitmapFailed(Drawable errorDrawable) {
+    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
         handleSetImage(null);
     }
 

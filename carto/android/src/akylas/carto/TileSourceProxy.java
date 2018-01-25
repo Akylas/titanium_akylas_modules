@@ -198,6 +198,9 @@ public class TileSourceProxy extends BaseTileSourceProxy {
         // }
         // });
         // }
+        if (cachedDataSource != null) {
+            cachedDataSource.clear();
+        }
     }
 
     protected AkylasMapBaseView mapView;
@@ -208,7 +211,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
 
     TileLayer layer;
     TileDataSource source;
-    TileDataSource cachedDataSource;
+    PersistentCacheTileDataSource cachedDataSource;
 
     @Override
     public void removeFromMap() {
@@ -347,7 +350,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 } else {
                     sourceUrl = mSource.toString().toLowerCase();
                 }
-                if (sourceUrl.contains("mvt") || sourceUrl.contains("pbf")) {
+                if (sourceUrl.contains("mvt") || sourceUrl.contains("pbf") || sourceUrl.startsWith("carto.")) {
                  // load style from zip file in assets
                     VectorTileDecoder vectorTileDecoder = new MBVectorTileDecoder(new CompiledStyleSet(getStyleZippedAsset(), style));
 
