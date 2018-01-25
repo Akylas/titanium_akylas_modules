@@ -283,4 +283,14 @@
 }
 
 
+-(void)animate:(id)args
+{
+  ENSURE_SINGLE_ARG(args, NSDictionary)
+  NSInteger durationX = [TiUtils intValue:@"durationX" properties:args def:0];
+  NSInteger durationY = [TiUtils intValue:@"durationY" properties:args def:0];
+  NSInteger easingX = [TiUtils intValue:@"easingX" properties:args def:0];
+  NSInteger easingY = [TiUtils intValue:@"easingY" properties:args def:0];
+  [[self chartView] animateWithXAxisDuration:durationX/1000.0f yAxisDuration:durationY/1000.0f easingOptionX:easingX easingOptionY:easingY];
+}
+
 @end

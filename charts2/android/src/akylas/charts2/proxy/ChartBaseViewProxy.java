@@ -1,7 +1,6 @@
 package akylas.charts2.proxy;
 
 import java.util.HashMap;
-import java.util.List;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollObject;
@@ -292,5 +291,13 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
             }
         }
         return null;
+    }
+    
+    @Kroll.method
+    public void animate(HashMap props) {
+        if (view == null) {
+            return;
+        }
+        getOrCreateChartView().animate(props);
     }
 }

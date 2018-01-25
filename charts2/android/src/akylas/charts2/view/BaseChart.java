@@ -15,6 +15,7 @@ import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUINonViewGroupView;
 import org.appcelerator.titanium.view.TiUIView;
 
+import com.github.mikephil.charting.animation.Easing.EasingOption;
 import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -345,5 +346,16 @@ public class BaseChart extends TiUINonViewGroupView implements OnChartGestureLis
             data.put("dY", dY);
             fireEvent("translate", data, false, false);
         }
+    }
+    
+    public void animate(HashMap props) {
+        if (nativeView == null) {
+            return;
+        }
+        final int durationMillisX = TiConvert.toInt(props, "durationX", 0);
+        final int durationMillisY = TiConvert.toInt(props, "durationY", 0);
+        final int easingX = TiConvert.toInt(props, "easingX", 0);
+        final int easingY = TiConvert.toInt(props, "easingY", 0);
+        getChart().animateXY(durationMillisX, durationMillisY, EasingOption.values()[easingX], EasingOption.values()[easingY]);
     }
 }
