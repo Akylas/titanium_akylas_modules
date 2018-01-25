@@ -142,10 +142,6 @@ EventEmitter.prototype.addListener = function (type, listener) {
         'leak detected. %d listeners added. ' +
         'Use emitter.setMaxListeners() to increase limit.',
         this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
     }
   }
 
