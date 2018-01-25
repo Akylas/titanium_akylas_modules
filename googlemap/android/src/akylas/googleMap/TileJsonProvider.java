@@ -16,9 +16,10 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class TileJsonProvider extends WebTileProvider {
     private static final String TAG = "TileJsonProvider";
@@ -160,16 +161,16 @@ public class TileJsonProvider extends WebTileProvider {
             TiApplication
                     .getOkHttpClientInstance()
                     .newCall(
-                            new com.squareup.okhttp.Request.Builder().url(
+                            new okhttp3.Request.Builder().url(
                                     jsonURL).build()).enqueue(new Callback() {
                         @Override
-                        public void onFailure(Request request, IOException e) {
+                        public void onFailure(Call request, IOException e) {
                             e.printStackTrace();
                             isFetchingtileJSON = false;
                         }
 
                         @Override
-                        public void onResponse(Response response)
+                        public void onResponse(Call arg0, Response response)
                                 throws IOException {
                             if (!response.isSuccessful())
                                 throw new IOException("Unexpected code "
@@ -182,7 +183,6 @@ public class TileJsonProvider extends WebTileProvider {
                             }
                             isFetchingtileJSON = false;
                         }
-
                     });
         }
     }

@@ -8,9 +8,6 @@ import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.view.TiUIView;
 
-
-import org.appcelerator.titanium.TiC;
-
 import akylas.map.common.AkylasMapBaseModule;
 import akylas.map.common.MapDefaultViewProxy;
 import android.app.Activity;

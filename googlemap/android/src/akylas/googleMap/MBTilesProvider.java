@@ -1,34 +1,14 @@
 package akylas.googlemap;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import org.appcelerator.titanium.TiApplication;
 
-import android.content.Context;
-import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
-import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Tile;
-import com.google.android.gms.maps.model.TileProvider;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.Interceptor.Chain;
 import com.squareup.picasso.Cache;
-import com.squareup.picasso.OkHttpDownloader;
-import com.squareup.picasso.Picasso;
-
 public class MBTilesProvider extends WebTileProvider {
 
     private static final String TAG = "MBTilesProvider";

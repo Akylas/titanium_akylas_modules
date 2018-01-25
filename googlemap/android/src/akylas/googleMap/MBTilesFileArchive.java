@@ -6,7 +6,6 @@ import java.io.InputStream;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Tile;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;

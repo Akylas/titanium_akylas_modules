@@ -1,7 +1,6 @@
 package akylas.googlemap;
 
 import java.lang.reflect.Method;
-import java.util.regex.Pattern;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.annotations.Kroll;

@@ -11,16 +11,13 @@ import org.appcelerator.titanium.util.TiConvert;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Tile;
 import com.google.maps.android.projection.SphericalMercatorProjection;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.CacheControl;
-import com.squareup.okhttp.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.CacheControl;
+import okhttp3.Interceptor;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 
 public class UTFGridProvider extends WebTileProvider {
     OkHttpClient client; 
@@ -57,23 +54,19 @@ public class UTFGridProvider extends WebTileProvider {
     
     protected void initialize(String pId, String aUrl, boolean enableSSL) {
         setURL(aUrl);
-        client = new OkHttpClient();
-        client.networkInterceptors().add(REWRITE_CACHE_CONTROL_INTERCEPTOR);
         diskCache = TiApplication.getDiskCache("akylas.utfgrid.data" + pId);
-        client.setCache(diskCache);
-        
-        client.interceptors().add(new com.squareup.okhttp.Interceptor() {
+        client = new OkHttpClient().newBuilder().cache(diskCache).addNetworkInterceptor(REWRITE_CACHE_CONTROL_INTERCEPTOR).addInterceptor(new Interceptor() {
+
             @Override
-            public com.squareup.okhttp.Response intercept(Chain chain)
-                    throws IOException {
-                com.squareup.okhttp.Request.Builder builder = chain.request()
+            public Response intercept(Chain chain) throws IOException {
+                okhttp3.Request.Builder builder = chain.request()
                         .newBuilder();
                 if (mUserAgent != null) {
                     builder.addHeader("User-Agent", mUserAgent);
                 }
                 return chain.proceed(builder.build());
             }
-        });
+        }).build();
     }
     
     @Override

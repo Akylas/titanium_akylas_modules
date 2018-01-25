@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
