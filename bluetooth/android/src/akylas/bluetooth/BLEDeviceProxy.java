@@ -29,6 +29,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothProfile;
 
 @Kroll.proxy(creatableInModule = AkylasBluetoothModule.class, propertyAccessors = { TiC.PROPERTY_ADDRESS })
 public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
@@ -153,10 +154,9 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
             } else if (state == AkylasBluetoothModule.STATE_DISCONNECTED) {
                 if (mState == AkylasBluetoothModule.STATE_CONNECTING) {
                     fireError(-1, "failed to connect");
-                } else {
-                    AkylasBluetoothModule.getInstance().onDeviceDisconnected(this);
-                    fireEvent("disconnected");
                 }
+                AkylasBluetoothModule.getInstance().onDeviceDisconnected(this);
+                fireEvent("disconnected");
                 
             }
             mState = state;
@@ -229,10 +229,14 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     public void disconnect() {
         stop();
     }
+    
+    private boolean isReallyConnected() {
+        return this.tiService != null && this.tiService.getState() == BluetoothProfile.STATE_CONNECTED;
+    }
 
     @Kroll.method
     public void send(Object args) {
-        if (this.tiService != null && uartMode) {
+        if (isReallyConnected() && uartMode) {
             byte[] bytes = TiConvert.toBytes(args);
             if (bytes != null) {
                 BluetoothGattCharacteristic charac = this.tiService
@@ -246,7 +250,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     @Kroll.method
     public void startCharacteristicNotifications(final String serviceUUID,
             final String charUUID) {
-        if (this.tiService != null) {
+        if (isReallyConnected()) {
             BluetoothGattCharacteristic charac = this.tiService
                     .getCharacteristic(getUUIDFromString(serviceUUID),
                             getUUIDFromString(charUUID));
@@ -257,7 +261,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
     @Kroll.method
     public void stopCharacteristicNotifications(final String serviceUUID,
             final String charUUID) {
-        if (this.tiService != null) {
+        if (isReallyConnected()) {
             BluetoothGattCharacteristic charac = this.tiService
                     .getCharacteristic(getUUIDFromString(serviceUUID),
                             getUUIDFromString(charUUID));
@@ -272,7 +276,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 //            readCharQueue.add(new Pair<String, String>(serviceUUID, charUUID));
 //            return;
 //        }
-        if (this.tiService != null) {
+        if (isReallyConnected()) {
             BluetoothGattCharacteristic charac = this.tiService
                     .getCharacteristic(getUUIDFromString(serviceUUID),
                             getUUIDFromString(charUUID));
@@ -285,7 +289,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 
     @Kroll.method
     public void requestMTU(int mtu) {
-        if (this.tiService != null) {
+        if (isReallyConnected()) {
             this.tiService.requestMtu(mtu);
         }
     }
@@ -299,7 +303,7 @@ public class BLEDeviceProxy extends TiEnhancedServiceProxy implements
 
     @Kroll.method
     public void discoverServices() {
-        if (this.tiService != null) {
+        if (isReallyConnected()) {
             this.tiService.discoverServices();
         }
     }

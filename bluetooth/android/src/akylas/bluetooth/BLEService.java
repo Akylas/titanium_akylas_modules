@@ -101,6 +101,8 @@ public class BLEService extends TiEnhancedService {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             Log.d(TAG,"onConnectionStateChange status = " + status + ", newState = " + newState);
 
+            mConnectionState = newState;
+            
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 if (mBLEServiceCb != null) {
                     mBLEServiceCb.notifyConnectedGATT();
@@ -120,7 +122,6 @@ public class BLEService extends TiEnhancedService {
                 Log.d(TAG,"Disconnected from GATT server.");
 //                close();
             }
-            mConnectionState = newState;
         }
 
         @Override
