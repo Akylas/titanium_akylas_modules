@@ -76,7 +76,9 @@ export class AKWindowManager implements AK.IWindowManager {
         if (win.GC && (!win.manager || !win.manager.canGCWindow || win.manager.canGCWindow(win))) {
             win.manager = null;
             win.onBack = null;
+            win.onClose = null;
             win.akmanaged = false;
+            win.removeAllListeners();
             console.debug('GC Window:', win.title);
 
             win.GC();

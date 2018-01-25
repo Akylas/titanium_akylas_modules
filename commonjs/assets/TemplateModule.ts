@@ -1,4 +1,3 @@
-/// <reference path="./akylas.commonjs.d.ts" />
 function findDeep(obj, key) {
 
     var res = [];
@@ -23,20 +22,20 @@ export interface _Template {
     bindId?:string
     properties?:TiDict
     events?:{[k:string]:Function}
-    childTemplates?:_Template[] 
+    childTemplates?:AK.Template[] 
 }
 
 
 export default class _TemplateModule {
-    [key: string]: _Template | Function | void
-    prepareTemplate(_template: _Template, _type?: string, _defaults?: TiDict): TiDict | void { }
+    [key: string]: AK.Template | Function | void
+    prepareTemplate(_template: AK.Template, _type?: string, _defaults?: TiDict): TiDict | void { }
     constructor(options?) {
         this.prepareTemplate = ak.ti.style;
         if (options) {
             Object.assign(this, options);
         }
     }
-    internalAddEvents = (_template: _Template, _properties?: TiDict) => {
+    internalAddEvents = (_template: AK.Template, _properties?: TiDict) => {
         if (!_template || !_properties) return;
         var props;
         if (_properties.hasOwnProperty('events')) {
@@ -111,7 +110,7 @@ export default class _TemplateModule {
 
 
     cloneTemplateAndFill = (_template, _properties?, _events?) => {
-        var template:_Template = (Object.isObject(_template)) ? _template : this.getTemplate(_template);
+        var template:AK.Template = (Object.isObject(_template)) ? _template : this.getTemplate(_template);
         // console.debug('cloneTemplateAndFill', _template, _properties);
         if (template) {
             template = JSON.parse(JSON.stringify(template));
@@ -126,7 +125,7 @@ export default class _TemplateModule {
         return null;
     }
     getTemplate = (_key: string) => {
-        return this[_key] as _Template;
+        return this[_key] as AK.Template;
     }
     addTemplate = (_template, _key: string) => {
         this[_key] = this.prepareTemplate(_template);

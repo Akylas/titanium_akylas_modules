@@ -9,7 +9,7 @@ export class AKLang {
     availableLanguages: string[] = []
     useI18next = false
     i18n
-    constructor(_context, _config) {
+    constructor(private _context, _config) {
         _context.loadLanguage = this.loadLanguage;
         _context.tr = this.tr;
         _context.trc = this.trc;
@@ -52,7 +52,7 @@ export class AKLang {
 
         }
         // }
-        console.debug('locale', this, _config);
+        console.debug('locale', _config);
         var loadModuleLang = (moduleName, path, callback, ...langs) => {
             path = path || '';
             langs.forEach(function (value: string) {
@@ -72,24 +72,24 @@ export class AKLang {
             });
         };
 
-        if (_context.moment) {
-            const moment = _context.moment;
-            _context.moment.loadLangs = (lang) => {
-                loadModuleLang('moment', _config.momentPath, function (id, value) {
-                    moment.locale(id, value);
-                    moment.locale(id);
-                }, lang);
-            }
-            if (_context.numeral) {
-                const numeral = _context.numeral;
-                _context.numeral.loadLangs = (lang) => {
-                    loadModuleLang('numeral', _config.numeralPath, function (id, value) {
-                        numeral.language(id, value);
-                        numeral.language(id);
-                    }, lang);
-                }
-            }
-        }
+        // if (_context.moment) {
+            // const moment = _context.moment;
+            // _context.moment.loadLangs = (lang) => {
+            //     loadModuleLang('moment', _config.momentPath, function (id, value) {
+            //         moment.locale(id, value);
+            //         moment.locale(id);
+            //     }, lang);
+            // }
+            // if (_context.numeral) {
+            //     const numeral = _context.numeral;
+            //     _context.numeral.loadLangs = (lang) => {
+            //         loadModuleLang('numeral', _config.numeralPath, function (id, value) {
+            //             numeral.language(id, value);
+            //             numeral.language(id);
+            //         }, lang);
+            //     }
+            // }
+        // }
     }
     loadLanguage = (_context, _lang?: string) => {
         var canLoadDefault = _lang === undefined;
@@ -155,7 +155,8 @@ export class AKLang {
         if (_context.moment) {
             try {
                 console.debug('loading moment lang', this.currentLanguage);
-                _context.moment.loadLangs(this.currentLanguage);
+                require('node_modules/moment/locale/' + this.currentLanguage);
+                _context.moment.locale(this.currentLanguage);
             } catch (e) {
                 console.debug('loadLanguage moment error', JSON.stringify(e));
             }
@@ -163,7 +164,7 @@ export class AKLang {
         if (_context.numeral) {
             try {
                 console.debug('loading numeral lang', this.currentLanguage);
-                _context.numeral.loadLangs(this.currentLanguage);
+                _context.numeral.locale(this.currentLanguage);
             } catch (e) {
                 console.debug('loadLanguage numeral error', JSON.stringify(e));
             }
@@ -189,10 +190,16 @@ export class AKLang {
             console.error('appendLanguage error', e);
         }
     }
-    tr = (_id: string, _default?: string): string => {
+    tr = (_id: string, _data?:string | object, _default?: string): string => {
+        if (!_default && typeof _data === 'string') {
+            _default = _data;
+            _data = undefined;
+        }
         _default = _default || _id;
+
+        let result = _default;
         if (this.jsonLang.hasOwnProperty(_id))
-            return this.jsonLang[_id];
+            result = this.jsonLang[_id];
         else {
             if (!!this.storeMissingTranslations) {
                 console.debug('missing translation', _id);
@@ -205,11 +212,14 @@ export class AKLang {
                     }
                 }
             }
-            return _default;
         }
+        if (result && _data && this._context['_']) {
+            result = this._context['_'].template(result)(_data);
+        }
+        return result;
     }
-    trt = (_id: string, _default?: string): string => {
-        let str = this.tr(_id, _default);
+    trt = (_id: string,  _data?:string | object, _default?: string): string => {
+        let str = this.tr(_id, _data, _default);
         if (!str) {
             return _id;
         }
@@ -218,16 +228,16 @@ export class AKLang {
         });
         return array.join(' ');
     };
-    trc = (_id: string, _default?: string): string => {
-        let str = this.tr(_id, _default);
+    trc = (_id: string,  _data?:string | object, _default?: string): string => {
+        let str = this.tr(_id, _data, _default);
         if (!str) {
             return _id;
         }
         str = str.split(/[\s_]+/).join(' ');
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
-    tru = (_id: string, _default?: string): string => {
-        let str = this.tr(_id, _default);
+    tru = (_id: string,  _data?:string | object, _default?: string): string => {
+        let str = this.tr(_id, _data, _default);
         if (!str) {
             return _id;
         }

@@ -105,7 +105,7 @@ function compileRJSS(rootDir, destDir, filePath, logger) {
 			else {
 				canStartSelector = false;
 				inIfStatement = true;
-				result += 'if (';
+				result += '\nif (';
 			}
 		}
 
@@ -115,7 +115,7 @@ function compileRJSS(rootDir, destDir, filePath, logger) {
 		}
 
 		function equals() {
-			if (inIfStatement && rjss[i - 1] !== '!' && rjss[i - 1] !== '<' && rjss[i - 1] !== '>')
+			if (inIfStatement && rjss[i - 1] !== '!' && rjss[i - 1] !== '<' && rjss[i - 1] !== '>' && rjss[i - 1] !== '=')
 				result += '==';
 			else
 				result += currentChar;

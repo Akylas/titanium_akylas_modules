@@ -213,7 +213,7 @@ export default class AKApp extends TiEventEmitter {
         console.debug('App', 'currentLanguage', ak.locale.currentLanguage);
         console.timeEnd('lang');
 
-        _app.loadVariables();
+        _app.loadVariables.call(this);
         // akInclude('TemplateModule');
 
 
@@ -391,8 +391,8 @@ export default class AKApp extends TiEventEmitter {
         };
     }
 
-    closeApp = () => {
-        this.ui.rootWindow && this.ui.rootWindow.close();
+    closeApp() {
+        app.ui.rootWindow && app.ui.rootWindow.close();
     }
 
     imageToTempFile = (image) => {

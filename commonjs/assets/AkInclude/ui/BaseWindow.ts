@@ -39,13 +39,13 @@ export function create(_args) {
             });
         }
     }
-    
+
     var self: BaseWindow = new this[(!!_args.animatedWindow && 'AnimatedWindow') ||
         (!!_args.navWindow && 'NavigationWindow') || 'Window'](_args);
     // var navWindow;
     var indicator;
     // currentTopWindow;
-    
+
     var children = [];
     if (_args.underContainerView) {
         children = children.concat(_args.underContainerView);
@@ -61,14 +61,13 @@ export function create(_args) {
         children.push({
             type: _args.containerType || 'Ti.UI.View',
             bindId: 'container',
-            properties: _args.containerClass ? {
-                rclass: _args.containerClass
-            } : {
-                    height: 'FILL',
-                    width: 'FILL',
-                    touchPassThrough: true,
-                    layout: ((_args.verticalContainer === false) ? 'absolute' : 'vertical')
-                }
+            properties: _args.containerProps || {
+                rclass: _args.containerClass,
+                height: 'FILL',
+                width: 'FILL',
+                touchPassThrough: true,
+                layout: ((_args.verticalContainer === false) ? 'absolute' : 'vertical')
+            }
         });
     }
     ak.ti.add(self, children);
@@ -100,7 +99,7 @@ export function create(_args) {
     // if (_args.navBar === true) {
     //     self.createNavBar();
     // }
-    
+
     if (_args.navWindow === true) {
         let selfNav = self as NavWindow;
         // var window = _args.window;
@@ -232,7 +231,7 @@ export function create(_args) {
             self && self.remove(indicator);
         };
     }
-    
+
     self.shouldShowBackButton = function (_backTitle) {
         if (!self.leftNavButton) {
             if (__APPLE__) {
@@ -291,7 +290,7 @@ export function create(_args) {
     });
 
     self.onClose = app.composeFunc(self.onClose, function () {
-        self.isOpened = false;
+        self && self.isOpened = false;
         // console.debug('onClose', self.title, !!self.manager, !!self.openedFromWindow);
         // if (self.manager && self.openedFromWindow) {
         //     self.manager.onCloseAndroidNavWindow(self);
