@@ -12,7 +12,10 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.util.TiConvert;
 
 import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.sources.RasterSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
+import com.mapbox.mapboxsdk.style.sources.TileSet;
+import com.mapbox.mapboxsdk.style.sources.VectorSource;
 
 import akylas.map.common.AkylasMapBaseView;
 import akylas.map.common.BaseTileSourceProxy;
@@ -214,7 +217,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
         if (sSource == null) {
             return null;
         }
-        if (sSource.contains("carto.")) {
+        if (sSource.contains("mapbox")) {
             result = new CartoOnlineTileDataSource(sSource);
         } else if (sSource.toLowerCase().endsWith("mbtiles")) {
             try {
@@ -229,6 +232,22 @@ public class TileSourceProxy extends BaseTileSourceProxy {
         } else {
             // final int tileSize = TiConvert.toInt(getProperty("tileSize"),
             // 256);
+            final String sourceId = TiConvert.toString(getProperty(TiC.PROPERTY_ID));
+            
+            TileSet tileSet;
+            if (sSource.contains("{s}")) { 
+                
+            } else {
+                tileSet = new TileSet("2.1.0", sSource);
+            }
+            ArrayList<String> sourceList = new ArrayList<String>();
+            
+            final TileSet tileSet = new TileSet("2.1.0", sSource);
+            if (sSource.contains("mvt") || sSource.contains("pbf")) {
+                result = new VectorSource(sourceId, tileSet);
+            } else {
+                result = new RasterSource(sourceId, tileSet, tileSize);
+            }
             result = new HTTPTileDataSource((int) mMinZoom, (int) mMaxZoom,
                     sSource);
             String subs = TiConvert.toString(getProperty("subdomains"),
@@ -276,18 +295,18 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                 if (length  == 1) {
                     source = createSource(TiConvert.toString(sSource[0]));
                 } else if (length  > 1) {
-                    List<TileDataSource> results = new ArrayList<TileDataSource>();
-                    for(int i =0; i < length; i++) {
-                        TileDataSource res = createSource(TiConvert.toString(sSource[i]));
-                        if (res != null ) {
-                            results.add(res);
-                        }
-                    }
-                    if (results.size() == 1) {
-                        source = results.get(0);
-                    } else if (results.size() > 1) {
-                        source = new MergeTileDataSource(results.toArray(new TileDataSource[results.size()]));
-                    }
+//                    List<TileDataSource> results = new ArrayList<TileDataSource>();
+//                    for(int i =0; i < length; i++) {
+//                        TileDataSource res = createSource(TiConvert.toString(sSource[i]));
+//                        if (res != null ) {
+//                            results.add(res);
+//                        }
+//                    }
+//                    if (results.size() == 1) {
+//                        source = results.get(0);
+//                    } else if (results.size() > 1) {
+//                        source = new MergeTileDataSource(results.toArray(new TileDataSource[results.size()]));
+//                    }
                 }
             }
             
