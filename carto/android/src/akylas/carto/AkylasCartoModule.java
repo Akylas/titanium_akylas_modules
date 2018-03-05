@@ -13,7 +13,6 @@ import org.appcelerator.titanium.TiC;
 
 import com.carto.core.MapBounds;
 import com.carto.core.MapPos;
-import com.carto.layers.CartoBaseMapStyle;
 import com.carto.packagemanager.CartoPackageManager;
 import com.carto.packagemanager.PackageInfo;
 import com.carto.packagemanager.PackageInfoVector;

@@ -23,6 +23,7 @@ import com.carto.datasources.TileDataSource;
 import com.carto.layers.RasterTileLayer;
 import com.carto.layers.TileLayer;
 import com.carto.layers.VectorTileLayer;
+import com.carto.layers.VectorTileRenderOrder;
 import com.carto.styles.CompiledStyleSet;
 import com.carto.utils.AssetUtils;
 import com.carto.utils.ZippedAssetPackage;
@@ -357,6 +358,7 @@ public class TileSourceProxy extends BaseTileSourceProxy {
                     // 4. Create vector tile layer, using previously created
                     // data source and decoder
                     layer = new VectorTileLayer(getSource(), vectorTileDecoder);
+                    ((VectorTileLayer) layer).setLabelRenderOrder(VectorTileRenderOrder.VECTOR_TILE_RENDER_ORDER_LAST);
 //                    ((VectorTileLayer)layer).setVectorTileEventListener(((CartoView) mapView).getVectorTileListener());
                 } else {
                     layer = new RasterTileLayer(theSource);                    

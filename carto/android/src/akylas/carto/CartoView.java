@@ -61,6 +61,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout.LayoutParams;
 
+import com.carto.components.PanningMode;
 import com.carto.core.BinaryData;
 import com.carto.core.MapBounds;
 import com.carto.core.MapPos;
@@ -835,6 +836,10 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         case AkylasCartoModule.PROPERTY_ROTATE_ENABLED:
             mapView.getOptions()
                     .setRotatable(TiConvert.toBoolean(newValue, true));
+            break;
+        case "panningMode":
+            mapView.getOptions()
+                    .setPanningMode(PanningMode.values()[TiConvert.toInt(newValue, 0)]);
             break;
         // case AkylasCartoModule.PROPERTY_TILT_ENABLED:
         // map.getUiSettings().setTiltGesturesEnabled(
