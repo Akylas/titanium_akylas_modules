@@ -365,7 +365,6 @@ export default class AKApp extends TiEventEmitter {
             message: trc('are_you_sure') + '?',
             title: trc('confirmation')
         }).on('click', function (e) {
-            console.log('click', e.cancel);
             if (!!!e.cancel) {
                 _callback && _callback(e);
             } else if (_callbackCancel) {
@@ -377,7 +376,7 @@ export default class AKApp extends TiEventEmitter {
     }
 
     confirm(_args: TiProperties) {
-        return new Promise<any>(function (resolve, reject) {
+        return new Promise<{cancel:boolean, index:number, source:titanium.Proxy}>(function (resolve, reject) {
             app.confirmAction(_args, resolve, resolve);
         })
     }
