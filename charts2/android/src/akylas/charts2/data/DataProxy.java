@@ -161,7 +161,7 @@ public abstract class DataProxy extends ReusableProxy {
 
     @Kroll.method
     @Kroll.getProperty
-    public Object[] getDataSets() {
+    public Object[] getDatasets() {
         return (Object[]) _dataSets.toArray();
     }
 
