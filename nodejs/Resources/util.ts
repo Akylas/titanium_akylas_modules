@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
+exports.format = function (f) {
   if (!isString(f)) {
     var objects = [];
     for (var i = 0; i < arguments.length; i++) {
@@ -32,7 +32,7 @@ exports.format = function(f) {
   var i = 1;
   var args = arguments;
   var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
+  var str = String(f).replace(formatRegExp, function (x) {
     if (x === '%%') return '%';
     if (i >= len) return x;
     switch (x) {
@@ -64,10 +64,10 @@ exports.format = function(f) {
 // Mark that a method should not be used.
 // Returns a modified function which warns once by default.
 // If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
+exports.deprecate = function (fn, msg) {
   // Allow for deprecating things in the process of starting up.
   if (isUndefined(global.process)) {
-    return function() {
+    return function () {
       return exports.deprecate(fn, msg).apply(this, arguments);
     };
   }
@@ -97,19 +97,19 @@ exports.deprecate = function(fn, msg) {
 
 var debugs = {};
 var debugEnviron;
-exports.debuglog = function(set) {
+exports.debuglog = function (set) {
   if (isUndefined(debugEnviron))
     debugEnviron = process.env.NODE_DEBUG || '';
   set = set.toUpperCase();
   if (!debugs[set]) {
     if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
       var pid = process.pid;
-      debugs[set] = function() {
+      debugs[set] = function () {
         var msg = exports.format.apply(exports, arguments);
         console.error('%s %d: %s', set, pid, msg);
       };
     } else {
-      debugs[set] = function() {};
+      debugs[set] = function () { };
     }
   }
   return debugs[set];
@@ -124,7 +124,7 @@ exports.debuglog = function(set) {
  * @param {Object} opts Optional options object that alters the output.
  */
 /* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
+function inspect(obj, opts?) {
   // default options
   var ctx = {
     seen: [],
@@ -145,6 +145,9 @@ function inspect(obj, opts) {
   if (isUndefined(ctx.depth)) ctx.depth = 2;
   if (isUndefined(ctx.colors)) ctx.colors = false;
   if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (isUndefined(ctx.maxArrayLength)) ctx.maxArrayLength = 100;
+  if (isUndefined(ctx.breakLength)) ctx.breakLength = 60;
+  if (isUndefined(ctx.compact)) ctx.compact = true;
   if (ctx.colors) ctx.stylize = stylizeWithColor;
   return formatValue(ctx, obj, ctx.depth);
 }
@@ -153,19 +156,19 @@ exports.inspect = inspect;
 
 // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
 inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
+  'bold': [1, 22],
+  'italic': [3, 23],
+  'underline': [4, 24],
+  'inverse': [7, 27],
+  'white': [37, 39],
+  'grey': [90, 39],
+  'black': [30, 39],
+  'blue': [34, 39],
+  'cyan': [36, 39],
+  'green': [32, 39],
+  'magenta': [35, 39],
+  'red': [31, 39],
+  'yellow': [33, 39]
 };
 
 // Don't use 'blue' not visible on cmd.exe
@@ -187,7 +190,7 @@ function stylizeWithColor(str, styleType) {
 
   if (style) {
     return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
+      '\u001b[' + inspect.colors[style][1] + 'm';
   } else {
     return str;
   }
@@ -202,7 +205,7 @@ function stylizeNoColor(str, styleType) {
 function arrayToHash(array) {
   var hash = {};
 
-  array.forEach(function(val, idx) {
+  array.forEach(function (val, idx) {
     hash[val] = true;
   });
 
@@ -210,16 +213,16 @@ function arrayToHash(array) {
 }
 
 
-function formatValue(ctx, value, recurseTimes) {
+function formatValue(ctx, value, recurseTimes, ln?) {
   // Provide a hook for user-specified inspect functions.
   // Check that value is an object with an inspect function on it
   if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
+    value &&
+    isFunction(value.inspect) &&
+    // Filter out the util module, it's inspect function is special
+    value.inspect !== exports.inspect &&
+    // Also filter out any prototype objects using the circular check.
+    !(value.constructor && value.constructor.prototype === value)) {
     var ret = value.inspect(recurseTimes, ctx);
     if (!isString(ret)) {
       ret = formatValue(ctx, ret, recurseTimes);
@@ -244,7 +247,7 @@ function formatValue(ctx, value, recurseTimes) {
   // IE doesn't make error fields non-enumerable
   // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
   if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
     return formatError(value);
   }
 
@@ -312,14 +315,14 @@ function formatValue(ctx, value, recurseTimes) {
   if (array) {
     output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
   } else {
-    output = keys.map(function(key) {
+    output = keys.map(function (key) {
       return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
     });
   }
 
   ctx.seen.pop();
 
-  return reduceToSingleString(output, base, braces);
+  return reduceToSingleString(ctx, output, base, braces);
 }
 
 
@@ -328,8 +331,8 @@ function formatPrimitive(ctx, value) {
     return ctx.stylize('undefined', 'undefined');
   if (isString(value)) {
     var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
+      .replace(/'/g, "\\'")
+      .replace(/\\"/g, '"') + '\'';
     return ctx.stylize(simple, 'string');
   }
   if (isNumber(value))
@@ -349,18 +352,23 @@ function formatError(value) {
 
 function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
   var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
+  const maxLength = Math.min(Math.max(0, ctx.maxArrayLength), value.length);
+  const remaining = value.length - maxLength;
+  for (var i = 0, l = maxLength; i < l; ++i) {
     if (hasOwnProperty(value, String(i))) {
       output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
+        String(i), true));
     } else {
       output.push('');
     }
   }
-  keys.forEach(function(key) {
+  if (remaining > 0) {
+    output[i] = `... ${remaining} more item${remaining > 1 ? 's' : ''}`;
+  }
+  keys.forEach(function (key) {
     if (!key.match(/^\d+$/)) {
       output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
+        key, true));
     }
   });
   return output;
@@ -369,8 +377,13 @@ function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
 
 function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
   var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key], enumerable: true };
+  if (desc.value !== undefined) {
+    const diff = array !== 0 || ctx.compact === false ? 2 : 3;
+    ctx.indentationLvl += diff;
+    str = formatValue(ctx, desc.value, recurseTimes, array === 0);
+    ctx.indentationLvl -= diff;
+  } else if (desc.get) {
     if (desc.set) {
       str = ctx.stylize('[Getter/Setter]', 'special');
     } else {
@@ -379,6 +392,8 @@ function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
   } else {
     if (desc.set) {
       str = ctx.stylize('[Setter]', 'special');
+    } else {
+      str = ctx.stylize('undefined', 'undefined');
     }
   }
   if (!hasOwnProperty(visibleKeys, key)) {
@@ -393,11 +408,9 @@ function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
       }
       if (str.indexOf('\n') > -1) {
         if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
+          str = str.split('\n').join('');
         } else {
-          str = '\n' + str.split('\n').map(function(line) {
+          str = '\n' + str.split('\n').map(function (line) {
             return '   ' + line;
           }).join('\n');
         }
@@ -416,34 +429,67 @@ function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
       name = ctx.stylize(name, 'name');
     } else {
       name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
+        .replace(/\\"/g, '"')
+        .replace(/(^"|"$)/g, "'");
       name = ctx.stylize(name, 'string');
     }
   }
 
   return name + ': ' + str;
 }
+const colorRegExp = /\u001b\[\d\d?m/g;
 
+function removeColors(str) {
+  return str.replace(colorRegExp, '');
+}
 
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
+// The build-in Array#join is slower in v8 6.0
+function join(output, separator) {
+  let str = '';
+  if (output.length !== 0) {
+    for (var i = 0; i < output.length - 1; i++) {
+      // It is faster not to use a template string here
+      str += output[i];
+      str += separator;
+    }
+    str += output[i];
   }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+  return str;
+}
+function reduceToSingleString(ctx, output, base, braces, addLn?) {
+  const breakLength = ctx.breakLength;
+  let i = 0;
+  if (ctx.compact === false) {
+    const indentation = ' '.repeat(ctx.indentationLvl);
+    let res = `${base ? `${base} ` : ''}${braces[0]}\n${indentation}  `;
+    for (; i < output.length - 1; i++) {
+      res += `${output[i]},\n${indentation}  `;
+    }
+    res += `${output[i]}\n${indentation}${braces[1]}`;
+    return res;
+  }
+  if (output.length * 2 <= breakLength) {
+    let length = 0;
+    for (; i < output.length && length <= breakLength; i++) {
+      if (ctx.colors) {
+        length += removeColors(output[i]).length + 1;
+      } else {
+        length += output[i].length + 1;
+      }
+    }
+    if (length <= breakLength)
+      return `${braces[0]}${base ? ` ${base}` : ''} ${join(output, ', ')} ` +
+        braces[1];
+  }
+  // If the opening "brace" is too large, like in the case of "Set {",
+  // we need to force the first item to be on the next line or the
+  // items will not line up correctly.
+  const indentation = ' '.repeat(ctx.indentationLvl);
+  const extraLn = addLn === true ? `\n${indentation}` : '';
+  const ln = base === '' && braces[0].length === 1 ?
+    ' ' : `${base ? ` ${base}` : base}\n${indentation}  `;
+  const str = join(output, `,\n${indentation}  `);
+  return `${extraLn}${braces[0]}${ln}${str} ${braces[1]}`;
 }
 
 
@@ -506,7 +552,7 @@ exports.isDate = isDate;
 
 function isError(e) {
   return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
+    (objectToString(e) === '[object Error]' || e instanceof Error);
 }
 exports.isError = isError;
 
@@ -517,20 +563,20 @@ exports.isFunction = isFunction;
 
 function isPrimitive(arg) {
   return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
+    typeof arg === 'boolean' ||
+    typeof arg === 'number' ||
+    typeof arg === 'string' ||
+    typeof arg === 'symbol' ||  // ES6 symbol
+    typeof arg === 'undefined';
 }
 exports.isPrimitive = isPrimitive;
 
 // exports.isBuffer = require('./support/isBuffer');
 exports.isBuffer = function isBuffer(arg) {
-    return arg && typeof arg === 'object'
-        && typeof arg.copy === 'function'
-        && typeof arg.fill === 'function'
-        && typeof arg.readUInt8 === 'function';
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
 };
 
 function objectToString(o) {
@@ -544,20 +590,20 @@ function pad(n) {
 
 
 var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
+  'Oct', 'Nov', 'Dec'];
 
 // 26 Feb 16:19:34
 function timestamp() {
   var d = new Date();
   var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
+  pad(d.getMinutes()),
+  pad(d.getSeconds())].join(':');
   return [d.getDate(), months[d.getMonth()], time].join(' ');
 }
 
 
 // log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
+exports.log = function () {
   console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
 };
 
@@ -577,7 +623,7 @@ exports.log = function() {
  */
 exports.inherits = require('inherits');
 
-exports._extend = function(origin, add) {
+exports._extend = function (origin, add) {
   // Don't do anything if add isn't an object
   if (!add || !isObject(add)) return origin;
 
