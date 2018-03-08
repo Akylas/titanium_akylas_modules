@@ -313,50 +313,37 @@
     return ChartLegendDirectionLeftToRight;
 }
 
-+(ChartLegendPosition)legendPositionFromString:(NSString*)value
++(ChartLegendHorizontalAlignment)legendHorizontalAlignmentFromString:(NSString*)value
 {
-    if ([value isEqualToString:@"left"])
-    {
-        return ChartLegendPositionLeftOfChart;
-    } else if ([value isEqualToString:@"left.center"])
-    {
-        return ChartLegendPositionLeftOfChartCenter;
-    } else if ([value isEqualToString:@"left.inside"])
-    {
-        return ChartLegendPositionLeftOfChartInside;
-    } else if ([value isEqualToString:@"right"])
-    {
-        return ChartLegendPositionRightOfChart;
-    } else if ([value isEqualToString:@"right.center"])
-    {
-        return ChartLegendPositionRightOfChartCenter;
-    } else if ([value isEqualToString:@"right.inside"])
-    {
-        return ChartLegendPositionRightOfChartInside;
-    } else if ([value isEqualToString:@"above.left"])
-    {
-        return ChartLegendPositionAboveChartLeft;
-    } else if ([value isEqualToString:@"above.right"])
-    {
-        return ChartLegendPositionAboveChartLeft;
-    } else if ([value isEqualToString:@"above.center"])
-    {
-        return ChartLegendPositionBelowChartRight;
-    } else if ([value isEqualToString:@"below.left"])
-    {
-        return ChartLegendPositionBelowChartRight;
-    } else if ([value isEqualToString:@"below.right"])
-    {
-        return ChartLegendPositionBelowChartRight;
-    } else if ([value isEqualToString:@"below.center"])
-    {
-        return ChartLegendPositionBelowChartCenter;
-    } else if ([value isEqualToString:@"pie.center"])
-    {
-        return ChartLegendPositionPiechartCenter;
-    }
-    
-    return ChartLegendPositionBelowChartLeft;
+  if ([value isEqualToString:@"left"])
+  {
+    return ChartLegendHorizontalAlignmentLeft;
+  } else if ([value isEqualToString:@"right"])
+  {
+    return ChartLegendHorizontalAlignmentRight;
+  } else if ([value isEqualToString:@"center"])
+  {
+    return ChartLegendHorizontalAlignmentCenter;
+  }
+  
+  return ChartLegendHorizontalAlignmentLeft;
+}
+
+
++(ChartLegendVerticalAlignment)legendVerticalAlignmentFromString:(NSString*)value
+{
+  if ([value isEqualToString:@"top"])
+  {
+    return ChartLegendVerticalAlignmentTop;
+  } else if ([value isEqualToString:@"bottom"])
+  {
+    return ChartLegendVerticalAlignmentBottom;
+  } else if ([value isEqualToString:@"center"])
+  {
+    return ChartLegendVerticalAlignmentCenter;
+  }
+  
+  return ChartLegendVerticalAlignmentBottom;
 }
 
 +(ChartLegendForm)legendFormFromString:(NSString*)value

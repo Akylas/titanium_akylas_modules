@@ -113,7 +113,10 @@
 
 -(void)highlightValue:(id)args {
     ENSURE_SINGLE_ARG(args, NSDictionary)
-    [[self chartView] highlightValueWithX:[TiUtils intValue:@"x" properties:args] dataSetIndex:[TiUtils intValue:@"datasetIndex" properties:args] callDelegate:[TiUtils intValue:@"callEvent" properties:args def:YES]];
+    [[self chartView] highlightValueWithX:[TiUtils intValue:@"x" properties:args]
+                             dataSetIndex:[TiUtils intValue:@"datasetIndex" properties:args def:-1]
+                                dataIndex:[TiUtils intValue:@"dataIndex" properties:args def:-1]
+                             callDelegate:[TiUtils intValue:@"callEvent" properties:args def:YES]];
 }
 
 

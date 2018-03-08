@@ -56,7 +56,7 @@ public class BarChartDataSetProxy
     }
     
     @Override
-    protected BarEntry dataEntryFromNumber(Number number, int index) {
+    protected BarEntry dataEntryFromNumber(Number number, float index) {
         BarEntry entry = (BarEntry) super.dataEntryFromNumber(number, index);
         if (entry != null) {
 //            entry.setHigh(number.floatValue());

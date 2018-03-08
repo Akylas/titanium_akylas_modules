@@ -61,7 +61,7 @@ public class CandleChartDataSetProxy
     }
     
     @Override
-    protected CandleEntry dataEntryFromNumber(Number number, int index) {
+    protected CandleEntry dataEntryFromNumber(Number number, float index) {
         CandleEntry entry = (CandleEntry) super.dataEntryFromNumber(number, index);
         if (entry != null) {
             entry.setHigh(number.floatValue());

@@ -58,7 +58,7 @@ public class RadarChartDataSetProxy extends LineRadarChartDataSetProxy {
     }
     
     @Override
-    protected RadarEntry dataEntryFromNumber(Number number, int index) {
+    protected RadarEntry dataEntryFromNumber(Number number, float index) {
         RadarEntry entry = (RadarEntry) super.dataEntryFromNumber(number, index);
         if (entry != null) {
 //            entry.setHigh(number.floatValue());

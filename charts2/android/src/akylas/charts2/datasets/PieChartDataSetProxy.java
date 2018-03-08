@@ -60,7 +60,7 @@ public class PieChartDataSetProxy extends DataSetProxy {
     }
     
     @Override
-    protected PieEntry dataEntryFromNumber(Number number, int index) {
+    protected PieEntry dataEntryFromNumber(Number number, float index) {
         PieEntry entry = (PieEntry) super.dataEntryFromNumber(number, index);
         if (entry != null) {
 //            entry.setHigh(number.floatValue());

@@ -199,10 +199,16 @@
 }
 
 -(id)yMin {
-    return @([_set yMin]);
+  return @([_set yMin]);
 }
 -(id)yMax {
-    return @([_set yMax]);
+  return @([_set yMax]);
+}
+-(id)xMin {
+  return @([_set xMin]);
+}
+-(id)xMax {
+  return @([_set xMax]);
 }
 -(id)entryCount {
     return @([_set entryCount]);
@@ -263,8 +269,9 @@
 }
 
 
-- (id)entryForIndex:(id)i {
-    return [self chartDataEntryDict:[[self set] entryForIndex:[TiUtils intValue:i]]];
+- (id)entryForIndex:(id)args {
+    ENSURE_SINGLE_ARG(args, NSNumber)
+    return [self chartDataEntryDict:[[self set] entryForIndex:[TiUtils intValue:args]]];
 }
 - (id)entryForX:(id)args {
     ENSURE_SINGLE_ARG(args, NSDictionary)
@@ -272,6 +279,7 @@
     return [self chartDataEntryDict:entry];
 }
 - (id)entriesForX:(id)x {
+    ENSURE_SINGLE_ARG(x, NSNumber)
     NSArray<ChartDataEntry *> * entries = [[self set] entriesForXValue:[TiUtils intValue:x]];
     NSMutableArray* result = [NSMutableArray array];
     [entries enumerateObjectsUsingBlock:^(ChartDataEntry * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -294,6 +302,30 @@
     ENSURE_SINGLE_ARG(args, NSDictionary)
     return @([_set addEntry:[self dictToChartDataEntry:args]]);
 }
+
+- (id)addEntryAndShift:(id)args {
+  ENSURE_SINGLE_ARG(args, NSDictionary)
+  [[self set] removeFirst];
+  BOOL result = [_set addEntry:[self dictToChartDataEntry:args]];
+  return @(result);
+}
+
+- (id)addEntryForY:(id)args {
+  ENSURE_SINGLE_ARG(args, NSNumber)
+  NSInteger count = _set.entryCount;
+  NSInteger lastX = (count > 0) ? [_set entryForIndex:(count - 1)].x : 0;
+  BOOL result = [_set addEntry:[self dataEntryFromNumber:args index:lastX+1]];
+  return @(result);
+}
+- (id)addEntryForYAndShift:(id)args {
+  ENSURE_SINGLE_ARG(args, NSNumber)
+  NSInteger count = _set.entryCount;
+  NSInteger lastX = (count > 0) ? [_set entryForIndex:(count - 1)].x : 0;
+  [[self set] removeFirst];
+  BOOL result = [_set addEntry:[self dataEntryFromNumber:args index:lastX+1]];
+  return @(result);
+}
+
 - (id)addEntryOrdered:(id)args {
     ENSURE_SINGLE_ARG(args, NSDictionary)
     return @([_set addEntryOrdered:[self dictToChartDataEntry:args]]);

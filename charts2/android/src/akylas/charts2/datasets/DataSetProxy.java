@@ -102,7 +102,7 @@ public abstract class DataSetProxy extends ReusableProxy {
     }
     
     
-    protected Entry dataEntryFromNumber(Number number, int index) {
+    protected Entry dataEntryFromNumber(Number number, float index) {
         Entry entry = null;;
         try {
             entry = (Entry) dataEntryClass().newInstance();
@@ -204,6 +204,18 @@ public abstract class DataSetProxy extends ReusableProxy {
         return _set.getYMax();
     }
     
+    
+    @Kroll.getProperty
+    @Kroll.method
+    public float getXMin() {
+        return _set.getXMin();
+    }
+    @Kroll.getProperty
+    @Kroll.method
+    public float getXMax() {
+        return _set.getXMax();
+    }
+    
     @Kroll.getProperty
     @Kroll.method
     public float getEntryCount() {
@@ -270,6 +282,27 @@ public abstract class DataSetProxy extends ReusableProxy {
     @Kroll.method
     public boolean addEntry(HashMap args) {
         return _set.addEntry(dictToChartDataEntry(args));
+    }  
+    
+    @Kroll.method
+    public boolean addEntryAndShift(HashMap args) {
+        _set.removeFirst();
+        return _set.addEntry(dictToChartDataEntry(args));
+    }  
+    
+    @Kroll.method
+    public boolean addEntryForY(Float value) {
+        final int count = _set.getEntryCount();
+        final float lastX = (count > 0) ? _set.getEntryForIndex(count - 1).getX() : 0;
+        return _set.addEntry(dataEntryFromNumber(value, lastX + 1));
+    }  
+    
+    @Kroll.method
+    public boolean addEntryForYAndShift(Float value) {
+        final int count = _set.getEntryCount();
+        final float lastX = (count > 0) ? _set.getEntryForIndex(count - 1).getX() : 0;
+       _set.removeFirst();
+        return _set.addEntry(dataEntryFromNumber(value, lastX + 1));
     }
     
     @Kroll.method

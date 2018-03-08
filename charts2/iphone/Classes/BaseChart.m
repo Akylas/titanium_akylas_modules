@@ -154,17 +154,32 @@
 
 -(void)setDescriptionFont_:(id)value
 {
-    [[self getOrCreateChartView] setDescriptionFont:[[TiUtils fontValue:value] font]];
+    ChartDescription* chartDescription = [self getOrCreateChartView].chartDescription;
+    if (!chartDescription) {
+      chartDescription = [[ChartDescription alloc] init];
+      [self getOrCreateChartView].chartDescription = chartDescription;
+    }
+    chartDescription.font = [[TiUtils fontValue:value] font];
 }
 
 -(void)setDescriptionColor_:(id)value
 {
-    [[self getOrCreateChartView] setDescriptionTextColor:[[TiUtils colorValue:value] _color]];
+    ChartDescription* chartDescription = [self getOrCreateChartView].chartDescription;
+    if (!chartDescription) {
+      chartDescription = [[ChartDescription alloc] init];
+      [self getOrCreateChartView].chartDescription = chartDescription;
+    }
+    chartDescription.textColor = [[TiUtils colorValue:value] _color];
 }
 
 -(void)setDescriptionTextAlign_:(id)value
 {
-    [[self getOrCreateChartView] setDescriptionTextAlign:[TiUtils textAlignmentValue:value]];
+    ChartDescription* chartDescription = [self getOrCreateChartView].chartDescription;
+    if (!chartDescription) {
+      chartDescription = [[ChartDescription alloc] init];
+      [self getOrCreateChartView].chartDescription = chartDescription;
+    }
+    chartDescription.textAlign = [TiUtils textAlignmentValue:value];
 }
 
 -(void)setDescriptionPosition_:(id)value
@@ -175,7 +190,12 @@
 
 -(void)setDescription_:(id)value
 {
-    [[self getOrCreateChartView] setDescriptionText:[TiUtils stringValue:value]];
+    ChartDescription* chartDescription = [self getOrCreateChartView].chartDescription;
+    if (!chartDescription) {
+      chartDescription = [[ChartDescription alloc] init];
+      [self getOrCreateChartView].chartDescription = chartDescription;
+    }
+    chartDescription.text = [TiUtils stringValue:value];
 }
 
 -(void)setNoDataFont_:(id)value

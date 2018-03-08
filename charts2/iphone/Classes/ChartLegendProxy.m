@@ -78,18 +78,44 @@
     [self replaceValue:value forKey:@"direction" notification:NO];
 }
 
--(void)setPosition:(id)value
+-(void)setHorizontalAlignment:(id)value
 {
     NSInteger result;
     if (IS_OF_CLASS(value, NSString)) {
-        result = [AkylasCharts2Module legendPositionFromString:[TiUtils stringValue:value]];
+        result = [AkylasCharts2Module legendHorizontalAlignmentFromString:[TiUtils stringValue:value]];
     }
     else {
-        result = [TiUtils intValue:value def:ChartLegendPositionBelowChartLeft];
+        result = [TiUtils intValue:value def:ChartLegendHorizontalAlignmentLeft];
     }
-    [_legend setPosition:result];
-    [self replaceValue:value forKey:@"position" notification:NO];
+    [_legend setHorizontalAlignment:result];
+    [self replaceValue:value forKey:@"horizontalAlignment" notification:NO];
 }
+
+-(void)setVerticalAlignment:(id)value
+{
+  NSInteger result;
+  if (IS_OF_CLASS(value, NSString)) {
+    result = [AkylasCharts2Module legendVerticalAlignmentFromString:[TiUtils stringValue:value]];
+  }
+  else {
+    result = [TiUtils intValue:value def:ChartLegendVerticalAlignmentBottom];
+  }
+  [_legend setVerticalAlignment:result];
+  [self replaceValue:value forKey:@"verticalAlignment" notification:NO];
+}
+
+//-(void)setPosition:(id)value
+//{
+//  NSInteger result;
+//  if (IS_OF_CLASS(value, NSString)) {
+//    result = [AkylasCharts2Module legendPositionFromString:[TiUtils stringValue:value]];
+//  }
+//  else {
+//    result = [TiUtils intValue:value def:ChartLegendPositionBelowChartLeft];
+//  }
+//  [_legend setHorizontalAlignment:<#(enum ChartLegendHorizontalAlignment)#>:result];
+//  [self replaceValue:value forKey:@"position" notification:NO];
+//}
 
 
 -(void)setFormSize:(id)value

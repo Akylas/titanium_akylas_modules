@@ -35,6 +35,7 @@
 +(PieChartValuePosition)pieValuePositionFromString:(NSString*)value;
 +(ScatterShape)scatterShapeFromString:(NSString*)value;
 +(ChartLegendDirection)legendDirectionFromString:(NSString*)value;
-+(ChartLegendPosition)legendPositionFromString:(NSString*)value;
++(ChartLegendHorizontalAlignment)legendHorizontalAlignmentFromString:(NSString*)value;
++(ChartLegendVerticalAlignment)legendVerticalAlignmentFromString:(NSString*)value;
 +(ChartLegendForm)legendFormFromString:(NSString*)value;
 @end

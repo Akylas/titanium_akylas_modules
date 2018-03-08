@@ -58,7 +58,7 @@ public class BubbleChartDataSetProxy
     }
     
     @Override
-    protected BubbleEntry dataEntryFromNumber(Number number, int index) {
+    protected BubbleEntry dataEntryFromNumber(Number number, float index) {
         BubbleEntry entry = (BubbleEntry) super.dataEntryFromNumber(number, index);
         if (entry != null) {
             entry.setSize(number.floatValue());

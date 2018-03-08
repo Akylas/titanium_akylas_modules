@@ -260,7 +260,8 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
         if (view != null) {
             getOrCreateChartView().getChart().highlightValue(
                     TiConvert.toInt(args, "x", -1),
-                    TiConvert.toInt(args, "datasetIndex", -1), true);
+                    TiConvert.toInt(args, "datasetIndex", -1), 
+                    TiConvert.toBoolean(args, "callEvent", true));
         }
     }
 
@@ -268,7 +269,7 @@ public abstract class ChartBaseViewProxy extends TiViewProxy {
     public void notifyDataSetChanged() {
         if (view != null) {
             getOrCreateChartView().notifyDataSetChanged();
-            getOrCreateChartView().redraw();
+//            getOrCreateChartView().redraw();
         }
     }
     

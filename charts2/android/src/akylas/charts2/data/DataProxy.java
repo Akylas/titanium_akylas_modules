@@ -224,11 +224,14 @@ public abstract class DataProxy extends ReusableProxy {
 
     @Kroll.method
     public void notifyDataChanged() {
+
         if (_data != null) {
             _data.notifyDataChanged();
         }
         if (_viewProxy != null) {
             _viewProxy.get().notifyDataSetChanged();
+        } else {
+          
         }
     }
 
