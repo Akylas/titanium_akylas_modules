@@ -211,7 +211,7 @@
 -(void)setMinValue:(id)value
 {
     if (value) {
-        [_axis setAxisMinValue:[TiUtils floatValue:value]];
+        [_axis setAxisMinimum:[TiUtils floatValue:value]];
     } else {
         [_axis resetCustomAxisMin];
     }
@@ -221,7 +221,7 @@
 -(void)setMaxValue:(id)value
 {
     if (value) {
-        [_axis setAxisMaxValue:[TiUtils floatValue:value]];
+        [_axis setAxisMaximum:[TiUtils floatValue:value]];
     } else {
         [_axis resetCustomAxisMax];
     }
