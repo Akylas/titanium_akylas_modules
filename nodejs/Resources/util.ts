@@ -381,7 +381,7 @@ function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
   if (desc.value !== undefined) {
     const diff = array !== 0 || ctx.compact === false ? 2 : 3;
     ctx.indentationLvl += diff;
-    str = formatValue(ctx, desc.value, recurseTimes, array === 0);
+    str = formatValue(ctx, desc.value, recurseTimes - 1, array === 0);
     ctx.indentationLvl -= diff;
   } else if (desc.get) {
     if (desc.set) {
