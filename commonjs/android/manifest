@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 5.0
-apiversion: 4
+version: 6.0
+apiversion: 5
 description: My module
 author: Martin Guillon
 license: Proprietary
@@ -16,5 +16,5 @@ name: akylas-commonjs
 moduleid: akylas.commonjs
 guid: 1748bde1-61ed-44fe-995d-2a5191eb032a
 platform: android
-minsdk: 6.0.0.AKYLAS
+minsdk: 7.3.0.AKYLAS
 commonjs: true

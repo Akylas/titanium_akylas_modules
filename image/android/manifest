@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2.0
-apiversion: 4
+version: 3.0
+apiversion: 5
 description: a module to manipulate images
 author: Martin Guillon
 license: Proprietary

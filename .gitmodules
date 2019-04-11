@@ -4,12 +4,6 @@
 [submodule "testflight"]
 	path = testflight
 	url = git@github.com:Akylas/testflight-module.git
-[submodule "commonjs/android/assets"]
-	path = commonjs/android/assets
-	url = git@bitbucket.org:farfromrefuge/ti.ak.include.git
-[submodule "commonjs/ios/assets"]
-	path = commonjs/ios/assets
-	url = git@bitbucket.org:farfromrefuge/ti.ak.include.git
 [submodule "map/ios/Classes/common"]
 	path = map/ios/Classes/common
 	url = git@bitbucket.org:farfromrefuge/akylas.map.common.ios.git

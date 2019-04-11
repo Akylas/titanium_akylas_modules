@@ -175,7 +175,7 @@ public class WebTileProvider implements TileProvider {
                 tiles[0] = getTileImage(x * 2, y * 2, z + 1);
             }
         };
-        t1.start();
+//        t1.start();
 
         Thread t2 = new Thread() {
 
@@ -184,7 +184,7 @@ public class WebTileProvider implements TileProvider {
                 tiles[1] = getTileImage(x * 2 + 1, y * 2, z + 1);
             }
         };
-        t2.start();
+//        t2.start();
 
         Thread t3 = new Thread() {
 

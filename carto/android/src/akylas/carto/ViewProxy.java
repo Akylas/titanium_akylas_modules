@@ -26,6 +26,7 @@ import android.os.Message;
         AkylasMapBaseModule.PROPERTY_INDOOR_ENABLED,
         AkylasMapBaseModule.PROPERTY_INDOOR_CONTROLS_ENABLED,
         AkylasMapBaseModule.PROPERTY_MAPSTYLE,
+        AkylasMapBaseModule.PROPERTY_MAPSTYLEFILE,
         TiC.PROPERTY_PADDING,
         AkylasCartoModule.PROPERTY_ANIMATION_DURATION,
         AkylasCartoModule.PROPERTY_FOCUS_OFFSET

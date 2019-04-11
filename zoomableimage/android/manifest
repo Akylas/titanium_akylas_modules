@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2.0
-apiversion: 4
+version: 3.0
+apiversion: 5
 description: Titanium ZoomableImage module for Android
 author: Martin Guillon
 license: Proprietary
@@ -15,4 +15,4 @@ name: akylas-zoomableimage
 moduleid: akylas.zoomableimage
 guid: 0d005e93-9980-4739-9e41-fd1129c8ff3a
 platform: android
-minsdk: 6.0.0.AKYLAS
+minsdk: 7.3.0.AKYLAS

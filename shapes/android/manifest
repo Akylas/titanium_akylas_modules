@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 3.0
-apiversion: 4
+version: 4.0
+apiversion: 5
 description: My module
 author: Martin Guillon
 license: Proprietary
@@ -16,4 +16,4 @@ name: akylas.shapes
 moduleid: akylas.shapes
 guid: d0e69eb7-3e08-43d4-99fb-4d79714f5270
 platform: android
-minsdk: 3.3.0.AKYLAS
+minsdk: 7.3.0.AKYLAS

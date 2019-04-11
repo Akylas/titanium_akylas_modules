@@ -422,9 +422,9 @@ public class ClusterProxy extends BaseClusterProxy<MapPos, MapBounds> {
         if (layer == null) {
             layer = new ClusteredVectorLayer(getSource(),
                     new MyClusterElementBuilder());
-            layer.setVisible(visible);
             layer.setMinimumClusterDistance(minDistance);
             layer.setVisibleZoomRange(new MapRange(mMinZoom, mMaxZoom));
+            layer.setVisible(visible);
         }
         return layer;
     }

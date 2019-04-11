@@ -1,11 +1,11 @@
 /**
  * This is a generated file. Do not edit or your changes will be lost
  */
-#import "AkylasZoomableimageModuleAssets.h"
+#import "AkylasStatusbarnotificationModuleAssets.h"
 
 extern NSData* filterDataInRange(NSData* thedata, NSRange range);
 
-@implementation AkylasZoomableimageModuleAssets
+@implementation AkylasStatusbarnotificationModuleAssets
 
 - (NSData *)moduleAsset
 {

@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 3.0
-apiversion: 4
+version: 4.0
+apiversion: 5
 description: My module
 author: Martin Guillon
 license: Proprietary
@@ -16,4 +16,4 @@ name: akylas-slidemenu
 moduleid: akylas.slidemenu
 guid: 156306a2-1a5b-4785-b90d-5242455c0854
 platform: android
-minsdk: 3.3.0.AKYLAS
+minsdk: 7.3.0.AKYLAS

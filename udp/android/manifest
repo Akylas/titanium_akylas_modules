@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2.2
-apiversion: 4
+version: 3.0
+apiversion: 5
 description: an enhanced UDP module
 author: Martin Guillon
 license: Proprietary
@@ -15,4 +15,4 @@ name: akylas-udp
 moduleid: akylas.udp
 guid: b87e44ab-f55e-4ecf-809d-0ebc69760b45
 platform: android
-minsdk: 1.8.2
+minsdk: 7.3.0.AKYLAS

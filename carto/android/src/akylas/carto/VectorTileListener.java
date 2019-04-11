@@ -38,7 +38,7 @@ public class VectorTileListener extends VectorTileEventListener {
 
         source.clear();
 
-        Color color = new Color((short)0, (short)100, (short)200, (short)150);
+        Color color = new Color((short)0, (short)100, (short)200, (short)100);
 
         Feature feature = clickInfo.getFeature();
         Geometry geometry = feature.getGeometry();
@@ -73,7 +73,7 @@ public class VectorTileListener extends VectorTileEventListener {
         // Set a higher placement priority so it would always be visible
         builder.setPlacementPriority(10);
 
-        String message = feature.getProperties().toString();
+        String message = clickInfo.getFeatureLayerName() + " " + feature.getProperties().toString();
 
         BalloonPopup popup = new BalloonPopup(clickInfo.getClickPos(), builder.buildStyle(), "Click", message);
 

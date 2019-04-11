@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 1.0
-apiversion: 4
+version: 2.0
+apiversion: 5
 description: Akylas Carto module
 author: Martin Guillon
 license: Proprietary
@@ -16,4 +16,4 @@ name:  akylas-carto
 moduleid: akylas.carto
 guid: 0e81237e-7ec2-4064-9ed0-d6cf36d10e23
 platform: android
-minsdk: 4.1.0.AKYLAS
+minsdk: 7.3.0.AKYLAS

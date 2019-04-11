@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import akylas.map.common.AkylasMapBaseModule;
 import android.app.Activity;
 import android.location.Location;
+import android.os.AsyncTask;
 
 @Kroll.module(name = "AkylasGooglemap", id = "akylas.googlemap", parentModule = AkylasMapBaseModule.class)
 public class AkylasGooglemapModule
@@ -246,5 +247,4 @@ public class AkylasGooglemapModule
             return "";
         }
     }
-
 }

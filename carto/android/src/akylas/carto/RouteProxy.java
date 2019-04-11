@@ -2,12 +2,9 @@ package akylas.carto;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
-import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiC;
@@ -21,26 +18,20 @@ import com.carto.core.MapBounds;
 import com.carto.core.MapPos;
 import com.carto.core.MapPosVector;
 import com.carto.projections.Projection;
-import com.carto.styles.BillboardScaling;
 import com.carto.styles.LineEndType;
 import com.carto.styles.LineJoinType;
 import com.carto.styles.LineStyle;
 import com.carto.styles.LineStyleBuilder;
-import com.carto.styles.MarkerStyle;
-import com.carto.styles.MarkerStyleBuilder;
 import com.carto.utils.BitmapUtils;
 import com.carto.vectorelements.Line;
-import com.carto.vectorelements.Marker;
 import com.carto.vectorelements.VectorElement;
 import com.squareup.picasso.Picasso.LoadedFrom;
 
-import akylas.map.common.AkylasMarker;
 import akylas.map.common.BaseRouteProxy;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Message;
 
 @Kroll.proxy(creatableInModule = AkylasCartoModule.class)
 public class RouteProxy extends BaseRouteProxy<MapPos, MapBounds, List<MapPos>>

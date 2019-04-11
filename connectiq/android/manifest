@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2.0.0
-apiversion: 4
+version: 3.0.0
+apiversion: 5
 description: connectiq
 author: Your Name
 license: Specify your license
@@ -15,4 +15,4 @@ name: akylas-connectiq
 moduleid: akylas.connectiq
 guid: 8a4f40e5-085b-460b-9a1c-30ef47d5672a
 platform: android
-minsdk: 6.1.0.AKYLAS
+minsdk: 7.3.0.AKYLAS

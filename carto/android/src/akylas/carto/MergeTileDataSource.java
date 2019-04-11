@@ -32,8 +32,8 @@ public class MergeTileDataSource extends TileDataSource {
         maxZoom = firstSource.getMaxZoom();
         for(int i = 1; i< sourcesCount; i++) {
             TileDataSource source = sources[i];
-            minZoom = Math.max(minZoom, source.getMinZoom());
-            maxZoom = Math.min(maxZoom, source.getMaxZoom());
+            minZoom = Math.min(minZoom, source.getMinZoom());
+            maxZoom = Math.max(maxZoom, source.getMaxZoom());
             
             bounds = sources[i].getDataExtent();
             if (bounds.getMin().getX() < minX) {
@@ -66,10 +66,10 @@ public class MergeTileDataSource extends TileDataSource {
     public TileData loadTile(MapTile tile) {
 //        return firstSource.loadTile(tile);
         TileData result = null;
-        int zoom = tile.getZoom();
+//        int zoom = tile.getZoom();
         for(int i = 0; i< sourcesCount; i++) {
             TileDataSource source = sources[i];
-           if (zoom <= source.getMaxZoom() && zoom >= source.getMinZoom()) {
+//           if (zoom <= source.getMaxZoom() && zoom >= source.getMinZoom()) {
                TileData sourceResult = source.loadTile(tile);
                if (result == null) {
                    result = sourceResult;
@@ -81,7 +81,7 @@ public class MergeTileDataSource extends TileDataSource {
                    bb.put(data2);
                    result = new TileData(new BinaryData(bb.array()));
                }
-           }
+//           }
             
         }
         return result;

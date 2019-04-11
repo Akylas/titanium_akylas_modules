@@ -8,8 +8,8 @@
 
 #import "AkylasStatusbarnotificationModule.h"
 #import "CWStatusBarNotification.h"
-#import "NSString+DTUtilities.h"
-#import "DTCoreText.h"
+#import "DTCoreText/DTCoreText.h"
+//#import "NSString+DTUtilities.h"
 
 @implementation AkylasStatusbarnotificationModule
 {

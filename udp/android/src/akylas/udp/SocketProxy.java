@@ -367,7 +367,6 @@ public class SocketProxy extends KrollProxy {
     }
 
     @Kroll.method
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public KrollDict address() {
         if (_socket != null) {
             KrollDict args = new KrollDict();
@@ -379,7 +378,6 @@ public class SocketProxy extends KrollProxy {
     }
 
     @Kroll.method
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void bind(int port, @Kroll.argument(optional = true) String address,
             @Kroll.argument(optional = true) KrollFunction callback) {
         KrollDict args = new KrollDict();
@@ -393,7 +391,6 @@ public class SocketProxy extends KrollProxy {
         bind(args);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void bind(HashMap hm) {
         if (_socket != null) {
             fireError(

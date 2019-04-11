@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2.0
-apiversion: 4
+version: 3.0
+apiversion: 5
 description: A simple Camera preview module
 author: Martin Guillon
 license: Proprietary
@@ -16,4 +16,4 @@ name: akylas-camera
 moduleid: akylas.camera
 guid: aecacc9f-e87b-47c3-9e65-5178e04320d8
 platform: android
-minsdk: 2.1.3.GA
+minsdk: 7.3.0.AKYLAS

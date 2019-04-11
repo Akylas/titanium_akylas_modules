@@ -4,28 +4,20 @@ import java.util.HashMap;
 
 import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiMessenger.CommandNoReturn;
-import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBlob;
-import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 
 import akylas.map.common.AkylasMarker;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
-import android.view.View;
 
 import com.carto.core.MapPos;
-import com.carto.styles.AnimationStyle;
-import com.carto.styles.AnimationStyleBuilder;
 import com.carto.styles.BillboardOrientation;
 import com.carto.styles.BillboardScaling;
 import com.carto.styles.MarkerStyle;
 import com.carto.styles.MarkerStyleBuilder;
-import com.carto.styles.PointStyleBuilder;
 import com.carto.vectorelements.Marker;
-import com.carto.vectorelements.Point;
-import com.carto.vectorelements.VectorElement;
 import com.carto.utils.BitmapUtils;
 
 public class CartoMarker extends AkylasMarker<MapPos> {
@@ -127,6 +119,7 @@ public class CartoMarker extends AkylasMarker<MapPos> {
             setFlat(proxy.flat);
             setZIndex(proxy.zIndex);
             setAnchor(proxy.anchor);
+            markerOptions.setScaleWithDPI(true);
             markerOptions.setScalingMode(BillboardScaling.BILLBOARD_SCALING_SCREEN_SIZE);
             // .position((LatLng) proxy.getPosition())
             // .rotation(proxy.heading)
@@ -158,6 +151,10 @@ public class CartoMarker extends AkylasMarker<MapPos> {
                     markerOptions.setColor(new com.carto.graphics.Color(color));
                 }
                 // }
+            } else if (imageLoading){
+//                markerOptions.setColor(null);
+//                markerOptions.setBitmap(null);
+
             }
 
 //            if (proxy.anchor != null) {

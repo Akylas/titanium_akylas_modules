@@ -45,7 +45,6 @@ import android.app.Activity;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -68,22 +67,26 @@ import com.carto.core.MapPos;
 import com.carto.core.MapRange;
 import com.carto.core.ScreenBounds;
 import com.carto.core.ScreenPos;
+import com.carto.core.StringVector;
+import com.carto.core.Variant;
 import com.carto.datasources.CartoOnlineTileDataSource;
 import com.carto.datasources.LocalVectorDataSource;
 import com.carto.datasources.PackageManagerTileDataSource;
 import com.carto.datasources.PersistentCacheTileDataSource;
 import com.carto.datasources.TileDataSource;
+import com.carto.geometry.Feature;
 import com.carto.layers.CartoBaseMapStyle;
 import com.carto.layers.Layer;
 import com.carto.layers.TileLayer;
 import com.carto.layers.VectorElementEventListener;
 import com.carto.layers.VectorLayer;
 import com.carto.layers.VectorTileLayer;
+import com.carto.layers.VectorTileRenderOrder;
 import com.carto.packagemanager.CartoPackageManager;
 import com.carto.projections.Projection;
-import com.carto.styles.CompiledStyleSet;
 import com.carto.ui.MapView;
 import com.carto.ui.VectorElementClickInfo;
+import com.carto.ui.VectorTileClickInfo;
 import com.carto.utils.AssetUtils;
 import com.carto.utils.ZippedAssetPackage;
 import com.carto.vectorelements.Line;
@@ -95,6 +98,8 @@ import com.carto.ui.MapClickInfo;
 import com.carto.ui.MapEventListener;
 
 public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
+    private boolean ignoreNextClick = false;
+    private boolean poiHandledDone = false;
     private final MapEventListener mapEventListener = new MapEventListener() {
 
         private void handleMapMoved(boolean idle) {
@@ -125,7 +130,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                     result.put(AkylasCartoModule.PROPERTY_ZOOM, zoom);
                     result.put("mpp", mpp);
                     result.put("mapdistance", mpp * nativeView.getWidth());
-                    result.put("bearing", mapView.getRotation());
+                    result.put("bearing", mapView.getMapRotation());
                     result.put("tilt", mapView.getTilt());
                     result.put(AkylasCartoModule.PROPERTY_USER_ACTION,
                             userAction);
@@ -164,15 +169,20 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         @Override
         public void onMapClicked(MapClickInfo mapClickInfo) {
             super.onMapClicked(mapClickInfo);
+            if (ignoreNextClick) {
+                ignoreNextClick = false;
+                return;
+            }
+            poiHandledDone = false;
             switch (mapClickInfo.getClickType()) {
-//            case CLICK_TYPE_LONG: {
-//                if (!hasListeners(TiC.EVENT_LONGPRESS, false))
-//                    return;
-//                MapPos point = getConvertedMapPos(mapClickInfo.getClickPos());
-//                fireEvent(TiC.EVENT_LONGPRESS, dictFromPoint(point), false,
-//                        false);
-//                break;
-//            }
+            // case CLICK_TYPE_LONG: {
+            // if (!hasListeners(TiC.EVENT_LONGPRESS, false))
+            // return;
+            // MapPos point = getConvertedMapPos(mapClickInfo.getClickPos());
+            // fireEvent(TiC.EVENT_LONGPRESS, dictFromPoint(point), false,
+            // false);
+            // break;
+            // }
             // // case CLICK_TYPE_DOUBLE: {
             // // mapView.zoom(1, point,
             // // animate ? cameraAnimationDuration / 1000 : 0);
@@ -250,7 +260,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                 // || !((AnnotationProxy) annoProxy).touchable) {
                 // return false;
                 // }
-                handleMarkerClick(element);
+                // handleMarkerClick(element);
                 return !handleMarkerClick(element);
             } else if (element instanceof Line) {
                 if (_canSelectRoute) {
@@ -352,6 +362,20 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                     infoWindowContainer.setLayoutParams(overlayLayoutParams);
                 }
             }
+        }
+    }
+
+    @Override
+    public void setReusing(boolean value) {
+        super.setReusing(value);
+        if (value) {
+            tileLayers.clear();
+            handledLayers.clear();
+            clusterLayers.clear();
+            annotsSource.clear();
+            handledMarkers.clear();
+            handledLayers.clear();
+            resortLayers();
         }
     }
 
@@ -491,10 +515,12 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     String langCode = null;
     boolean mBuildingsEnabled = false;
     ZippedAssetPackage styleAsset;
+    private String vectorStyleFile = AkylasCartoModule.defaultVectorStyleFile;
+    CartoBaseMapStyle style;
 
     public ZippedAssetPackage getStyleZippedAsset() {
         if (styleAsset == null) {
-            BinaryData data = AssetUtils.loadAsset("carto.zip");
+            BinaryData data = AssetUtils.loadAsset("bright.zip");
             styleAsset = new ZippedAssetPackage(data);
         }
         return styleAsset;
@@ -505,9 +531,10 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         return AkylasCartoModule.getOfflineManager();
     }
 
-    VectorTileListener currentListener;
-
     protected void setBaseLayer(CartoBaseMapStyle style) {
+        if (mapView == null) {
+            return;
+        }
         if (baseLayer != null) {
             mapView.getLayers().remove(baseLayer);
             baseLayer = null;
@@ -515,35 +542,36 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         if (style == null) {
             return;
         }
+        this.style = style;
         String type = "voyager";
         if (style == CartoBaseMapStyle.CARTO_BASEMAP_STYLE_DARKMATTER) {
             type = "darkmatter";
         } else if (style == CartoBaseMapStyle.CARTO_BASEMAP_STYLE_POSITRON) {
             type = "positron";
         }
-        baseStyleDecoder = new MBVectorTileDecoder(
-                new CompiledStyleSet(getStyleZippedAsset(), type));
+        baseStyleDecoder = (MBVectorTileDecoder) AkylasCartoModule.getVectorTileDecoder(vectorStyleFile, type);
 
-        if (langCode != null) {
+        if (baseStyleDecoder != null && langCode != null) {
             baseStyleDecoder.setStyleParameter("lang", langCode);
         }
-        if (mBuildingsEnabled) {
+        if (baseStyleDecoder != null && mBuildingsEnabled) {
             baseStyleDecoder.setStyleParameter("buildings", "2");
         }
         if (source == null) {
-            // source = new OrderedDataSource(
-            // new PackageManagerTileDataSource(getOfflineManager()),
-            // new PersistentCacheTileDataSource(
+            source = new OrderedDataSource(
+                    new PackageManagerTileDataSource(getOfflineManager()),
+                    new PersistentCacheTileDataSource(
+                            new CartoOnlineTileDataSource("carto.streets"),
+                            AkylasCartoModule.getMapCacheFolder()
+                                    + "/carto.db"));
+            // source = new PersistentCacheTileDataSource(
             // new CartoOnlineTileDataSource("carto.streets"),
-            // AkylasCartoModule.getMapCacheFolder()
-            // + "/carto.db"));
-            source = new PersistentCacheTileDataSource(
-                    new CartoOnlineTileDataSource("carto.streets"),
-                    AkylasCartoModule.getMapCacheFolder() + "/carto.db");
+            // AkylasCartoModule.getMapCacheFolder() + "/carto.db");
         }
         // create layer
         baseLayer = new VectorTileLayer(source, baseStyleDecoder);
-        // baseLayer.setVectorTileEventListener(getVectorTileListener());
+        baseLayer.setLabelRenderOrder(VectorTileRenderOrder.VECTOR_TILE_RENDER_ORDER_LAST);
+        baseLayer.setVectorTileEventListener(getVectorTileListener());
 
         // add it to the map
         mapView.getLayers().insert(0, baseLayer);
@@ -562,45 +590,86 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     }
 
     VectorLayer debugLayer;
-
-    private VectorTileListener initializeVectorTileListener() {
-
-        Projection projection = mapView.getOptions().getBaseProjection();
-        LocalVectorDataSource source = new LocalVectorDataSource(projection);
-
-        debugLayer = new VectorLayer(source);
-        mapView.getLayers().add(debugLayer);
-
-        // Layer layer = mapView.getLayers().get(0);
-
-        VectorTileListener listener = new VectorTileListener(debugLayer);
-
-        // if (layer instanceof VectorTileLayer) {
-        // ((VectorTileLayer)layer).setVectorTileEventListener(listener);
-        // }
-
-        return listener;
-    }
+    VectorTileListener vectorListener;
 
     public VectorTileListener getVectorTileListener() {
-        if (currentListener == null) {
-            currentListener = initializeVectorTileListener();
+        if (vectorListener == null) {
+            Projection projection = mapView.getOptions().getBaseProjection();
+            LocalVectorDataSource source = new LocalVectorDataSource(
+                    projection);
+
+            debugLayer = new VectorLayer(source);
+            debugLayer.setVectorElementEventListener(
+                    new VectorElementEventListener() {
+                        @Override
+                        public boolean onVectorElementClicked(
+                                VectorElementClickInfo clickInfo) {
+                            return false;
+                        }
+                    });
+            mapView.getLayers().add(debugLayer);
+
+            vectorListener = new VectorTileListener(debugLayer) {
+                @Override
+                public boolean onVectorTileClicked(
+                        VectorTileClickInfo clickInfo) {
+                    if (!poiHandledDone) {
+                        poiHandledDone = true;
+                        
+                        // Geometry geometry = feature.getGeometry();
+                        if (proxy.hasListeners(AkylasCartoModule.EVENT_POI,
+                                false)) {
+                            Feature feature = clickInfo.getFeature();
+                            MapPos pos = baseProjection.toWgs84(clickInfo.getFeatureClickPos());
+//                            final MapPos pos = clickInfo.getFeatureClickPos();
+                            final String layer = clickInfo.getFeatureLayerName();
+                            KrollDict d = new KrollDict();
+                            HashMap poi = new HashMap();
+                            poi.put("layer", layer);
+                            poi.put("id", clickInfo.getFeatureId());
+                            poi.put(TiC.PROPERTY_LATITUDE, pos.getY());
+                            poi.put(TiC.PROPERTY_LONGITUDE, pos.getX());
+                            Variant variant = feature.getProperties();
+                            StringVector keys = variant.getObjectKeys();
+                            for (int i = 0; i < keys.size(); i++) {
+                                poi.put(keys.get(i), variant
+                                        .getObjectElement(keys.get(i)).toString());
+                            }
+                            d.put("poi", poi);
+                            proxy.fireEvent(AkylasCartoModule.EVENT_POI, d, false,
+                                    false);
+                        }
+                    }
+                    
+                    return false;
+//                    return super.onVectorTileClicked(clickInfo);
+                }
+            };
+
+            // if (layer instanceof VectorTileLayer) {
+            // ((VectorTileLayer)layer).setVectorTileEventListener(listener);
+            // }
+
         }
-        return currentListener;
+        return vectorListener;
     }
 
     protected void updateLandCode(String code) {
         if (code != langCode) {
             langCode = code;
-            baseStyleDecoder.setStyleParameter("lang", langCode);
+            if (baseStyleDecoder != null) {
+                baseStyleDecoder.setStyleParameter("lang", langCode);
+            }
         }
     }
 
     protected void updateBuildings(boolean value) {
         if (value != mBuildingsEnabled) {
             mBuildingsEnabled = value;
-            baseStyleDecoder.setStyleParameter("buildings",
+            if (baseStyleDecoder != null) {
+                baseStyleDecoder.setStyleParameter("buildings",
                     mBuildingsEnabled ? "2" : "1");
+            }
         }
     }
     // @Override
@@ -763,6 +832,9 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     static {
         ArrayList<String> tmp = AkylasMapBaseView.KEY_SEQUENCE;
         tmp.add(AkylasCartoModule.PROPERTY_USER_LOCATION_REQUIRED_ZOOM);
+        tmp.add(AkylasCartoModule.PROPERTY_MAPSTYLEFILE);
+        tmp.add(TiC.PROPERTY_MAP_TYPE);
+        tmp.add(AkylasCartoModule.PROPERTY_MAPSTYLE);
         KEY_SEQUENCE = tmp;
     }
 
@@ -838,8 +910,8 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                     .setRotatable(TiConvert.toBoolean(newValue, true));
             break;
         case "panningMode":
-            mapView.getOptions()
-                    .setPanningMode(PanningMode.values()[TiConvert.toInt(newValue, 0)]);
+            mapView.getOptions().setPanningMode(
+                    PanningMode.values()[TiConvert.toInt(newValue, 0)]);
             break;
         // case AkylasCartoModule.PROPERTY_TILT_ENABLED:
         // map.getUiSettings().setTiltGesturesEnabled(
@@ -847,6 +919,10 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
         // break;
         case AkylasCartoModule.PROPERTY_BUILDINGS_ENABLED:
             updateBuildings(TiConvert.toBoolean(newValue, true));
+            // map.setBuildingsEnabled(TiConvert.toBoolean(newValue, true));
+            break;
+        case TiC.PROPERTY_LOCALE:
+            updateLandCode(TiConvert.toString(newValue, "en"));
             // map.setBuildingsEnabled(TiConvert.toBoolean(newValue, true));
             break;
         // case AkylasCartoModule.PROPERTY_INDOOR_ENABLED:
@@ -868,7 +944,15 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
             cameraAnimationDuration = TiConvert.toInt(newValue,
                     CAMERA_UPDATE_DURATION);
             break;
-
+        case AkylasCartoModule.PROPERTY_MAPSTYLEFILE:
+            vectorStyleFile = TiConvert.toString(newValue);
+            if (baseLayer != null) {
+                setBaseLayer(this.style);
+            }
+            break;   
+        case AkylasCartoModule.PROPERTY_MAPSTYLE:
+            setBaseLayer(CartoBaseMapStyle.values()[TiConvert.toInt(newValue)]);
+            break;   
         case TiC.PROPERTY_MAP_TYPE:
             int type = TiConvert.toInt(newValue,
                     AkylasCartoModule.MAP_TYPE_VOYAGER);
@@ -929,16 +1013,13 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     // }
 
     private void handleCameraUpdate() {
+//        if (cameraBuilderMap == nul/l)
         if (preLayout || cameraBuilderMap == null)
             return;
 
         boolean animate = mCameraAnimate && shouldAnimate();
         float animationDuration = animate ? (cameraAnimationDuration / 1000.0f)
                 : 0;
-
-        if (cameraBuilderMap.containsKey(TiC.PROPERTY_REGION)) {
-            updateRegion(cameraBuilderMap.get(TiC.PROPERTY_REGION), animate);
-        }
 
         if (cameraBuilderMap
                 .containsKey(AkylasCartoModule.PROPERTY_CENTER_COORDINATE)
@@ -949,7 +1030,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                             .get(AkylasCartoModule.PROPERTY_CENTER_COORDINATE),
                     animate);
         }
-
+        
         if (cameraBuilderMap.containsKey(AkylasCartoModule.PROPERTY_ZOOM)
                 && cameraBuilderMap
                         .get(AkylasCartoModule.PROPERTY_ZOOM) != null) {
@@ -957,6 +1038,11 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                     AkylasCartoModule.PROPERTY_ZOOM, 0);
             mapView.setZoom(targetZoom, animationDuration);
         }
+        
+        if (cameraBuilderMap.containsKey(TiC.PROPERTY_REGION)) {
+            updateRegion(cameraBuilderMap.get(TiC.PROPERTY_REGION), animate);
+        }
+
 
         if (cameraBuilderMap.containsKey(AkylasCartoModule.PROPERTY_TILT)) {
             mapView.setTilt(
@@ -1189,7 +1275,8 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
 
         // Returning false here will enable native behavior, which shows the
         // info window.
-        return !canShowInfoWindow(theObj);
+        ignoreNextClick = theObj != null;
+        return ignoreNextClick;
     }
 
     // private AnnotationProxy getProxyByMarker(VectorElement m) {
@@ -1423,6 +1510,8 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
                 // }
             }
         }
+        onChildTouchEvent(this, mapView, event);
+
         // onTouch(mapView, event);
         return false;
     }
@@ -2061,25 +2150,35 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
     private final Comparator tileLayerComparator = new Comparator<Layer>() {
         @Override
         public int compare(Layer lhs, Layer rhs) {
-            final float zIndexL = ((BaseTileSourceProxy) getProxyByLayer(lhs))
-                    .getZIndex();
-            final float zIndexR = ((BaseTileSourceProxy) getProxyByLayer(rhs))
-                    .getZIndex();
-            // -1 - less than, 1 - greater than, 0 - equal, all inversed for
-            // descending
-            return zIndexL > zIndexR ? 1 : (zIndexL < zIndexR) ? -1 : 0;
+            final BaseTileSourceProxy lproxy = ((BaseTileSourceProxy) getProxyByLayer(
+                    lhs));
+            final BaseTileSourceProxy rproxy = ((BaseTileSourceProxy) getProxyByLayer(
+                    rhs));
+            if (lproxy != null && lproxy != null) {
+                final float zIndexL = lproxy.getZIndex();
+                final float zIndexR = rproxy.getZIndex();
+                // -1 - less than, 1 - greater than, 0 - equal, all inversed for
+                // descending
+                return zIndexL > zIndexR ? 1 : (zIndexL < zIndexR) ? -1 : 0;
+            }
+            return -1;
         }
     };
     private final Comparator clusterLayerComparator = new Comparator<Layer>() {
         @Override
         public int compare(Layer lhs, Layer rhs) {
-            final float zIndexL = ((BaseAnnotationProxy) getProxyByLayer(lhs))
-                    .getZIndex();
-            final float zIndexR = ((BaseAnnotationProxy) getProxyByLayer(rhs))
-                    .getZIndex();
-            // -1 - less than, 1 - greater than, 0 - equal, all inversed for
-            // descending
-            return zIndexL > zIndexR ? 1 : (zIndexL < zIndexR) ? -1 : 0;
+            final BaseAnnotationProxy lproxy = ((BaseAnnotationProxy) getProxyByLayer(
+                    lhs));
+            final BaseAnnotationProxy rproxy = ((BaseAnnotationProxy) getProxyByLayer(
+                    rhs));
+            if (lproxy != null && lproxy != null) {
+                final float zIndexL = lproxy.getZIndex();
+                final float zIndexR = rproxy.getZIndex();
+                // -1 - less than, 1 - greater than, 0 - equal, all inversed for
+                // descending
+                return zIndexL > zIndexR ? 1 : (zIndexL < zIndexR) ? -1 : 0;
+            }
+            return -1;
         }
     };
 
@@ -2190,7 +2289,7 @@ public class CartoView extends AkylasMapBaseView implements OnLifecycleEvent {
             if (proxy.getZIndex() == -1) {
                 proxy.setZIndex(index);
             }
-            Layer layer = proxy.getOrCreateLayer();
+            Layer layer = proxy.getOrCreateLayer(CartoView.this);
             if (handledLayers == null) {
                 handledLayers = new HashMap<Layer, Object>();
             }

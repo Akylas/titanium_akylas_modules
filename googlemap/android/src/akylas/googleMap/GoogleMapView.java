@@ -68,6 +68,7 @@ import android.view.animation.PathInterpolator;
 import android.widget.AbsoluteLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout.LayoutParams;
+import ti.modules.titanium.ui.widget.TiImageView;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -308,7 +309,7 @@ public class GoogleMapView extends AkylasMapBaseView implements
         theMap.setOnPolylineClickListener(mapView);
         theMap.setOnMyLocationChangeListener(mapView);
         theMap.setOnMyLocationButtonClickListener(mapView);
-        theMap.setOnPoiClickListener(mapView);
+//        theMap.setOnPoiClickListener(mapView);
         theMap.setOnCameraMoveCanceledListener(mapView);
         theMap.setOnCameraIdleListener(mapView);
         theMap.setOnCameraMoveListener(mapView);
@@ -424,6 +425,17 @@ public class GoogleMapView extends AkylasMapBaseView implements
     @Override
     protected ArrayList<String> keySequence() {
         return KEY_SEQUENCE;
+    }
+    
+
+    @Override
+    public void setReusing(boolean value) {
+        super.setReusing(value);
+        if (value) {
+            if (map != null) {
+                map.clear();
+            }
+        }
     }
 
     @Override

@@ -16,8 +16,9 @@ declare global {
         height: number
         isSimulator: boolean
         isIpad: boolean
-        isIPhone5: boolean
-        isOldiPhone: boolean
+        // isIPhone5: boolean
+        isIPhoneX: boolean
+        // isOldiPhone: boolean
         isRetina: boolean
         isTablet: boolean
         dpi: number
@@ -172,9 +173,10 @@ export class AKClass {
         if (__APPLE__) {
             Object.assign(self, {
                 isIpad: self.isTablet,
-                isIPhone5: (self.height === 1136),
-                isOldiPhone: !self.isSimulator && /iphone\s*[1-4].*/i.test(
-                    self.model),
+                // isIPhone5: (self.height === 1136),
+                isIPhoneX: self.width === 375 && self.height === 812 && self.densityFactor === 3,
+                // isOldiPhone: !self.isSimulator && /iphone\s*[1-4].*/i.test(
+                    // self.model),
                 isRetina: (self.densityFactor >= 2),
                 isTablet: /ipad/.test(this.osname)
             });

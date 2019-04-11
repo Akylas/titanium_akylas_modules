@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2.0
-apiversion: 4
+version: 3.0
+apiversion: 5
 description: An enhanced motion module
 author: Martin Guillon
 license: Proprietary
@@ -16,4 +16,4 @@ name: akylas-motion
 moduleid: akylas.motion
 guid: 147f5a96-8bb6-4e7f-8e4d-de2942d05551
 platform: android
-minsdk: 2.2.0
+minsdk: 7.3.0.AKYLAS
